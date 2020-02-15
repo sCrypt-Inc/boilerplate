@@ -4,7 +4,7 @@
   "description": "sCrypt project boilerplate",
   "main": "",
   "scripts": {
-    "test": "mocha tests/*Test.js --reporter spec"
+    "test": "mocha tests/*test.js --reporter spec"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,6 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "mocha": "^7.0.1",
-    "scrypttest": "^0.1.2"
+    "scrypttest": "^0.1.3"
   }
 }
