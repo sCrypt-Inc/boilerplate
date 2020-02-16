@@ -1,8 +1,6 @@
-let path = require('path');
-let { expect } = require('chai');
-require('mocha');
-
-let { buildContractClass } = require('scrypttest');
+const path = require('path');
+const { expect } = require('chai');
+const { buildContractClass } = require('scrypttest');
 
 describe('Test sCrypt contract Demo', () => {
   let demo;
