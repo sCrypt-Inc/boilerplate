@@ -4,7 +4,7 @@ require('mocha');
 
 let { buildContractClass } = require('scrypttest');
 
-describe('Test sCrypt Contract Demo js', () => {
+describe('Test sCrypt contract Demo', () => {
   let demo;
 
   before(() => {
