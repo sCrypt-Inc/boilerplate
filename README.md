@@ -10,9 +10,11 @@ npm test
 
 The major steps to write a sCrypt test are exemplified by `tests/demo.scrypttest.js`.
 
-1. Import / require `scrypttest` libary. 
+1. import / require `scrypttest` libary. 
 
-**Note: If you use the sCrypt VS Code extension to run test, the first step is optional.**
+```
+import { buildContractClass } from 'scrypttest';
+```
 
 
 2. Use the imported function `buildContractClass` to get a reflected contract, which has same properties and methods as defined in the specified sCrypt contract.
