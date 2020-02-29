@@ -2,11 +2,11 @@ const path = require('path');
 const { expect } = require('chai');
 const { buildContractClass } = require('scrypttest');
 
-describe('Test sCrypt contract Demo', () => {
+describe('Test sCrypt contract Demo In Javascript', () => {
   let demo;
 
   before(() => {
-    const Demo = buildContractClass(path.join(__dirname, '../contracts/demo.scrypt'));
+    const Demo = buildContractClass(path.join(__dirname, '../../contracts/demo.scrypt'));
     demo = new Demo(4, 7);
   });
 

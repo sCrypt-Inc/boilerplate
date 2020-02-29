@@ -1,23 +1,23 @@
-const path = require('path');
-const { expect } = require('chai');
-const { buildContractClass, bsv } = require('scrypttest');
+import * as path from 'path';
+import { expect } from 'chai';
+import { buildContractClass, bsv } from 'scrypttest';
 
 /**
  * an example test for contract containing signature verification
  */
-const { inputIndex, inputSatoshis, tx, signTx, toHex } = require('./testCheckSig');
+import { inputIndex, inputSatoshis, tx, signTx, toHex } from '../testCheckSigHelper';
 
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
 
-describe('Test sCrypt contract DemoP2PKH', () => {
-  let demo
-  let sig
+describe('Test sCrypt contract DemoP2PKH In Typescript', () => {
+  let demo: any;
+  let sig: any;
 
   before(() => {
-    const DemoP2PKH = buildContractClass(path.join(__dirname, '../contracts/p2pkh.scrypt'), tx, inputIndex, inputSatoshis)
+    const DemoP2PKH = buildContractClass(path.join(__dirname, '../../contracts/p2pkh.scrypt'), tx, inputIndex, inputSatoshis)
     demo = new DemoP2PKH(toHex(pkh))
   });
 
