@@ -35,7 +35,7 @@ demo = new Demo(4, 7);
 expect(demo.unlock(4 + 7)).to.equal(true);
 ```
 
-## How to run tests
+## How to run tests locally
 
 ### Run using sCrypt Extension
 Run unit tests file within the editor/explorer context menu.
@@ -46,3 +46,19 @@ Run unit tests file within the editor/explorer context menu.
 
 ### Run from console
 Tests could also be run from the console by executing `npm test`, just like regular Javascript/TypeScript tests.
+
+## How to run tests remotely on testnet
+When your tests succeed locally, you can run them on testnet.
+1. Provide a private key with funds in `tests/runontestnet.js`
+```
+const key = ''
+```
+2. `npm run testnet`
+```
+> scrypt_boilerplate@0.1.0 testnet ~/scrypt_boilerplate
+> node tests/runontestnet.js
+
+locking txid:      8d58ff9067f5fa893b5c695179559e108ebf850d0ce4fd1e42bc872417ffd424
+unlocking txid:    c60b57e93551a6c52282801130649c6a97edcca5d2b28b8b4ae2afe0ee59bf79
+Succeeded on testnet
+```
