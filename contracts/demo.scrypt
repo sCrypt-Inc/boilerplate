@@ -11,8 +11,7 @@ contract Demo {
       return a + b;
   }
 
-  public function unlock(int z) returns (bool) {
+  public function unlock(int z) {
       require(z == this.sum(this.x, this.y));
-      return true;
   }
 }
