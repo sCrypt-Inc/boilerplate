@@ -15,7 +15,9 @@ const utxo = {
   script: '',   // placeholder
   satoshis: inputSatoshis
 }
-const tx = new bsv.Transaction().from(utxo)
+let tx = new bsv.Transaction().from(utxo)
+
+getPreimage = (lockingScript) => bsv.Transaction.sighash.sighashPreimage(tx, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(inputSatoshis), flags)
 
 signTx = (tx, privateKey, scriptPubKey) => bsv.Transaction.sighash.sign(tx, privateKey, sighashType, inputIndex, bsv.Script.fromASM(scriptPubKey), new bsv.crypto.BN(inputSatoshis), flags).toTxFormat()
 
@@ -26,5 +28,6 @@ module.exports = {
     inputSatoshis: inputSatoshis,
     tx: tx,
     signTx: signTx,
+    getPreimage: getPreimage,
     toHex: toHex
 }
