@@ -4,8 +4,8 @@
   "description": "sCrypt project boilerplate",
   "main": "",
   "scripts": {
-    "test": "mocha -r ts-node/register tests/**/*scrypttest.*  --reporter spec",
-    "single-test": "mocha -r ts-node/register --reporter spec",
+    "test": "mocha -r ts-node/register tests/**/*scrypttest.*  --reporter spec --timeout 120000",
+    "single-test": "mocha -r ts-node/register --reporter spec --timeout 120000",
     "testnet": "node tests/runontestnet.js"
   },
   "repository": {
