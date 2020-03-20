@@ -5,7 +5,7 @@ import { buildContractClass, bsv } from 'scrypttest';
 /**
  * an example test for contract containing signature verification
  */
-import { inputIndex, inputSatoshis, tx, signTx, toHex } from '../testCheckSigHelper';
+import { inputIndex, inputSatoshis, tx, signTx, toHex } from '../testHelper';
 
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey

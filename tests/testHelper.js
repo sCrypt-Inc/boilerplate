@@ -1,7 +1,7 @@
 const { bsv } = require('scrypttest');
 
 /**
- * a dummy transaction used in signature verification
+ * a dummy transaction used in script evaluation
  */
 
 const inputIndex = 0
@@ -17,7 +17,7 @@ const utxo = {
 }
 let tx = new bsv.Transaction().from(utxo)
 
-getPreimage = (lockingScript) => bsv.Transaction.sighash.sighashPreimage(tx, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(inputSatoshis), flags)
+getPreimage = (tx, lockingScript) => bsv.Transaction.sighash.sighashPreimage(tx, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(inputSatoshis), flags)
 
 signTx = (tx, privateKey, scriptPubKey) => bsv.Transaction.sighash.sign(tx, privateKey, sighashType, inputIndex, bsv.Script.fromASM(scriptPubKey), new bsv.crypto.BN(inputSatoshis), flags).toTxFormat()
 

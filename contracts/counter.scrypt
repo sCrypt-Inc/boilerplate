@@ -1,15 +1,21 @@
 contract Counter {
-    public function increment(bytes sighashPreimage, int amount) {
+	public function increment(bytes sighashPreimage, int amount) {
         Tx tx = new Tx();
         require(tx.validate(sighashPreimage));
 
         int len = length(sighashPreimage);
 		bytes hashOutputs = sighashPreimage[len - 40 : len - 8];
 		// scriptCode is just scriptPubKey if there is no CODESEPARATOR in the latter
-		bytes scriptCode = this.readVarint(sighashPreimage[104:len]);
+		bytes scriptCode = this.readVarint(sighashPreimage[104:]);
+		int scriptLen = length(scriptCode);
+		// last byte contains the state, i.e., counter
+		int counter = unpack(scriptCode[scriptLen - 1 :]);
+		// increment counter
+		bytes scriptCode_ = scriptCode[: scriptLen - 1] ++ num2bin(counter + 1, 1);
 		// output: amount + scriptlen + script
-		Sha256 hashOutputs_ = hash256(num2bin(amount, 8) ++ this.writeVarint(scriptCode));
-		// ensure output amount is same with specified, also output script is the same with scriptCode
+		Sha256 hashOutputs_ = hash256(num2bin(amount, 8) ++ this.writeVarint(scriptCode_));
+		// ensure output is expected: amount is same with specified
+		// also output script is the same with scriptCode except counter incremented
 		require(hashOutputs == hashOutputs_);
     }
 

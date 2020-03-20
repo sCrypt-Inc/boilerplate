@@ -5,7 +5,7 @@ const { buildContractClass, bsv } = require('scrypttest');
 /**
  * an example test for contract containing signature verification
  */
-const { inputIndex, inputSatoshis, tx, signTx, toHex } = require('../testCheckSigHelper');
+const { inputIndex, inputSatoshis, tx, signTx, toHex } = require('../testHelper');
 
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey

@@ -3,37 +3,44 @@ const { expect } = require('chai');
 const { buildContractClass, bsv } = require('scrypttest');
 
 /**
- * an example test for contract containing signature verification
+ * an example test for contract using Tx
  */
-const { inputIndex, inputSatoshis, tx, signTx, getPreimage, toHex } = require('../testCheckSigHelper');
+const { inputIndex, inputSatoshis, tx, getPreimage, toHex } = require('../testHelper');
 
-const privateKey = new bsv.PrivateKey.fromRandom('testnet')
-const publicKey = privateKey.publicKey
-const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
 const outputAmount = 222222
 
 describe('Test sCrypt contract Counter In Javascript', () => {
   let counter
   let lockingScript
+  let preimage
 
   before(() => {
     const Counter = buildContractClass(path.join(__dirname, '../../contracts/counter.scrypt'), tx, inputIndex, inputSatoshis)
     counter = new Counter()
-    lockingScript = demo.getScriptPubKey()
-    const newScriptPubKey = lockingScript
+
+    lockingScript = counter.getScriptPubKey()
+    const newScriptPubKey = lockingScript + ' OP_RETURN 01'
+    // append state as passive data
+    lockingScript += ' OP_RETURN 00'
+    counter.setScriptPubKey(lockingScript)
+    
     tx.addOutput(new bsv.Transaction.Output({
-      script: newScriptPubKey,
+      script: bsv.Script.fromASM(newScriptPubKey),
       satoshis: outputAmount
     }))
+
+    preimage = getPreimage(tx, lockingScript)
   });
 
-  it('signature check should succeed when right private key signs', () => {
-    preimage = getPreimage(lockingScript)
+  it('should succeed when pushing right preimage & amount', () => {
     expect(counter.increment(toHex(preimage), outputAmount)).to.equal(true);
   });
 
-  // it('signature check should fail when wrong private key signs', () => {
-  //   sig = signTx(tx, privateKey2, counter.getScriptPubKey())
-  //   expect(counter.unlock(toHex(sig),  toHex(publicKey))).to.equal(false);
-  // });
+  it('should fail when pushing wrong preimage', () => {
+    expect(counter.increment(toHex(preimage) + '01', outputAmount)).to.equal(false);
+  });
+
+  it('should fail when pushing wrong amount', () => {
+    expect(counter.increment(toHex(preimage), outputAmount - 1)).to.equal(false);
+  });
 });
