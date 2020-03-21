@@ -1,7 +1,7 @@
 const path = require('path');
 const { buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, showError } = require('scrypttest');
 
-const { num2SM } = require('./testHelper');
+const { num2SM } = require('../testHelper');
 
 // private key on testnet in WIF
 const key = ''
@@ -12,7 +12,7 @@ if (!key) {
 (async() => {
     try {
         // get locking script
-        const Counter = buildContractClass(path.join(__dirname, '../contracts/counter.scrypt'))
+        const Counter = buildContractClass(path.join(__dirname, '../../contracts/counter.scrypt'))
         const counter = new Counter()
 
         lockingScript = counter.getScriptPubKey()
