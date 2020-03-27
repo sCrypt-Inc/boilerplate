@@ -10,9 +10,9 @@ describe('Test sCrypt contract Token In Javascript', () => {
   let token
   let getPreimageAfterTransfer
 
-  const privateKey1 = new bsv.PrivateKey.fromWIF('cVz3fxUcZNgDfJRtNvMRPDebqTSmfx8L134c9y6a6g81nT58p8kQ')
+  const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
-  const privateKey2 = new bsv.PrivateKey.fromWIF('cUWWx7J1V9xmUYqM1vjNk99dri9BijzJK1FwAVjFHDQGR7n9hHyG')
+  const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
   
   before(() => {
