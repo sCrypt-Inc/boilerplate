@@ -1,5 +1,5 @@
 /**
- * Test for VerifyDataP2PKH contract in TypeScript
+ * Test for HashPuzzleP2PKH contract in TypeScript
  **/
 import * as path from 'path';
 import { expect } from 'chai';
