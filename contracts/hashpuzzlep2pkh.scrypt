@@ -7,7 +7,7 @@ bytes("abc") = 0x616263
 **/
 
 // Main Data Check and P2PKH Contract
-contract VerifyDataP2PKH {
+contract HashPuzzleP2PKH {
     Ripemd160 pubKeyHash;
     Sha256 hash;
 
@@ -17,16 +17,13 @@ contract VerifyDataP2PKH {
         this.hash = shaSum;
     }
 
-    // The Data is verified to match the Sha256Sum
-    function verifyChecksum(bytes dataBytes) returns(bool){
-        return(sha256(dataBytes) == this.hash);
-    }
-
     // Main function verifies the data matches the provided Sha256Sum and Public Key
     public function verify(bytes data, Sig sig, PubKey pubKey) {
+        // Initialise Data Check
+        HashPuzzleSha256 hashPuzzle = new HashPuzzleSha256(this.hash);
         // Initialise P2PKH
         P2PKH p2pk = new P2PKH(this.pubKeyHash);
-        // Check both are correct before unlocking the funds
-        require(this.verifyChecksum(data) && p2pk.spend(sig, pubKey));
+        // Try unlock both contracts
+        require(hashPuzzle.spend(data) && p2pk.spend(sig, pubKey));
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Testnet test for VerifyDataP2PKH contract in JavaScript
+ * Testnet test for HashPuzzleP2PKH contract in JavaScript
  **/
 const path = require('path');
 const { buildContractClass, lockScriptTx, bsv, unlockScriptTx, getSignature, showError } = require('scrypttest');
@@ -16,7 +16,7 @@ const data =  dataBuffer
 const sha256Data = bsv.crypto.Hash.sha256(dataBuffer);
 
 // private key on testnet in WIF
-const key = ''
+const key = '92AiMWahQ4pgfiix7s2Wiyx4vwSB2AQRsyqZC1LfsV8tyEUeHU4'
 if (!key) {
     throw new Error('You must provide a private key');
 }
@@ -27,8 +27,8 @@ if (!key) {
         const newAmount = 546
 
         // get locking script
-        const VerifyDataP2PKH = buildContractClass(path.join(__dirname, '../../contracts/verifydatap2pkh.scrypt'), tx, inputIndex, inputSatoshis);
-        testTx = new VerifyDataP2PKH(toHex(pkh), toHex(sha256Data))
+        const HashPuzzleP2PKH = buildContractClass(path.join(__dirname, '../../contracts/hashpuzzlep2pkh.scrypt'), tx, inputIndex, inputSatoshis);
+        testTx = new HashPuzzleP2PKH(toHex(pkh), toHex(sha256Data))
         const scriptPubKey = testTx.getScriptPubKey()
         // lock fund to the script
         const lockingTxid = await lockScriptTx(scriptPubKey, key, amount)
