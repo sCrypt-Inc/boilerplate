@@ -16,7 +16,7 @@ const data =  dataBuffer
 const sha256Data = bsv.crypto.Hash.sha256(dataBuffer);
 
 // private key on testnet in WIF
-const key = '92AiMWahQ4pgfiix7s2Wiyx4vwSB2AQRsyqZC1LfsV8tyEUeHU4'
+const key = ''
 if (!key) {
     throw new Error('You must provide a private key');
 }
