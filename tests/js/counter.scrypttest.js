@@ -7,6 +7,9 @@ const { buildContractClass, bsv } = require('scrypttest');
  */
 const { inputIndex, inputSatoshis, tx, getPreimage, toHex } = require('../testHelper');
 
+// make a copy since it will be mutated
+const tx_ = bsv.Transaction.shallowCopy(tx)
+
 const outputAmount = 222222
 
 describe('Test sCrypt contract Counter In Javascript', () => {
@@ -15,7 +18,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
   let preimage
 
   before(() => {
-    const Counter = buildContractClass(path.join(__dirname, '../../contracts/counter.scrypt'), tx, inputIndex, inputSatoshis)
+    const Counter = buildContractClass(path.join(__dirname, '../../contracts/counter.scrypt'), tx_, inputIndex, inputSatoshis)
     counter = new Counter()
 
     lockingScript = counter.getScriptPubKey()
@@ -24,12 +27,12 @@ describe('Test sCrypt contract Counter In Javascript', () => {
     lockingScript += ' OP_RETURN 00'
     counter.setScriptPubKey(lockingScript)
     
-    tx.addOutput(new bsv.Transaction.Output({
+    tx_.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newScriptPubKey),
       satoshis: outputAmount
     }))
 
-    preimage = getPreimage(tx, lockingScript)
+    preimage = getPreimage(tx_, lockingScript)
   });
 
   it('should succeed when pushing right preimage & amount', () => {

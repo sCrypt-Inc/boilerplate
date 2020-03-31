@@ -15,7 +15,7 @@ const utxo = {
   script: '',   // placeholder
   satoshis: inputSatoshis
 }
-let tx = new bsv.Transaction().from(utxo)
+const tx = new bsv.Transaction().from(utxo)
 
 getPreimage = (tx, lockingScript) => bsv.Transaction.sighash.sighashPreimage(tx, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(inputSatoshis), flags)
 

@@ -4,6 +4,9 @@ const { buildContractClass, bsv } = require('scrypttest');
 
 const { inputIndex, inputSatoshis, tx, signTx, getPreimage, toHex } = require('../testHelper');
 
+// make a copy since it will be mutated
+const tx_ = bsv.Transaction.shallowCopy(tx)
+
 const outputAmount = 222222
 
 describe('Test sCrypt contract Token In Javascript', () => {
@@ -16,7 +19,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
   
   before(() => {
-    const Token = buildContractClass(path.join(__dirname, '../../contracts/token.scrypt'), tx, inputIndex, inputSatoshis)
+    const Token = buildContractClass(path.join(__dirname, '../../contracts/token.scrypt'), tx_, inputIndex, inputSatoshis)
     token = new Token()
 
     // code part
@@ -28,38 +31,38 @@ describe('Test sCrypt contract Token In Javascript', () => {
     
     getPreimageAfterTransfer = (balance1, balance2) => {
       const newScriptPubKey = lockingScriptCode + ' OP_RETURN ' + publicKey1.toHex() + num2SM(balance1) + publicKey2.toHex() + num2SM(balance2)
-      tx.addOutput(new bsv.Transaction.Output({
+      tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newScriptPubKey),
         satoshis: outputAmount
       }))
 
-      return getPreimage(tx, lockingScript)
+      return getPreimage(tx_, lockingScript)
     }
   });
 
   it('should succeed when publicKey1 transfers 40 tokens to publicKey2', () => {
     // after transfer 40 tokens: publicKey1 has 60, publicKey2 40
     const preimage = getPreimageAfterTransfer(60, 40)
-    const sig1 = signTx(tx, privateKey1, token.getScriptPubKey())
+    const sig1 = signTx(tx_, privateKey1, token.getScriptPubKey())
     expect(token.transfer('0x' + publicKey1.toHex(), toHex(sig1), '0x' + publicKey2.toHex(), 40, toHex(preimage), outputAmount)).to.equal(true);
   });
 
   it('should fail due to wrong balances', () => {
     // after transfer 40 tokens: publicKey1 has 60, publicKey2 40
     const preimage = getPreimageAfterTransfer(60, 30)
-    const sig1 = signTx(tx, privateKey1, token.getScriptPubKey())
+    const sig1 = signTx(tx_, privateKey1, token.getScriptPubKey())
     expect(token.transfer('0x' + publicKey1.toHex(), toHex(sig1), '0x' + publicKey2.toHex(), 40, toHex(preimage), outputAmount)).to.equal(false);
   });
 
   it('should fail when publicKey2 transfers 40 tokens to publicKey1 due to insufficient balance', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
-    const sig2 = signTx(tx, privateKey2, token.getScriptPubKey())
+    const sig2 = signTx(tx_, privateKey2, token.getScriptPubKey())
     expect(token.transfer('0x' + publicKey2.toHex(), toHex(sig2), '0x' + publicKey1.toHex(), 40, toHex(preimage), outputAmount)).to.equal(false);
   });
 
   it('should fail when publicKey1 transfers 40 tokens to publicKey2 due to wrong signature', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
-    const sig2 = signTx(tx, privateKey2, token.getScriptPubKey())
+    const sig2 = signTx(tx_, privateKey2, token.getScriptPubKey())
     expect(token.transfer('0x' + publicKey1.toHex(), toHex(sig2), '0x' + publicKey2.toHex(), 40, toHex(preimage), outputAmount)).to.equal(false);
   });
 });
