@@ -11,12 +11,6 @@ contract HashPuzzleP2PKH {
     Ripemd160 pubKeyHash;
     Sha256 hash;
 
-    // Public Key Hash and Sha256Sum are provided to the contract
-    constructor(Ripemd160 pubKeyHash, Sha256 shaSum) {
-        this.pubKeyHash = pubKeyHash;
-        this.hash = shaSum;
-    }
-
     // Main function verifies the data matches the provided Sha256Sum and Public Key
     public function verify(bytes data, Sig sig, PubKey pubKey) {
         // Initialise Data Check

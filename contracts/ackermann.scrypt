@@ -2,11 +2,6 @@ contract Ackermann {
     int a;  // a = 2
     int b;  // b = 1
 
-    constructor(int a, int b) {
-      this.a = a;
-      this.b = b;
-    }
-
     function ackermann(int m, int n) returns (int) {
         bytes stk = num2bin(m, 1);
 
