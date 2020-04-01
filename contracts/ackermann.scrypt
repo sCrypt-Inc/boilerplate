@@ -1,0 +1,45 @@
+contract Ackermann {
+    int a;  // a = 2
+    int b;  // b = 1
+
+    constructor(int a, int b) {
+      this.a = a;
+      this.b = b;
+    }
+
+    function ackermann(int m, int n) returns (int) {
+        bytes stk = num2bin(m, 1);
+
+        // run this function off chain to get the loop count and set it here
+        // e.g., (2, 1) requires 14 loops, (3, 5) 42438
+        loop (14) {
+            if (length(stk) > 0) {
+                bytes top = stk[0:1];
+                m = unpack(top);
+
+                // pop
+                stk = stk[1:length(stk)];
+
+                if (m == 0) {
+                    n = n + m + 1;
+                } else if (n == 0) {
+                    n = n + 1;
+                    m = m - 1;
+                    // push
+                    stk = num2bin(m, 1) ++ stk;
+                } else {
+                    stk = num2bin(m - 1, 1) ++ stk;
+                    stk = num2bin(m, 1) ++ stk;
+                    n = n - 1;
+                }
+            }
+        }
+
+        return n;
+    }
+
+    // y = 5
+    public function unlock(int y) {
+        require(y == this.ackermann(this.a, this.b));
+    }
+}
