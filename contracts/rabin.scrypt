@@ -1,6 +1,8 @@
+import "util.scrypt";
+
 contract RabinSignature {
     public function verifySig(int sig, bytes msg, bytes padding, int n) {
-        int h = this.fromLEUnsigned(this.hash(msg ++ padding));
+        int h = Util.fromLEUnsigned(this.hash(msg ++ padding));
         require((sig * sig) % n == h % n);
     }
 
