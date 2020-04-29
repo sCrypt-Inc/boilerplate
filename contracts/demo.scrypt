@@ -6,7 +6,11 @@ contract Demo {
       return a + b;
   }
 
-  public function unlock(int z) {
+  public function add(int z) {
       require(z == this.sum(this.x, this.y));
+  }
+
+  public function sub(int z) {
+      require(z == this.x - this.y);
   }
 }
