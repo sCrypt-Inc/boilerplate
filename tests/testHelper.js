@@ -21,7 +21,7 @@ getPreimage = (tx, lockingScript) => bsv.Transaction.sighash.sighashPreimage(tx,
 
 signTx = (tx, privateKey, scriptPubKey) => bsv.Transaction.sighash.sign(tx, privateKey, sighashType, inputIndex, bsv.Script.fromASM(scriptPubKey), new bsv.crypto.BN(inputSatoshis), flags).toTxFormat()
 
-toHex = x => '0x' + x.toString('hex')
+toHex = x => x.toString('hex')
 
 num2SM = num => {
   if (num === -1) return 'OP_1NEGATE'

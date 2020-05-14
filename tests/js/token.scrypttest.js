@@ -44,25 +44,25 @@ describe('Test sCrypt contract Token In Javascript', () => {
     // after transfer 40 tokens: publicKey1 has 60, publicKey2 40
     const preimage = getPreimageAfterTransfer(60, 40)
     const sig1 = signTx(tx_, privateKey1, token.getScriptPubKey())
-    expect(token.transfer('0x' + publicKey1.toHex(), toHex(sig1), '0x' + publicKey2.toHex(), 40, toHex(preimage), outputAmount)).to.equal(true);
+    expect(token.transfer(publicKey1.toHex(), toHex(sig1), publicKey2.toHex(), 40, toHex(preimage), outputAmount)).to.equal(true);
   });
 
   it('should fail due to wrong balances', () => {
     // after transfer 40 tokens: publicKey1 has 60, publicKey2 40
     const preimage = getPreimageAfterTransfer(60, 30)
     const sig1 = signTx(tx_, privateKey1, token.getScriptPubKey())
-    expect(token.transfer('0x' + publicKey1.toHex(), toHex(sig1), '0x' + publicKey2.toHex(), 40, toHex(preimage), outputAmount)).to.equal(false);
+    expect(token.transfer(publicKey1.toHex(), toHex(sig1), publicKey2.toHex(), 40, toHex(preimage), outputAmount)).to.equal(false);
   });
 
   it('should fail when publicKey2 transfers 40 tokens to publicKey1 due to insufficient balance', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
     const sig2 = signTx(tx_, privateKey2, token.getScriptPubKey())
-    expect(token.transfer('0x' + publicKey2.toHex(), toHex(sig2), '0x' + publicKey1.toHex(), 40, toHex(preimage), outputAmount)).to.equal(false);
+    expect(token.transfer(publicKey2.toHex(), toHex(sig2), publicKey1.toHex(), 40, toHex(preimage), outputAmount)).to.equal(false);
   });
 
   it('should fail when publicKey1 transfers 40 tokens to publicKey2 due to wrong signature', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
     const sig2 = signTx(tx_, privateKey2, token.getScriptPubKey())
-    expect(token.transfer('0x' + publicKey1.toHex(), toHex(sig2), '0x' + publicKey2.toHex(), 40, toHex(preimage), outputAmount)).to.equal(false);
+    expect(token.transfer(publicKey1.toHex(), toHex(sig2), publicKey2.toHex(), 40, toHex(preimage), outputAmount)).to.equal(false);
   });
 });
