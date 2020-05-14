@@ -1,6 +1,6 @@
 const path = require('path');
 const { expect } = require('chai');
-const { buildContractClass, bsv } = require('scrypttest');
+const { buildContractClass, bsv, int2Asm } = require('scrypttest');
 
 const { inputIndex, inputSatoshis, tx, signTx, getPreimage, toHex } = require('../testHelper');
 
@@ -26,11 +26,11 @@ describe('Test sCrypt contract Token In Javascript', () => {
     const lockingScriptCode = token.getScriptPubKey()
     
     // initial supply 100 tokens: publicKey1 has 100, publicKey2 0
-    const lockingScript = lockingScriptCode + ' OP_RETURN ' + toHex(publicKey1) + num2SM(100) + toHex(publicKey2) + '00'
+    const lockingScript = lockingScriptCode + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(100) + toHex(publicKey2) + '00'
     token.setScriptPubKey(lockingScript)
     
     getPreimageAfterTransfer = (balance1, balance2) => {
-      const newScriptPubKey = lockingScriptCode + ' OP_RETURN ' + toHex(publicKey1) + num2SM(balance1) + toHex(publicKey2) + num2SM(balance2)
+      const newScriptPubKey = lockingScriptCode + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(balance1) + toHex(publicKey2) + int2Asm(balance2)
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newScriptPubKey),
         satoshis: outputAmount

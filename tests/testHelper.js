@@ -23,16 +23,6 @@ signTx = (tx, privateKey, scriptPubKey) => bsv.Transaction.sighash.sign(tx, priv
 
 toHex = x => x.toString('hex')
 
-num2SM = num => {
-  if (num === -1) return 'OP_1NEGATE'
-
-  if (num >= 0 && num <= 16) return 'OP_' + num
-
-  let n = bsv.crypto.BN.fromNumber(num)
-  let m = n.toSM({ endian: 'little'} )
-  return m.toString('hex')
-}
-
 module.exports = {
     inputIndex: inputIndex,
     inputSatoshis: inputSatoshis,
@@ -40,5 +30,4 @@ module.exports = {
     signTx: signTx,
     getPreimage: getPreimage,
     toHex: toHex,
-    num2SM: num2SM
 }
