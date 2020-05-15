@@ -37,7 +37,7 @@ function sleep(ms) {
         // We'll pass-in the newChange, as part of the scriptSig
 
         // Run five transactions /iterations
-        for (i = 0; i < 2; i++) {
+        for (i = 0; i < 5; i++) {
             // avoid mempool conflicts
             // sleep to allow previous tx to "sink-into" the network
             await sleep(9000);
