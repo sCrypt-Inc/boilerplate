@@ -1,0 +1,47 @@
+import "util.scrypt";
+
+/**
+ * Demonstrates TxAdvanced, with external funding (additional input) and a change output
+ */
+contract AdvancedCounter {
+	public function increment(bytes sighashPreimage, int amount, bytes changePKH, int changeSats) {
+
+		PrivKey privKey = PrivKey(b'ea401e7cedf9c428fbf9b92b75c90dfdd354394e58195d58e82bf79a8de31d62');
+		PubKey pubKey = PubKey(b'02773aca113a3217b67a95d5b78b69bb6386ed443ea5decf0ba92c00d179291921');
+		int invK = 0xa2103f96554aba49bbf581738d3b5a38c5a44b6238ffb54cfcca65b8c87ddc08;
+		int r = 0x00f0fc43da25095812fcddde7d7cd353990c62b078e1493dc603961af25dfc6b60;
+		bytes rBigEndian = b'00f0fc43da25095812fcddde7d7cd353990c62b078e1493dc603961af25dfc6b60';
+		bytes sigHashType = b'c1';
+
+		TxAdvanced tx = new TxAdvanced();
+		// this ensures the preimage is for the current tx
+		require(tx.validate(sighashPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType));
+
+		int len = length(sighashPreimage);
+		bytes hashOutputs = sighashPreimage[len - 40 : len - 8];
+		// scriptCode is just scriptPubKey if there is no CODESEPARATOR in the latter
+		bytes scriptCode = Util.readVarint(sighashPreimage[104:]);
+		int scriptLen = length(scriptCode);
+
+		// the last OP_RETURN byte contains the application state, i.e., counter
+		int counter = unpack(scriptCode[scriptLen - 1 :]);
+
+		// Expect the counter to be incremented in the new transaction state
+		bytes scriptCode_ = scriptCode[: scriptLen - 1] ++ num2bin(counter + 1, 1);
+
+		// Expect the additional CHANGE output
+		//    P2PKH:       DUP,HASH160  PKHLen      PKH      EQUALVERIFY,CHECKSIG
+		bytes changeScript = b'76a9' ++ b'14' ++  changePKH ++ b'88ac';
+		bytes extraOutputScript = num2bin(changeSats, 8) ++ Util.writeVarint(changeScript);
+
+		// output: amount + scriptlen + script
+		Sha256 hashOutputs_ = hash256(num2bin(amount, 8) ++ Util.writeVarint(scriptCode_)
+					++ extraOutputScript);
+
+		// ensure output matches what we expect:
+		//     - amount is same as specified
+		//     - output script is the same as scriptCode except the counter was incremented
+		//     - expected CHANGE output script is there
+		require(hashOutputs == hashOutputs_);
+    }
+}
