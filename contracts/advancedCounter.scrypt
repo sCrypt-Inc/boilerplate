@@ -35,14 +35,15 @@ contract AdvancedCounter {
 		// Expect the counter to be incremented in the new transaction state
 		bytes scriptCode_ = scriptCode[: scriptLen - 1] ++ num2bin(counter + 1, 1);
 
+        bytes counterOutput = num2bin(amount, 8) ++ Util.writeVarint(scriptCode_);
+
 		// Expect the additional CHANGE output
 		//    P2PKH:       DUP,HASH160  PKHLen      PKH      EQUALVERIFY,CHECKSIG
 		bytes changeScript = b'76a9' ++ b'14' ++  changePKH ++ b'88ac';
-		bytes extraOutputScript = num2bin(changeSats, 8) ++ Util.writeVarint(changeScript);
+		bytes changeOutput = num2bin(changeSats, 8) ++ Util.writeVarint(changeScript);
 
 		// output: amount + scriptlen + script
-		Sha256 hashOutputs_ = hash256(num2bin(amount, 8) ++ Util.writeVarint(scriptCode_)
-					++ extraOutputScript);
+		Sha256 hashOutputs_ = hash256(counterOutput ++ changeOutput);
 
 		// ensure output matches what we expect:
 		//     - amount is same as specified
