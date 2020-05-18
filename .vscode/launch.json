@@ -7,6 +7,20 @@
         {
             "type": "scrypt",
             "request": "launch",
+            "name": "Debug P2PKH",
+            "program": "${workspaceFolder}/contracts/p2pkh.scrypt",
+            "constructorParams": "Ripemd160(b'cf856df2265088f8af06e0353e663b4f12e2003f')",
+            "entryMethod": "unlock",
+            "entryMethodParams": "Sig(b'30440220154e5bfb3dd95647af9f7cb5a34bd2bb7d7fc3234b6adb878849521de31123850220531aeaa01bcc928b7e8caa4869efd14b5281edbe75c52f3259546e2463950e0a41'), PubKey(b'02c1c480141f41e78941a85f1618a23e15ed062e562c91284e59cd92edaf461b1a')",
+            "txContext": {
+                "hex": "01000000015884e5db9de218238671572340b207ee85b628074e7e467096c267266baf77a40000000000ffffffff0000000000",
+                "inputIndex": 0,
+                "inputSatoshis": 100000
+            }
+        },
+        {
+            "type": "scrypt",
+            "request": "launch",
             "name": "Debug Ackermann",
             "program": "${workspaceFolder}/contracts/ackermann.scrypt",
             "constructorParams": "2,1",
