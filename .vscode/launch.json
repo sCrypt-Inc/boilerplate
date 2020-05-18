@@ -21,6 +21,20 @@
         {
             "type": "scrypt",
             "request": "launch",
+            "name": "Debug HashPuzzleP2PKH",
+            "program": "${workspaceFolder}/contracts/hashpuzzlep2pkh.scrypt",
+            "constructorParams": "Ripemd160(b'92aee3bdc58580cad5e24126711ab68e6385b0f2'), Sha256(b'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad')",
+            "entryMethod": "verify",
+            "entryMethodParams": "b'616263', Sig(b'3044022004dafb72a449ed9e118160d2be54c5a96e263acb64e2ac288513d9eb4d70c214022051e2caf58fe7283366b652c273f18ed2bd6261a6ee0815e8d8fad073585fa68641'), PubKey(b'025f0abd8a7810c6d7b9e8738ff29c5687bb02a94466796baf8884956a38930171')",
+            "txContext": {
+                "hex": "0100000001ec7b7cd3dd41c8a421a4f60aaecc6599808bc2a5d0ddaa416d33593d75af1d94000000006e03616263473044022004dafb72a449ed9e118160d2be54c5a96e263acb64e2ac288513d9eb4d70c214022051e2caf58fe7283366b652c273f18ed2bd6261a6ee0815e8d8fad073585fa6864121025f0abd8a7810c6d7b9e8738ff29c5687bb02a94466796baf8884956a38930171ffffffff0122020000000000007b1492aee3bdc58580cad5e24126711ab68e6385b0f220ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad610051790079527a75517a7561610053790079527a75517a75616156790079a85379876951776161567956790079a95479876951795179ac69517777619a7777777777777700000000",
+                "inputIndex": 0,
+                "inputSatoshis": 1000
+            }
+        },
+        {
+            "type": "scrypt",
+            "request": "launch",
             "name": "Debug Ackermann",
             "program": "${workspaceFolder}/contracts/ackermann.scrypt",
             "constructorParams": "2,1",
