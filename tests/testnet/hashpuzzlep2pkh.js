@@ -36,7 +36,7 @@ if (!key) {
         
         // unlock
         const sig = getSignature(lockingTxid, privateKey, scriptPubKey, amount, scriptPubKey, newAmount)
-        const scriptSig = data.toString('hex')+ ' ' + sig + ' ' + publicKey.toHex()
+        const scriptSig = toHex(data)+ ' ' + sig + ' ' + toHex(publicKey)
         const unlockingTxid = await unlockScriptTx(scriptSig, lockingTxid, scriptPubKey, amount, scriptPubKey, newAmount)
         console.log('unlocking txid:   ', unlockingTxid)
 
