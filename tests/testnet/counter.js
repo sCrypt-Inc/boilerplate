@@ -1,7 +1,5 @@
 const path = require('path');
-const { buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, showError } = require('scrypttest');
-
-const { num2SM } = require('../testHelper');
+const { buildContractClass, int2Asm, lockScriptTx, unlockScriptTx, getSighashPreimage, showError } = require('scrypttest');
 
 // private key on testnet in WIF
 const key = ''
@@ -31,7 +29,7 @@ if (!key) {
             const newScriptPubKey = lockingScript + ' OP_RETURN 0' + (i + 1)    // only works for i < 9
             const newAmount = amount - FEE
             const preimage = getSighashPreimage(lockingTxid, scriptPubKey, amount, newScriptPubKey, newAmount)
-            const amountASM = num2SM(newAmount)
+            const amountASM = int2Asm(newAmount)
             const scriptSig = preimage + ' ' + amountASM
             lockingTxid = await unlockScriptTx(scriptSig, lockingTxid, scriptPubKey, amount, newScriptPubKey, newAmount)
             console.log('iteration #' + i + ' txid: ', lockingTxid)

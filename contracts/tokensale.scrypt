@@ -1,0 +1,34 @@
+import "util.scrypt";
+
+/**
+* A toy token sale
+*/
+contract TokenSale {
+    // satoshis / token
+    int price;
+
+	constructor(int price) {
+		this.price = price;
+	}
+
+    public function buy(PubKey buyer, int numTokens, bytes txPreimage) {
+        Tx tx = new Tx();
+        // this ensures the preimage is for the current tx
+        require(tx.validate(txPreimage));
+
+        // read previous locking script
+        bytes lockingScript = Util.readVarint(txPreimage[104 : ]);
+        int scriptLen = length(lockingScript);
+        int balanceStart = 104 /* scriptCode offset */ + 3 /* VarInt encoding */ + scriptLen;
+        int oldBalance = Util.fromLEUnsigned(txPreimage[balanceStart : balanceStart + 8]);
+
+        int newBalance = oldBalance + numTokens * this.price;
+
+        // write new locking script
+        bytes lockingScript_ = lockingScript ++ b'22' /* "OP_PUSHDATA0" */ ++ buyer ++ num2bin(numTokens, 1);
+        int len = length(txPreimage);
+        bytes hashOutputs = txPreimage[len - 40 : len - 8];
+        Sha256 hashOutputs_ = hash256(num2bin(newBalance, 8) ++ Util.writeVarint(lockingScript_));
+        require(hashOutputs == hashOutputs_);
+    }
+}
