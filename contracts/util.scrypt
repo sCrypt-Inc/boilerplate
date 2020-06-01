@@ -50,5 +50,9 @@ contract Util {
     static function fromLEUnsigned(bytes b) returns (int) {
 		// append positive sign byte. This does not hurt even when sign bit is already positive
 		return unpack(b ++ b'00');
-	} 
+	}
+
+	static function buildPublicKeyHashScript(Ripemd160 pubKeyHash) returns (bytes) {
+	 	return OpCode.OP_DUP ++ OpCode.OP_HASH160 ++ b'14' /* "OP_PUSHDATA0" */ ++ pubKeyHash ++ OpCode.OP_EQUALVERIFY ++ OpCode.OP_CHECKSIG;
+	}
 }

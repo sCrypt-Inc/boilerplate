@@ -16,7 +16,7 @@ contract AdvancedTokenSale {
         this.price = price;
     }
 
-    public function buy(bytes sighashPreimage, bytes changePKH, int changeSats, bytes buyer, int numTokens) {
+    public function buy(bytes sighashPreimage, Ripemd160 changePKH, int changeSats, bytes buyer, int numTokens) {
         // The following arguments can be generated using sample code at
         // https://gist.github.com/scrypt-sv/f6882be580780a88984cee75dd1564c4.js
         PrivKey privKey = PrivKey(0x621de38d9af72be8585d19584e3954d3fd0dc9752bb9f9fb28c4f9ed7c1e40ea);
@@ -59,9 +59,7 @@ contract AdvancedTokenSale {
         bytes counterOutput = num2bin(newBalance, 8) ++ Util.writeVarint(scriptCode_);
 
         // Expect the additional CHANGE output
-        //    P2PKH:       DUP,HASH160  PKHLen      PKH      EQUALVERIFY,CHECKSIG
-        bytes changeScript = b'76a9' ++ b'14' ++  changePKH ++ b'88ac';
-
+        bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
         // output: amount + scriptlen + script
         bytes changeOutput = num2bin(changeSats, 8) ++ Util.writeVarint(changeScript);
 
