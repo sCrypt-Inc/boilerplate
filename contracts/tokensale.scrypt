@@ -12,9 +12,8 @@ contract TokenSale {
 	}
 
     public function buy(PubKey buyer, int numTokens, bytes txPreimage) {
-        Tx tx = new Tx();
         // this ensures the preimage is for the current tx
-        require(tx.validate(txPreimage));
+        require(Tx.checkPreimage(txPreimage));
 
         // read previous locking script
         bytes lockingScript = Util.readVarint(txPreimage[104 : ]);

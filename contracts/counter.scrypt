@@ -2,8 +2,7 @@ import "util.scrypt";
 
 contract Counter {
 	public function increment(bytes sighashPreimage, int amount) {
-        Tx tx = new Tx();
-        require(tx.validate(sighashPreimage));
+        require(Tx.checkPreimage(sighashPreimage));
 
         int len = length(sighashPreimage);
 		bytes hashOutputs = sighashPreimage[len - 40 : len - 8];

@@ -6,9 +6,9 @@ import "util.scrypt";
 contract Token {
     public function transfer(PubKey sender, Sig senderSig, PubKey receiver, 
 		int value /* amount to be transferred */, bytes txPreimage, int amount) {
-        Tx tx = new Tx();
-		// this ensures the preimage is for the current tx
-		require(tx.validate(txPreimage));
+        
+        // this ensures the preimage is for the current tx
+		require(Tx.checkPreimage(txPreimage));
 
         // authorize
         require(checkSig(senderSig, sender));
