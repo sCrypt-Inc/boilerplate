@@ -16,7 +16,7 @@ contract AdvancedCounter {
         // rBigEndian is the signed magnitude representation of r, in big endian
 		bytes rBigEndian = b'00f0fc43da25095812fcddde7d7cd353990c62b078e1493dc603961af25dfc6b60';
         
-        SigHashType sigHashType = SigHashType(SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID);
+        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
 
 		// this ensures the preimage is for the current tx
 		require(Tx.checkPreimageAdvanced(sighashPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType));
