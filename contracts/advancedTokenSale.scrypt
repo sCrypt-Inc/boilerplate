@@ -49,21 +49,21 @@ contract AdvancedTokenSale {
         // data after the OP_RETURN is a growing list of sales entries:
         //     PubKeyA,numTokensPurchased
         //     PubKeyB,numTokensPurchased
-        bytes newSalesEntry = buyer ++ num2bin(numTokens, 1);
+        bytes newSalesEntry = buyer + num2bin(numTokens, 1);
 
         // expect the latest sales entry to be appended to the previous script/state
-        bytes scriptCode_ = scriptCode ++ Util.writeVarint(newSalesEntry);
+        bytes scriptCode_ = scriptCode + Util.writeVarint(newSalesEntry);
 
         // output: amount + scriptlen + script
-        bytes counterOutput = num2bin(newBalance, 8) ++ Util.writeVarint(scriptCode_);
+        bytes counterOutput = num2bin(newBalance, 8) + Util.writeVarint(scriptCode_);
 
         // Expect the additional CHANGE output
         bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
         // output: amount + scriptlen + script
-        bytes changeOutput = num2bin(changeSats, 8) ++ Util.writeVarint(changeScript);
+        bytes changeOutput = num2bin(changeSats, 8) + Util.writeVarint(changeScript);
 
         // expect exactly two outputs
-        Sha256 hashOutputs_ = hash256(counterOutput ++ changeOutput);
+        Sha256 hashOutputs_ = hash256(counterOutput + changeOutput);
 
         // ensure output matches what we expect:
         //     - amount/balance reflects funds received from sale

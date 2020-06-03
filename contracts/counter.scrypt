@@ -12,9 +12,9 @@ contract Counter {
 		// last byte contains the state, i.e., counter
 		int counter = unpack(scriptCode[scriptLen - 1 :]);
 		// increment counter
-		bytes scriptCode_ = scriptCode[: scriptLen - 1] ++ num2bin(counter + 1, 1);
+		bytes scriptCode_ = scriptCode[: scriptLen - 1] + num2bin(counter + 1, 1);
 		// output: amount + scriptlen + script
-		Sha256 hashOutputs_ = hash256(num2bin(amount, 8) ++ Util.writeVarint(scriptCode_));
+		Sha256 hashOutputs_ = hash256(num2bin(amount, 8) + Util.writeVarint(scriptCode_));
 		// ensure output is expected: amount is same with specified
 		// also output script is the same with scriptCode except counter incremented
 		require(hashOutputs == hashOutputs_);
