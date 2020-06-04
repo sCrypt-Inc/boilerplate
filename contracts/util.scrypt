@@ -55,4 +55,61 @@ contract Util {
 	static function buildPublicKeyHashScript(Ripemd160 pubKeyHash) returns (bytes) {
 	 	return OpCode.OP_DUP + OpCode.OP_HASH160 + b'14' /* "OP_PUSHDATA0" */ + pubKeyHash + OpCode.OP_EQUALVERIFY + OpCode.OP_CHECKSIG;
 	}
+
+	/*
+	 * parse sighash preimage
+	 * TODO: validate preimage
+	 */
+	static function nVersion(bytes preimage) returns (bytes) {
+		return preimage[:4];
+	}
+
+	static function hashPrevouts(bytes preimage) returns (bytes) {
+		return preimage[4:36];
+	}
+	
+	static function hashSequence(bytes preimage) returns (bytes) {
+		return preimage[36:68];
+	}
+
+	static function outpoint(bytes preimage) returns (bytes) {
+		return preimage[68:104];
+	}
+
+	// scriptCode is just scriptPubKey if there is no CODESEPARATOR in the latter
+	static function scriptCode(bytes preimage) returns (bytes) {
+		return Util.readVarint(preimage[104:]);
+	}
+
+	static function value(bytes preimage) returns (bytes) {
+		int len = length(preimage);
+		return preimage[len - 52 : len - 44];
+	}
+
+	static function nSequence(bytes preimage) returns (bytes) {
+		int len = length(preimage);
+		return preimage[len - 44 : len - 40];
+	}
+
+	static function hashOutputs(bytes preimage) returns (bytes) {
+		int len = length(preimage);
+		return preimage[len - 40 : len - 8];
+	}
+
+	static function nLocktime(bytes preimage) returns (bytes) {
+		int len = length(preimage);
+		return preimage[len - 8 : len - 4];
+	}
+
+	static function sigHashType(bytes preimage) returns (SigHashType) {
+		int len = length(preimage);
+		return SigHashType(preimage[len - 4 :]);
+	}
+
+    public function testPreimageParsing(bytes preimage) {
+		bytes preimage_ = Util.nVersion(preimage) + Util.hashPrevouts(preimage) + Util.hashSequence(preimage) +
+						  Util.outpoint(preimage) + Util.writeVarint(Util.scriptCode(preimage)) + Util.value(preimage) +
+            			  Util.nSequence(preimage) + Util.hashOutputs(preimage) + Util.nLocktime(preimage) + Util.sigHashType(preimage);
+        require(preimage == preimage_);
+    }
 }

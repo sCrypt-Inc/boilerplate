@@ -4,7 +4,7 @@ import "util.scrypt";
  * Demonstrates TxAdvanced, with external funding (additional input) and a change output
  */
 contract AdvancedCounter {
-	public function increment(bytes sighashPreimage, int amount, Ripemd160 changePKH, int changeSats) {
+	public function increment(bytes txPreimage, int amount, Ripemd160 changePKH, int changeSats) {
         // The following arguments can be generated using sample code at
         // https://gist.github.com/scrypt-sv/f6882be580780a88984cee75dd1564c4.js
 		PrivKey privKey = PrivKey(0x621de38d9af72be8585d19584e3954d3fd0dc9752bb9f9fb28c4f9ed7c1e40ea);
@@ -19,12 +19,9 @@ contract AdvancedCounter {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
 
 		// this ensures the preimage is for the current tx
-		require(Tx.checkPreimageAdvanced(sighashPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType));
+		require(Tx.checkPreimageAdvanced(txPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType));
 
-		int len = length(sighashPreimage);
-		bytes hashOutputs = sighashPreimage[len - 40 : len - 8];
-		// scriptCode is just scriptPubKey if there is no CODESEPARATOR in the latter
-		bytes scriptCode = Util.readVarint(sighashPreimage[104:]);
+		bytes scriptCode = Util.scriptCode(txPreimage);
 		int scriptLen = length(scriptCode);
 
 		// the last OP_RETURN byte contains the application state, i.e., counter
@@ -39,6 +36,7 @@ contract AdvancedCounter {
 		bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
 		bytes changeOutput = num2bin(changeSats, 8) + Util.writeVarint(changeScript);
 
+		bytes hashOutputs = Util.hashOutputs(txPreimage);
 		// output: amount + scriptlen + script
 		Sha256 hashOutputs_ = hash256(counterOutput + changeOutput);
 

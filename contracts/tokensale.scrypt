@@ -16,17 +16,14 @@ contract TokenSale {
         require(Tx.checkPreimage(txPreimage));
 
         // read previous locking script
-        bytes lockingScript = Util.readVarint(txPreimage[104 : ]);
+        bytes lockingScript = Util.scriptCode(txPreimage);
         int scriptLen = length(lockingScript);
-        int balanceStart = 104 /* scriptCode offset */ + 3 /* VarInt encoding */ + scriptLen;
-        int oldBalance = Util.fromLEUnsigned(txPreimage[balanceStart : balanceStart + 8]);
-
+        int oldBalance = Util.fromLEUnsigned(Util.value(txPreimage));
         int newBalance = oldBalance + numTokens * this.price;
 
         // write new locking script
         bytes lockingScript_ = lockingScript + b'22' /* "OP_PUSHDATA0" */ + buyer + num2bin(numTokens, 1);
-        int len = length(txPreimage);
-        bytes hashOutputs = txPreimage[len - 40 : len - 8];
+        bytes hashOutputs = Util.hashOutputs(txPreimage);
         Sha256 hashOutputs_ = hash256(num2bin(newBalance, 8) + Util.writeVarint(lockingScript_));
         require(hashOutputs == hashOutputs_);
     }

@@ -14,7 +14,7 @@ contract Token {
         require(checkSig(senderSig, sender));
 
         // read previous locking script
-        bytes lockingScript = Util.readVarint(txPreimage[104:]);
+        bytes lockingScript = Util.scriptCode(txPreimage);
         int scriptLen = length(lockingScript);
 
         PubKey pk0 = PubKey(lockingScript[scriptLen - 68 : scriptLen - 35]);
@@ -38,8 +38,7 @@ contract Token {
 
         // write new locking script
         bytes lockingScript_ = lockingScript[: scriptLen - 68] + pk0 + num2bin(balance0, 1) + pk1 + num2bin(balance1, 1);
-        int len = length(txPreimage);
-        bytes hashOutputs = txPreimage[len - 40 : len - 8];
+        bytes hashOutputs = Util.hashOutputs(txPreimage);
         Sha256 hashOutputs_ = hash256(num2bin(amount, 8) + Util.writeVarint(lockingScript_));
 		require(hashOutputs == hashOutputs_);
     }

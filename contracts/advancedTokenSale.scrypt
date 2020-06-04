@@ -6,7 +6,7 @@ import "util.scrypt";
  * Demonstrates atomic swapping of tokens for satoshis: sales made to a buyer's (public key)
  * Uses TxAdvanced, with external funding (additional input) and a change output
  *
- * Use with: getFundedSighashPreimage() and unlockFundedScriptTx()
+ * Use with: getFundedtxPreimage() and unlockFundedScriptTx()
  */
 contract AdvancedTokenSale {
     // satoshis / token
@@ -16,7 +16,7 @@ contract AdvancedTokenSale {
         this.price = price;
     }
 
-    public function buy(bytes sighashPreimage, Ripemd160 changePKH, int changeSats, bytes buyer, int numTokens) {
+    public function buy(bytes txPreimage, Ripemd160 changePKH, int changeSats, bytes buyer, int numTokens) {
         // The following arguments can be generated using sample code at
         // https://gist.github.com/scrypt-sv/f6882be580780a88984cee75dd1564c4.js
         PrivKey privKey = PrivKey(0x621de38d9af72be8585d19584e3954d3fd0dc9752bb9f9fb28c4f9ed7c1e40ea);
@@ -31,19 +31,15 @@ contract AdvancedTokenSale {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
 
         // this ensures the preimage is for the current tx
-        require(Tx.checkPreimageAdvanced(sighashPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType));
+        require(Tx.checkPreimageAdvanced(txPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType));
 
         // we're using only one byte for the number of tokens purchased
         require( 0 < numTokens && numTokens < 128 );
 
-        int len = length(sighashPreimage);
-        bytes hashOutputs = sighashPreimage[len - 40 : len - 8];
-        // scriptCode is just scriptPubKey if there is no CODESEPARATOR in the latter
-        bytes scriptCode = Util.readVarint(sighashPreimage[104:]);
+        bytes scriptCode = Util.scriptCode(txPreimage);
         int scriptLen = length(scriptCode);
 
-        int balanceStart = 104 /* scriptCode offset */ + 3 /* VarInt encoding */ + scriptLen;
-        int oldBalance = Util.fromLEUnsigned(sighashPreimage[balanceStart : balanceStart + 8]);
+        int oldBalance = Util.fromLEUnsigned(Util.value(txPreimage));
         int newBalance = oldBalance + numTokens * this.price;
 
         // data after the OP_RETURN is a growing list of sales entries:
@@ -62,6 +58,7 @@ contract AdvancedTokenSale {
         // output: amount + scriptlen + script
         bytes changeOutput = num2bin(changeSats, 8) + Util.writeVarint(changeScript);
 
+        bytes hashOutputs = Util.hashOutputs(txPreimage);
         // expect exactly two outputs
         Sha256 hashOutputs_ = hash256(counterOutput + changeOutput);
 
