@@ -81,14 +81,22 @@ contract Util {
 		return Util.readVarint(preimage[104:]);
 	}
 
-	static function value(bytes preimage) returns (bytes) {
+	static function valueRaw(bytes preimage) returns (bytes) {
 		int len = length(preimage);
 		return preimage[len - 52 : len - 44];
 	}
 
-	static function nSequence(bytes preimage) returns (bytes) {
+	static function value(bytes preimage) returns (int) {
+		return Util.fromLEUnsigned(Util.valueRaw(preimage));
+	}
+
+	static function nSequenceRaw(bytes preimage) returns (bytes) {
 		int len = length(preimage);
 		return preimage[len - 44 : len - 40];
+	}
+
+	static function nSequence(bytes preimage) returns (int) {
+		return Util.fromLEUnsigned(Util.nSequenceRaw(preimage));
 	}
 
 	static function hashOutputs(bytes preimage) returns (bytes) {
@@ -96,9 +104,13 @@ contract Util {
 		return preimage[len - 40 : len - 8];
 	}
 
-	static function nLocktime(bytes preimage) returns (bytes) {
+	static function nLocktimeRaw(bytes preimage) returns (bytes) {
 		int len = length(preimage);
 		return preimage[len - 8 : len - 4];
+	}
+
+	static function nLocktime(bytes preimage) returns (int) {
+		return Util.fromLEUnsigned(Util.nLocktimeRaw(preimage));
 	}
 
 	static function sigHashType(bytes preimage) returns (SigHashType) {
@@ -108,8 +120,8 @@ contract Util {
 
     public function testPreimageParsing(bytes preimage) {
 		bytes preimage_ = Util.nVersion(preimage) + Util.hashPrevouts(preimage) + Util.hashSequence(preimage) +
-						  Util.outpoint(preimage) + Util.writeVarint(Util.scriptCode(preimage)) + Util.value(preimage) +
-            			  Util.nSequence(preimage) + Util.hashOutputs(preimage) + Util.nLocktime(preimage) + Util.sigHashType(preimage);
+						  Util.outpoint(preimage) + Util.writeVarint(Util.scriptCode(preimage)) + Util.valueRaw(preimage) +
+            			  Util.nSequenceRaw(preimage) + Util.hashOutputs(preimage) + Util.nLocktimeRaw(preimage) + Util.sigHashType(preimage);
         require(preimage == preimage_);
     }
 }

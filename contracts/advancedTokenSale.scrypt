@@ -39,7 +39,7 @@ contract AdvancedTokenSale {
         bytes scriptCode = Util.scriptCode(txPreimage);
         int scriptLen = length(scriptCode);
 
-        int oldBalance = Util.fromLEUnsigned(Util.value(txPreimage));
+        int oldBalance = Util.value(txPreimage);
         int newBalance = oldBalance + numTokens * this.price;
 
         // data after the OP_RETURN is a growing list of sales entries:

@@ -12,9 +12,4 @@ contract RabinSignature {
         int idx = length(hx) / 2;
         return sha256(hx[:idx]) + sha256(hx[idx:]);
     }
-
-    function fromLEUnsigned(bytes b) returns (int) {
-		// append positive sign byte. This does not hurt even when sign bit is already positive
-		return unpack(b + b'00');
-	}
 }
