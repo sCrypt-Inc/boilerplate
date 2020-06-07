@@ -58,6 +58,7 @@ contract Util {
 
 	/*
 	 * parse sighash preimage
+	 * spec is at https://github.com/bitcoin-sv/bitcoin-sv/blob/master/doc/abc/replay-protected-sighash.md
 	 * TODO: validate preimage
 	 */
 	static function nVersion(bytes preimage) returns (bytes) {
