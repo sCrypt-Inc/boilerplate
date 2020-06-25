@@ -22,7 +22,7 @@ if (!key) {
         console.log('locking txid:     ', lockingTxid)
         
         // unlock
-        const scriptSig = 'OP_11'
+        const scriptSig = 'OP_11 OP_1' // OP_1: first public function
         const unlockingTxid = await unlockScriptTx(scriptSig, lockingTxid, scriptPubKey, amount, scriptPubKey, newAmount)
         console.log('unlocking txid:   ', unlockingTxid)
 
