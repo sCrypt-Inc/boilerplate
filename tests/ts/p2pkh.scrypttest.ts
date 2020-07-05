@@ -22,12 +22,12 @@ describe('Test sCrypt contract DemoP2PKH In Typescript', () => {
   });
 
   it('signature check should succeed when right private key signs', () => {
-    sig = signTx(tx, privateKey, demo.getScriptPubKey())
+    sig = signTx(tx, privateKey, demo.getLockingScript())
     expect(demo.unlock(toHex(sig), toHex(publicKey))).to.equal(true);
   });
 
   it('signature check should fail when wrong private key signs', () => {
-    sig = signTx(tx, privateKey2, demo.getScriptPubKey())
+    sig = signTx(tx, privateKey2, demo.getLockingScript())
     expect(demo.unlock(toHex(sig), toHex(publicKey))).to.equal(false);
   });
 });

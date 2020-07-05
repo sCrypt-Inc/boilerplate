@@ -19,12 +19,12 @@ if (!key) {
         const token = new Token()
 
         // code part
-        const lockingScriptCode = token.getScriptPubKey()
+        const lockingScriptCodePart = token.getLockingScript()
         
         // append state as passive data part
         // initial token supply 100: publicKey1 has 100, publicKey2 0
-        let lockingScript = lockingScriptCode + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(100) + toHex(publicKey2) + '00' // do not use int2Asm(0) since it gives "OP_0"
-        token.setScriptPubKey(lockingScript)
+        let lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(100) + toHex(publicKey2) + '00' // do not use int2Asm(0) since it gives "OP_0"
+        token.setLockingScript(lockingScript)
         
         let amount = 10000
         const FEE = amount / 10
@@ -35,26 +35,26 @@ if (!key) {
         
         // transfer 40 tokens from publicKey1 to publicKey2
         {
-            const newScriptPubKey = lockingScriptCode + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(60) + toHex(publicKey2) + int2Asm(40)
+            const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(60) + toHex(publicKey2) + int2Asm(40)
             const newAmount = amount - FEE
-            const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newScriptPubKey, newAmount)
-            const sig1 = getSignature(lockingTxid, privateKey1, lockingScript, amount, newScriptPubKey, newAmount)
-            const scriptSig = toHex(publicKey1) + ' ' + sig1 + ' ' + toHex(publicKey2) + ' ' + int2Asm(40) + ' ' + preimage + ' ' + int2Asm(newAmount)
-            lockingTxid = await unlockScriptTx(scriptSig, lockingTxid, lockingScript, amount, newScriptPubKey, newAmount)
+            const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newLockingScript, newAmount)
+            const sig1 = getSignature(lockingTxid, privateKey1, lockingScript, amount, newLockingScript, newAmount)
+            const unlockingScript = toHex(publicKey1) + ' ' + sig1 + ' ' + toHex(publicKey2) + ' ' + int2Asm(40) + ' ' + preimage + ' ' + int2Asm(newAmount)
+            lockingTxid = await unlockScriptTx(unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             console.log('transfer txid1:    ', lockingTxid)
 
-            lockingScript = newScriptPubKey
+            lockingScript = newLockingScript
             amount = newAmount
         }
 
         // transfer 10 tokens from publicKey2 to publicKey1
         {
-            const newScriptPubKey = lockingScriptCode + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(70) + toHex(publicKey2) + int2Asm(30)
+            const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(70) + toHex(publicKey2) + int2Asm(30)
             const newAmount = amount - FEE
-            const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newScriptPubKey, newAmount)
-            const sig2 = getSignature(lockingTxid, privateKey2, lockingScript, amount, newScriptPubKey, newAmount)
-            const scriptSig = toHex(publicKey2) + ' ' + sig2 + ' ' + toHex(publicKey1) + ' ' + int2Asm(10) + ' ' + preimage + ' ' + int2Asm(newAmount)
-            lockingTxid = await unlockScriptTx(scriptSig, lockingTxid, lockingScript, amount, newScriptPubKey, newAmount)
+            const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newLockingScript, newAmount)
+            const sig2 = getSignature(lockingTxid, privateKey2, lockingScript, amount, newLockingScript, newAmount)
+            const unlockingScript = toHex(publicKey2) + ' ' + sig2 + ' ' + toHex(publicKey1) + ' ' + int2Asm(10) + ' ' + preimage + ' ' + int2Asm(newAmount)
+            lockingTxid = await unlockScriptTx(unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             console.log('transfer txid2:    ', lockingTxid)
         }
 

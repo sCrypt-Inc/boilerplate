@@ -55,15 +55,15 @@ function hexit(dec) {
         const AdvancedTokenSale = buildContractClass(path.join(__dirname, '../../contracts/advancedTokenSale.scrypt'))
         const advTokenSale = new AdvancedTokenSale( satsPerToken )
 
-        lockingScript = advTokenSale.getScriptPubKey()
+        lockingScriptCodePart =advTokenSale.getLockingScript()
         // append state as passive data
-        let scriptPubKey = lockingScript + ' OP_RETURN 00'
+        let lockingScript = lockingScriptCodePart +' OP_RETURN 00'
 
         // initial contract funding - arbitrary amount
         let amount = 1000
 
         // lock funds to the script
-        let lockingTxid = await lockScriptTx(scriptPubKey, key0, amount)
+        let lockingTxid = await lockScriptTx(lockingScript, key0, amount)
 
         // funded by key0
         console.log('funding txid:      ', lockingTxid)
@@ -88,7 +88,7 @@ function hexit(dec) {
             salesEntries = salesEntries + ' ' + toHex(publicKeys[i]) + numBoughtHex
 
             // Set the state for the transaction/sale we're building
-            const newScriptPubKey = lockingScript + ' OP_RETURN' + salesEntries
+            const newLockingScript = lockingScriptCodePart +' OP_RETURN' + salesEntries
 
             // Increase contract funding to match proceeds from sale
             // The contract expects/enforces this
@@ -96,25 +96,25 @@ function hexit(dec) {
 
             // Get preimage, AND the change amount
             console.log('====== Getting funded sighash preimage...')
-            const preData = await getFundedSighashPreimage(privateKeys[i], lockingTxid, scriptPubKey, amount, newScriptPubKey, newAmount)
+            const preData = await getFundedSighashPreimage(privateKeys[i], lockingTxid, lockingScript, amount, newLockingScript, newAmount)
 
             const preimage = preData.preimage
             const changeASM = int2Asm(preData.change)
 
             // Inform the contract how its state is being updated
-            // This scriptSig format must match the contract's public function:
-            const scriptSig = preimage + ' ' +     // sighashPreimage
+            // This unlockingScript format must match the contract's public function:
+            const unlockingScript = preimage + ' ' +     // sighashPreimage
                     toHex(pkhs[i]) + ' ' +         // changePKH
                     changeASM + ' ' +              // changeSats
                     toHex(publicKeys[i]) + ' ' +   // buyer's public key
                     int2Asm( numBought )           // number of tokens purchased
 
             console.log(' ====== Unlocking...')
-            lockingTxid = await unlockFundedScriptTx(privateKeys[i], scriptSig, lockingTxid, scriptPubKey, amount, newScriptPubKey, newAmount)
+            lockingTxid = await unlockFundedScriptTx(privateKeys[i], unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             console.log('iteration #' + i + ' txid: ', lockingTxid)
 
             // preserve for next iteration
-            scriptPubKey = newScriptPubKey
+            lockingScript = newLockingScript
             amount = newAmount
         }
 

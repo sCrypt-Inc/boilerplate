@@ -22,19 +22,19 @@ function sleep(ms) {
         const AdvancedCounter = buildContractClass(path.join(__dirname, '../../contracts/advancedcounter.scrypt'))
         const advCounter = new AdvancedCounter()
 
-        lockingScript = advCounter.getScriptPubKey()
+        lockingScriptCodePart =advCounter.getLockingScript()
         // append state as passive data
-        let scriptPubKey = lockingScript + ' OP_RETURN 00'
+        let lockingScript = lockingScriptCodePart +' OP_RETURN 00'
 
         // initial contract funding
         let amount = 10000
 
         // lock funds to the script
-        let lockingTxid = await lockScriptTx(scriptPubKey, key, amount)
+        let lockingTxid = await lockScriptTx(lockingScript, key, amount)
 
         console.log('funding txid:      ', lockingTxid)
 
-        // We'll pass-in the newChange, as part of the scriptSig
+        // We'll pass-in the newChange, as part of the unlockingScript
 
         // Run five transactions /iterations
         for (i = 0; i < 5; i++) {
@@ -46,14 +46,14 @@ function sleep(ms) {
             console.log('------------------------------')
 
             // Set the state for the next transaction
-            const newScriptPubKey = lockingScript + ' OP_RETURN 0' + (i + 1)    // only works for i < 9
+            const newLockingScript = lockingScriptCodePart +' OP_RETURN 0' + (i + 1)    // only works for i < 9
 
             // keep the contract funding constant
             const newAmount = amount
 
             // Get preimage, AND the change amount
             console.log('====== Getting funded sighash preimage...')
-            const preData = await getFundedSighashPreimage(key, lockingTxid, scriptPubKey, amount, newScriptPubKey, newAmount)
+            const preData = await getFundedSighashPreimage(key, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
 
             const preimage = preData.preimage
             const changeASM = int2Asm(preData.change)
@@ -62,12 +62,12 @@ function sleep(ms) {
             // Inform the contract how its state is being updated
             // This format must match the contract's public function:
             //             sighashPreimage     amount            changePKH          changeSats
-            const scriptSig = preimage + ' ' + amountASM + ' ' + toHex(pkh) + ' ' + changeASM
+            const unlockingScript = preimage + ' ' + amountASM + ' ' + toHex(pkh) + ' ' + changeASM
             console.log(' ====== Unlocking...')
-            lockingTxid = await unlockFundedScriptTx(key, scriptSig, lockingTxid, scriptPubKey, amount, newScriptPubKey, newAmount)
+            lockingTxid = await unlockFundedScriptTx(key, unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             console.log('iteration #' + i + ' txid: ', lockingTxid)
 
-            scriptPubKey = newScriptPubKey
+            lockingScript = newLockingScript
             amount = newAmount
         }
 

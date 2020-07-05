@@ -27,22 +27,22 @@ describe('Test sCrypt contract HashPuzzleP2PKH In TypeScript', () => {
   });
 
   it('signature check should succeed when correct private key signs & correct data provided', () => {
-    sig = signTx(tx, privateKey, hashPuzzleP2PKH.getScriptPubKey())
+    sig = signTx(tx, privateKey, hashPuzzleP2PKH.getLockingScript())
     expect(hashPuzzleP2PKH.verify(toHex(data), toHex(sig), toHex(publicKey))).to.equal(true);
   });
 
   it('signature check should fail when correct private key signs & wrong data provided', () => {
-    sig = signTx(tx, privateKey, hashPuzzleP2PKH.getScriptPubKey())
+    sig = signTx(tx, privateKey, hashPuzzleP2PKH.getLockingScript())
     expect(hashPuzzleP2PKH.verify(toHex('wrong data'), toHex(sig), toHex(publicKey))).to.equal(false);
   });
 
   it('signature check should fail when wrong private key signs & correct data provided', () => {
-    sig = signTx(tx, privateKey2, hashPuzzleP2PKH.getScriptPubKey())
+    sig = signTx(tx, privateKey2, hashPuzzleP2PKH.getLockingScript())
     expect(hashPuzzleP2PKH.verify(toHex(data), toHex(sig), toHex(publicKey))).to.equal(false);
   });
 
   it('signature check should fail when wrong private key signs & wrong data provided', () => {
-    sig = signTx(tx, privateKey2, hashPuzzleP2PKH.getScriptPubKey())
+    sig = signTx(tx, privateKey2, hashPuzzleP2PKH.getLockingScript())
     expect(hashPuzzleP2PKH.verify(toHex('wrong data'), toHex(sig), toHex(publicKey))).to.equal(false);
   });
 

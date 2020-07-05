@@ -11,7 +11,7 @@ describe('Test sCrypt contract Util In Javascript', () => {
     before(() => {
         const Util = buildContractClass(path.join(__dirname, '../../contracts/util.scrypt'));
         util = new Util();
-        const lockingScript = util.getScriptPubKey()
+        const lockingScript = util.getLockingScript()
         preimage = getPreimage(tx, lockingScript)
     });
 

@@ -14,21 +14,20 @@ const outputAmount = 222222
 
 describe('Test sCrypt contract Counter In Javascript', () => {
   let counter
-  let lockingScript
   let preimage
 
   before(() => {
     const Counter = buildContractClass(path.join(__dirname, '../../contracts/counter.scrypt'), tx_, inputIndex, inputSatoshis)
     counter = new Counter()
 
-    lockingScript = counter.getScriptPubKey()
-    const newScriptPubKey = lockingScript + ' OP_RETURN 01'
+    lockingScriptCodePart = counter.getLockingScript()
+    const newLockingScript = lockingScriptCodePart +' OP_RETURN 01'
     // append state as passive data
-    lockingScript += ' OP_RETURN 00'
-    counter.setScriptPubKey(lockingScript)
+    const lockingScript = lockingScriptCodePart + ' OP_RETURN 00'
+    counter.setLockingScript(lockingScript)
     
     tx_.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM(newScriptPubKey),
+      script: bsv.Script.fromASM(newLockingScript),
       satoshis: outputAmount
     }))
 

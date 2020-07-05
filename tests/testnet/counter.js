@@ -13,28 +13,28 @@ if (!key) {
         const Counter = buildContractClass(path.join(__dirname, '../../contracts/counter.scrypt'))
         const counter = new Counter()
 
-        lockingScript = counter.getScriptPubKey()
+        lockingScriptCodePart = counter.getLockingScript()
         // append state as passive data
-        let scriptPubKey = lockingScript + ' OP_RETURN 00'
+        let lockingScript = lockingScriptCodePart +' OP_RETURN 00'
         
         let amount = 10000
         const FEE = amount / 10
         
         // lock fund to the script
-        let lockingTxid = await lockScriptTx(scriptPubKey, key, amount)
+        let lockingTxid = await lockScriptTx(lockingScript, key, amount)
         console.log('funding txid:      ', lockingTxid)
         
         // unlock
         for (i = 0; i < 8; i++) {
-            const newScriptPubKey = lockingScript + ' OP_RETURN 0' + (i + 1)    // only works for i < 9
+            const newLockingScript = lockingScriptCodePart +' OP_RETURN 0' + (i + 1)    // only works for i < 9
             const newAmount = amount - FEE
-            const preimage = getSighashPreimage(lockingTxid, scriptPubKey, amount, newScriptPubKey, newAmount)
+            const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             const amountASM = int2Asm(newAmount)
-            const scriptSig = preimage + ' ' + amountASM
-            lockingTxid = await unlockScriptTx(scriptSig, lockingTxid, scriptPubKey, amount, newScriptPubKey, newAmount)
+            const unlockingScript = preimage + ' ' + amountASM
+            lockingTxid = await unlockScriptTx(unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             console.log('iteration #' + i + ' txid: ', lockingTxid)
 
-            scriptPubKey = newScriptPubKey
+            lockingScript = newLockingScript
             amount = newAmount
         }
 

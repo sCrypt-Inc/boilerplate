@@ -15,15 +15,15 @@ if (!key) {
         // get locking script
         const Demo = buildContractClass(path.join(__dirname, '../../contracts/demo.scrypt'));
         demo = new Demo(4, 7);
-        const scriptPubKey = demo.getScriptPubKey()
+        const lockingScript = demo.getLockingScript()
         
         // lock fund to the script
-        const lockingTxid = await lockScriptTx(scriptPubKey, key, amount)
+        const lockingTxid = await lockScriptTx(lockingScript, key, amount)
         console.log('locking txid:     ', lockingTxid)
         
         // unlock
-        const scriptSig = 'OP_11 OP_1' // OP_1: first public function
-        const unlockingTxid = await unlockScriptTx(scriptSig, lockingTxid, scriptPubKey, amount, scriptPubKey, newAmount)
+        const unlockingScript = 'OP_11 OP_1' // OP_1: first public function
+        const unlockingTxid = await unlockScriptTx(unlockingScript, lockingTxid, lockingScript, amount, lockingScript, newAmount)
         console.log('unlocking txid:   ', unlockingTxid)
 
         console.log('Succeeded on testnet')

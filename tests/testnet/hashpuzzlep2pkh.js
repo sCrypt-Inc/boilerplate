@@ -29,15 +29,15 @@ if (!key) {
         // get locking script
         const HashPuzzleP2PKH = buildContractClass(path.join(__dirname, '../../contracts/hashpuzzlep2pkh.scrypt'), tx, inputIndex, inputSatoshis);
         testTx = new HashPuzzleP2PKH(toHex(pkh), toHex(sha256Data))
-        const scriptPubKey = testTx.getScriptPubKey()
+        const lockingScript = testTx.getLockingScript()
         // lock fund to the script
-        const lockingTxid = await lockScriptTx(scriptPubKey, key, amount)
+        const lockingTxid = await lockScriptTx(lockingScript, key, amount)
         console.log('locking txid:     ', lockingTxid)
         
         // unlock
-        const sig = getSignature(lockingTxid, privateKey, scriptPubKey, amount, scriptPubKey, newAmount)
-        const scriptSig = toHex(data)+ ' ' + sig + ' ' + toHex(publicKey)
-        const unlockingTxid = await unlockScriptTx(scriptSig, lockingTxid, scriptPubKey, amount, scriptPubKey, newAmount)
+        const sig = getSignature(lockingTxid, privateKey, lockingScript, amount, lockingScript, newAmount)
+        const unlockingScript = toHex(data)+ ' ' + sig + ' ' + toHex(publicKey)
+        const unlockingTxid = await unlockScriptTx(unlockingScript, lockingTxid, lockingScript, amount, lockingScript, newAmount)
         console.log('unlocking txid:   ', unlockingTxid)
 
         console.log('Succeeded on testnet')

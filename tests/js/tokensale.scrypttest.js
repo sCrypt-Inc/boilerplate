@@ -21,16 +21,16 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
     tokenSale = new TokenSale(tokenPriceInSatoshis)
 
     // code part
-    const lockingScriptCode = tokenSale.getScriptPubKey()
+    const lockingScriptCodePart = tokenSale.getLockingScript()
 
     // initial supply 0
-    const lockingScript = lockingScriptCode + ' OP_RETURN'
-    tokenSale.setScriptPubKey(lockingScript)
+    const lockingScript = lockingScriptCodePart + ' OP_RETURN'
+    tokenSale.setLockingScript(lockingScript)
 
     getPreimageAfterPurchase = (publicKey) => {
-      const newScriptPubKey = lockingScript + ' ' + toHex(publicKey) + int2Asm(numTokens)
+      const newLockingScript = lockingScript +' ' + toHex(publicKey) + int2Asm(numTokens)
       tx_.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.fromASM(newScriptPubKey),
+        script: bsv.Script.fromASM(newLockingScript),
         satoshis: inputSatoshis + numTokens * tokenPriceInSatoshis
       }))
 

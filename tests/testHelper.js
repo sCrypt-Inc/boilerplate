@@ -20,7 +20,7 @@ const tx = new bsv.Transaction().from(utxo)
 
 getPreimage = (tx, lockingScript, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sighashPreimage(tx, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(inputSatoshis), flags)
 
-signTx = (tx, privateKey, scriptPubKey, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sign(tx, privateKey, sighashType, inputIndex, bsv.Script.fromASM(scriptPubKey), new bsv.crypto.BN(inputSatoshis), flags).toTxFormat()
+signTx = (tx, privateKey, lockingScript, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sign(tx, privateKey, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(inputSatoshis), flags).toTxFormat()
 
 toHex = x => x.toString('hex')
 
