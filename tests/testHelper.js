@@ -19,7 +19,7 @@ const utxo = {
 }
 const tx = new bsv.Transaction().from(utxo)
 
-getPreimage = (tx, lockingScript, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sighashPreimage(tx, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(inputSatoshis), flags)
+getPreimage = (tx, lockingScript, inputIndex = 0, satoshis = inputSatoshis, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sighashPreimage(tx, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(satoshis), flags)
 
 signTx = (tx, privateKey, lockingScript, satoshis = inputSatoshis, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sign(tx, privateKey, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(satoshis), flags).toTxFormat()
 
@@ -73,6 +73,13 @@ async function sendTx(tx) {
   return txid
 }
 
+// FIXME
+int2Hex = n => {
+  let s = n.toString(16);
+  // even hex digits
+  return (s.length % 2) > 0 ? "0" + s : s;
+}
+
 module.exports = {
     inputIndex: inputIndex,
     inputSatoshis: inputSatoshis,
@@ -80,6 +87,7 @@ module.exports = {
     signTx: signTx,
     getPreimage: getPreimage,
     toHex: toHex,
+    int2Hex: int2Hex,
     createLockingTx,
     createUnlockingTx,
     sendTx
