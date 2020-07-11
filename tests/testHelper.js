@@ -19,9 +19,9 @@ const utxo = {
 }
 const tx = new bsv.Transaction().from(utxo)
 
-getPreimage = (tx, lockingScript, inputIndex = 0, satoshis = inputSatoshis, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sighashPreimage(tx, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(satoshis), flags)
+getPreimage = (tx, lockingScript, inputIndex = 0, inputAmount = inputSatoshis, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sighashPreimage(tx, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(inputAmount), flags)
 
-signTx = (tx, privateKey, lockingScript, satoshis = inputSatoshis, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sign(tx, privateKey, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(satoshis), flags).toTxFormat()
+signTx = (tx, privateKey, lockingScript, inputIndex = 0, inputAmount = inputSatoshis, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sign(tx, privateKey, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(inputAmount), flags).toTxFormat()
 
 toHex = x => x.toString('hex')
 

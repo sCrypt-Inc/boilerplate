@@ -1,10 +1,10 @@
 const path = require('path');
-const { bsv, int2Asm, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, sendTx, showError } = require('scrypttest');
-const { getPreimage, int2Hex } = require('../testHelper');
+const { bsv, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, sendTx, showError, literal2Asm } = require('scrypttest');
+const { getPreimage, signTx, int2Hex } = require('../testHelper');
 const { split } = require('ts-node');
 
 // private key on testnet in WIF
-const key = 'cU2eUM62Hkur8sQVv7z1VtkXHHTA1YSGqxjAGYgbDPQaYcg5NXKd'
+const key = ''
 if (!key) {
     throw new Error('You must provide a private key');
 }
@@ -14,6 +14,8 @@ if (!key) {
     const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
     const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
     const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
+    const privateKey3 = new bsv.PrivateKey.fromRandom('testnet')
+    const publicKey3 = bsv.PublicKey.fromPrivateKey(privateKey3)
     
     try {
         // get locking script
@@ -25,7 +27,7 @@ if (!key) {
         
         // append state as passive data part
         // initial token supply 100: publicKey1 has 100, publicKey2 0
-        let lockingScript = lockingScriptCodePart + ' OP_RETURN ' + int2Hex(10) + int2Hex(90)
+        let lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + int2Hex(10) + int2Hex(90)
         token.setLockingScript(lockingScript)
         
         let inputSatoshis = 10000
@@ -36,7 +38,7 @@ if (!key) {
         const lockingTxid = await lockScriptTx(lockingScript, key, inputSatoshis)
         console.log('funding txid:      ', lockingTxid)
         
-        // transfer 40 tokens from publicKey1 to publicKey2
+        // split one UTXO of 100 tokens into one with 70 tokens and one with 30
         let splitTxid, lockingScript0, lockingScript1
         {
             const tx = new bsv.Transaction()
@@ -46,20 +48,20 @@ if (!key) {
                 script: ''
             }), bsv.Script.fromASM(lockingScript), inputSatoshis)
 
-            lockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + int2Hex(0) + int2Hex(70)
+            lockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey2) + int2Hex(0) + int2Hex(70)
             tx.addOutput(new bsv.Transaction.Output({
                 script: bsv.Script.fromASM(lockingScript0),
                 satoshis: outputAmount
             }))
-            lockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + int2Hex(0) + int2Hex(30)
+            lockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + int2Hex(0) + int2Hex(30)
             tx.addOutput(new bsv.Transaction.Output({
                 script: bsv.Script.fromASM(lockingScript1),
                 satoshis: outputAmount
             }))
             
             const preimage = getPreimage(tx, lockingScript, 0, inputSatoshis)
-            // const sig1 = getSignature(lockingTxid, privateKey1, lockingScript, amount, lockingScript, newAmount)
-            const unlockingScript = toHex(preimage) + ' ' + int2Asm(70) + ' ' + int2Asm(30) + ' ' + int2Asm(outputAmount) + ' ' + int2Asm(outputAmount) + ' ' + int2Asm(1)
+            const sig1 = signTx(tx, privateKey1, lockingScript, 0, inputSatoshis)
+            const unlockingScript = toHex(publicKey1) + ' ' + toHex(sig1) + ' ' + toHex(publicKey2) + ' ' + literal2Asm(70) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(publicKey3) + ' ' + literal2Asm(30) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(preimage) + ' ' + literal2Asm(1)
             tx.inputs[0].setScript(bsv.Script.fromASM(unlockingScript));
             splitTxid = await sendTx(tx.serialize());
             console.log('split txid1:       ', splitTxid)
@@ -67,6 +69,7 @@ if (!key) {
 
         inputSatoshis = outputAmount
         outputAmount -= FEE
+        // merge one UTXO with 70 tokens and one with 30 into a single UTXO of 100 tokens
         {
             const tx = new bsv.Transaction()
             tx.addInput(new bsv.Transaction.Input({
@@ -81,7 +84,7 @@ if (!key) {
                 script: ''
             }), bsv.Script.fromASM(lockingScript1), inputSatoshis)
     
-            const lockingScript2 = lockingScriptCodePart + ' OP_RETURN ' + int2Hex(70) + int2Hex(30)
+            const lockingScript2 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + int2Hex(70) + int2Hex(30)
             tx.addOutput(new bsv.Transaction.Output({
                 script: bsv.Script.fromASM(lockingScript2),
                 satoshis: outputAmount
@@ -90,16 +93,16 @@ if (!key) {
             // input 0
             {
                 const preimage = getPreimage(tx, lockingScript0, 0, inputSatoshis)
-                // const sig1 = getSignature(lockingTxid, privateKey1, lockingScript, amount, lockingScript, newAmount)
-                const unlockingScript = toHex(preimage) + ' ' + 'OP_TRUE' + ' ' + int2Asm(30) + ' ' + int2Asm(outputAmount) +' ' + int2Asm(2)
+                const sig2 = signTx(tx, privateKey2, lockingScript0, 0, inputSatoshis)
+                const unlockingScript = toHex(publicKey2) + ' ' + toHex(sig2) + ' ' + toHex(publicKey1) + ' ' + literal2Asm(true) + ' ' + literal2Asm(30) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(preimage) + ' ' + literal2Asm(2)
                 tx.inputs[0].setScript(bsv.Script.fromASM(unlockingScript));
             }
 
             // input 1
             {
                 const preimage = getPreimage(tx, lockingScript1, 1, inputSatoshis)
-                // const sig1 = getSignature(lockingTxid, privateKey1, lockingScript, amount, lockingScript, newAmount)
-                const unlockingScript = toHex(preimage) + ' ' + 'OP_FALSE' + ' ' + int2Asm(70) + ' ' + int2Asm(outputAmount) +' ' + int2Asm(2)
+                const sig3 = signTx(tx, privateKey3, lockingScript1, 1, inputSatoshis)
+                const unlockingScript = toHex(publicKey3) + ' ' + toHex(sig3) + ' ' + toHex(publicKey1) + ' ' +  literal2Asm(false) + ' ' + literal2Asm(70) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(preimage) + ' ' + literal2Asm(2)
                 tx.inputs[1].setScript(bsv.Script.fromASM(unlockingScript));
             }
 
