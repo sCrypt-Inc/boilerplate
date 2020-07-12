@@ -61,7 +61,7 @@ if (!key) {
             
             const preimage = getPreimage(tx, lockingScript, 0, inputSatoshis)
             const sig1 = signTx(tx, privateKey1, lockingScript, 0, inputSatoshis)
-            const unlockingScript = toHex(publicKey1) + ' ' + toHex(sig1) + ' ' + toHex(publicKey2) + ' ' + literal2Asm(70) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(publicKey3) + ' ' + literal2Asm(30) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(preimage) + ' ' + literal2Asm(1)
+            const unlockingScript = toHex(sig1) + ' ' + toHex(publicKey2) + ' ' + literal2Asm(70) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(publicKey3) + ' ' + literal2Asm(30) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(preimage) + ' ' + literal2Asm(1)
             tx.inputs[0].setScript(bsv.Script.fromASM(unlockingScript));
             splitTxid = await sendTx(tx.serialize());
             console.log('split txid1:       ', splitTxid)
@@ -94,7 +94,7 @@ if (!key) {
             {
                 const preimage = getPreimage(tx, lockingScript0, 0, inputSatoshis)
                 const sig2 = signTx(tx, privateKey2, lockingScript0, 0, inputSatoshis)
-                const unlockingScript = toHex(publicKey2) + ' ' + toHex(sig2) + ' ' + toHex(publicKey1) + ' ' + literal2Asm(true) + ' ' + literal2Asm(30) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(preimage) + ' ' + literal2Asm(2)
+                const unlockingScript = toHex(sig2) + ' ' + toHex(publicKey1) + ' ' + literal2Asm(true) + ' ' + literal2Asm(30) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(preimage) + ' ' + literal2Asm(2)
                 tx.inputs[0].setScript(bsv.Script.fromASM(unlockingScript));
             }
 
@@ -102,7 +102,7 @@ if (!key) {
             {
                 const preimage = getPreimage(tx, lockingScript1, 1, inputSatoshis)
                 const sig3 = signTx(tx, privateKey3, lockingScript1, 1, inputSatoshis)
-                const unlockingScript = toHex(publicKey3) + ' ' + toHex(sig3) + ' ' + toHex(publicKey1) + ' ' +  literal2Asm(false) + ' ' + literal2Asm(70) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(preimage) + ' ' + literal2Asm(2)
+                const unlockingScript = toHex(sig3) + ' ' + toHex(publicKey1) + ' ' +  literal2Asm(false) + ' ' + literal2Asm(70) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(preimage) + ' ' + literal2Asm(2)
                 tx.inputs[1].setScript(bsv.Script.fromASM(unlockingScript));
             }
 

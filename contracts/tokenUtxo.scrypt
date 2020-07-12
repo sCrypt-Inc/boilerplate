@@ -7,7 +7,7 @@ contract Token {
     // number of bytes to denote token amount
     static int ByteLen = 1;
 
-    public function split(PubKey sender, Sig senderSig, PubKey receiver0, int tokenAmount0, int satoshiAmount0, 
+    public function split(Sig senderSig, PubKey receiver0, int tokenAmount0, int satoshiAmount0, 
                             PubKey receiver1, int tokenAmount1, int satoshiAmount1, bytes txPreimage) {
         require(tokenAmount0 >= 0);
         require(tokenAmount1 >= 0);
@@ -15,14 +15,18 @@ contract Token {
         // this ensures the preimage is for the current tx
 		require(Tx.checkPreimage(txPreimage));
 
-        // authorize
-        require(checkSig(senderSig, sender));
-        
         // read previous locking script
+        // locking script = codePart + OP_RETURN + senderPublicKey + balance0 + balance1
         bytes lockingScript = Util.scriptCode(txPreimage);
         int scriptLen = length(lockingScript);
 
+        int pubKeyLen = length(receiver0);
         int amountStart = scriptLen - Token.ByteLen * 2;
+
+        PubKey sender = PubKey(lockingScript[amountStart - pubKeyLen : amountStart]);
+        // authorize
+        require(checkSig(senderSig, sender));
+        
         int balance0 = unpack(lockingScript[amountStart : amountStart + Token.ByteLen]);
         int balance1 = unpack(lockingScript[amountStart + Token.ByteLen :]);
 
@@ -30,8 +34,7 @@ contract Token {
         require(balance0 + balance1 == tokenAmount0 + tokenAmount1);
         
         // persist contract code part, including op_return itself
-        // locking script = codePart + OP_RETURN + ownerPublicKey + balance0 + balance1
-        bytes codePart = lockingScript[: amountStart - length(sender)];
+        bytes codePart = lockingScript[: amountStart - pubKeyLen];
         
         // setting first balance as 0 is just a convention, not a requirement
         bytes outputScript0 = codePart + receiver0 + num2bin(0, Token.ByteLen) + num2bin(tokenAmount0, Token.ByteLen);
@@ -43,25 +46,28 @@ contract Token {
         require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 
-    public function merge(PubKey sender, Sig senderSig, PubKey receiver, bool isFirstInput, int otherTokenAmount, int satoshiAmount, bytes txPreimage) {
+    public function merge(Sig senderSig, PubKey receiver, bool isFirstInput, int otherTokenAmount, int satoshiAmount, bytes txPreimage) {
         require(otherTokenAmount >= 0);
 
         // this ensures the preimage is for the current tx
 		require(Tx.checkPreimage(txPreimage));
 
-        // authorize
-        require(checkSig(senderSig, sender));
-
         // read previous locking script
         bytes lockingScript = Util.scriptCode(txPreimage);
         int scriptLen = length(lockingScript);
 
+        int pubKeyLen = length(receiver);
         int amountStart = scriptLen - Token.ByteLen * 2;
+
+        PubKey sender = PubKey(lockingScript[amountStart - pubKeyLen : amountStart]);
+        // authorize
+        require(checkSig(senderSig, sender));
+
         int balance0 = unpack(lockingScript[amountStart : amountStart + Token.ByteLen]);
         int balance1 = unpack(lockingScript[amountStart + Token.ByteLen :]);
 
         // persist contract code part, including op_return itself
-        bytes codePart = lockingScript[: amountStart - length(sender)];
+        bytes codePart = lockingScript[: amountStart - pubKeyLen];
         
         bytes amountPart = b'';
         if (isFirstInput) {

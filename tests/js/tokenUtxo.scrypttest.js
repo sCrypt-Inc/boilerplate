@@ -52,18 +52,18 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
     // TODO: refactor as in merge
     let preimage = getPreimageAfterTransfer(60, 40)
     const sig1 = signTx(tx_, privateKey1, token.getLockingScript())
-    expect(token.split(toHex(publicKey1), toHex(sig1), toHex(publicKey2), 60, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(true);
+    expect(token.split(toHex(sig1), toHex(publicKey2), 60, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(true);
     
     // unauthorized
     const sig2 = signTx(tx_, privateKey2, token.getLockingScript())
-    expect(token.split(toHex(publicKey1), toHex(sig2), toHex(publicKey2), 60, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(false);
+    expect(token.split(toHex(sig2), toHex(publicKey2), 60, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(false);
     
     // mismatch w/ preimage
-    expect(token.split(toHex(publicKey1), toHex(sig1), toHex(publicKey2), 60 - 1, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(false);
+    expect(token.split(toHex(sig1), toHex(publicKey2), 60 - 1, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(false);
     
     // token inbalance after splitting
     preimage = getPreimageAfterTransfer(60 + 1, 40)
-    expect(token.split(toHex(publicKey1), toHex(sig1), toHex(publicKey2), 60 + 1, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(false);
+    expect(token.split(toHex(sig1), toHex(publicKey2), 60 + 1, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(false);
   });
 
   it('should succeed when two tokens are merged', () => {
@@ -105,8 +105,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       
       const preimage = getPreimage(tx_, inputIndex == 0 ? lockingScript0 : lockingScript1, inputIndex)
       const sig = signTx(tx_, inputIndex == 0 ? privateKey1 : privateKey2, inputIndex == 0 ? lockingScript0 : lockingScript1, inputIndex)
-      const ownerPublicKey = inputIndex == 0 ? publicKey1 : publicKey2;
-      return token.merge(toHex(ownerPublicKey), toHex(sig), toHex(publicKey3), inputIndex == 0, inputIndex == 0 ? balance1 : balance0, outputAmount, toHex(preimage))
+      return token.merge(toHex(sig), toHex(publicKey3), inputIndex == 0, inputIndex == 0 ? balance1 : balance0, outputAmount, toHex(preimage))
     }
 
     // input0 only checks balance0
