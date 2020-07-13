@@ -1,3 +1,4 @@
+const { exit } = require('process')
 const { bsv } = require('scrypttest');
 const Signature = bsv.crypto.Signature
 const BN = bsv.crypto.BN
@@ -25,6 +26,15 @@ getPreimage = (tx, lockingScript, inputIndex = 0, inputAmount = inputSatoshis, s
 signTx = (tx, privateKey, lockingScript, inputIndex = 0, inputAmount = inputSatoshis, sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID) => bsv.Transaction.sighash.sign(tx, privateKey, sighashType, inputIndex, bsv.Script.fromASM(lockingScript), new bsv.crypto.BN(inputAmount), flags).toTxFormat()
 
 toHex = x => x.toString('hex')
+
+genPrivKey = () => {
+  const newPrivKey = new bsv.PrivateKey.fromRandom('testnet')
+  console.log('Missing private key, generating a new one ...')
+  console.log(`Private key generated: '${newPrivKey.toWIF()}'`)
+  console.log(`You can fund its address '${newPrivKey.toAddress()}' from some faucet and use it to complete the test`)
+  console.log('Example faucets are https://faucet.bitcoincloud.net and https://testnet.satoshisvision.network')
+  exit(1)
+}
 
 async function createLockingTx(address, amountInContract) {
   // step 1: fetch utxos
@@ -121,5 +131,6 @@ module.exports = {
     num2bin: num2bin,
     createLockingTx,
     createUnlockingTx,
+    genPrivKey,
     sendTx
 }

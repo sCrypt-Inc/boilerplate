@@ -1,5 +1,4 @@
 const path = require('path')
-const { exit } = require('process')
 
 const {
   buildContractClass,
@@ -12,8 +11,15 @@ const {
   createLockingTx,
   createUnlockingTx,
   signTx,
+  genPrivKey,
   sendTx
 } = require('../testHelper')
+
+// private key on testnet in WIF
+const key = ''
+if (!key) {
+  genPrivKey()
+}
 
 function getUnlockingScript(method, sig, publicKey) {
   if (method === 'unlock') {
@@ -23,16 +29,7 @@ function getUnlockingScript(method, sig, publicKey) {
 
 async function main() {
   try {
-    // private key on testnet in WIF
-    const privKey = ''
-    if (!privKey) {
-      const newPrivKey = new bsv.PrivateKey.fromRandom('testnet')
-      console.log('New privKey generated for testnet: ' + newPrivKey.toWIF())
-      console.log('With address: ' + newPrivKey.toAddress())
-      console.log('You could fund the address on testnet & use the privKey to complete the test') // for example get bsv from: https://faucet.bitcoincloud.net/
-      exit(1)
-    }
-    const privateKey = new bsv.PrivateKey.fromWIF(privKey)
+    const privateKey = new bsv.PrivateKey.fromWIF(key)
     const publicKey = privateKey.publicKey
 
     // Initialize contract

@@ -1,11 +1,11 @@
 const path = require('path');
 const { buildContractClass, literal2Asm, lockScriptTx, unlockScriptTx, getSighashPreimage, showError } = require('scrypttest');
-const { num2bin } = require('../testHelper');
+const { num2bin, genPrivKey } = require('../testHelper');
 
 // private key on testnet in WIF
 const key = ''
 if (!key) {
-    throw new Error('You must provide a private key');
+    genPrivKey()
 }
 
 // number of bytes to denote counter

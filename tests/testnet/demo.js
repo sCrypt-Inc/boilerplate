@@ -1,10 +1,11 @@
 const path = require('path');
 const { buildContractClass, lockScriptTx, unlockScriptTx, showError } = require('scrypttest');
+const { genPrivKey } = require('../testHelper');
 
 // private key on testnet in WIF
 const key = ''
 if (!key) {
-    throw new Error('You must provide a private key');
+    genPrivKey()
 }
 
 (async() => {

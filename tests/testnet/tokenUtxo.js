@@ -1,6 +1,6 @@
 const path = require('path');
 const { bsv, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, showError, literal2Asm } = require('scrypttest');
-const { getPreimage, signTx, sendTx, num2bin } = require('../testHelper');
+const { getPreimage, signTx, sendTx, num2bin, genPrivKey } = require('../testHelper');
 const { split } = require('ts-node');
 
 // number of bytes to denote token amount
@@ -9,7 +9,7 @@ const ByteLen = 1
 // private key on testnet in WIF
 const key = ''
 if (!key) {
-    throw new Error('You must provide a private key');
+    genPrivKey()
 }
 
 (async() => {

@@ -3,7 +3,7 @@
  **/
 const path = require('path');
 const { buildContractClass, lockScriptTx, bsv, unlockScriptTx, getSignature, showError } = require('scrypttest');
-const { inputIndex, inputSatoshis, tx, toHex } = require('../testHelper');
+const { inputIndex, inputSatoshis, tx, toHex, genPrivKey } = require('../testHelper');
 
 // Test keys
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
@@ -18,7 +18,7 @@ const sha256Data = bsv.crypto.Hash.sha256(dataBuffer);
 // private key on testnet in WIF
 const key = ''
 if (!key) {
-    throw new Error('You must provide a private key');
+    genPrivKey()
 }
 
 (async() => {
