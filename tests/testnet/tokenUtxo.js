@@ -1,6 +1,6 @@
 const path = require('path');
-const { bsv, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, sendTx, showError, literal2Asm } = require('scrypttest');
-const { getPreimage, signTx, num2bin } = require('../testHelper');
+const { bsv, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, showError, literal2Asm } = require('scrypttest');
+const { getPreimage, signTx, sendTx, num2bin } = require('../testHelper');
 const { split } = require('ts-node');
 
 // number of bytes to denote token amount
@@ -66,7 +66,7 @@ if (!key) {
             const sig1 = signTx(tx, privateKey1, lockingScript, 0, inputSatoshis)
             const unlockingScript = toHex(sig1) + ' ' + toHex(publicKey2) + ' ' + literal2Asm(70) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(publicKey3) + ' ' + literal2Asm(30) + ' ' + literal2Asm(outputAmount) + ' ' + toHex(preimage) + ' ' + literal2Asm(1)
             tx.inputs[0].setScript(bsv.Script.fromASM(unlockingScript));
-            splitTxid = await sendTx(tx.serialize());
+            splitTxid = await sendTx(tx);
             console.log('split txid1:       ', splitTxid)
         }
 
@@ -109,7 +109,7 @@ if (!key) {
                 tx.inputs[1].setScript(bsv.Script.fromASM(unlockingScript));
             }
 
-            const mergeTxid = await sendTx(tx.serialize());
+            const mergeTxid = await sendTx(tx);
             console.log('merge txid1:       ', mergeTxid)
         }
 
