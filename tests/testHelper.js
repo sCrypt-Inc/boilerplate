@@ -1,5 +1,6 @@
 const { bsv } = require('scrypttest');
 const Signature = bsv.crypto.Signature
+const BN = bsv.crypto.BN
 const Interpreter = bsv.Script.Interpreter
 
 const axios = require('axios')
@@ -73,11 +74,41 @@ async function sendTx(tx) {
   return txid
 }
 
-// FIXME
-int2Hex = n => {
-  let s = n.toString(16);
-  // even hex digits
-  return (s.length % 2) > 0 ? "0" + s : s;
+// Converts a number into a sign-magnitude representation of certain size as a string
+// Throws if the number cannot be accommodated
+// Often used to append numbers to OP_RETURN, which are read in contracts
+// TODO: handle bigint
+function num2bin(n, byteLen) {
+  if (n === 0) {
+    return "00".repeat(byteLen)
+  }
+
+  const num = BN.fromNumber(n)
+  const s = num.toSM({ endian: 'little' }).toString('hex')
+
+  const byteLen_ = s.length / 2
+  if (byteLen_ > byteLen) {
+    throw new Error(`${n} cannot fix in ${byteLen} byte[s]`)
+  }
+  if (byteLen_ === byteLen) {
+    return s
+  }
+
+  const paddingLen = byteLen - byteLen_
+  const lastByte = s.substring(s.length - 2)
+  const rest = s.substring(0, s.length - 2)
+  let m = parseInt(lastByte, 16)
+  if (n < 0) {
+    // reset sign bit
+    m &= 0x7F
+  }
+  let mHex = m.toString(16)
+  if (mHex.length < 2) {
+    mHex = '0' + mHex
+  }
+  
+  const padding = n > 0 ? '00'.repeat(paddingLen) : '00'.repeat(paddingLen - 1) + '80'
+  return rest + mHex + padding
 }
 
 module.exports = {
@@ -87,7 +118,7 @@ module.exports = {
     signTx: signTx,
     getPreimage: getPreimage,
     toHex: toHex,
-    int2Hex: int2Hex,
+    num2bin: num2bin,
     createLockingTx,
     createUnlockingTx,
     sendTx

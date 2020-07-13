@@ -1,6 +1,9 @@
 const path = require('path');
 const { bsv, int2Asm, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, showError } = require('scrypttest');
 
+// number of bytes to denote token amount
+const ByteLen = 1
+
 // private key on testnet in WIF
 const key = ''
 if (!key) {
@@ -23,7 +26,7 @@ if (!key) {
         
         // append state as passive data part
         // initial token supply 100: publicKey1 has 100, publicKey2 0
-        let lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(100) + toHex(publicKey2) + '00' // do not use int2Asm(0) since it gives "OP_0"
+        let lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(100, ByteLen) + toHex(publicKey2) + num2bin(0, ByteLen)
         token.setLockingScript(lockingScript)
         
         let amount = 10000
@@ -35,7 +38,7 @@ if (!key) {
         
         // transfer 40 tokens from publicKey1 to publicKey2
         {
-            const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(60) + toHex(publicKey2) + int2Asm(40)
+            const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(60, ByteLen) + toHex(publicKey2) + num2bin(40, ByteLen)
             const newAmount = amount - FEE
             const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             const sig1 = getSignature(lockingTxid, privateKey1, lockingScript, amount, newLockingScript, newAmount)
@@ -49,7 +52,7 @@ if (!key) {
 
         // transfer 10 tokens from publicKey2 to publicKey1
         {
-            const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(70) + toHex(publicKey2) + int2Asm(30)
+            const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(70, ByteLen) + toHex(publicKey2) + num2bin(30, ByteLen)
             const newAmount = amount - FEE
             const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             const sig2 = getSignature(lockingTxid, privateKey2, lockingScript, amount, newLockingScript, newAmount)

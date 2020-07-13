@@ -2,10 +2,13 @@ const path = require('path');
 const { expect } = require('chai');
 const { buildContractClass, bsv, int2Asm } = require('scrypttest');
 
-const { inputIndex, inputSatoshis, tx, signTx, getPreimage, toHex } = require('../testHelper');
+const { inputIndex, inputSatoshis, tx, signTx, getPreimage, toHex, num2bin } = require('../testHelper');
 
 // make a copy since it will be mutated
 const tx_ = bsv.Transaction.shallowCopy(tx)
+
+// number of bytes to denote token amount
+const ByteLen = 1
 
 const outputAmount = 222222
 
@@ -26,11 +29,11 @@ describe('Test sCrypt contract Token In Javascript', () => {
     const lockingScriptCodePart = token.getLockingScript()
     
     // initial supply 100 tokens: publicKey1 has 100, publicKey2 0
-    const lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(100) + toHex(publicKey2) + '00'
+    const lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(100, ByteLen) + toHex(publicKey2) + num2bin(0, ByteLen)
     token.setLockingScript(lockingScript)
     
     getPreimageAfterTransfer = (balance1, balance2) => {
-      const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + int2Asm(balance1) + toHex(publicKey2) + int2Asm(balance2)
+      const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(balance1, ByteLen) + toHex(publicKey2) + num2bin(balance2, ByteLen)
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript),
         satoshis: outputAmount
