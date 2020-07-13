@@ -1,12 +1,15 @@
 const path = require('path');
-const { buildContractClass, bsv, int2Asm, lockScriptTx, unlockFundedScriptTx, getFundedSighashPreimage, showError } = require('scrypttest');
-const { toHex } = require('../testHelper');
+const { buildContractClass, bsv, literal2Asm, lockScriptTx, unlockFundedScriptTx, getFundedSighashPreimage, showError } = require('scrypttest');
+const { toHex, num2bin } = require('../testHelper');
 
 // private key on testnet in WIF
 const key = ''
 if (!key) {
     throw new Error('You must provide a private key');
 }
+
+// number of bytes to denote counter
+const ByteLen = 1
 const privateKey = new bsv.PrivateKey.fromWIF(key)
 const publicKey = privateKey.publicKey
 // PKH for receiving change from each transaction (20 bytes - 40 hexadecimal characters)
@@ -24,7 +27,7 @@ function sleep(ms) {
 
         lockingScriptCodePart =advCounter.getLockingScript()
         // append state as passive data
-        let lockingScript = lockingScriptCodePart +' OP_RETURN 00'
+        let lockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(0, ByteLen)
 
         // initial contract funding
         let amount = 10000
@@ -46,7 +49,7 @@ function sleep(ms) {
             console.log('------------------------------')
 
             // Set the state for the next transaction
-            const newLockingScript = lockingScriptCodePart +' OP_RETURN 0' + (i + 1)    // only works for i < 9
+            const newLockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(i + 1, ByteLen)
 
             // keep the contract funding constant
             const newAmount = amount
@@ -56,8 +59,8 @@ function sleep(ms) {
             const preData = await getFundedSighashPreimage(key, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
 
             const preimage = preData.preimage
-            const changeASM = int2Asm(preData.change)
-            const amountASM = int2Asm(newAmount)
+            const changeASM = literal2Asm(preData.change)
+            const amountASM = literal2Asm(newAmount)
 
             // Inform the contract how its state is being updated
             // This format must match the contract's public function:

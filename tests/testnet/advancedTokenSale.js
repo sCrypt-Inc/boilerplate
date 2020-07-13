@@ -1,5 +1,5 @@
 const path = require('path');
-const { buildContractClass, bsv, int2Asm, lockScriptTx, unlockFundedScriptTx, getFundedSighashPreimage, showError } = require('scrypttest');
+const { buildContractClass, bsv, literal2Asm, lockScriptTx, unlockFundedScriptTx, getFundedSighashPreimage, showError } = require('scrypttest');
 const { toHex } = require('../testHelper');
 
 // number of bytes to denote token amount
@@ -102,7 +102,7 @@ function hexit(dec) {
             const preData = await getFundedSighashPreimage(privateKeys[i], lockingTxid, lockingScript, amount, newLockingScript, newAmount)
 
             const preimage = preData.preimage
-            const changeASM = int2Asm(preData.change)
+            const changeASM = literal2Asm(preData.change)
 
             // Inform the contract how its state is being updated
             // This unlockingScript format must match the contract's public function:
@@ -110,7 +110,7 @@ function hexit(dec) {
                     toHex(pkhs[i]) + ' ' +         // changePKH
                     changeASM + ' ' +              // changeSats
                     toHex(publicKeys[i]) + ' ' +   // buyer's public key
-                    int2Asm( numBought )           // number of tokens purchased
+                    literal2Asm( numBought )           // number of tokens purchased
 
             console.log(' ====== Unlocking...')
             lockingTxid = await unlockFundedScriptTx(privateKeys[i], unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)

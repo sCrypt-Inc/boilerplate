@@ -1,6 +1,6 @@
 const path = require('path');
 const { expect } = require('chai');
-const { buildContractClass, bsv, int2Asm } = require('scrypttest');
+const { buildContractClass, bsv } = require('scrypttest');
 
 const { inputIndex, inputSatoshis, tx, signTx, getPreimage, toHex, num2bin } = require('../testHelper');
 

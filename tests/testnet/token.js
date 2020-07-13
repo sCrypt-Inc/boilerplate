@@ -1,5 +1,5 @@
 const path = require('path');
-const { bsv, int2Asm, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, showError } = require('scrypttest');
+const { bsv, literal2Asm, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, showError } = require('scrypttest');
 
 // number of bytes to denote token amount
 const ByteLen = 1
@@ -42,7 +42,7 @@ if (!key) {
             const newAmount = amount - FEE
             const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             const sig1 = getSignature(lockingTxid, privateKey1, lockingScript, amount, newLockingScript, newAmount)
-            const unlockingScript = toHex(publicKey1) + ' ' + sig1 + ' ' + toHex(publicKey2) + ' ' + int2Asm(40) + ' ' + preimage + ' ' + int2Asm(newAmount)
+            const unlockingScript = toHex(publicKey1) + ' ' + sig1 + ' ' + toHex(publicKey2) + ' ' + literal2Asm(40) + ' ' + preimage + ' ' + literal2Asm(newAmount)
             lockingTxid = await unlockScriptTx(unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             console.log('transfer txid1:    ', lockingTxid)
 
@@ -56,7 +56,7 @@ if (!key) {
             const newAmount = amount - FEE
             const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             const sig2 = getSignature(lockingTxid, privateKey2, lockingScript, amount, newLockingScript, newAmount)
-            const unlockingScript = toHex(publicKey2) + ' ' + sig2 + ' ' + toHex(publicKey1) + ' ' + int2Asm(10) + ' ' + preimage + ' ' + int2Asm(newAmount)
+            const unlockingScript = toHex(publicKey2) + ' ' + sig2 + ' ' + toHex(publicKey1) + ' ' + literal2Asm(10) + ' ' + preimage + ' ' + literal2Asm(newAmount)
             lockingTxid = await unlockScriptTx(unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             console.log('transfer txid2:    ', lockingTxid)
         }

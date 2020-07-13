@@ -1,11 +1,15 @@
 const path = require('path');
-const { buildContractClass, int2Asm, lockScriptTx, unlockScriptTx, getSighashPreimage, showError } = require('scrypttest');
+const { buildContractClass, literal2Asm, lockScriptTx, unlockScriptTx, getSighashPreimage, showError } = require('scrypttest');
+const { num2bin } = require('../testHelper');
 
 // private key on testnet in WIF
 const key = ''
 if (!key) {
     throw new Error('You must provide a private key');
 }
+
+// number of bytes to denote counter
+const ByteLen = 1
 
 (async() => {
     try {
@@ -15,7 +19,7 @@ if (!key) {
 
         lockingScriptCodePart = counter.getLockingScript()
         // append state as passive data
-        let lockingScript = lockingScriptCodePart +' OP_RETURN 00'
+        let lockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(0, ByteLen)
         
         let amount = 10000
         const FEE = amount / 10
@@ -26,10 +30,10 @@ if (!key) {
         
         // unlock
         for (i = 0; i < 8; i++) {
-            const newLockingScript = lockingScriptCodePart +' OP_RETURN 0' + (i + 1)    // only works for i < 9
+            const newLockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(i + 1, ByteLen)
             const newAmount = amount - FEE
             const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newLockingScript, newAmount)
-            const amountASM = int2Asm(newAmount)
+            const amountASM = literal2Asm(newAmount)
             const unlockingScript = preimage + ' ' + amountASM
             lockingTxid = await unlockScriptTx(unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             console.log('iteration #' + i + ' txid: ', lockingTxid)
