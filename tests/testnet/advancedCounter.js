@@ -65,7 +65,7 @@ function sleep(ms) {
             // Inform the contract how its state is being updated
             // This format must match the contract's public function:
             //             sighashPreimage     amount            changePKH          changeSats
-            const unlockingScript = preimage + ' ' + amountASM + ' ' + toHex(pkh) + ' ' + changeASM
+            const unlockingScript = [preimage, amountASM, toHex(pkh), changeASM].join(' ')
             console.log(' ====== Unlocking...')
             lockingTxid = await unlockFundedScriptTx(key, unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             console.log('iteration #' + i + ' txid: ', lockingTxid)

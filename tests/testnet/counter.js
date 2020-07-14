@@ -34,7 +34,7 @@ const ByteLen = 1
             const newAmount = amount - FEE
             const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             const amountASM = literal2Asm(newAmount)
-            const unlockingScript = preimage + ' ' + amountASM
+            const unlockingScript = [preimage, amountASM].join(' ')
             lockingTxid = await unlockScriptTx(unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             console.log('iteration #' + i + ' txid: ', lockingTxid)
 

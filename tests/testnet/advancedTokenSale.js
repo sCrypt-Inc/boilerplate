@@ -106,11 +106,12 @@ function hexit(dec) {
 
             // Inform the contract how its state is being updated
             // This unlockingScript format must match the contract's public function:
-            const unlockingScript = preimage + ' ' +     // sighashPreimage
-                    toHex(pkhs[i]) + ' ' +         // changePKH
-                    changeASM + ' ' +              // changeSats
-                    toHex(publicKeys[i]) + ' ' +   // buyer's public key
+            const unlockingScript = [preimage,     // sighashPreimage
+                    toHex(pkhs[i]),         // changePKH
+                    changeASM,              // changeSats
+                    toHex(publicKeys[i]),   // buyer's public key
                     literal2Asm( numBought )           // number of tokens purchased
+            ].join(' ')
 
             console.log(' ====== Unlocking...')
             lockingTxid = await unlockFundedScriptTx(privateKeys[i], unlockingScript, lockingTxid, lockingScript, amount, newLockingScript, newAmount)
