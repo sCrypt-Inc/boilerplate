@@ -29,10 +29,10 @@ toHex = x => x.toString('hex')
 
 genPrivKey = () => {
   const newPrivKey = new bsv.PrivateKey.fromRandom('testnet')
-  console.log('Missing private key, generating a new one ...')
-  console.log(`Private key generated: '${newPrivKey.toWIF()}'`)
-  console.log(`You can fund its address '${newPrivKey.toAddress()}' from some faucet and use it to complete the test`)
-  console.log('Example faucets are https://faucet.bitcoincloud.net and https://testnet.satoshisvision.network')
+  console.log(`Missing private key, generating a new one ...
+Private key generated: '${newPrivKey.toWIF()}'
+You can fund its address '${newPrivKey.toAddress()}' from some faucet and use it to complete the test
+Example faucets are https://faucet.bitcoincloud.net and https://testnet.satoshisvision.network`)
   exit(1)
 }
 
