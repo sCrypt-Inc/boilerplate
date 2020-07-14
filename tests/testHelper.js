@@ -98,7 +98,7 @@ function num2bin(n, byteLen) {
 
   const byteLen_ = s.length / 2
   if (byteLen_ > byteLen) {
-    throw new Error(`${n} cannot fix in ${byteLen} byte[s]`)
+    throw new Error(`${n} cannot fit in ${byteLen} byte[s]`)
   }
   if (byteLen_ === byteLen) {
     return s

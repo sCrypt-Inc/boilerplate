@@ -19,7 +19,7 @@ describe('Test testHelper', () => {
     expect(num2bin(-1000, 4)).to.equal('e8030080');
 
     // cannot fit
-    expect(() => num2bin(128, 1)).to.throw('128 cannot fix in 1 byte[s]');
-    expect(() => num2bin(0xffff, 2)).to.throw('65535 cannot fix in 2 byte[s]');
+    expect(() => num2bin(128, 1)).to.throw('128 cannot fit in 1 byte[s]');
+    expect(() => num2bin(0xffff, 2)).to.throw('65535 cannot fit in 2 byte[s]');
   });
 });
