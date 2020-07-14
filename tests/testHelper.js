@@ -122,13 +122,13 @@ function num2bin(n, byteLen) {
 }
 
 module.exports = {
-    inputIndex: inputIndex,
-    inputSatoshis: inputSatoshis,
-    tx: tx,
-    signTx: signTx,
-    getPreimage: getPreimage,
-    toHex: toHex,
-    num2bin: num2bin,
+    inputIndex,
+    inputSatoshis,
+    tx,
+    signTx,
+    getPreimage,
+    toHex,
+    num2bin,
     createLockingTx,
     createUnlockingTx,
     genPrivKey,
