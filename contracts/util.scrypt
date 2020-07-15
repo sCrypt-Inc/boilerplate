@@ -6,6 +6,8 @@ contract Util {
     static int OutputValueLen = 8;
 	// number of bytes to denote a public key (compressed)
     static int PubKeyLen = 33;
+	// number of bytes to denote a public key hash
+    static int PubKeyHashLen = 20;
 
     static function readVarint(bytes b) returns (bytes) {
 		int len = 0;
@@ -61,7 +63,8 @@ contract Util {
 	}
 
 	static function buildPublicKeyHashScript(Ripemd160 pubKeyHash) returns (bytes) {
-	 	return OpCode.OP_DUP + OpCode.OP_HASH160 + b'14' /* "OP_PUSHDATA0" */ + pubKeyHash + OpCode.OP_EQUALVERIFY + OpCode.OP_CHECKSIG;
+	 	return OpCode.OP_DUP + OpCode.OP_HASH160 + pack(Util.PubKeyHashLen) /* "OP_PUSHDATA0" */ + 
+		 		pubKeyHash + OpCode.OP_EQUALVERIFY + OpCode.OP_CHECKSIG;
 	}
 
 	/*
