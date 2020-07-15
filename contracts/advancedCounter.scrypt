@@ -36,14 +36,13 @@ contract AdvancedCounter {
 		bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
 		bytes changeOutput = num2bin(changeSats, Util.OutputValueLen) + Util.writeVarint(changeScript);
 
-		bytes hashOutputs = Util.hashOutputs(txPreimage);
 		// output: amount + scriptlen + script
-		Sha256 hashOutputs_ = hash256(counterOutput + changeOutput);
+		Sha256 hashOutputs = hash256(counterOutput + changeOutput);
 
 		// ensure output matches what we expect:
 		//     - amount is same as specified
 		//     - output script is the same as scriptCode except the counter was incremented
 		//     - expected CHANGE output script is there
-		require(hashOutputs == hashOutputs_);
+		require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 }

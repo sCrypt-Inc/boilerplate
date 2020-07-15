@@ -11,11 +11,10 @@ contract Counter {
 		int counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
 		// increment counter
 		bytes scriptCode_ = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
-		bytes hashOutputs = Util.hashOutputs(txPreimage);
 		// output: amount + scriptlen + script
-		Sha256 hashOutputs_ = hash256(num2bin(amount, Util.OutputValueLen) + Util.writeVarint(scriptCode_));
+		Sha256 hashOutputs = hash256(num2bin(amount, Util.OutputValueLen) + Util.writeVarint(scriptCode_));
 		// ensure output is expected: amount is same with specified
 		// also output script is the same with scriptCode except counter incremented
-		require(hashOutputs == hashOutputs_);
+		require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 }
