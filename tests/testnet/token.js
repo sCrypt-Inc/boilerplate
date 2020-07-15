@@ -1,6 +1,6 @@
 const path = require('path');
 const { bsv, literal2Asm, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, showError } = require('scrypttest');
-const { genPrivKey, DataLen } = require('../testHelper');
+const { genPrivKey, num2bin, DataLen } = require('../testHelper');
 
 // private key on testnet in WIF
 const key = ''
