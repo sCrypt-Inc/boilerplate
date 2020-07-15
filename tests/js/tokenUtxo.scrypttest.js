@@ -2,7 +2,7 @@ const path = require('path');
 const { expect } = require('chai');
 const { buildContractClass, bsv } = require('scrypttest');
 
-const { inputIndex, inputSatoshis, tx, signTx, getPreimage, toHex, num2bin, ByteLen } = require('../testHelper');
+const { inputIndex, inputSatoshis, tx, signTx, getPreimage, toHex, num2bin, DataLen } = require('../testHelper');
 
 // make a copy since it will be mutated
 let tx_ = bsv.Transaction.shallowCopy(tx)
@@ -30,16 +30,16 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
 
   it('should succeed when one token is split into two', () => {
     // initial supply 100 tokens: publicKey1 has 100, publicKey2 0
-    const lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(10, ByteLen) + num2bin(90, ByteLen)
+    const lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen)
     token.setLockingScript(lockingScript)
     
     getPreimageAfterTransfer = (balance0, balance1) => {
-      const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey2) + num2bin(0, ByteLen) + num2bin(balance0, ByteLen)
+      const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey2) + num2bin(0, DataLen) + num2bin(balance0, DataLen)
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
       }))
-      const newLockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(0, ByteLen) + num2bin(balance1, ByteLen)
+      const newLockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(0, DataLen) + num2bin(balance1, DataLen)
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript1),
         satoshis: outputAmount
@@ -69,12 +69,12 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
     const x0 = 10
     const x1 = 50
     const expectedBalance0 = x0 + x1
-    const lockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(x0, ByteLen) + num2bin(x1, ByteLen)
+    const lockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(x0, DataLen) + num2bin(x1, DataLen)
     
     const y0 = 13
     const y1 = 27
     const expectedBalance1 = y0 + y1
-    const lockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey2) + num2bin(y0, ByteLen) + num2bin(y1, ByteLen)
+    const lockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey2) + num2bin(y0, DataLen) + num2bin(y1, DataLen)
     
     const testMerge = (inputIndex, balance0, balance1) => {
       tx_ = new bsv.Transaction()
@@ -91,7 +91,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         script: ''
       }), bsv.Script.fromASM(lockingScript1), inputSatoshis)
 
-      const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(balance0, ByteLen) + num2bin(balance1, ByteLen)
+      const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(balance0, DataLen) + num2bin(balance1, DataLen)
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount

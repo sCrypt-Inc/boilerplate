@@ -5,7 +5,7 @@ const BN = bsv.crypto.BN
 const Interpreter = bsv.Script.Interpreter
 
 // number of bytes to denote some numeric value
-const ByteLen = 1
+const DataLen = 1
 
 const axios = require('axios')
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
@@ -90,23 +90,23 @@ async function sendTx(tx) {
 // Throws if the number cannot be accommodated
 // Often used to append numbers to OP_RETURN, which are read in contracts
 // TODO: handle bigint
-function num2bin(n, byteLen) {
+function num2bin(n, DataLen) {
   if (n === 0) {
-    return "00".repeat(byteLen)
+    return "00".repeat(DataLen)
   }
 
   const num = BN.fromNumber(n)
   const s = num.toSM({ endian: 'little' }).toString('hex')
 
   const byteLen_ = s.length / 2
-  if (byteLen_ > byteLen) {
-    throw new Error(`${n} cannot fit in ${byteLen} byte[s]`)
+  if (byteLen_ > DataLen) {
+    throw new Error(`${n} cannot fit in ${DataLen} byte[s]`)
   }
-  if (byteLen_ === byteLen) {
+  if (byteLen_ === DataLen) {
     return s
   }
 
-  const paddingLen = byteLen - byteLen_
+  const paddingLen = DataLen - byteLen_
   const lastByte = s.substring(s.length - 2)
   const rest = s.substring(0, s.length - 2)
   let m = parseInt(lastByte, 16)
@@ -134,6 +134,6 @@ module.exports = {
     createLockingTx,
     createUnlockingTx,
     genPrivKey,
-    ByteLen,
+    DataLen,
     sendTx
 }

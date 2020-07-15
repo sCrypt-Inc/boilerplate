@@ -1,6 +1,6 @@
 const path = require('path');
 const { buildContractClass, literal2Asm, lockScriptTx, unlockScriptTx, getSighashPreimage, showError } = require('scrypttest');
-const { num2bin, genPrivKey, ByteLen } = require('../testHelper');
+const { num2bin, genPrivKey, DataLen } = require('../testHelper');
 
 // private key on testnet in WIF
 const key = ''
@@ -16,7 +16,7 @@ if (!key) {
 
         lockingScriptCodePart = counter.getLockingScript()
         // append state as passive data
-        let lockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(0, ByteLen)
+        let lockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(0, DataLen)
         
         let amount = 10000
         const FEE = amount / 10
@@ -27,7 +27,7 @@ if (!key) {
         
         // unlock
         for (i = 0; i < 8; i++) {
-            const newLockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(i + 1, ByteLen)
+            const newLockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(i + 1, DataLen)
             const newAmount = amount - FEE
             const preimage = getSighashPreimage(lockingTxid, lockingScript, amount, newLockingScript, newAmount)
             const amountASM = literal2Asm(newAmount)

@@ -1,6 +1,6 @@
 const path = require('path');
 const { buildContractClass, bsv, literal2Asm, lockScriptTx, unlockFundedScriptTx, getFundedSighashPreimage, showError } = require('scrypttest');
-const { toHex, num2bin, genPrivKey, ByteLen } = require('../testHelper');
+const { toHex, num2bin, genPrivKey, DataLen } = require('../testHelper');
 
 // private key on testnet in WIF
 const key = ''
@@ -25,7 +25,7 @@ function sleep(ms) {
 
         lockingScriptCodePart =advCounter.getLockingScript()
         // append state as passive data
-        let lockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(0, ByteLen)
+        let lockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(0, DataLen)
 
         // initial contract funding
         let amount = 10000
@@ -47,7 +47,7 @@ function sleep(ms) {
             console.log('------------------------------')
 
             // Set the state for the next transaction
-            const newLockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(i + 1, ByteLen)
+            const newLockingScript = lockingScriptCodePart +' OP_RETURN ' + num2bin(i + 1, DataLen)
 
             // keep the contract funding constant
             const newAmount = amount

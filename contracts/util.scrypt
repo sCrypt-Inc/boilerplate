@@ -1,6 +1,6 @@
 contract Util {
 	// number of bytes to denote some numeric value
-    static int ByteLen = 1;
+    static int DataLen = 1;
 
 	// number of bytes to denote output value
     static int OutputValueByteLen = 8;

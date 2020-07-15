@@ -2,7 +2,7 @@ const path = require('path');
 const { expect } = require('chai');
 const { buildContractClass, bsv } = require('scrypttest');
 
-const { inputIndex, inputSatoshis, tx, getPreimage, toHex, num2bin, ByteLen } = require('../testHelper');
+const { inputIndex, inputSatoshis, tx, getPreimage, toHex, num2bin, DataLen } = require('../testHelper');
 
 // make a copy since it will be mutated
 const tx_ = bsv.Transaction.shallowCopy(tx)
@@ -17,9 +17,9 @@ describe('Test sCrypt contract Counter In Javascript', () => {
 
     lockingScriptCodePart = counter.getLockingScript()
     // append state as passive data
-    const lockingScript = lockingScriptCodePart + ' OP_RETURN ' + num2bin(0, ByteLen)
+    const lockingScript = lockingScriptCodePart + ' OP_RETURN ' + num2bin(0, DataLen)
     counter.setLockingScript(lockingScript)
-    const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + num2bin(1, ByteLen)
+    const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + num2bin(1, DataLen)
     
     tx_.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),

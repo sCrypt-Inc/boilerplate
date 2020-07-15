@@ -1,6 +1,6 @@
 const path = require('path');
 const { buildContractClass, bsv, literal2Asm, lockScriptTx, unlockFundedScriptTx, getFundedSighashPreimage, showError } = require('scrypttest');
-const { toHex, ByteLen } = require('../testHelper');
+const { toHex, DataLen } = require('../testHelper');
 
 // Token price is 1000 satoshis each
 // NOTE: a price that is too low could run afoul of dust policy
@@ -81,7 +81,7 @@ function hexit(dec) {
             await sleep(9000);
 
             const numBought = boughtEachIteration[ i ]
-            const numBoughtHex = hexit( numBought )         // num2bin(1, ByteLen) would return OP_1 instead of 1
+            const numBoughtHex = hexit( numBought )         // num2bin(1, DataLen) would return OP_1 instead of 1
             console.log('buying ', numBoughtHex, '(hex) tokens...')
 
             // build-up a list of sales

@@ -1,6 +1,6 @@
 const path = require('path');
 const { bsv, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, showError, literal2Asm } = require('scrypttest');
-const { getPreimage, signTx, sendTx, num2bin, genPrivKey, ByteLen } = require('../testHelper');
+const { getPreimage, signTx, sendTx, num2bin, genPrivKey, DataLen } = require('../testHelper');
 const { split } = require('ts-node');
 
 // private key on testnet in WIF
@@ -27,7 +27,7 @@ if (!key) {
         
         // append state as passive data part
         // initial token supply 100: publicKey1 has 100, publicKey2 0
-        let lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(10, ByteLen) + num2bin(90, ByteLen)
+        let lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen)
         token.setLockingScript(lockingScript)
         
         let inputSatoshis = 10000
@@ -48,12 +48,12 @@ if (!key) {
                 script: ''
             }), bsv.Script.fromASM(lockingScript), inputSatoshis)
 
-            lockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey2) + num2bin(0, ByteLen) + num2bin(70, ByteLen)
+            lockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey2) + num2bin(0, DataLen) + num2bin(70, DataLen)
             tx.addOutput(new bsv.Transaction.Output({
                 script: bsv.Script.fromASM(lockingScript0),
                 satoshis: outputAmount
             }))
-            lockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(0, ByteLen) + num2bin(30, ByteLen)
+            lockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(0, DataLen) + num2bin(30, DataLen)
             tx.addOutput(new bsv.Transaction.Output({
                 script: bsv.Script.fromASM(lockingScript1),
                 satoshis: outputAmount
@@ -85,7 +85,7 @@ if (!key) {
                 script: ''
             }), bsv.Script.fromASM(lockingScript1), inputSatoshis)
     
-            const lockingScript2 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(70, ByteLen) + num2bin(30, ByteLen)
+            const lockingScript2 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(70, DataLen) + num2bin(30, DataLen)
             tx.addOutput(new bsv.Transaction.Output({
                 script: bsv.Script.fromASM(lockingScript2),
                 satoshis: outputAmount
