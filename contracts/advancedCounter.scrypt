@@ -24,11 +24,11 @@ contract AdvancedCounter {
 		bytes scriptCode = Util.scriptCode(txPreimage);
 		int scriptLen = length(scriptCode);
 
-		// the last OP_RETURN byte contains the application state, i.e., counter
-		int counter = unpack(scriptCode[scriptLen - 1 :]);
+		// state (i.e., counter value) is at the end
+		int counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
 
 		// Expect the counter to be incremented in the new transaction state
-		bytes scriptCode_ = scriptCode[: scriptLen - 1] + num2bin(counter + 1, 1);
+		bytes scriptCode_ = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
 
         bytes counterOutput = num2bin(amount, 8) + Util.writeVarint(scriptCode_);
 

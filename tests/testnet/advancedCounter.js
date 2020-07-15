@@ -1,6 +1,6 @@
 const path = require('path');
 const { buildContractClass, bsv, literal2Asm, lockScriptTx, unlockFundedScriptTx, getFundedSighashPreimage, showError } = require('scrypttest');
-const { toHex, num2bin, genPrivKey } = require('../testHelper');
+const { toHex, num2bin, genPrivKey, ByteLen } = require('../testHelper');
 
 // private key on testnet in WIF
 const key = ''
@@ -8,8 +8,6 @@ if (!key) {
     genPrivKey()
 }
 
-// number of bytes to denote counter
-const ByteLen = 1
 const privateKey = new bsv.PrivateKey.fromWIF(key)
 const publicKey = privateKey.publicKey
 // PKH for receiving change from each transaction (20 bytes - 40 hexadecimal characters)

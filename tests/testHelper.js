@@ -4,13 +4,15 @@ const Signature = bsv.crypto.Signature
 const BN = bsv.crypto.BN
 const Interpreter = bsv.Script.Interpreter
 
+// number of bytes to denote some numeric value
+const ByteLen = 1
+
 const axios = require('axios')
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
 
 const inputIndex = 0
 const inputSatoshis = 100000
 const flags = Interpreter.SCRIPT_VERIFY_MINIMALDATA | Interpreter.SCRIPT_ENABLE_SIGHASH_FORKID | Interpreter.SCRIPT_ENABLE_MAGNETIC_OPCODES | Interpreter.SCRIPT_ENABLE_MONOLITH_OPCODES
-const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
 const minFee = 546
 
 const utxo = {
@@ -132,5 +134,6 @@ module.exports = {
     createLockingTx,
     createUnlockingTx,
     genPrivKey,
+    ByteLen,
     sendTx
 }

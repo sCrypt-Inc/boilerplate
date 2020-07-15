@@ -4,9 +4,6 @@ import "util.scrypt";
  * A token protocol based on UTXO model
  */
 contract Token {
-    // number of bytes to denote token amount
-    static int ByteLen = 1;
-
     public function split(Sig senderSig, PubKey receiver0, int tokenAmount0, int satoshiAmount0, 
                             PubKey receiver1, int tokenAmount1, int satoshiAmount1, bytes txPreimage) {
         require(tokenAmount0 >= 0);
@@ -21,14 +18,14 @@ contract Token {
         int scriptLen = length(lockingScript);
 
         int pubKeyLen = length(receiver0);
-        int amountStart = scriptLen - Token.ByteLen * 2;
+        int amountStart = scriptLen - Util.ByteLen * 2;
 
         PubKey sender = PubKey(lockingScript[amountStart - pubKeyLen : amountStart]);
         // authorize
         require(checkSig(senderSig, sender));
         
-        int balance0 = unpack(lockingScript[amountStart : amountStart + Token.ByteLen]);
-        int balance1 = unpack(lockingScript[amountStart + Token.ByteLen :]);
+        int balance0 = unpack(lockingScript[amountStart : amountStart + Util.ByteLen]);
+        int balance1 = unpack(lockingScript[amountStart + Util.ByteLen :]);
 
         // split
         require(balance0 + balance1 == tokenAmount0 + tokenAmount1);
@@ -37,9 +34,9 @@ contract Token {
         bytes codePart = lockingScript[: amountStart - pubKeyLen];
         
         // setting first balance as 0 is just a convention, not a requirement
-        bytes outputScript0 = codePart + receiver0 + num2bin(0, Token.ByteLen) + num2bin(tokenAmount0, Token.ByteLen);
+        bytes outputScript0 = codePart + receiver0 + num2bin(0, Util.ByteLen) + num2bin(tokenAmount0, Util.ByteLen);
         bytes output0 = num2bin(satoshiAmount0, 8) + Util.writeVarint(outputScript0);
-        bytes outputScript1 = codePart + receiver1 + num2bin(0, Token.ByteLen) + num2bin(tokenAmount1, Token.ByteLen);
+        bytes outputScript1 = codePart + receiver1 + num2bin(0, Util.ByteLen) + num2bin(tokenAmount1, Util.ByteLen);
         bytes output1 = num2bin(satoshiAmount1, 8) + Util.writeVarint(outputScript1);
 		Sha256 hashOutputs = hash256(output0 + output1);
         
@@ -57,23 +54,23 @@ contract Token {
         int scriptLen = length(lockingScript);
 
         int pubKeyLen = length(receiver);
-        int amountStart = scriptLen - Token.ByteLen * 2;
+        int amountStart = scriptLen - Util.ByteLen * 2;
 
         PubKey sender = PubKey(lockingScript[amountStart - pubKeyLen : amountStart]);
         // authorize
         require(checkSig(senderSig, sender));
 
-        int balance0 = unpack(lockingScript[amountStart : amountStart + Token.ByteLen]);
-        int balance1 = unpack(lockingScript[amountStart + Token.ByteLen :]);
+        int balance0 = unpack(lockingScript[amountStart : amountStart + Util.ByteLen]);
+        int balance1 = unpack(lockingScript[amountStart + Util.ByteLen :]);
 
         // persist contract code part, including op_return itself
         bytes codePart = lockingScript[: amountStart - pubKeyLen];
         
         bytes amountPart = b'';
         if (isFirstInput) {
-            amountPart = num2bin(balance0 + balance1, Token.ByteLen) + num2bin(otherTokenAmount, Token.ByteLen);
+            amountPart = num2bin(balance0 + balance1, Util.ByteLen) + num2bin(otherTokenAmount, Util.ByteLen);
         } else {
-            amountPart = num2bin(otherTokenAmount, Token.ByteLen) + num2bin(balance0 + balance1, Token.ByteLen);
+            amountPart = num2bin(otherTokenAmount, Util.ByteLen) + num2bin(balance0 + balance1, Util.ByteLen);
         }
         // merge
         bytes outputScript = codePart + receiver + amountPart;

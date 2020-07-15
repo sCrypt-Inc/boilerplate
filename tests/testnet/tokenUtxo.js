@@ -1,10 +1,7 @@
 const path = require('path');
 const { bsv, buildContractClass, lockScriptTx, unlockScriptTx, getSighashPreimage, getSignature, showError, literal2Asm } = require('scrypttest');
-const { getPreimage, signTx, sendTx, num2bin, genPrivKey } = require('../testHelper');
+const { getPreimage, signTx, sendTx, num2bin, genPrivKey, ByteLen } = require('../testHelper');
 const { split } = require('ts-node');
-
-// number of bytes to denote token amount
-const ByteLen = 1
 
 // private key on testnet in WIF
 const key = ''

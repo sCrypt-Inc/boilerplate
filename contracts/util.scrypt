@@ -1,4 +1,7 @@
 contract Util {
+	// number of bytes to denote some numeric value
+    static int ByteLen = 1;
+
     static function readVarint(bytes b) returns (bytes) {
 		int len = 0;
 		bytes ret = b'';

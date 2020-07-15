@@ -1,9 +1,6 @@
 const path = require('path');
 const { buildContractClass, bsv, literal2Asm, lockScriptTx, unlockFundedScriptTx, getFundedSighashPreimage, showError } = require('scrypttest');
-const { toHex } = require('../testHelper');
-
-// number of bytes to denote token amount
-const ByteLen = 1
+const { toHex, ByteLen } = require('../testHelper');
 
 // Token price is 1000 satoshis each
 // NOTE: a price that is too low could run afoul of dust policy

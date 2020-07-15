@@ -6,10 +6,11 @@ contract Counter {
 
         bytes scriptCode = Util.scriptCode(txPreimage);
 		int scriptLen = length(scriptCode);
-		// last byte contains the state, i.e., counter
-		int counter = unpack(scriptCode[scriptLen - 1 :]);
+		
+		// state (i.e., counter value) is at the end
+		int counter = unpack(scriptCode[scriptLen - Util.ByteLen :]);
 		// increment counter
-		bytes scriptCode_ = scriptCode[: scriptLen - 1] + num2bin(counter + 1, 1);
+		bytes scriptCode_ = scriptCode[: scriptLen - Util.ByteLen] + num2bin(counter + 1, Util.ByteLen);
 		bytes hashOutputs = Util.hashOutputs(txPreimage);
 		// output: amount + scriptlen + script
 		Sha256 hashOutputs_ = hash256(num2bin(amount, 8) + Util.writeVarint(scriptCode_));

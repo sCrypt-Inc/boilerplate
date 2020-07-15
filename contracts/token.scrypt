@@ -37,7 +37,7 @@ contract Token {
         }
 
         // write new locking script
-        bytes lockingScript_ = lockingScript[: scriptLen - 68] + pk0 + num2bin(balance0, 1) + pk1 + num2bin(balance1, 1);
+        bytes lockingScript_ = lockingScript[: scriptLen - 68] + pk0 + num2bin(balance0, Util.ByteLen) + pk1 + num2bin(balance1, Util.ByteLen);
         bytes hashOutputs = Util.hashOutputs(txPreimage);
         Sha256 hashOutputs_ = hash256(num2bin(amount, 8) + Util.writeVarint(lockingScript_));
 		require(hashOutputs == hashOutputs_);

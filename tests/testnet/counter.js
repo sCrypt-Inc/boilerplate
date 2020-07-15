@@ -1,15 +1,12 @@
 const path = require('path');
 const { buildContractClass, literal2Asm, lockScriptTx, unlockScriptTx, getSighashPreimage, showError } = require('scrypttest');
-const { num2bin, genPrivKey } = require('../testHelper');
+const { num2bin, genPrivKey, ByteLen } = require('../testHelper');
 
 // private key on testnet in WIF
 const key = ''
 if (!key) {
     genPrivKey()
 }
-
-// number of bytes to denote counter
-const ByteLen = 1
 
 (async() => {
     try {

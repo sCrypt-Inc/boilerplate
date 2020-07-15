@@ -2,10 +2,7 @@ const path = require('path');
 const { expect } = require('chai');
 const { buildContractClass, bsv } = require('scrypttest');
 
-const { inputIndex, inputSatoshis, tx, getPreimage, toHex, num2bin } = require('../testHelper');
-
-// number of bytes to denote token amount
-const ByteLen = 1
+const { inputIndex, inputSatoshis, tx, getPreimage, toHex, num2bin, ByteLen } = require('../testHelper');
 
 // make a copy since it will be mutated
 const tx_ = bsv.Transaction.shallowCopy(tx)

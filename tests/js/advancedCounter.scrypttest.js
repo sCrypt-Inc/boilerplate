@@ -2,10 +2,7 @@ const path = require('path');
 const { expect } = require('chai');
 const { buildContractClass, bsv } = require('scrypttest');
 
-/**
- * an example test for contract using TxAdvanced
- */
-const { inputIndex, inputSatoshis, tx, getPreimage, toHex } = require('../testHelper');
+const { inputIndex, inputSatoshis, tx, getPreimage, toHex, num2bin, ByteLen } = require('../testHelper');
 
 // make a copy since it will be mutated
 const tx_ = bsv.Transaction.shallowCopy(tx)
@@ -30,10 +27,10 @@ describe('Test sCrypt contract Counter In Javascript', () => {
     counter = new Counter()
 
     lockingScriptCodePart = counter.getLockingScript()
-    const newLockingScript = lockingScriptCodePart +' OP_RETURN 01'
     // append state as passive data
-    const lockingScript = lockingScriptCodePart + ' OP_RETURN 00'
+    const lockingScript = lockingScriptCodePart + ' OP_RETURN ' + num2bin(0, ByteLen)
     counter.setLockingScript(lockingScript)
+    const newLockingScript = lockingScriptCodePart + ' OP_RETURN ' + num2bin(1, ByteLen)
     
     // counter output
     tx_.addOutput(new bsv.Transaction.Output({
