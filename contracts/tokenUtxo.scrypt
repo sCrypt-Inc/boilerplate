@@ -17,10 +17,9 @@ contract Token {
         bytes lockingScript = Util.scriptCode(txPreimage);
         int scriptLen = length(lockingScript);
 
-        int pubKeyLen = length(receiver0);
         int amountStart = scriptLen - Util.DataLen * 2;
 
-        PubKey sender = PubKey(lockingScript[amountStart - pubKeyLen : amountStart]);
+        PubKey sender = PubKey(lockingScript[amountStart - Util.PubKeyLen : amountStart]);
         // authorize
         require(checkSig(senderSig, sender));
         
@@ -31,7 +30,7 @@ contract Token {
         require(balance0 + balance1 == tokenAmount0 + tokenAmount1);
         
         // persist contract code part, including op_return itself
-        bytes codePart = lockingScript[: amountStart - pubKeyLen];
+        bytes codePart = lockingScript[: amountStart - Util.PubKeyLen];
         
         // setting first balance as 0 is just a convention, not a requirement
         bytes outputScript0 = codePart + receiver0 + num2bin(0, Util.DataLen) + num2bin(tokenAmount0, Util.DataLen);
@@ -53,10 +52,9 @@ contract Token {
         bytes lockingScript = Util.scriptCode(txPreimage);
         int scriptLen = length(lockingScript);
 
-        int pubKeyLen = length(receiver);
         int amountStart = scriptLen - Util.DataLen * 2;
 
-        PubKey sender = PubKey(lockingScript[amountStart - pubKeyLen : amountStart]);
+        PubKey sender = PubKey(lockingScript[amountStart - Util.PubKeyLen : amountStart]);
         // authorize
         require(checkSig(senderSig, sender));
 
@@ -64,7 +62,7 @@ contract Token {
         int balance1 = unpack(lockingScript[amountStart + Util.DataLen :]);
 
         // persist contract code part, including op_return itself
-        bytes codePart = lockingScript[: amountStart - pubKeyLen];
+        bytes codePart = lockingScript[: amountStart - Util.PubKeyLen];
         
         bytes amountPart = b'';
         if (isFirstInput) {

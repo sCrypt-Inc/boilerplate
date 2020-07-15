@@ -17,10 +17,11 @@ contract Token {
         bytes lockingScript = Util.scriptCode(txPreimage);
         int scriptLen = length(lockingScript);
 
-        PubKey pk0 = PubKey(lockingScript[scriptLen - 68 : scriptLen - 35]);
-        int balance0 = unpack(lockingScript[scriptLen - 35 : scriptLen - 34]);
-        PubKey pk1 = PubKey(lockingScript[scriptLen - 34 : scriptLen - 1]);
-        int balance1 = unpack(lockingScript[scriptLen - 1 : ]);
+        int pkStart = scriptLen - (Util.PubKeyLen + Util.DataLen) * 2;
+        PubKey pk0 = PubKey(lockingScript[pkStart : pkStart + Util.PubKeyLen]);
+        int balance0 = unpack(lockingScript[pkStart + Util.PubKeyLen : pkStart + Util.PubKeyLen + Util.DataLen]);
+        PubKey pk1 = PubKey(lockingScript[pkStart + Util.PubKeyLen + Util.DataLen : pkStart + 2 * Util.PubKeyLen + Util.DataLen]);
+        int balance1 = unpack(lockingScript[scriptLen - Util.DataLen : ]);
 
         // only between two holders
         require(sender == pk0 && receiver == pk1 || sender == pk1  && receiver == pk0);

@@ -4,6 +4,8 @@ contract Util {
 
 	// number of bytes to denote output value
     static int OutputValueLen = 8;
+	// number of bytes to denote a public key (compressed)
+    static int PubKeyLen = 33;
 
     static function readVarint(bytes b) returns (bytes) {
 		int len = 0;
