@@ -3,7 +3,7 @@ contract Util {
     static int DataLen = 1;
 
 	// number of bytes to denote output value
-    static int OutputValueByteLen = 8;
+    static int OutputValueLen = 8;
 
     static function readVarint(bytes b) returns (bytes) {
 		int len = 0;

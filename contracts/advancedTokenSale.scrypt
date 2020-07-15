@@ -51,12 +51,12 @@ contract AdvancedTokenSale {
         bytes scriptCode_ = scriptCode + Util.writeVarint(newSalesEntry);
 
         // output: amount + scriptlen + script
-        bytes counterOutput = num2bin(newBalance, Util.OutputValueByteLen) + Util.writeVarint(scriptCode_);
+        bytes counterOutput = num2bin(newBalance, Util.OutputValueLen) + Util.writeVarint(scriptCode_);
 
         // Expect the additional CHANGE output
         bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
         // output: amount + scriptlen + script
-        bytes changeOutput = num2bin(changeSats, Util.OutputValueByteLen) + Util.writeVarint(changeScript);
+        bytes changeOutput = num2bin(changeSats, Util.OutputValueLen) + Util.writeVarint(changeScript);
 
         bytes hashOutputs = Util.hashOutputs(txPreimage);
         // expect exactly two outputs

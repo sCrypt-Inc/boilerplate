@@ -30,11 +30,11 @@ contract AdvancedCounter {
 		// Expect the counter to be incremented in the new transaction state
 		bytes scriptCode_ = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
 
-        bytes counterOutput = num2bin(amount, Util.OutputValueByteLen) + Util.writeVarint(scriptCode_);
+        bytes counterOutput = num2bin(amount, Util.OutputValueLen) + Util.writeVarint(scriptCode_);
 
 		// Expect the additional CHANGE output
 		bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
-		bytes changeOutput = num2bin(changeSats, Util.OutputValueByteLen) + Util.writeVarint(changeScript);
+		bytes changeOutput = num2bin(changeSats, Util.OutputValueLen) + Util.writeVarint(changeScript);
 
 		bytes hashOutputs = Util.hashOutputs(txPreimage);
 		// output: amount + scriptlen + script
