@@ -35,9 +35,9 @@ contract Token {
         
         // setting first balance as 0 is just a convention, not a requirement
         bytes outputScript0 = codePart + receiver0 + num2bin(0, Util.ByteLen) + num2bin(tokenAmount0, Util.ByteLen);
-        bytes output0 = num2bin(satoshiAmount0, 8) + Util.writeVarint(outputScript0);
+        bytes output0 = num2bin(satoshiAmount0, Util.OutputValueByteLen) + Util.writeVarint(outputScript0);
         bytes outputScript1 = codePart + receiver1 + num2bin(0, Util.ByteLen) + num2bin(tokenAmount1, Util.ByteLen);
-        bytes output1 = num2bin(satoshiAmount1, 8) + Util.writeVarint(outputScript1);
+        bytes output1 = num2bin(satoshiAmount1, Util.OutputValueByteLen) + Util.writeVarint(outputScript1);
 		Sha256 hashOutputs = hash256(output0 + output1);
         
         require(hashOutputs == Util.hashOutputs(txPreimage));
@@ -74,7 +74,7 @@ contract Token {
         }
         // merge
         bytes outputScript = codePart + receiver + amountPart;
-        bytes output = num2bin(satoshiAmount, 8) + Util.writeVarint(outputScript);
+        bytes output = num2bin(satoshiAmount, Util.OutputValueByteLen) + Util.writeVarint(outputScript);
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 }
