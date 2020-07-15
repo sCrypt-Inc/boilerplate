@@ -40,7 +40,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
 
     // change output
     tx_.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM('OP_DUP OP_HASH160 ' + toHex(pkh) + ' OP_EQUALVERIFY OP_CHECKSIG'),
+      script: bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()),
       satoshis: changeAmount
     }))
 
