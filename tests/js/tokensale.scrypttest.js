@@ -20,7 +20,7 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
   const tokenPriceInSatoshis = 100
 
   before(() => {
-    const TokenSale = buildContractClass(path.join(__dirname, '../../contracts/tokensale.scrypt'), tx_, inputIndex, inputSatoshis)
+    const TokenSale = buildContractClass(path.join(__dirname, '../../contracts/tokenSale.scrypt'), tx_, inputIndex, inputSatoshis)
     tokenSale = new TokenSale(tokenPriceInSatoshis)
 
     // code part
