@@ -2,16 +2,14 @@ const path = require('path');
 const { expect } = require('chai');
 const { buildContractClass, bsv } = require('scrypttest');
 
-const { inputIndex, inputSatoshis, tx, signTx, getPreimage, toHex, num2bin, DataLen } = require('../testHelper');
+const { inputIndex, inputSatoshis, tx, signTx, getPreimage, toHex, num2bin, DataLen, dummyTxId } = require('../testHelper');
 
 // make a copy since it will be mutated
 let tx_ = bsv.Transaction.shallowCopy(tx)
 const outputAmount = 22222
     
 describe('Test sCrypt contract UTXO Token In Javascript', () => {
-  let token
-  let getPreimageAfterTransfer
-  let lockingScriptCodePart
+  let token, lockingScriptCodePart
 
   const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
@@ -29,40 +27,52 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
   });
 
   it('should succeed when one token is split into two', () => {
-    // initial supply 100 tokens: publicKey1 has 100, publicKey2 0
+    // split 100 tokens
     const lockingScript = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen)
-    token.setLockingScript(lockingScript)
     
-    getPreimageAfterTransfer = (balance0, balance1) => {
+    const testSplit = (privKey, balance0, balance1, balanceInput0 = balance0, balanceInput1 = balance1) => {
+      tx_ = new bsv.Transaction()
+
+      tx_.addInput(new bsv.Transaction.Input({
+        prevTxId: dummyTxId,
+        outputIndex: 0,
+        script: ''
+      }), bsv.Script.fromASM(lockingScript), inputSatoshis)
+
       const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey2) + num2bin(0, DataLen) + num2bin(balance0, DataLen)
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
       }))
+
       const newLockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(0, DataLen) + num2bin(balance1, DataLen)
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript1),
         satoshis: outputAmount
       }))
 
-      return getPreimage(tx_, lockingScript)
+      const Token = buildContractClass(path.join(__dirname, '../../contracts/tokenUtxo.scrypt'), tx_, inputIndex, inputSatoshis)
+      token = new Token()
+      
+      token.setLockingScript(lockingScript)
+      
+      const preimage = getPreimage(tx_, lockingScript, inputIndex)
+      const sig = signTx(tx_, privKey, token.getLockingScript())
+      return token.split(toHex(sig), toHex(publicKey2), balanceInput0, outputAmount, toHex(publicKey3), balanceInput1, outputAmount, toHex(preimage))
     }
 
-    // TODO: refactor as in merge
-    let preimage = getPreimageAfterTransfer(60, 40)
-    const sig1 = signTx(tx_, privateKey1, token.getLockingScript())
-    expect(token.split(toHex(sig1), toHex(publicKey2), 60, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(true);
+    expect(testSplit(privateKey1, 60, 40)).to.equal(true);
     
-    // unauthorized
-    const sig2 = signTx(tx_, privateKey2, token.getLockingScript())
-    expect(token.split(toHex(sig2), toHex(publicKey2), 60, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(false);
+    // unauthorized key
+    expect(testSplit(privateKey2, 60, 40)).to.equal(false);
     
-    // mismatch w/ preimage
-    expect(token.split(toHex(sig1), toHex(publicKey2), 60 - 1, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(false);
+    // mismatch with preimage
+    expect(testSplit(privateKey1, 60, 40, 60 - 1, 40)).to.equal(false);
+    expect(testSplit(privateKey1, 60, 40, 60, 40 + 1)).to.equal(false);
     
-    // token inbalance after splitting
-    preimage = getPreimageAfterTransfer(60 + 1, 40)
-    expect(token.split(toHex(sig1), toHex(publicKey2), 60 + 1, outputAmount, toHex(publicKey3), 40, outputAmount, toHex(preimage))).to.equal(false);
+    // token imbalance after splitting
+    expect(testSplit(privateKey1, 60 + 1, 40)).to.equal(false);
+    expect(testSplit(privateKey1, 60, 40 - 1)).to.equal(false);
   });
 
   it('should succeed when two tokens are merged', () => {
@@ -80,13 +90,13 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       tx_ = new bsv.Transaction()
 
       tx_.addInput(new bsv.Transaction.Input({
-        prevTxId: 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458',
+        prevTxId: dummyTxId,
         outputIndex: 0,
         script: ''
       }), bsv.Script.fromASM(lockingScript0), inputSatoshis)
       
       tx_.addInput(new bsv.Transaction.Input({
-        prevTxId: 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458',
+        prevTxId: dummyTxId,
         outputIndex: 1,
         script: ''
       }), bsv.Script.fromASM(lockingScript1), inputSatoshis)

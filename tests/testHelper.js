@@ -14,9 +14,10 @@ const inputIndex = 0
 const inputSatoshis = 100000
 const flags = Interpreter.SCRIPT_VERIFY_MINIMALDATA | Interpreter.SCRIPT_ENABLE_SIGHASH_FORKID | Interpreter.SCRIPT_ENABLE_MAGNETIC_OPCODES | Interpreter.SCRIPT_ENABLE_MONOLITH_OPCODES
 const minFee = 546
+const dummyTxId = 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458'
 
 const utxo = {
-  txId: 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458',
+  txId: dummyTxId,
   outputIndex: 0,
   script: '',   // placeholder
   satoshis: inputSatoshis
@@ -135,5 +136,6 @@ module.exports = {
     createUnlockingTx,
     genPrivKey,
     DataLen,
+    dummyTxId,
     sendTx
 }
