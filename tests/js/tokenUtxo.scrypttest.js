@@ -45,11 +45,13 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         satoshis: outputAmount
       }))
 
-      const newLockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(0, DataLen) + num2bin(balance1, DataLen)
-      tx_.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.fromASM(newLockingScript1),
-        satoshis: outputAmount
-      }))
+      if (balance1 > 0) {
+        const newLockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(0, DataLen) + num2bin(balance1, DataLen)
+        tx_.addOutput(new bsv.Transaction.Output({
+          script: bsv.Script.fromASM(newLockingScript1),
+          satoshis: outputAmount
+        }))
+      }
 
       const Token = buildContractClass(path.join(__dirname, '../../contracts/tokenUtxo.scrypt'), tx_, inputIndex, inputSatoshis)
       token = new Token()
@@ -62,6 +64,12 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
     }
 
     expect(testSplit(privateKey1, 60, 40)).to.equal(true);
+
+    // 1 to 1 transfer
+    expect(testSplit(privateKey1, 100, 0)).to.equal(true);
+
+    // balance0 cannot be 0
+    expect(testSplit(privateKey1, 0, 100)).to.equal(false);
     
     // unauthorized key
     expect(testSplit(privateKey2, 60, 40)).to.equal(false);

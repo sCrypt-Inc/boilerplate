@@ -6,7 +6,8 @@ import "util.scrypt";
 contract Token {
     public function split(Sig senderSig, PubKey receiver0, int tokenAmount0, int satoshiAmount0, 
                             PubKey receiver1, int tokenAmount1, int satoshiAmount1, bytes txPreimage) {
-        require(tokenAmount0 >= 0);
+        require(tokenAmount0 > 0);
+        // 1 to 1 transfer when tokenAmount1 is 0
         require(tokenAmount1 >= 0);
 
         // this ensures the preimage is for the current tx
@@ -35,8 +36,11 @@ contract Token {
         // setting first balance as 0 is just a convention, not a requirement
         bytes outputScript0 = codePart + receiver0 + num2bin(0, Util.DataLen) + num2bin(tokenAmount0, Util.DataLen);
         bytes output0 = num2bin(satoshiAmount0, Util.OutputValueLen) + Util.writeVarint(outputScript0);
-        bytes outputScript1 = codePart + receiver1 + num2bin(0, Util.DataLen) + num2bin(tokenAmount1, Util.DataLen);
-        bytes output1 = num2bin(satoshiAmount1, Util.OutputValueLen) + Util.writeVarint(outputScript1);
+        bytes output1 = b'';
+        if (tokenAmount1 > 0) {
+            bytes outputScript1 = codePart + receiver1 + num2bin(0, Util.DataLen) + num2bin(tokenAmount1, Util.DataLen);
+            output1 = num2bin(satoshiAmount1, Util.OutputValueLen) + Util.writeVarint(outputScript1);
+        }
 		Sha256 hashOutputs = hash256(output0 + output1);
         
         require(hashOutputs == Util.hashOutputs(txPreimage));
