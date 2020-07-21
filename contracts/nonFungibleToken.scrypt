@@ -1,0 +1,59 @@
+import "util.scrypt";
+
+/**
+ * A non-fungible token protocol based on UTXO model
+ */
+contract NonFungibleToken {
+    public function issue(Sig issuerSig, PubKey receiver, int satoshiAmount0, int satoshiAmount1, bytes txPreimage) {
+        // this ensures the preimage is for the current tx
+		require(Tx.checkPreimage(txPreimage));
+
+        // read previous locking script: codePart + OP_RETURN + currTokenId + issuer
+        bytes lockingScript = Util.scriptCode(txPreimage);
+        int scriptLen = length(lockingScript);
+
+        // constant part of locking script: upto op_return
+        int constStart = scriptLen - Util.DataLen - Util.PubKeyLen;
+        bytes constPart = lockingScript[: constStart];
+                
+        PubKey issuer = PubKey(lockingScript[constStart + Util.DataLen :]);
+        // authorize: only the issuer can mint new tokens
+        require(checkSig(issuerSig, issuer));
+
+        int currTokenId = unpack(lockingScript[constStart : constStart + Util.DataLen]);
+
+        // increment token ID
+        bytes outputScript0 = constPart + num2bin(currTokenId + 1, Util.DataLen) + issuer;
+        bytes output0 = num2bin(satoshiAmount0, Util.OutputValueLen) + Util.writeVarint(outputScript0);
+
+        // issue a new token
+        bytes outputScript1 = constPart + num2bin(currTokenId, Util.DataLen) + receiver;
+        bytes output1 = num2bin(satoshiAmount1, Util.OutputValueLen) + Util.writeVarint(outputScript1);
+        
+        // check outputs
+		Sha256 hashOutputs = hash256(output0 + output1);
+        require(hashOutputs == Util.hashOutputs(txPreimage));
+    }
+
+    public function transfer(Sig senderSig, PubKey receiver, int satoshiAmount, bytes txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
+
+        // read previous locking script: codePart + OP_RETURN + tokenID + ownerPublicKey
+        bytes lockingScript = Util.scriptCode(txPreimage);
+        int scriptLen = length(lockingScript);
+
+        // constant part of locking script: upto tokenID
+        int constStart = scriptLen - Util.PubKeyLen;
+        bytes constPart = lockingScript[: constStart];
+
+        PubKey sender = PubKey(lockingScript[constStart : ]);
+        // authorize
+        require(checkSig(senderSig, sender));
+
+        // transfer
+        bytes outputScript = constPart + receiver;
+
+        bytes output = num2bin(satoshiAmount, Util.OutputValueLen) + Util.writeVarint(outputScript);
+        require(hash256(output) == Util.hashOutputs(txPreimage));
+    }
+}
