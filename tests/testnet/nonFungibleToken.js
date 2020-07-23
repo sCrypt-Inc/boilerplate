@@ -25,10 +25,8 @@ if (!key) {
         const lockingScriptCodePart = token.getLockingScript()
         
         //read previous locking script: codePart + OP_RETURN + currTokenId + issuer
-
-
-        let currTokenId = 10;
-        // Issuer token 
+        const currTokenId = 10;
+        // issue a new token 
         let lockingScript = lockingScriptCodePart + ' OP_RETURN '  + num2bin(currTokenId, DataLen) + toHex(publicKeyIssuer)
 
         token.setLockingScript(lockingScript)
@@ -37,13 +35,11 @@ if (!key) {
         const FEE = inputSatoshis / 4
         let outputAmount = Math.floor((inputSatoshis - FEE) / 2)
         // lock fund to the script
-        console.log('lock fund to the script start ...     ')
-        const lockingTxid = await lockScriptTx(lockingScript, key, inputSatoshis)
-        
+        const lockingTxid = await lockScriptTx(lockingScript, key, inputSatoshis) 
         console.log('funding txid:      ', lockingTxid)
         
         // increment token ID and issue two new token
-        let issuerTxid, lockingScript0, lockingScript1
+        let issueTxid, lockingScript0, lockingScript1
         {
             const tx = new bsv.Transaction()
             tx.addInput(new bsv.Transaction.Input({
@@ -63,15 +59,14 @@ if (!key) {
                 script: bsv.Script.fromASM(lockingScript1),
                 satoshis: outputAmount
             }))
-
             
             const preimage = getPreimage(tx, lockingScript, 0, inputSatoshis)
             const sig1 = signTx(tx, privateKeyIssuer, lockingScript, 0, inputSatoshis)
             const unlockingScript = [toHex(sig1), toHex(publicKeyReceiver1),  literal2Asm(outputAmount), literal2Asm(outputAmount),
                  toHex(preimage), literal2Asm(1)].join(' ')
             tx.inputs[0].setScript(bsv.Script.fromASM(unlockingScript));
-            issuerTxid = await sendTx(tx);
-            console.log('issuer txid:       ', issuerTxid)
+            issueTxid = await sendTx(tx);
+            console.log('issue txid:       ', issueTxid)
         }
 
 
@@ -83,13 +78,11 @@ if (!key) {
             const tx = new bsv.Transaction()
 
             tx.addInput(new bsv.Transaction.Input({
-                prevTxId: issuerTxid,
+                prevTxId: issueTxid,
                 outputIndex: 1,
                 script: ''
             }), bsv.Script.fromASM(lockingScript1), inputSatoshis)
-            console.log(tx);
-            let tokenId = 10;
-            const lockingScript2 = lockingScriptCodePart + ' OP_RETURN ' + num2bin(tokenId, DataLen) + toHex(publicKeyReceiver2)
+            const lockingScript2 = lockingScriptCodePart + ' OP_RETURN ' + num2bin(currTokenId, DataLen) + toHex(publicKeyReceiver2)
 
             tx.addOutput(new bsv.Transaction.Output({
                 script: bsv.Script.fromASM(lockingScript2),
@@ -100,7 +93,6 @@ if (!key) {
             const sig2 = signTx(tx, privateKeyReceiver1, lockingScript1, 0, inputSatoshis)
             const unlockingScript = [toHex(sig2), toHex(publicKeyReceiver2), literal2Asm(outputAmount), toHex(preimage), literal2Asm(2)].join(' ')
             tx.inputs[0].setScript(bsv.Script.fromASM(unlockingScript));
-            console.log('sendTx transfer ...')
             const transferTxid = await sendTx(tx);
             console.log('transfer txid:       ', transferTxid)
         }
