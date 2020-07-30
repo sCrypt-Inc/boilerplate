@@ -67,11 +67,6 @@ contract Util {
 		 		pubKeyHash + OpCode.OP_EQUALVERIFY + OpCode.OP_CHECKSIG;
 	}
 
-	// build a tx output from its script and satoshi amount
-	static function buildOutput(bytes outputScript, int outputSatoshis) returns (bytes) {
-		return num2bin(outputSatoshis, Util.OutputValueLen) + Util.writeVarint(outputScript);
-	}
-
 	/*
 	 * parse sighash preimage
 	 * Note: only to be used after preimage is validated

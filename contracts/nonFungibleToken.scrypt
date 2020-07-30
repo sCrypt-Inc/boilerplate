@@ -24,14 +24,15 @@ contract NonFungibleToken {
 
         // increment token ID
         bytes outputScript0 = constPart + num2bin(currTokenId + 1, Util.DataLen) + issuer;
-        bytes output0 = Util.buildOutput(outputScript0, satoshiAmount0);
+        bytes output0 = num2bin(satoshiAmount0, Util.OutputValueLen) + Util.writeVarint(outputScript0);
 
         // issue a new token
         bytes outputScript1 = constPart + num2bin(currTokenId, Util.DataLen) + receiver;
-        bytes output1 = Util.buildOutput(outputScript1, satoshiAmount1);
+        bytes output1 = num2bin(satoshiAmount1, Util.OutputValueLen) + Util.writeVarint(outputScript1);
         
         // check outputs
-		require(hash256(output0 + output1) == Util.hashOutputs(txPreimage));
+		Sha256 hashOutputs = hash256(output0 + output1);
+        require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 
     public function transfer(Sig senderSig, PubKey receiver, int satoshiAmount, bytes txPreimage) {
@@ -52,7 +53,7 @@ contract NonFungibleToken {
         // transfer
         bytes outputScript = constPart + receiver;
 
-        bytes output = Util.buildOutput(outputScript, satoshiAmount);
+        bytes output = num2bin(satoshiAmount, Util.OutputValueLen) + Util.writeVarint(outputScript);
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 }

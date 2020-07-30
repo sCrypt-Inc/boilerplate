@@ -51,17 +51,20 @@ contract AdvancedTokenSale {
         bytes scriptCode_ = scriptCode + newSalesEntry;
 
         // output: amount + scriptlen + script
-        bytes counterOutput = Util.buildOutput(scriptCode_, newBalance);
+        bytes counterOutput = num2bin(newBalance, Util.OutputValueLen) + Util.writeVarint(scriptCode_);
 
         // Expect the additional CHANGE output
         bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
         // output: amount + scriptlen + script
-        bytes changeOutput = Util.buildOutput(changeScript, changeSats);
+        bytes changeOutput = num2bin(changeSats, Util.OutputValueLen) + Util.writeVarint(changeScript);
 
-        // ensure exactly two outputs matching what we expect:
+        // expect exactly two outputs
+        Sha256 hashOutputs = hash256(counterOutput + changeOutput);
+
+        // ensure output matches what we expect:
         //     - amount/balance reflects funds received from sale
         //     - output script is the same as scriptCode, with additional sales entry
         //     - expected change output script is there
-        require(hash256(counterOutput + changeOutput) == Util.hashOutputs(txPreimage));
+        require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 }
