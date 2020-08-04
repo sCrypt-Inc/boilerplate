@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const { bsv, buildContractClass, toHex, getPreimage, num2bin, signTx, PubKey, Bytes, Sig } = require('scryptlib');
-const { inputIndex, inputSatoshis, tx, compileContract, DataLen, dummyTxId } = require('../../helper');
+const { inputIndex, inputSatoshis, tx, compileContract, DataLen, dummyTxId, reversedDummyTxId } = require('../../helper');
 
 // make a copy since it will be mutated
 var tx_ = bsv.Transaction.shallowCopy(tx)
@@ -121,6 +121,9 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         script: ''
       }), bsv.Script.fromASM(lockingScript1), inputSatoshis)
 
+      // use reversed txid in outpoint
+      const prevouts = reversedDummyTxId + num2bin(0, 4) + reversedDummyTxId + num2bin(1, 4)
+
       const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(balance0, DataLen) + num2bin(balance1, DataLen)
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
@@ -134,7 +137,8 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       return token.merge(
         new Sig(toHex(sig)),
         new PubKey(toHex(publicKey3)),
-        inputIndex == 0, inputIndex == 0 ? balance1 : balance0,
+        new Bytes(prevouts),
+        inputIndex == 0 ? balance1 : balance0,
         outputAmount,
         new Bytes(toHex(preimage))
       )

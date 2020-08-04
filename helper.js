@@ -24,6 +24,7 @@ const inputSatoshis = 100000
 const flags = Interpreter.SCRIPT_VERIFY_MINIMALDATA | Interpreter.SCRIPT_ENABLE_SIGHASH_FORKID | Interpreter.SCRIPT_ENABLE_MAGNETIC_OPCODES | Interpreter.SCRIPT_ENABLE_MONOLITH_OPCODES
 const minFee = 546
 const dummyTxId = 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458'
+const reversedDummyTxId = '5884e5db9de218238671572340b207ee85b628074e7e467096c267266baf77a4'
 
 const utxo = {
   txId: dummyTxId,
@@ -162,6 +163,7 @@ module.exports = {
   createUnlockingTx,
   DataLen,
   dummyTxId,
+  reversedDummyTxId,
   unlockP2PKHInput,
   sendTx,
   compileContract,

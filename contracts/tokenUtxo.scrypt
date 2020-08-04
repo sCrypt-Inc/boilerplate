@@ -46,11 +46,18 @@ contract Token {
         require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 
-    public function merge(Sig senderSig, PubKey receiver, bool isFirstInput, int otherTokenAmount, int satoshiAmount, bytes txPreimage) {
+    public function merge(Sig senderSig, PubKey receiver, bytes prevouts, int otherTokenAmount, int satoshiAmount, bytes txPreimage) {
         require(otherTokenAmount >= 0);
 
         // this ensures the preimage is for the current tx
 		require(Tx.checkPreimage(txPreimage));
+
+        // this ensures prevouts is the preimage of hashPrevouts
+        require(hash256(prevouts) == Util.hashPrevouts(txPreimage));
+        // each outpoint: 32 byte txid + 4 byte index
+        int outpointLen = 36;
+        // ensure only two inputs are present
+        require(length(prevouts) == 2 * outpointLen);
 
         // read previous locking script
         bytes lockingScript = Util.scriptCode(txPreimage);
@@ -69,9 +76,14 @@ contract Token {
         bytes codePart = lockingScript[: amountStart - Util.PubKeyLen];
         
         bytes amountPart = b'';
-        if (isFirstInput) {
+        if (Util.outpoint(txPreimage) == prevouts[ : outpointLen]) {
+            // input 0
             amountPart = num2bin(balance0 + balance1, Util.DataLen) + num2bin(otherTokenAmount, Util.DataLen);
         } else {
+            // skip the check since it must hold once we reach here
+            // require(Util.outpoint(txPreimage) == prevouts[outpointLen : ]);
+            
+            // input 1
             amountPart = num2bin(otherTokenAmount, Util.DataLen) + num2bin(balance0 + balance1, Util.DataLen);
         }
         // merge
