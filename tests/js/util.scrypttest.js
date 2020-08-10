@@ -1,21 +1,19 @@
-const path = require('path');
 const { expect } = require('chai');
-const { buildContractClass, bsv } = require('scrypttest');
+const { buildContractClass, getPreimage, toHex, Bytes } = require('scryptlib');
 
-const { tx, getPreimage, toHex } = require('../testHelper');
+const { tx, compileContract, inputIndex, inputSatoshis } = require('../../helper');
 
 describe('Test sCrypt contract Util In Javascript', () => {
     let util;
     let preimage
 
     before(() => {
-        const Util = buildContractClass(path.join(__dirname, '../../contracts/util.scrypt'));
+        const Util = buildContractClass(compileContract('util.scrypt'));
         util = new Util();
-        const lockingScript = util.getLockingScript()
-        preimage = getPreimage(tx, lockingScript)
+        preimage = getPreimage(tx, util.lockingScript.toASM(), inputSatoshis)
     });
 
     it('should return true', () => {
-        expect(util.testPreimageParsing(toHex(preimage))).to.equal(true);
+        expect(util.testPreimageParsing(new Bytes(toHex(preimage))).verify({ tx, inputIndex, inputSatoshis })).to.equal(true);
     });
 });

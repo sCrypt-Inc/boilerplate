@@ -1,5 +1,17 @@
 # sCrypt Project Boilerplate
 
+## Guide
+
+[**sCrypt**](https://scryptdoc.readthedocs.io) is a high-level programming language for writing smart contracts on Bitcoin SV. This project provides examples to help developers learn and integrate sCrypt smart contracts to their Javascript-based projects. Our recommended procedure of developing smart contract based applications is as follows:
+
+1. Contract Development and Test
+
+[The sCrypt Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=bsv-scrypt.sCrypt) is a tool for developers to write, test, and debug sCrypt smart contracts.
+
+2. Contract Integration and Application Launch
+
+After developing and unit testing the smart contracts, the next step is to integrate them into your application which is written in other languages such as Javascript or Python. Integration tests should be run on Bitcoin SV [Testnet](https://test.whatsonchain.com/) or [Scaling Test Network(STN)](https://bitcoinscaling.io/) before launching the application to the public on mainnet.
+
 ## Quickstart
 ```
 npm install
@@ -23,30 +35,41 @@ npm test
 │   ├── tokenSale.scrypt                # Selling tokens for bitcoins using <a href="https://medium.com/@xiaohuiliu/atomic-swap-on-bitcoin-sv-abc28e836cd5">atomic swap</a>
 │   ├── tokenUtxo.scrypt                # <a href="https://medium.com/@xiaohuiliu/utxo-based-layer-1-tokens-on-bitcoin-sv-f5e86a74c1e1">fungible token</a>
 │   └── util.scrypt                     # utility functions and constants
+├── deployments                         # examples to deploy contract and call its function on testnet
 └── tests                           # contract test files
     ├── js                              # Javascript unit tests
-    ├── testnet                         # e2e tests to deploy contract and call its function on testnet
     └── ts                              # Typescript unit tests
 </pre>
+
+## Prepare ##
+
+Before trying to run an example, you should have the contract been compiled to produce a [description json file](https://github.com/scrypt-sv/scryptlib#contract-description-file), which would be used for building contract class. This could be done automatically by running a daemon process with command `npm run watch`. It will monit contract files' change and compile it when necessary. All generated description files are located at `tests/fixture/autoGen`. Make sure it's up to date with the contract before running any test.
 
 ## How to write test for a sCrypt contract
 
 The major steps to write a sCrypt test are exemplified by `tests/demo.scrypttest.js`.
 
-1. import / require `scrypttest` libary. 
+1. Install and import / require [`scryptlib` libary](https://github.com/scrypt-sv/scryptlib), which is a javascript SDK for integrating sCrypt smart contract.
 
 ```
-import { buildContractClass } from 'scrypttest';
+npm install scryptlib
+```
+
+
+```
+import { buildContractClass } from 'scryptlib';
 ```
 
 
 2. Use the imported function `buildContractClass` to get a reflected contract, which has same properties and methods as defined in the specified sCrypt contract.
 
 ```
-const Demo = buildContractClass(path.join(__dirname, '../contracts/demo.scrypt'));
+const Demo = buildContractClass(loadDesc('demo_desc.json'));
 ```
 
-3. Initialize the contract.
+Note that `demo_desc.json` is the description file name of the compiled contract, which will be generated automatically if you run `npm run watch` and its name follows the rule `$contractName_desc.json`.
+
+1. Initialize the contract.
 
 ```
 demo = new Demo(4, 7);
@@ -55,7 +78,8 @@ demo = new Demo(4, 7);
 4. Write tests for the instantiated contract as you would do in Javascript.
 
 ```
-expect(demo.unlock(4 + 7)).to.equal(true);
+expect(demo.unlock(4 + 7).verify()).to.equal(true);
+expect(() => { demo.unlock(4 + 6).verify() }).to.throws(/failed to verify/);
 ```
 
 ## How to run tests locally
@@ -70,17 +94,16 @@ Run unit tests file within the editor/explorer context menu.
 ### Run from console
 Tests could also be run from the console by executing `npm test`, just like regular Javascript/TypeScript tests.
 
-## How to run tests remotely on testnet
+## How to run examples on testnet
 When your tests succeed locally, you can run them on testnet.
-1. Provide a private key with funds in `tests/runontestnet.js`
+1. Provide a private key with funds in `privateKey.js`
 ```
-const key = ''
+const key = '$YOUR_PRIVATE_KEY_HERE'
 ```
-2. `npm run testnet`
-```
-> scrypt_boilerplate@0.1.0 testnet ~/scrypt_boilerplate
-> node tests/runontestnet.js
 
+1. Run an example file on testnet by commands like `node deployments/demo.js`, and the output would appear in the console:
+
+```
 locking txid:      8d58ff9067f5fa893b5c695179559e108ebf850d0ce4fd1e42bc872417ffd424
 unlocking txid:    c60b57e93551a6c52282801130649c6a97edcca5d2b28b8b4ae2afe0ee59bf79
 Succeeded on testnet

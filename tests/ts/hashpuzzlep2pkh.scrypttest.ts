@@ -1,10 +1,9 @@
 /**
  * Test for HashPuzzleP2PKH contract in TypeScript
  **/
-import * as path from 'path';
 import { expect } from 'chai';
-import { buildContractClass, bsv } from 'scrypttest';
-import { inputIndex, inputSatoshis, tx, signTx, toHex } from '../testHelper';
+import { buildContractClass, signTx, toHex, bsv, PubKey, Sig, Bytes, Sha256, Ripemd160 } from 'scryptlib';
+import { inputIndex, inputSatoshis, tx, loadDesc } from '../../helper';
 
 // Test keys
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
@@ -22,28 +21,29 @@ describe('Test sCrypt contract HashPuzzleP2PKH In TypeScript', () => {
   let sig: any;
 
   before(() => {
-    const HashPuzzleP2PKH = buildContractClass(path.join(__dirname, '../../contracts/hashpuzzlep2pkh.scrypt'), tx, inputIndex, inputSatoshis)
-    hashPuzzleP2PKH = new HashPuzzleP2PKH(toHex(pkh), toHex(sha256Data))
+    const HashPuzzleP2PKH = buildContractClass(loadDesc('hashpuzzlep2pkh_desc.json'))
+    hashPuzzleP2PKH = new HashPuzzleP2PKH(new Ripemd160(toHex(pkh)), new Sha256(toHex(sha256Data)))
+    hashPuzzleP2PKH.txContext = { tx, inputIndex, inputSatoshis }
   });
 
   it('signature check should succeed when correct private key signs & correct data provided', () => {
-    sig = signTx(tx, privateKey, hashPuzzleP2PKH.getLockingScript())
-    expect(hashPuzzleP2PKH.verify(toHex(data), toHex(sig), toHex(publicKey))).to.equal(true);
+    sig = signTx(tx, privateKey, hashPuzzleP2PKH.lockingScript.toASM(), inputSatoshis)
+    expect(hashPuzzleP2PKH.verify(new Bytes(toHex(data)), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify()).to.equal(true);
   });
 
   it('signature check should fail when correct private key signs & wrong data provided', () => {
-    sig = signTx(tx, privateKey, hashPuzzleP2PKH.getLockingScript())
-    expect(hashPuzzleP2PKH.verify(toHex('wrong data'), toHex(sig), toHex(publicKey))).to.equal(false);
+    sig = signTx(tx, privateKey, hashPuzzleP2PKH.lockingScript.toASM(), inputSatoshis)
+    expect(() => { hashPuzzleP2PKH.verify(new Bytes(toHex('abcdef')), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify() }).to.throws(/failed to verify/);
   });
 
   it('signature check should fail when wrong private key signs & correct data provided', () => {
-    sig = signTx(tx, privateKey2, hashPuzzleP2PKH.getLockingScript())
-    expect(hashPuzzleP2PKH.verify(toHex(data), toHex(sig), toHex(publicKey))).to.equal(false);
+    sig = signTx(tx, privateKey2, hashPuzzleP2PKH.lockingScript.toASM(), inputSatoshis)
+    expect(() => { hashPuzzleP2PKH.verify(new Bytes(toHex(data)), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify() }).to.throws(/failed to verify/);
   });
 
   it('signature check should fail when wrong private key signs & wrong data provided', () => {
-    sig = signTx(tx, privateKey2, hashPuzzleP2PKH.getLockingScript())
-    expect(hashPuzzleP2PKH.verify(toHex('wrong data'), toHex(sig), toHex(publicKey))).to.equal(false);
+    sig = signTx(tx, privateKey2, hashPuzzleP2PKH.lockingScript.toASM(), inputSatoshis)
+    expect(() => { hashPuzzleP2PKH.verify(new Bytes(toHex('abcdef')), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify() }).to.throws(/failed to verify/);
   });
 
 });

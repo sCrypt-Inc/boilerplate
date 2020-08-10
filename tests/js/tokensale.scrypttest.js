@@ -1,8 +1,6 @@
-const path = require('path');
 const { expect } = require('chai');
-const { buildContractClass, bsv } = require('scrypttest');
-
-const { inputIndex, inputSatoshis, tx, getPreimage, toHex, num2bin, DataLen } = require('../testHelper');
+const { bsv, buildContractClass, toHex, getPreimage, num2bin, PubKey, Bytes } = require('scryptlib');
+const { inputIndex, inputSatoshis, tx, compileContract, DataLen } = require('../../helper');
 
 // make a copy since it will be mutated
 const tx_ = bsv.Transaction.shallowCopy(tx)
@@ -17,29 +15,31 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
   const tokenPriceInSatoshis = 100
 
   before(() => {
-    const TokenSale = buildContractClass(path.join(__dirname, '../../contracts/tokenSale.scrypt'), tx_, inputIndex, inputSatoshis)
+    const TokenSale = buildContractClass(compileContract('tokenSale.scrypt'))
     tokenSale = new TokenSale(tokenPriceInSatoshis)
 
-    // code part
-    const lockingScriptCodePart = tokenSale.getLockingScript()
-
-    // initial supply 0
-    const lockingScript = lockingScriptCodePart + ' OP_RETURN'
-    tokenSale.setLockingScript(lockingScript)
+    // initial empty state
+    tokenSale.dataLoad = ''
 
     getPreimageAfterPurchase = (publicKey) => {
-      const newLockingScript = bsv.Script.fromASM(lockingScript).toHex() + toHex(publicKey) + num2bin(numTokens, DataLen)
+      const newLockingScriptHex = tokenSale.lockingScript.toHex() + toHex(publicKey) + num2bin(numTokens, DataLen)
       tx_.addOutput(new bsv.Transaction.Output({
-        script: newLockingScript,
+        script: bsv.Script.fromHex(newLockingScriptHex),
         satoshis: inputSatoshis + numTokens * tokenPriceInSatoshis
       }))
 
-      return getPreimage(tx_, lockingScript)
+      return getPreimage(tx_, tokenSale.lockingScript.toASM(), inputSatoshis)
     }
   });
 
   it('should succeed when publicKey1 buys tokens', () => {
     const preimage = getPreimageAfterPurchase(publicKey1)
-    expect(tokenSale.buy(toHex(publicKey1), numTokens, toHex(preimage))).to.equal(true);
+    expect(
+      tokenSale.buy(
+        new PubKey(toHex(publicKey1)),
+        numTokens,
+        new Bytes(toHex(preimage))
+      ).verify( { tx: tx_, inputIndex, inputSatoshis })
+    ).to.equal(true);
   });
 });

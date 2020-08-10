@@ -1,11 +1,11 @@
-import * as path from 'path';
 import { expect } from 'chai';
-import { buildContractClass, bsv } from 'scrypttest';
+import { buildContractClass, signTx, toHex, bsv, Ripemd160, PubKey, Sig } from 'scryptlib';
+import { loadDesc } from "../../helper";
 
 /**
  * an example test for contract containing signature verification
  */
-import { inputIndex, inputSatoshis, tx, signTx, toHex } from '../testHelper';
+import { inputIndex, inputSatoshis, tx } from '../../helper';
 
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
@@ -17,17 +17,22 @@ describe('Test sCrypt contract DemoP2PKH In Typescript', () => {
   let sig: any;
 
   before(() => {
-    const DemoP2PKH = buildContractClass(path.join(__dirname, '../../contracts/p2pkh.scrypt'), tx, inputIndex, inputSatoshis)
-    demo = new DemoP2PKH(toHex(pkh))
+    const DemoP2PKH = buildContractClass(loadDesc('p2pkh_desc.json'))
+    demo = new DemoP2PKH(new Ripemd160(toHex(pkh)))
+    demo.txContext = {
+      tx,
+      inputIndex,
+      inputSatoshis
+    }
   });
 
   it('signature check should succeed when right private key signs', () => {
-    sig = signTx(tx, privateKey, demo.getLockingScript())
-    expect(demo.unlock(toHex(sig), toHex(publicKey))).to.equal(true);
+    sig = signTx(tx, privateKey, demo.lockingScript.toASM(), inputSatoshis)
+    expect(demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify()).to.equal(true);
   });
 
   it('signature check should fail when wrong private key signs', () => {
-    sig = signTx(tx, privateKey2, demo.getLockingScript())
-    expect(demo.unlock(toHex(sig), toHex(publicKey))).to.equal(false);
+    sig = signTx(tx, privateKey2, demo.lockingScript.toASM(), inputSatoshis)
+    expect(() => { demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify() }).to.throws(/failed to verify/);
   });
 });
