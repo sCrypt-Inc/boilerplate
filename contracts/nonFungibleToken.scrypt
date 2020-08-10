@@ -10,7 +10,7 @@ contract NonFungibleToken {
 
         // read previous locking script: codePart + OP_RETURN + currTokenId + issuer
         bytes lockingScript = Util.scriptCode(txPreimage);
-        int scriptLen = length(lockingScript);
+        int scriptLen = length(lockingScript); 
 
         // constant part of locking script: upto op_return
         int constStart = scriptLen - Util.DataLen - Util.PubKeyLen;
@@ -19,14 +19,17 @@ contract NonFungibleToken {
         PubKey issuer = PubKey(lockingScript[constStart + Util.DataLen :]);
         // authorize: only the issuer can mint new tokens
         require(checkSig(issuerSig, issuer));
+        
+        // prevent double mint: the previous token's receiver can not be issuer
+        require(issuer != receiver);
 
         int currTokenId = unpack(lockingScript[constStart : constStart + Util.DataLen]);
 
-        // increment token ID
+        // increment token ID to mint a new token
         bytes outputScript0 = constPart + num2bin(currTokenId + 1, Util.DataLen) + issuer;
         bytes output0 = num2bin(satoshiAmount0, Util.OutputValueLen) + Util.writeVarint(outputScript0);
 
-        // issue a new token
+        // transfer previous token to another receiver
         bytes outputScript1 = constPart + num2bin(currTokenId, Util.DataLen) + receiver;
         bytes output1 = num2bin(satoshiAmount1, Util.OutputValueLen) + Util.writeVarint(outputScript1);
         

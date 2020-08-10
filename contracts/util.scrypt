@@ -131,6 +131,7 @@ contract Util {
 	}
 
     public function testPreimageParsing(bytes preimage) {
+			require(Tx.checkPreimage(preimage));
 		bytes preimage_ = Util.nVersion(preimage) + Util.hashPrevouts(preimage) + Util.hashSequence(preimage) +
 						  Util.outpoint(preimage) + Util.writeVarint(Util.scriptCode(preimage)) + Util.valueRaw(preimage) +
             			  Util.nSequenceRaw(preimage) + Util.hashOutputs(preimage) + Util.nLocktimeRaw(preimage) + Util.sigHashType(preimage);

@@ -1,22 +1,22 @@
-import * as path from 'path';
 import { expect } from 'chai';
-import { buildContractClass } from 'scrypttest';
+import { buildContractClass } from "scryptlib";
+import { loadDesc } from "../../helper";
 
 describe('Test sCrypt contract Demo In Typescript', () => {
   let demo: any;
 
   before(() => {
-    const Demo = buildContractClass(path.join(__dirname, '../../contracts/demo.scrypt'));
+    const Demo = buildContractClass(loadDesc('demo_desc.json'));
     demo = new Demo(7, 4);
   });
 
   it('should return true', () => {
-    expect(demo.add(7 + 4)).to.equal(true);
-    expect(demo.sub(7 - 4)).to.equal(true);
+    expect(demo.add(7 + 4).verify()).to.equal(true);
+    expect(demo.sub(7 - 4).verify()).to.equal(true);
   });
 
-  it('should return false', () => {
-    expect(demo.add(0)).to.equal(false);
-    expect(demo.sub(1)).to.equal(false);
+  it('should throw error', () => {
+    expect(() => { demo.add(0).verify() }).to.throws(/failed to verify/);
+    expect(() => { demo.sub(1).verify() }).to.throws(/failed to verify/);
   });
 });

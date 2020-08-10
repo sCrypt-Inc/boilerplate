@@ -1,25 +1,50 @@
-const path = require('path');
 const { expect } = require('chai');
-const { buildContractClass } = require('scrypttest');
+const { buildContractClass, Bytes } = require('scryptlib');
+const { compileContract } = require('../../helper');
 
 describe('Test sCrypt contract RabinSignature In Javascript', () => {
-    let demo;
+  let rabin;
 
-    before(() => {
-        const RabinSignature = buildContractClass(path.join(__dirname, '../../contracts/rabin.scrypt'));
-        rabin = new RabinSignature();
-    });
+  before(() => {
+    const RabinSignature = buildContractClass(compileContract('rabin.scrypt'));
+    rabin = new RabinSignature();
+  });
 
-    it('should return true', () => {
-        // append "n" for big int
-        expect(rabin.verifySig(0x12f1dd2e0965dc433b0d32b86333b0fb432df592f6108803d7afe51a14a0e867045fe22af85862b8e744700920e0b7e430a192440a714277efb895b51120e4ccn, '00112233445566778899aabbccddeeff', '00000000', 0x15525796ddab817a3c54c4bea4ef564f090c5909b36818c1c13b9e674cf524aa3387a408f9b63c0d88d11a76471f9f2c3f29c47a637aa60bf5e120d1f5a65221n)).to.equal(true);
-    });
+  it('should return true', () => {
+    // append "n" for big int
+    expect(
+      rabin.verifySig(
+        0x12f1dd2e0965dc433b0d32b86333b0fb432df592f6108803d7afe51a14a0e867045fe22af85862b8e744700920e0b7e430a192440a714277efb895b51120e4ccn, 
+        new Bytes('00112233445566778899aabbccddeeff'),
+        new Bytes('00000000'),
+        0x15525796ddab817a3c54c4bea4ef564f090c5909b36818c1c13b9e674cf524aa3387a408f9b63c0d88d11a76471f9f2c3f29c47a637aa60bf5e120d1f5a65221n
+      ).verify()
+    ).to.equal(true);
+  });
 
-    it('should return false with wrong padding', () => {
-        expect(rabin.verifySig(0x12f1dd2e0965dc433b0d32b86333b0fb432df592f6108803d7afe51a14a0e867045fe22af85862b8e744700920e0b7e430a192440a714277efb895b51120e4ccn, '00112233445566778899aabbccddeeff', '00', 0x15525796ddab817a3c54c4bea4ef564f090c5909b36818c1c13b9e674cf524aa3387a408f9b63c0d88d11a76471f9f2c3f29c47a637aa60bf5e120d1f5a65221n)).to.equal(false);
-    });
+  it('should throw error with wrong padding', () => {
+    expect(
+      () => {
+        rabin.verifySig(
+          0x12f1dd2e0965dc433b0d32b86333b0fb432df592f6108803d7afe51a14a0e867045fe22af85862b8e744700920e0b7e430a192440a714277efb895b51120e4ccn, 
+          new Bytes('00112233445566778899aabbccddeeff'),
+          new Bytes('00'),
+          0x15525796ddab817a3c54c4bea4ef564f090c5909b36818c1c13b9e674cf524aa3387a408f9b63c0d88d11a76471f9f2c3f29c47a637aa60bf5e120d1f5a65221n
+        ).verify()
+      }
+    ).to.throws(/failed to verify/);
+  });
 
-    it('should return false with wrong signature', () => {
-        expect(rabin.verifySig(0xff12f1dd2e0965dc433b0d32b86333b0fb432df592f6108803d7afe51a14a0e867045fe22af85862b8e744700920e0b7e430a192440a714277efb895b51120e4ccn, '00112233445566778899aabbccddeeff', '00000000', 0x15525796ddab817a3c54c4bea4ef564f090c5909b36818c1c13b9e674cf524aa3387a408f9b63c0d88d11a76471f9f2c3f29c47a637aa60bf5e120d1f5a65221n)).to.equal(false);
-   });
+  it('should throw error with wrong signature', () => {
+    expect(
+      () => {
+        rabin.verifySig(
+          0xff12f1dd2e0965dc433b0d32b86333b0fb432df592f6108803d7afe51a14a0e867045fe22af85862b8e744700920e0b7e430a192440a714277efb895b51120e4ccn, 
+          new Bytes('00112233445566778899aabbccddeeff'),
+          new Bytes('00000000'),
+          0x15525796ddab817a3c54c4bea4ef564f090c5909b36818c1c13b9e674cf524aa3387a408f9b63c0d88d11a76471f9f2c3f29c47a637aa60bf5e120d1f5a65221n
+        ).verify()
+      }
+    ).to.throws(/failed to verify/);
+  });
 });

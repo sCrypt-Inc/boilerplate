@@ -1,20 +1,20 @@
-const path = require('path');
 const { expect } = require('chai');
-const { buildContractClass } = require('scrypttest');
+const { buildContractClass } = require('scryptlib');
+const { compileContract } = require('../../helper');
 
 describe('Test sCrypt contract Ackermann In Javascript', () => {
   let ackermann;
 
   before(() => {
-    const Ackermann = buildContractClass(path.join(__dirname, '../../contracts/ackermann.scrypt'));
+    const Ackermann = buildContractClass(compileContract('ackermann.scrypt'));
     ackermann = new Ackermann(2, 1);
   });
 
   it('should return true', () => {
-    expect(ackermann.unlock(5)).to.equal(true);
+    expect(ackermann.unlock(5).verify()).to.equal(true);
   });
 
-  it('should return false', () => {
-    expect(ackermann.unlock(0)).to.equal(false);
+  it('should throw error', () => {
+    expect(() => { ackermann.unlock(0).verify() }).to.throws(/failed to verify/);
   });
 });
