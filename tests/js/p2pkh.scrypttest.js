@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const { bsv, buildContractClass, Ripemd160, Sig, PubKey, signTx, toHex } = require('scryptlib');
+const { DEFAULT_FLAGS } = require('scryptlib/dist/utils');
 
 /**
  * an example test for contract containing signature verification
@@ -34,7 +35,20 @@ describe('Test sCrypt contract DemoP2PKH In Javascript', () => {
   });
 
   it('signature check should fail when wrong private key signs', () => {
-    sig = signTx(tx, privateKey2, demo.lockingScript.toASM(), inputSatoshis)
-    expect(() => { demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify( { tx, inputSatoshis, inputIndex } ) }).to.throws(/failed to verify/);
+    sig = signTx(tx, privateKey2, demo.lockingScript.toASM(), inputSatoshis);
+
+    try {
+      demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify( { tx, inputSatoshis, inputIndex } );
+    } catch (error) {
+      expect(error.message).to.includes('failed to verify');
+      expect(error.context).to.deep.equal({
+        lockingScriptASM: `OP_1 40 00 51 b1 b2 OP_NOP ${toHex(pkh)} 0 OP_1 OP_PICK OP_1 OP_ROLL OP_DROP OP_NOP OP_8 OP_PICK OP_HASH160 OP_1 OP_PICK OP_EQUAL OP_VERIFY OP_9 OP_PICK OP_9 OP_PICK OP_CHECKSIG OP_NIP OP_NIP OP_NIP OP_NIP OP_NIP OP_NIP OP_NIP OP_NIP OP_NIP OP_NIP`,
+        unlockingScriptASM: `${toHex(sig)} ${toHex(publicKey)}`,
+        inputSatoshis,
+        inputIndex,
+        txHex: toHex(tx),
+        flags: DEFAULT_FLAGS
+      });
+    }
   });
 });
