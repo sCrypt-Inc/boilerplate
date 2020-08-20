@@ -29,7 +29,7 @@
     "axios": "^0.19.2",
     "glob": "^7.1.6",
     "scryptc": "^0.1.20",
-    "scryptlib": "^0.1.5",
+    "scryptlib": "git+https://github.com/scrypt-sv/scryptlib.git",
     "watch": "^1.0.2"
   },
   "devDependencies": {
