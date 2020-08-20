@@ -60,19 +60,24 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       )
     }
 
-    expect(testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })).to.equal(true);
+    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.true
 
     // issuer must not change
-    expect(() => { testIssue(privateKey1, publicKey2, publicKey2, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testIssue(privateKey1, publicKey2, publicKey2, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
     
     // unauthorized key
-    expect(() => { testIssue(privateKey2, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testIssue(privateKey2, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
     
     // mismatched next token ID
-    expect(() => { testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 2, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 2, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
     
     // mismatched issued token ID
-    expect(() => { testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId - 1).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId - 1).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
   });
 
   it('should succeed when a token is transferred', () => {
@@ -103,13 +108,16 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       )
     }
 
-    expect(testTransfer(privateKey1, publicKey2, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })).to.equal(true);
+    result = testTransfer(privateKey1, publicKey2, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.true
     
     // unauthorized key
-    expect(() => { testTransfer(privateKey2, publicKey2, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testTransfer(privateKey2, publicKey2, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
 
     // token ID must not change
-    expect(() => { testTransfer(privateKey1, publicKey2, currTokenId + 2).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testTransfer(privateKey1, publicKey2, currTokenId + 2).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
   });
 
   it('should fail if receiver is the isssuer when a new token is issued, so issuer can not double mint', () => {
@@ -147,7 +155,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       )
     }
 
-    expect(() => { testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
-
+    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
   })
 });

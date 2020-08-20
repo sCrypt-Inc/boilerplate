@@ -3,7 +3,7 @@ const { buildContractClass } = require('scryptlib');
 const { compileContract } = require('../../helper');
 
 describe('Test sCrypt contract Ackermann In Javascript', () => {
-  let ackermann;
+  let ackermann, result;
 
   before(() => {
     const Ackermann = buildContractClass(compileContract('ackermann.scrypt'));
@@ -11,10 +11,12 @@ describe('Test sCrypt contract Ackermann In Javascript', () => {
   });
 
   it('should return true', () => {
-    expect(ackermann.unlock(5).verify()).to.equal(true);
+    result = ackermann.unlock(5).verify()
+    expect(result.success, result.error).to.be.true
   });
 
   it('should throw error', () => {
-    expect(() => { ackermann.unlock(0).verify() }).to.throws(/failed to verify/);
+    result = ackermann.unlock(0).verify()
+    expect(result.success, result.error).to.be.false
   });
 });

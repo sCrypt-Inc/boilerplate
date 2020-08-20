@@ -7,7 +7,7 @@ var tx_ = bsv.Transaction.shallowCopy(tx)
 const outputAmount = 22222
     
 describe('Test sCrypt contract UTXO Token In Javascript', () => {
-  let token, lockingScriptCodePart
+  let token, lockingScriptCodePart, result
 
   const privateKey1 = new bsv.PrivateKey.fromWIF('cVy4oDYbkxCENYEjAD2aZyyGVbWQZPXt2rit8VAk1qiS9iJMgYtp') //new bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
@@ -65,24 +65,32 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       )
     }
 
-    expect(testSplit(privateKey1, 60, 40).verify({ tx: tx_, inputIndex, inputSatoshis })).to.equal(true);
+    result = testSplit(privateKey1, 60, 40).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.true
 
     // 1 to 1 transfer
-    expect(testSplit(privateKey1, 100, 0).verify({ tx: tx_, inputIndex, inputSatoshis })).to.equal(true);
+    result = testSplit(privateKey1, 100, 0).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.true
 
     // balance0 cannot be 0
-    expect(() => { testSplit(privateKey1, 0, 100).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testSplit(privateKey1, 0, 100).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
     
     // unauthorized key
-    expect(() => { testSplit(privateKey2, 60, 40).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testSplit(privateKey2, 60, 40).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
     
     // mismatch with preimage
-    expect(() => { testSplit(privateKey1, 60, 40, 60 - 1, 40).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
-    expect(() => { testSplit(privateKey1, 60, 40, 60, 40 + 1).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testSplit(privateKey1, 60, 40, 60 - 1, 40).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
+    result = testSplit(privateKey1, 60, 40, 60, 40 + 1).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
     
     // token imbalance after splitting
-    expect(() => { testSplit(privateKey1, 60 + 1, 40).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
-    expect(() => { testSplit(privateKey1, 60, 40 - 1).verify({ tx: tx_, inputIndex, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testSplit(privateKey1, 60 + 1, 40).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
+    result = testSplit(privateKey1, 60, 40 - 1).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
   });
 
   it('should succeed when two tokens are merged', () => {
@@ -133,15 +141,21 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
     }
 
     // input0 only checks balance0
-    expect(testMerge(0, expectedBalance0, expectedBalance1 + 1).verify({ tx: tx_, inputIndex: 0, inputSatoshis })).to.equal(true);
-    expect(() => { testMerge(0, expectedBalance0 - 1, expectedBalance1).verify({ tx: tx_, inputIndex: 0, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testMerge(0, expectedBalance0, expectedBalance1 + 1).verify({ tx: tx_, inputIndex: 0, inputSatoshis })
+    expect(result.success, result.error).to.be.true
+    result = testMerge(0, expectedBalance0 - 1, expectedBalance1).verify({ tx: tx_, inputIndex: 0, inputSatoshis })
+    expect(result.success, result.error).to.be.false
     
     // input1 only checks balance1
-    expect(testMerge(1, expectedBalance0 - 1, expectedBalance1).verify({ tx: tx_, inputIndex: 1, inputSatoshis })).to.equal(true);
-    expect(() => { testMerge(1, expectedBalance0, expectedBalance1 + 1).verify({ tx: tx_, inputIndex: 1, inputSatoshis }) }).to.throws(/failed to verify/);
+    result = testMerge(1, expectedBalance0 - 1, expectedBalance1).verify({ tx: tx_, inputIndex: 1, inputSatoshis })
+    expect(result.success, result.error).to.be.true
+    result = testMerge(1, expectedBalance0, expectedBalance1 + 1).verify({ tx: tx_, inputIndex: 1, inputSatoshis })
+    expect(result.success, result.error).to.be.false
     
     // both balance0 and balance1 have to be right to pass both checks of input0 and input1
-    expect(testMerge(0, expectedBalance0, expectedBalance1).verify({ tx: tx_, inputIndex, inputSatoshis })).to.equal(true);
-    expect(testMerge(0, expectedBalance0, expectedBalance1).verify({ tx: tx_, inputIndex, inputSatoshis })).to.equal(true);
+    result = testMerge(0, expectedBalance0, expectedBalance1).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.true
+    result = testMerge(1, expectedBalance0, expectedBalance1).verify({ tx: tx_, inputIndex: 1, inputSatoshis })
+    expect(result.success, result.error).to.be.true
   });
 });

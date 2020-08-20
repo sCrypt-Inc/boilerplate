@@ -8,8 +8,7 @@ const tx_ = bsv.Transaction.shallowCopy(tx)
 const outputAmount = 222222
 
 describe('Test sCrypt contract Token In Javascript', () => {
-  let token
-  let getPreimageAfterTransfer
+  let token, getPreimageAfterTransfer, result
 
   const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
@@ -40,8 +39,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
     // after transfer 40 tokens: publicKey1 has 60, publicKey2 40
     const preimage = getPreimageAfterTransfer(60, 40)
     const sig1 = signTx(tx_, privateKey1, token.lockingScript.toASM(), inputSatoshis)
-    expect(
-      token.transfer(
+    result = token.transfer(
         new PubKey(toHex(publicKey1)),
         new Sig(toHex(sig1)),
         new PubKey(toHex(publicKey2)),
@@ -49,16 +47,14 @@ describe('Test sCrypt contract Token In Javascript', () => {
         new Bytes(toHex(preimage)),
         outputAmount
       ).verify()
-    ).to.equal(true);
+    expect(result.success, result.error).to.be.true
   });
 
   it('should fail due to wrong balances', () => {
     // after transfer 40 tokens: publicKey1 has 60, publicKey2 40
     const preimage = getPreimageAfterTransfer(60, 30)
     const sig1 = signTx(tx_, privateKey1, token.lockingScript.toASM(), inputSatoshis)
-    expect(
-      () => {
-        token.transfer(
+    result = token.transfer(
           new PubKey(toHex(publicKey1)),
           new Sig(toHex(sig1)),
           new PubKey(toHex(publicKey2)),
@@ -66,16 +62,13 @@ describe('Test sCrypt contract Token In Javascript', () => {
           new Bytes(toHex(preimage)),
           outputAmount
         ).verify()
-      }
-    ).to.throws(/failed to verify/);
+    expect(result.success, result.error).to.be.false
   });
 
   it('should fail when publicKey2 transfers 40 tokens to publicKey1 due to insufficient balance', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
     const sig2 = signTx(tx_, privateKey2, token.lockingScript.toASM(), inputSatoshis)
-    expect(
-      () => {
-        token.transfer(
+    result = token.transfer(
           new PubKey(toHex(publicKey2)),
           new Sig(toHex(sig2)),
           new PubKey(toHex(publicKey1)),
@@ -83,16 +76,13 @@ describe('Test sCrypt contract Token In Javascript', () => {
           new Bytes(toHex(preimage)),
           outputAmount
         ).verify()
-      }
-    ).to.throws(/failed to verify/);
+    expect(result.success, result.error).to.be.false
   });
 
   it('should fail when publicKey1 transfers 40 tokens to publicKey2 due to wrong signature', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
     const sig2 = signTx(tx_, privateKey2, token.lockingScript.toASM(), inputSatoshis)
-    expect(
-      () => {
-        token.transfer(
+    result = token.transfer(
           new PubKey(toHex(publicKey1)),
           new Sig(toHex(sig2)),
           new PubKey(toHex(publicKey2)),
@@ -100,7 +90,6 @@ describe('Test sCrypt contract Token In Javascript', () => {
           new Bytes(toHex(preimage)),
           outputAmount
         ).verify()
-      }
-    ).to.throws(/failed to verify/);
+    expect(result.success, result.error).to.be.false
   });
 });

@@ -6,8 +6,7 @@ const { inputIndex, inputSatoshis, tx, compileContract, DataLen } = require('../
 const tx_ = bsv.Transaction.shallowCopy(tx)
 
 describe('Test sCrypt contract TokenSale In Javascript', () => {
-  let tokenSale
-  let getPreimageAfterPurchase
+  let tokenSale, getPreimageAfterPurchase, result
 
   const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
@@ -34,12 +33,11 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
 
   it('should succeed when publicKey1 buys tokens', () => {
     const preimage = getPreimageAfterPurchase(publicKey1)
-    expect(
-      tokenSale.buy(
+    result = tokenSale.buy(
         new PubKey(toHex(publicKey1)),
         numTokens,
         new Bytes(toHex(preimage))
       ).verify( { tx: tx_, inputIndex, inputSatoshis })
-    ).to.equal(true);
+    expect(result.success, result.error).to.be.true
   });
 });

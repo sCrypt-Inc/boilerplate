@@ -14,7 +14,7 @@ const tx_ = bsv.Transaction.shallowCopy(tx)
 const outputAmount = 222222
 
 describe('Test sCrypt contract Counter In Javascript', () => {
-  let counter, preimage
+  let counter, preimage, result
 
   before(() => {
     const Counter = buildContractClass(compileContract('counter.scrypt'))
@@ -41,14 +41,17 @@ describe('Test sCrypt contract Counter In Javascript', () => {
   });
 
   it('should succeed when pushing right preimage & amount', () => {
-    expect(counter.increment(new Bytes(toHex(preimage)), outputAmount).verify()).to.equal(true);
+    result = counter.increment(new Bytes(toHex(preimage)), outputAmount).verify()
+    expect(result.success, result.error).to.be.true
   });
 
   it('should fail when pushing wrong preimage', () => {
-    expect(() => { counter.increment(new Bytes(toHex(preimage) + '01'), outputAmount).verify() }).to.throws(/failed to verify/);
+    result = counter.increment(new Bytes(toHex(preimage) + '01'), outputAmount).verify()
+    expect(result.success, result.error).to.be.false
   });
 
   it('should fail when pushing wrong amount', () => {
-    expect(() => { counter.increment(new Bytes(toHex(preimage)), outputAmount - 1).verify() }).to.throws(/failed to verify/);
+    result = counter.increment(new Bytes(toHex(preimage)), outputAmount - 1).verify()
+    expect(result.success, result.error).to.be.false
   });
 });

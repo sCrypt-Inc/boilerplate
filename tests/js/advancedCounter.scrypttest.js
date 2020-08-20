@@ -23,8 +23,7 @@ const outputAmount = 222222
 const changeAmount = 111111
 
 describe('Test sCrypt contract Counter In Javascript', () => {
-  let counter
-  let preimage
+  let counter, preimage, result
 
   before(() => {
     const Counter = buildContractClass(compileContract('advancedCounter.scrypt'))
@@ -50,6 +49,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
   });
 
   it('should succeed when pushing right preimage & amount', () => {
-    expect(counter.increment(new Bytes(toHex(preimage)), outputAmount, new Ripemd160(toHex(pkh)), changeAmount).verify( { tx: tx_, inputIndex, inputSatoshis } )).to.equal(true);
+    result = counter.increment(new Bytes(toHex(preimage)), outputAmount, new Ripemd160(toHex(pkh)), changeAmount).verify( { tx: tx_, inputIndex, inputSatoshis } )
+    expect(result.success, result.error).to.be.true;
   });
 });

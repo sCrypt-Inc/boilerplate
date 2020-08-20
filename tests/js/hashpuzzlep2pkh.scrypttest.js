@@ -18,8 +18,7 @@ const data =  dataBuffer
 const sha256Data = bsv.crypto.Hash.sha256(dataBuffer);
 
 describe('Test sCrypt contract HashPuzzleP2PKH In Javascript', () => {
-  let hashPuzzleP2PKH
-  let sig
+  let hashPuzzleP2PKH, sig, result
 
   before(() => {
     const HashPuzzleP2PKH = buildContractClass(compileContract('hashpuzzlep2pkh.scrypt'))
@@ -29,22 +28,26 @@ describe('Test sCrypt contract HashPuzzleP2PKH In Javascript', () => {
 
   it('signature check should succeed when correct private key signs & correct data provided', () => {
     sig = signTx(tx, privateKey, hashPuzzleP2PKH.lockingScript.toASM(), inputSatoshis)
-    expect(hashPuzzleP2PKH.verify(new Bytes(toHex(data)), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify()).to.equal(true);
+    result = hashPuzzleP2PKH.verify(new Bytes(toHex(data)), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify()
+    expect(result.success, result.error).to.be.true
   });
 
   it('signature check should fail when correct private key signs & wrong data provided', () => {
     sig = signTx(tx, privateKey, hashPuzzleP2PKH.lockingScript.toASM(), inputSatoshis)
-    expect(() => { hashPuzzleP2PKH.verify(new Bytes(toHex('abcdef')), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify() }).to.throws(/failed to verify/);
+    result = hashPuzzleP2PKH.verify(new Bytes(toHex('abcdef')), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify()
+    expect(result.success, result.error).to.be.false
   });
 
   it('signature check should fail when wrong private key signs & correct data provided', () => {
     sig = signTx(tx, privateKey2, hashPuzzleP2PKH.lockingScript.toASM(), inputSatoshis)
-    expect(() => { hashPuzzleP2PKH.verify(new Bytes(toHex(data)), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify() }).to.throws(/failed to verify/);
+    result = hashPuzzleP2PKH.verify(new Bytes(toHex(data)), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify()
+    expect(result.success, result.error).to.be.false
   });
 
   it('signature check should fail when wrong private key signs & wrong data provided', () => {
     sig = signTx(tx, privateKey2, hashPuzzleP2PKH.lockingScript.toASM(), inputSatoshis)
-    expect(() => { hashPuzzleP2PKH.verify(new Bytes(toHex('abcdef')), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify() }).to.throws(/failed to verify/);;
+    hashPuzzleP2PKH.verify(new Bytes(toHex('abcdef')), new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify()
+    expect(result.success, result.error).to.be.false
   });
 
 });
