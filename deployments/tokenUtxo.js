@@ -14,6 +14,7 @@ const {
   loadDesc,
   createLockingTx,
   sendTx,
+  reverseEndian,
   showError
 } = require('../helper');
 const {
@@ -108,6 +109,10 @@ const {
         satoshis: outputAmount
       }))
 
+      // use reversed txid in outpoint
+      const txHash = reverseEndian(splitTxid)
+      const prevouts = txHash + num2bin(0, 4) + txHash + num2bin(1, 4)
+
       // input 0
       {
         const preimage = getPreimage(tx, lockingScript0, inputSatoshis, 0)
@@ -115,7 +120,7 @@ const {
         const unlockingScript = token.merge(
           new Sig(toHex(sig2)),
           new PubKey(toHex(publicKey1)),
-          true, 30, outputAmount,
+          new Bytes(prevouts), 30, outputAmount,
           new Bytes(toHex(preimage))
         ).toScript()
         tx.inputs[0].setScript(unlockingScript);
@@ -128,7 +133,7 @@ const {
         const unlockingScript = token.merge(
           new Sig(toHex(sig3)),
           new PubKey(toHex(publicKey1)),
-          false, 70, outputAmount,
+          new Bytes(prevouts), 70, outputAmount,
           new Bytes(toHex(preimage))
         ).toScript()
         tx.inputs[1].setScript(unlockingScript);

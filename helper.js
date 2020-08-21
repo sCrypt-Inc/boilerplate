@@ -34,6 +34,13 @@ const utxo = {
 }
 const tx = new bsv.Transaction().from(utxo)
 
+// reverse hexStr byte order
+function reverseEndian(hexStr) {
+  let num = new BN(hexStr, 'hex')
+  let buf = num.toBuffer()
+  return buf.toString('hex').match(/.{2}/g).reverse().join('')
+}
+
 async function createLockingTx(address, amountInContract, fee) {
   // step 1: fetch utxos
   let {
@@ -164,6 +171,7 @@ module.exports = {
   DataLen,
   dummyTxId,
   reversedDummyTxId,
+  reverseEndian,
   unlockP2PKHInput,
   sendTx,
   compileContract,
