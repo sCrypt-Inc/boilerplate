@@ -9,11 +9,11 @@ const outputAmount = 22222
 describe('Test sCrypt contract UTXO Token In Javascript', () => {
   let token, lockingScriptCodePart, result
 
-  const privateKey1 = new bsv.PrivateKey.fromWIF('cVy4oDYbkxCENYEjAD2aZyyGVbWQZPXt2rit8VAk1qiS9iJMgYtp') //new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
-  const privateKey2 = new bsv.PrivateKey.fromWIF('cRDVUDwSfPNFsRkTSWjJBugsyoaNGhuDjpNxbKqxTi93ytGH2S6M') // new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
-  const privateKey3 = new bsv.PrivateKey.fromWIF('cVpuNVgwuR3nggoTGDiixK2wpvvix9fCSVjRjohED1yWTqCRQutZ') // new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey3 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey3 = bsv.PublicKey.fromPrivateKey(privateKey3)
     
   before(() => {
