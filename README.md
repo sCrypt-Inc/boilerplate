@@ -35,7 +35,7 @@ npm test
 │   ├── tokenSale.scrypt                # Selling tokens for bitcoins using <a href="https://medium.com/@xiaohuiliu/atomic-swap-on-bitcoin-sv-abc28e836cd5">atomic swap</a>
 │   ├── tokenUtxo.scrypt                # <a href="https://medium.com/@xiaohuiliu/utxo-based-layer-1-tokens-on-bitcoin-sv-f5e86a74c1e1">fungible token</a>
 │   └── util.scrypt                     # utility functions and constants
-├── deployments                         # examples to deploy contract and call its function on testnet
+├── deployments                     # examples to deploy contract and call its function on testnet
 └── tests                           # contract test files
     ├── js                              # Javascript unit tests
     └── ts                              # Typescript unit tests
@@ -43,7 +43,7 @@ npm test
 
 ## Prepare ##
 
-Before trying to run an example, you should have the contract been compiled to produce a [description json file](https://github.com/scrypt-sv/scryptlib#contract-description-file), which would be used for building contract class. This could be done automatically by running a daemon process with command `npm run watch`. It will monit contract files' change and compile it when necessary. All generated description files are located at `tests/fixture/autoGen`. Make sure it's up to date with the contract before running any test.
+Before trying to run an example, you should have the contract been compiled to produce a [description json file](https://github.com/scrypt-sv/scryptlib#contract-description-file), which would be used for building contract class. This could be done automatically by running a daemon process with command `npm run watch`. It will monitor a contract file's change and compile it when necessary. All generated description files are located at `tests/fixture/autoGen`. Make sure it's up to date with the contract before running any test.
 
 ## How to write test for a sCrypt contract
 
@@ -56,14 +56,14 @@ npm install scryptlib
 ```
 
 
-```
+```javascript
 import { buildContractClass } from 'scryptlib';
 ```
 
 
 2. Use the imported function `buildContractClass` to get a reflected contract, which has same properties and methods as defined in the specified sCrypt contract.
 
-```
+```javascript
 const Demo = buildContractClass(loadDesc('demo_desc.json'));
 ```
 
@@ -71,15 +71,15 @@ Note that `demo_desc.json` is the description file name of the compiled contract
 
 1. Initialize the contract.
 
-```
+```javascript
 demo = new Demo(4, 7);
 ```
 
 4. Write tests for the instantiated contract as you would do in Javascript.
 
-```
-expect(demo.unlock(4 + 7).verify()).to.equal(true);
-expect(() => { demo.unlock(4 + 6).verify() }).to.throws(/failed to verify/);
+```javascript
+const result = demo.add(7 + 4).verify()
+expect(result.success, result.error).to.be.true
 ```
 
 ## How to run tests locally
@@ -97,7 +97,7 @@ Tests could also be run from the console by executing `npm test`, just like regu
 ## How to run examples on testnet
 When your tests succeed locally, you can run them on testnet.
 1. Provide a private key with funds in `privateKey.js`
-```
+```javascript
 const key = '$YOUR_PRIVATE_KEY_HERE'
 ```
 
