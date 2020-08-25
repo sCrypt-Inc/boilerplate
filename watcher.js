@@ -18,7 +18,7 @@ function compile_for(file) {
 function clean_description_file(fileName) {
   if(fileName.endsWith('.scrypt')) {
     try {
-      unlinkSync(join(__dirname, 'tests/fixture/autoGen', fileName.replace('.scrypt', '_desc.json')))
+      unlinkSync(join(__dirname, 'deployments/fixture/autoGen', fileName.replace('.scrypt', '_desc.json')))
     } catch (error) {
       console.log(error)
     }

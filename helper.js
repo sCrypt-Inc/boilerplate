@@ -120,7 +120,7 @@ function compileContract(fileName) {
 
   const result = compile(
     { path: filePath },
-    { desc: true, outputDir: path.join(__dirname, 'tests/fixture/autoGen') }
+    { desc: true, outputDir: path.join(__dirname, 'deployments/fixture/autoGen') }
   );
 
   if (result.errors.length > 0) {
@@ -133,7 +133,7 @@ function compileContract(fileName) {
 }
 
 function loadDesc(fileName) {
-  const filePath = path.join(__dirname, `tests/fixture/autoGen/${fileName}`);
+  const filePath = path.join(__dirname, `deployments/fixture/autoGen/${fileName}`);
   if (!existsSync(filePath)) {
     throw new Error(`Description file ${filePath} not exist!\nIf You already run 'npm run watch', maybe fix the compile error first!`)
   }
