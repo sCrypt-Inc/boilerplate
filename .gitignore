@@ -1,4 +1,4 @@
 node_modules
 out
 .vscode/settings.json
-deployments/fixture/autoGen/
+deployments/fixture/autoGen/*.json
