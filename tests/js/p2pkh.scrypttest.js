@@ -1,14 +1,12 @@
 const { expect } = require('chai');
 const { bsv, buildContractClass, Ripemd160, Sig, PubKey, signTx, toHex } = require('scryptlib');
-const { DEFAULT_FLAGS } = require('scryptlib/dist/utils');
 
 /**
  * an example test for contract containing signature verification
  */
 const { compileContract, inputIndex, inputSatoshis, tx } = require('../../helper');
 
-// const privateKey = new bsv.PrivateKey.fromRandom('testnet')
-const privateKey = new bsv.PrivateKey.fromWIF('cVy4oDYbkxCENYEjAD2aZyyGVbWQZPXt2rit8VAk1qiS9iJMgYtp')
+const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
@@ -24,8 +22,8 @@ describe('Test sCrypt contract DemoP2PKH In Javascript', () => {
 
   it('signature check should succeed when right private key signs', () => {
     sig = signTx(tx, privateKey, demo.lockingScript.toASM(), inputSatoshis)
-    expect(demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify( { tx, inputSatoshis, inputIndex } ))
-    expect(result.success, result.error).to.be.false
+    result = demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify( { tx, inputSatoshis, inputIndex } )
+    expect(result.success, result.error).to.be.true
     /*
      * print out parameters used in debugger, see ""../.vscode/launch.json" for an example
       console.log(toHex(pkh))
