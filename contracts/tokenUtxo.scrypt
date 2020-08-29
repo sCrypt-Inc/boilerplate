@@ -16,7 +16,7 @@ contract Token {
         // read previous locking script
         // locking script = codePart + OP_RETURN + senderPublicKey + balance0 + balance1
         bytes lockingScript = Util.scriptCode(txPreimage);
-        int scriptLen = length(lockingScript);
+        int scriptLen = len(lockingScript);
 
         int amountStart = scriptLen - Util.DataLen * 2;
 
@@ -57,11 +57,11 @@ contract Token {
         // each outpoint: 32 byte txid + 4 byte index
         int outpointLen = 36;
         // ensure only two inputs are present
-        require(length(prevouts) == 2 * outpointLen);
+        require(len(prevouts) == 2 * outpointLen);
 
         // read previous locking script
         bytes lockingScript = Util.scriptCode(txPreimage);
-        int scriptLen = length(lockingScript);
+        int scriptLen = len(lockingScript);
 
         int amountStart = scriptLen - Util.DataLen * 2;
 

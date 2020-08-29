@@ -17,7 +17,7 @@ contract TokenSale {
 
         // read previous locking script
         bytes lockingScript = Util.scriptCode(txPreimage);
-        int scriptLen = length(lockingScript);
+        int scriptLen = len(lockingScript);
         int oldBalance = Util.value(txPreimage);
         int newBalance = oldBalance + numTokens * this.price;
 

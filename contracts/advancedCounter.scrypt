@@ -22,7 +22,7 @@ contract AdvancedCounter {
 		require(Tx.checkPreimageAdvanced(txPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType));
 
 		bytes scriptCode = Util.scriptCode(txPreimage);
-		int scriptLen = length(scriptCode);
+		int scriptLen = len(scriptCode);
 
 		// state (i.e., counter value) is at the end
 		int counter = unpack(scriptCode[scriptLen - Util.DataLen :]);

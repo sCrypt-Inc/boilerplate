@@ -9,30 +9,30 @@ contract Util {
 	// number of bytes to denote a public key hash
     static int PubKeyHashLen = 20;
 
-    static function readVarint(bytes b) returns (bytes) {
-		int len = 0;
+    static function readVarint(bytes b): bytes {
+		int l = 0;
 		bytes ret = b'';
 		bytes header = b[0:1];
 
 		if (header == b'fd') {
-			len = this.fromLEUnsigned(b[1:3]);
-			ret = b[3:3+len];
+			l = this.fromLEUnsigned(b[1:3]);
+			ret = b[3:3+l];
 		} else if (header == b'fe') {
-			len = this.fromLEUnsigned(b[1:5]);
-			ret = b[5:5+len];
+			l = this.fromLEUnsigned(b[1:5]);
+			ret = b[5:5+l];
 		} else if (header == b'ff') {
-			len = this.fromLEUnsigned(b[1:9]);
-			ret = b[9:9+len];
+			l = this.fromLEUnsigned(b[1:9]);
+			ret = b[9:9+l];
 		} else {
-			len = this.fromLEUnsigned(b[0:1]);
-			ret = b[1:1+len];
+			l = this.fromLEUnsigned(b[0:1]);
+			ret = b[1:1+l];
 		}
 
 		return ret;
 	}
 
-    static function writeVarint(bytes b) returns (bytes) {
-		int n = length(b);
+    static function writeVarint(bytes b): bytes {
+		int n = len(b);
 		
 		bytes header = b'';
 
@@ -49,22 +49,27 @@ contract Util {
 		return header + b;
 	}
 
-    // convert signed integer `n` to unsigned integer of `len` bytes, in little endian
-	static function toLEUnsigned(int n, int len) returns (bytes) {
+    // convert signed integer `n` to unsigned integer of `l` bytes, in little endian
+	static function toLEUnsigned(int n, int l): bytes {
 		// one extra byte to accommodate possible negative sign byte
-		bytes m = num2bin(n, len + 1);
+		bytes m = num2bin(n, l + 1);
 		// remove sign byte
-		return m[0 : length(m) - 1];
+		return m[0 : len(m) - 1];
 	}
 
-    static function fromLEUnsigned(bytes b) returns (int) {
+    static function fromLEUnsigned(bytes b): int {
 		// append positive sign byte. This does not hurt even when sign bit is already positive
 		return unpack(b + b'00');
 	}
 
-	static function buildPublicKeyHashScript(Ripemd160 pubKeyHash) returns (bytes) {
+	static function buildPublicKeyHashScript(Ripemd160 pubKeyHash): bytes {
 	 	return OpCode.OP_DUP + OpCode.OP_HASH160 + pack(Util.PubKeyHashLen) /* "OP_PUSHDATA0" */ + 
 		 		pubKeyHash + OpCode.OP_EQUALVERIFY + OpCode.OP_CHECKSIG;
+	}
+
+	// build a tx output from its script and satoshi amount
+	static function buildOutput(bytes outputScript, int outputSatoshis): bytes {
+		return num2bin(outputSatoshis, Util.OutputValueLen) + Util.writeVarint(outputScript);
 	}
 
 	/*
@@ -72,62 +77,62 @@ contract Util {
 	 * Note: only to be used after preimage is validated
 	 * spec is at https://github.com/bitcoin-sv/bitcoin-sv/blob/master/doc/abc/replay-protected-sighash.md
 	 */
-	static function nVersion(bytes preimage) returns (bytes) {
+	static function nVersion(bytes preimage): bytes {
 		return preimage[:4];
 	}
 
-	static function hashPrevouts(bytes preimage) returns (bytes) {
+	static function hashPrevouts(bytes preimage): bytes {
 		return preimage[4:36];
 	}
 	
-	static function hashSequence(bytes preimage) returns (bytes) {
+	static function hashSequence(bytes preimage): bytes {
 		return preimage[36:68];
 	}
 
-	static function outpoint(bytes preimage) returns (bytes) {
+	static function outpoint(bytes preimage): bytes {
 		return preimage[68:104];
 	}
 
 	// scriptCode is just scriptPubKey if there is no CODESEPARATOR in the latter
-	static function scriptCode(bytes preimage) returns (bytes) {
+	static function scriptCode(bytes preimage): bytes {
 		return Util.readVarint(preimage[104:]);
 	}
 
-	static function valueRaw(bytes preimage) returns (bytes) {
-		int len = length(preimage);
-		return preimage[len - 52 : len - 44];
+	static function valueRaw(bytes preimage): bytes {
+		int l = len(preimage);
+		return preimage[l - 52 : l - 44];
 	}
 
-	static function value(bytes preimage) returns (int) {
+	static function value(bytes preimage): int {
 		return Util.fromLEUnsigned(Util.valueRaw(preimage));
 	}
 
-	static function nSequenceRaw(bytes preimage) returns (bytes) {
-		int len = length(preimage);
-		return preimage[len - 44 : len - 40];
+	static function nSequenceRaw(bytes preimage): bytes {
+		int l = len(preimage);
+		return preimage[l - 44 : l - 40];
 	}
 
-	static function nSequence(bytes preimage) returns (int) {
+	static function nSequence(bytes preimage): int {
 		return Util.fromLEUnsigned(Util.nSequenceRaw(preimage));
 	}
 
-	static function hashOutputs(bytes preimage) returns (bytes) {
-		int len = length(preimage);
-		return preimage[len - 40 : len - 8];
+	static function hashOutputs(bytes preimage): bytes {
+		int l = len(preimage);
+		return preimage[l - 40 : l - 8];
 	}
 
-	static function nLocktimeRaw(bytes preimage) returns (bytes) {
-		int len = length(preimage);
-		return preimage[len - 8 : len - 4];
+	static function nLocktimeRaw(bytes preimage): bytes {
+		int l = len(preimage);
+		return preimage[l - 8 : l - 4];
 	}
 
-	static function nLocktime(bytes preimage) returns (int) {
+	static function nLocktime(bytes preimage): int {
 		return Util.fromLEUnsigned(Util.nLocktimeRaw(preimage));
 	}
 
-	static function sigHashType(bytes preimage) returns (SigHashType) {
-		int len = length(preimage);
-		return SigHashType(preimage[len - 4 :]);
+	static function sigHashType(bytes preimage): SigHashType {
+		int l = len(preimage);
+		return SigHashType(preimage[l - 4 :]);
 	}
 
     public function testPreimageParsing(bytes preimage) {

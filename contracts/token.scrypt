@@ -15,7 +15,7 @@ contract Token {
 
         // read previous locking script
         bytes lockingScript = Util.scriptCode(txPreimage);
-        int scriptLen = length(lockingScript);
+        int scriptLen = len(lockingScript);
 
         int pkStart = scriptLen - (Util.PubKeyLen + Util.DataLen) * 2;
         PubKey pk0 = PubKey(lockingScript[pkStart : pkStart + Util.PubKeyLen]);

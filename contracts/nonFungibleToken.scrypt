@@ -10,7 +10,7 @@ contract NonFungibleToken {
 
         // read previous locking script: codePart + OP_RETURN + currTokenId + issuer
         bytes lockingScript = Util.scriptCode(txPreimage);
-        int scriptLen = length(lockingScript); 
+        int scriptLen = len(lockingScript);
 
         // constant part of locking script: upto op_return
         int constStart = scriptLen - Util.DataLen - Util.PubKeyLen;
@@ -43,7 +43,7 @@ contract NonFungibleToken {
 
         // read previous locking script: codePart + OP_RETURN + tokenID + ownerPublicKey
         bytes lockingScript = Util.scriptCode(txPreimage);
-        int scriptLen = length(lockingScript);
+        int scriptLen = len(lockingScript);
 
         // constant part of locking script: upto tokenID
         int constStart = scriptLen - Util.PubKeyLen;

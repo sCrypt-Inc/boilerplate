@@ -37,7 +37,7 @@ contract AdvancedTokenSale {
         require( 0 < numTokens && numTokens < 128 );
 
         bytes scriptCode = Util.scriptCode(txPreimage);
-        int scriptLen = length(scriptCode);
+        int scriptLen = len(scriptCode);
 
         int oldBalance = Util.value(txPreimage);
         int newBalance = oldBalance + numTokens * this.price;

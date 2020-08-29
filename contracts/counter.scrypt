@@ -5,7 +5,7 @@ contract Counter {
         require(Tx.checkPreimage(txPreimage));
 
         bytes scriptCode = Util.scriptCode(txPreimage);
-		int scriptLen = length(scriptCode);
+		int scriptLen = len(scriptCode);
 		
 		// state (i.e., counter value) is at the end
 		int counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
