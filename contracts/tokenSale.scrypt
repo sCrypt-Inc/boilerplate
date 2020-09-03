@@ -23,7 +23,7 @@ contract TokenSale {
 
         // write new locking script
         bytes lockingScript_ = lockingScript + buyer + num2bin(numTokens, Util.DataLen);
-        Sha256 hashOutputs = hash256(num2bin(newBalance, Util.OutputValueLen) + Util.writeVarint(lockingScript_));
-        require(hashOutputs == Util.hashOutputs(txPreimage));
+        bytes output = num2bin(newBalance, Util.OutputValueLen) + Util.writeVarint(lockingScript_);
+        require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 }
