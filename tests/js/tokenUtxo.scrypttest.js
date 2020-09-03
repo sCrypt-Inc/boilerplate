@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, toHex, getPreimage, num2bin, signTx, PubKey, Bytes, Sig } = require('scryptlib');
+const { bsv, buildContractClass, toHex, getPreimage, num2bin, signTx, PubKey, Bytes, Sig, Ripemd160 } = require('scryptlib');
 const { inputIndex, inputSatoshis, tx, compileContract, DataLen, dummyTxId, reversedDummyTxId } = require('../../helper');
 
 // make a copy since it will be mutated
@@ -11,6 +11,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
 
   const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
+  const pkh1 = bsv.crypto.Hash.sha256ripemd160(publicKey1.toBuffer())
   const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
   const privateKey3 = new bsv.PrivateKey.fromRandom('testnet')
@@ -161,5 +162,42 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
     expect(result.success, result.error).to.be.true
     result = testMerge(1, expectedBalance0, expectedBalance1).verify({ tx: tx_, inputIndex: 1, inputSatoshis })
     expect(result.success, result.error).to.be.true
+  });
+
+  it('should succeed when one token UTXO is burnt', () => {
+    // burn 100 tokens
+    token.dataLoad = toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen)
+    
+    const testBurn = (privKey) => {
+      tx_ = new bsv.Transaction()
+
+      tx_.addInput(new bsv.Transaction.Input({
+        prevTxId: dummyTxId,
+        outputIndex: 0,
+        script: ''
+      }), bsv.Script.fromASM(token.lockingScript.toASM()), inputSatoshis)
+
+      // p2pkh
+      tx_.addOutput(new bsv.Transaction.Output({
+        script: bsv.Script.buildPublicKeyHashOut(privateKey1.toAddress()),
+        satoshis: outputAmount
+      }))
+      
+      const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex)
+      const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSatoshis)
+      return token.burn(
+        new Sig(toHex(sig)),
+        new Ripemd160(toHex(pkh1)),
+        outputAmount,
+        new Bytes(toHex(preimage))
+      )
+    }
+
+    result = testBurn(privateKey1).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.true
+    
+    // unauthorized key
+    result = testBurn(privateKey2).verify({ tx: tx_, inputIndex, inputSatoshis })
+    expect(result.success, result.error).to.be.false
   });
 });

@@ -91,4 +91,27 @@ contract Token {
         bytes output = num2bin(satoshiAmount, Util.OutputValueLen) + Util.writeVarint(outputScript);
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
+
+    // burn a token back to normal bitcoins
+    public function burn(Sig senderSig, Ripemd160 receiverPkh, int satoshiAmount, bytes txPreimage) {
+        // this ensures the preimage is for the current tx
+		require(Tx.checkPreimage(txPreimage));
+
+        // read previous locking script
+        // locking script = codePart + OP_RETURN + senderPublicKey + balance0 + balance1
+        bytes lockingScript = Util.scriptCode(txPreimage);
+        int scriptLen = length(lockingScript);
+
+        int amountStart = scriptLen - Util.DataLen * 2;
+
+        PubKey sender = PubKey(lockingScript[amountStart - Util.PubKeyLen : amountStart]);
+        // authorize
+        require(checkSig(senderSig, sender));
+
+        // send to a P2PKH script
+        bytes lockingScript_ = Util.buildPublicKeyHashScript(receiverPkh);
+		bytes output = num2bin(satoshiAmount, Util.OutputValueLen) + Util.writeVarint(lockingScript_);
+        Sha256 hashOutputs = hash256(output);
+        require(hashOutputs == Util.hashOutputs(txPreimage));
+    }
 }
