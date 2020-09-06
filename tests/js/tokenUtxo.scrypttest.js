@@ -51,6 +51,8 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
           satoshis: outputAmount
         }))
       }
+
+      token.txContext = { tx: tx_, inputIndex, inputSatoshis }
       
       const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex)
       const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSatoshis)
@@ -66,31 +68,31 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       )
     }
 
-    result = testSplit(privateKey1, 60, 40).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testSplit(privateKey1, 60, 40).verify()
     expect(result.success, result.error).to.be.true
 
     // 1 to 1 transfer
-    result = testSplit(privateKey1, 100, 0).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testSplit(privateKey1, 100, 0).verify()
     expect(result.success, result.error).to.be.true
 
     // balance0 cannot be 0
-    result = testSplit(privateKey1, 0, 100).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testSplit(privateKey1, 0, 100).verify()
     expect(result.success, result.error).to.be.false
     
     // unauthorized key
-    result = testSplit(privateKey2, 60, 40).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testSplit(privateKey2, 60, 40).verify()
     expect(result.success, result.error).to.be.false
     
     // mismatch with preimage
-    result = testSplit(privateKey1, 60, 40, 60 - 1, 40).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testSplit(privateKey1, 60, 40, 60 - 1, 40).verify()
     expect(result.success, result.error).to.be.false
-    result = testSplit(privateKey1, 60, 40, 60, 40 + 1).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testSplit(privateKey1, 60, 40, 60, 40 + 1).verify()
     expect(result.success, result.error).to.be.false
     
     // token imbalance after splitting
-    result = testSplit(privateKey1, 60 + 1, 40).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testSplit(privateKey1, 60 + 1, 40).verify()
     expect(result.success, result.error).to.be.false
-    result = testSplit(privateKey1, 60, 40 - 1).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testSplit(privateKey1, 60, 40 - 1).verify()
     expect(result.success, result.error).to.be.false
   });
 
@@ -131,6 +133,8 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         satoshis: outputAmount
       }))
 
+      token.txContext = { tx: tx_, inputIndex, inputSatoshis }
+
       token.dataLoad = inputIndex == 0 ? dataPart0 : dataPart1
       
       const preimage = getPreimage(tx_, inputIndex == 0 ? lockingScript0 : lockingScript1, inputSatoshis, inputIndex)
@@ -145,22 +149,23 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       )
     }
 
+    // since there are multiple inputs, we have to explicitly set inputIndex of the context
     // input0 only checks balance0
-    result = testMerge(0, expectedBalance0, expectedBalance1 + 1).verify({ tx: tx_, inputIndex: 0, inputSatoshis })
+    result = testMerge(0, expectedBalance0, expectedBalance1 + 1).verify({ inputIndex: 0 })
     expect(result.success, result.error).to.be.true
-    result = testMerge(0, expectedBalance0 - 1, expectedBalance1).verify({ tx: tx_, inputIndex: 0, inputSatoshis })
+    result = testMerge(0, expectedBalance0 - 1, expectedBalance1).verify({ inputIndex: 0 })
     expect(result.success, result.error).to.be.false
     
     // input1 only checks balance1
-    result = testMerge(1, expectedBalance0 - 1, expectedBalance1).verify({ tx: tx_, inputIndex: 1, inputSatoshis })
+    result = testMerge(1, expectedBalance0 - 1, expectedBalance1).verify({ inputIndex: 1 })
     expect(result.success, result.error).to.be.true
-    result = testMerge(1, expectedBalance0, expectedBalance1 + 1).verify({ tx: tx_, inputIndex: 1, inputSatoshis })
+    result = testMerge(1, expectedBalance0, expectedBalance1 + 1).verify({ inputIndex: 1 })
     expect(result.success, result.error).to.be.false
     
     // both balance0 and balance1 have to be right to pass both checks of input0 and input1
-    result = testMerge(0, expectedBalance0, expectedBalance1).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testMerge(0, expectedBalance0, expectedBalance1).verify({ inputIndex: 0 })
     expect(result.success, result.error).to.be.true
-    result = testMerge(1, expectedBalance0, expectedBalance1).verify({ tx: tx_, inputIndex: 1, inputSatoshis })
+    result = testMerge(1, expectedBalance0, expectedBalance1).verify({ inputIndex: 1 })
     expect(result.success, result.error).to.be.true
   });
 

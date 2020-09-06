@@ -88,11 +88,6 @@ function sleep(ms) {
         new Ripemd160(toHex(pkh)),
         changeAmount
       ).toScript()
-      // .verify({
-      //   tx: unlockingTx,
-      //   inputIndex: curInputIndex,
-      //   inputSatoshis: amount
-      // }) 
 
       // unlock other p2pkh inputs
       for (let i = 0; i < curInputIndex; i++) {

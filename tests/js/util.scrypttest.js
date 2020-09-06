@@ -13,7 +13,8 @@ describe('Test sCrypt contract Util In Javascript', () => {
     });
 
     it('should return true', () => {
-        result = util.testPreimageParsing(new Bytes(toHex(preimage))).verify({ tx, inputIndex, inputSatoshis })
+        const context = { tx, inputIndex, inputSatoshis }
+        result = util.testPreimageParsing(new Bytes(toHex(preimage))).verify(context)
         expect(result.success, result.error).to.be.true
     });
 });

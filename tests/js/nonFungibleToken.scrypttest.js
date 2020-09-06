@@ -48,6 +48,8 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         script: bsv.Script.fromASM(newLockingScript1),
         satoshis: outputAmount
       }))
+      
+      token.txContext = { tx: tx_, inputIndex, inputSatoshis }
 
       const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex)
       const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSatoshis)
@@ -60,23 +62,23 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       )
     }
 
-    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify()
     expect(result.success, result.error).to.be.true
 
     // issuer must not change
-    result = testIssue(privateKey1, publicKey2, publicKey2, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testIssue(privateKey1, publicKey2, publicKey2, currTokenId + 1, currTokenId).verify()
     expect(result.success, result.error).to.be.false
     
     // unauthorized key
-    result = testIssue(privateKey2, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testIssue(privateKey2, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify()
     expect(result.success, result.error).to.be.false
     
     // mismatched next token ID
-    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 2, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 2, currTokenId).verify()
     expect(result.success, result.error).to.be.false
     
     // mismatched issued token ID
-    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId - 1).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId - 1).verify()
     expect(result.success, result.error).to.be.false
   });
 
@@ -98,6 +100,8 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         satoshis: outputAmount
       }))
 
+      token.txContext = { tx: tx_, inputIndex, inputSatoshis }
+
       const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex)
       const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSatoshis)
       return token.transfer(
@@ -108,15 +112,15 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       )
     }
 
-    result = testTransfer(privateKey1, publicKey2, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testTransfer(privateKey1, publicKey2, currTokenId).verify()
     expect(result.success, result.error).to.be.true
     
     // unauthorized key
-    result = testTransfer(privateKey2, publicKey2, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testTransfer(privateKey2, publicKey2, currTokenId).verify()
     expect(result.success, result.error).to.be.false
 
     // token ID must not change
-    result = testTransfer(privateKey1, publicKey2, currTokenId + 2).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testTransfer(privateKey1, publicKey2, currTokenId + 2).verify()
     expect(result.success, result.error).to.be.false
   });
 
@@ -144,6 +148,8 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         satoshis: outputAmount
       }))
 
+      token.txContext = { tx: tx_, inputIndex, inputSatoshis }
+
       const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex)
       const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSatoshis)
       return token.issue(
@@ -155,7 +161,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       )
     }
 
-    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify()
     expect(result.success, result.error).to.be.false
   })
 });
