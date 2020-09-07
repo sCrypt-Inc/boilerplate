@@ -2,6 +2,8 @@ contract Util {
 	// number of bytes to denote some numeric value
     static int DataLen = 1;
 
+	// number of bytes to denote input sequence
+	static int InputSeqLen = 4;
 	// number of bytes to denote output value
     static int OutputValueLen = 8;
 	// number of bytes to denote a public key (compressed)
@@ -30,6 +32,23 @@ contract Util {
 
 		return ret;
 	}
+
+    static function readVarintLen(bytes b): int {
+        int len = 0;
+        bytes header = b[0:1];
+
+        if (header == b'fd') {
+            len = 3 + this.fromLEUnsigned(b[1:3]);
+        } else if (header == b'fe') {
+            len = 5 + this.fromLEUnsigned(b[1:5]);
+        } else if (header == b'ff') {
+            len = 9 + this.fromLEUnsigned(b[1:9]);
+        } else {
+            len = 1 + this.fromLEUnsigned(b[0:1]);
+        }
+
+        return len;
+    }
 
     static function writeVarint(bytes b): bytes {
 		int n = len(b);

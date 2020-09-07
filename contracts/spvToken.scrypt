@@ -1,0 +1,68 @@
+import "util.scrypt";
+
+/**
+ * A non-fungible token enforced by miners at layer 1
+ */
+contract SPVToken {
+    // prevTx: tx being spent by the current tx
+    // prevPrevTx: tx being spent by prevTx
+    public function transfer(Sig senderSig, PubKey receiver, int satoshiAmount, bytes txPreimage, bytes prevTx, bytes prevPrevTx) {
+        // constants
+        int TxIdLen = 32;
+        int TokenIdLen = TxIdLen;
+        int PrevTxIdIdx = 5;
+        int UnlockingScriptIdx = 41;
+        // uninitialized token ID
+        bytes NullTokenId = num2bin(0, TokenIdLen);
+
+        require(Tx.checkPreimage(txPreimage));
+
+        // read previous locking script: codePart + OP_RETURN + tokenID + ownerPublicKey
+        bytes lockingScript = Util.scriptCode(txPreimage);
+        int scriptLen = len(lockingScript);
+
+        // constant part of locking script: upto OP_RETURN
+        int constStart = scriptLen - TokenIdLen - Util.PubKeyLen;
+        bytes constPart = lockingScript[: constStart];
+
+        PubKey sender = PubKey(lockingScript[constStart + TokenIdLen : ]);
+        // authorize
+        require(checkSig(senderSig, sender));
+
+        bytes outpoint = Util.outpoint(txPreimage);
+        bytes prevTxId = outpoint[ : TokenIdLen];
+        require(hash256(prevTx) == prevTxId);
+
+        bytes tokenId = lockingScript[constStart : constStart + TokenIdLen];
+        if (tokenId == NullTokenId) {
+            // get prevTxId and use it to initialize token ID
+            tokenId = prevTxId;
+        } else {
+            /*
+             * validate not only the parent tx (prevTx), but also its parent tx (prevPrevTx)
+             */
+            
+            // TODO: assume 1 input, to extend to multiple inputs
+            bytes prevPrevTxId = prevTx[PrevTxIdIdx : PrevTxIdIdx + TxIdLen];
+            require(hash256(prevPrevTx) == prevPrevTxId);
+
+            int unlockingScriptLen = Util.readVarintLen(prevPrevTx[UnlockingScriptIdx : ]);
+
+            // TODO: only validate output 0 here, to extend to multiple outputs
+            int lockingScriptIdx = UnlockingScriptIdx + unlockingScriptLen + Util.InputSeqLen + 1 /* output count length */ + Util.OutputValueLen;
+            bytes prevLockingScript = Util.readVarint(prevPrevTx[lockingScriptIdx : ]);
+            // ensure prev tx uses the same contract code
+            require(len(prevLockingScript) == len(lockingScript));
+            require(prevLockingScript[: constStart] == constPart);
+            // belongs to the same token
+            bytes prevTokenId = prevLockingScript[constStart : constStart + TokenIdLen];
+            require(prevTokenId == tokenId || prevTokenId == NullTokenId);
+        }
+
+        // validate parent tx
+        bytes outputScript = constPart + tokenId + receiver;
+
+        bytes output = num2bin(satoshiAmount, Util.OutputValueLen) + Util.writeVarint(outputScript);
+        require(hash256(output) == Util.hashOutputs(txPreimage));
+    }
+}
