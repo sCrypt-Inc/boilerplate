@@ -17,21 +17,9 @@ contract AdvancedTokenSale {
     }
 
     public function buy(bytes txPreimage, Ripemd160 changePKH, int changeSats, bytes buyer, int numTokens) {
-        // The following arguments can be generated using sample code at
-        // https://gist.github.com/scrypt-sv/f6882be580780a88984cee75dd1564c4.js
-        PrivKey privKey = PrivKey(0x621de38d9af72be8585d19584e3954d3fd0dc9752bb9f9fb28c4f9ed7c1e40ea);
-        PubKey pubKey = PubKey(b'02773aca113a3217b67a95d5b78b69bb6386ed443ea5decf0ba92c00d179291921');
-        // invK is the modular inverse of k, the ephemeral key
-        int invK = 0xa2103f96554aba49bbf581738d3b5a38c5a44b6238ffb54cfcca65b8c87ddc08;
-        // r is x coordinate of R, which is kG
-        int r = 0x00f0fc43da25095812fcddde7d7cd353990c62b078e1493dc603961af25dfc6b60;
-        // rBigEndian is the signed magnitude representation of r, in big endian
-        bytes rBigEndian = b'00f0fc43da25095812fcddde7d7cd353990c62b078e1493dc603961af25dfc6b60';
-
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
-
         // this ensures the preimage is for the current tx
-        require(Tx.checkPreimageAdvanced(txPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType));
+        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // we're using only one byte for the number of tokens purchased
         require( 0 < numTokens && numTokens < 128 );
