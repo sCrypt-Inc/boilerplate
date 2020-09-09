@@ -14,15 +14,15 @@ contract Util {
     static function readVarint(bytes b): bytes {
 		int l = 0;
 		bytes ret = b'';
-		bytes header = b[0:1];
+		byte header = b[0];
 
-		if (header == b'fd') {
+		if (header == 'fd') {
 			l = this.fromLEUnsigned(b[1:3]);
 			ret = b[3:3+l];
-		} else if (header == b'fe') {
+		} else if (header == 'fe') {
 			l = this.fromLEUnsigned(b[1:5]);
 			ret = b[5:5+l];
-		} else if (header == b'ff') {
+		} else if (header == 'ff') {
 			l = this.fromLEUnsigned(b[1:9]);
 			ret = b[9:9+l];
 		} else {
@@ -35,13 +35,13 @@ contract Util {
 
     static function readVarintLen(bytes b): int {
         int len = 0;
-        bytes header = b[0:1];
+        byte header = b[0];
 
-        if (header == b'fd') {
+        if (header == 'fd') {
             len = 3 + this.fromLEUnsigned(b[1:3]);
-        } else if (header == b'fe') {
+        } else if (header == 'fe') {
             len = 5 + this.fromLEUnsigned(b[1:5]);
-        } else if (header == b'ff') {
+        } else if (header == 'ff') {
             len = 9 + this.fromLEUnsigned(b[1:9]);
         } else {
             len = 1 + this.fromLEUnsigned(b[0:1]);
