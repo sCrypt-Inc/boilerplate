@@ -67,13 +67,20 @@ contract Test {
         require(i_ == i);
     }
 
-    bytes buf = Serializer.serializeInt(i) + Serializer.serializeBool(f) + Serializer.serializeBytes(b);
+    bytes buf = Serializer.serializeInt(i) + Serializer.serializeBytes(b) + Serializer.serializeBytes(b) 
+                + Serializer.serializeBool(f) + Serializer.serializeInt(i) + Serializer.serializeBytes(b);
     Serializer s = new Serializer(buf);
     int i_ = s.deserializeInt();
     require(i_ == i);
+    bytes b_ = s.deserializeBytes();
+    require(b_ == b);
+    b_ = s.deserializeBytes();
+    require(b_ == b);
     bool f_ = s.deserializeBool();
     require(f_ == f);
-    bytes b_ = s.deserializeBytes();
+    i_ = s.deserializeInt();
+    require(i_ == i);
+    b_ = s.deserializeBytes();
     require(b_ == b);
   }
 }
