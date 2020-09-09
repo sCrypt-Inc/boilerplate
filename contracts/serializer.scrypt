@@ -1,0 +1,79 @@
+import "./util.scrypt";
+
+// a de/serializer for basic types
+contract Serializer {
+    bytes data;
+    int idx;
+
+    constructor(bytes data) {
+        this.data = data;
+        this.idx = 0;
+    }
+
+    // uses fixed 1 byte to represent a boolean, no length prefix needed
+    static function serializeBool(bool x): bytes {
+        return x ? b'00' : b'01';
+    }
+
+    function deserializeBool(): bool {
+        bool ret = this.data[this.idx] == '00';
+        this.idx = this.idx + 1;
+        return ret;
+    }
+
+    // VarInt encoding
+    static function serializeBytes(bytes x): bytes {
+        return Util.writeVarint(x);
+    }
+
+    function deserializeBytes(): bytes {
+        int len = Util.readVarintLen(this.data[this.idx:]);
+        bytes ret = Util.readVarint(this.data[this.idx:]);
+        this.idx = this.idx + len;
+        return ret;
+    }
+
+    // int is little endian 
+    static function serializeInt(int x): bytes {
+        return Serializer.serializeBytes(pack(x));
+    }
+
+    function deserializeInt(): int {
+        return unpack(this.deserializeBytes());
+    }
+}
+
+
+contract Test {
+  public function main(bool f, bytes b, int i) {
+    {
+        bytes buf = Serializer.serializeBool(f);
+        Serializer s = new Serializer(buf);
+        bool f_ = s.deserializeBool();
+        require(f_ == f);
+    }
+
+    {
+        bytes buf = Serializer.serializeBytes(b);
+        Serializer s = new Serializer(buf);
+        bytes b_ = s.deserializeBytes();
+        require(b_ == b);
+    }
+    
+    {
+        bytes buf = Serializer.serializeInt(i);
+        Serializer s = new Serializer(buf);
+        int i_ = s.deserializeInt();
+        require(i_ == i);
+    }
+
+    bytes buf = Serializer.serializeInt(i) + Serializer.serializeBool(f) + Serializer.serializeBytes(b);
+    Serializer s = new Serializer(buf);
+    int i_ = s.deserializeInt();
+    require(i_ == i);
+    bool f_ = s.deserializeBool();
+    require(f_ == f);
+    bytes b_ = s.deserializeBytes();
+    require(b_ == b);
+  }
+}
