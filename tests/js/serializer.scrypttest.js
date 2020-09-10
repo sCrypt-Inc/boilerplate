@@ -2,6 +2,11 @@ const { expect } = require('chai');
 const { buildContractClass, Bytes } = require('scryptlib');
 const { compileContract } = require('../../helper');
 
+// (min, max]
+const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min) + min + 1)
+// 1 byte is 2 hex char
+const getRandomBytesHex = bytes => [...Array(bytes * 2)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')
+
 describe('Test sCrypt contract Serializer In Javascript', () => {
   let demo, result
 
@@ -11,17 +16,18 @@ describe('Test sCrypt contract Serializer In Javascript', () => {
   });
 
   it('should return true', () => {
-    const getRandomInt = digits => Math.floor(Math.random() * 2 ** digits)
-    const getRandomHex = digits => [...Array(digits)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+    // skip largest two bounds since they cause out of memory error
+    const varIntBounds = [0x0, 0xFC, 0xFFFF] // , 0xFFFFFFFF, 0xFFFFFFFFFFFFFFFF
+    for (let i = 0; i < varIntBounds.length - 1; i++) {
+      for (let j = 0; j < 10; j++) {
+        const n = getRandomInt(0, 2 ** 32)
         
-    for (i = 0; i < 100; i++) {
-        const digits = getRandomInt(6) + 1
-        const n = getRandomInt(digits)
-        // bytes must have even hex digits
-        const h = getRandomHex(digits * 2)
+        const m = getRandomInt(varIntBounds[i], varIntBounds[i + 1])
+        const h = getRandomBytesHex(m)
         
         result = demo.main(n % 2 === 0, new Bytes(h), n).verify()
         expect(result.success, result.error).to.be.true
+      }
     }
   });
 });
