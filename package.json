@@ -10,7 +10,8 @@
     "test": "mocha -r ts-node/register tests/**/*scrypttest.*  --reporter spec --timeout 120000",
     "single-test": "mocha -r ts-node/register --reporter spec --timeout 120000",
     "testnet": "node tests/testnet/demo.js",
-    "watch": "node watcher.js"
+    "watch": "node watcher.js",
+    "gen-desc": "node watcher.js --gen-desc"
   },
   "repository": {
     "type": "git",
