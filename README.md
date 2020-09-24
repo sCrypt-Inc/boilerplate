@@ -1,5 +1,5 @@
 # sCrypt Project Boilerplate
-
+[![Build Status](https://travis-ci.com/scrypt-sv/boilerplate.svg?branch=master)](https://travis-ci.com/scrypt-sv/boilerplate)
 ## Guide
 
 [**sCrypt**](https://scryptdoc.readthedocs.io) is a high-level programming language for writing smart contracts on Bitcoin SV. This project provides examples to help developers learn and integrate sCrypt smart contracts to their Javascript-based projects. Our recommended procedure of developing smart contract based applications is as follows:
