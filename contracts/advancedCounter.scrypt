@@ -18,11 +18,11 @@ contract AdvancedCounter {
 		// Expect the counter to be incremented in the new transaction state
 		bytes scriptCode_ = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
 
-        bytes counterOutput = num2bin(amount, Util.OutputValueLen) + Util.writeVarint(scriptCode_);
+		bytes counterOutput = Util.buildOutput(scriptCode_, amount);
 
 		// Expect the additional CHANGE output
 		bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
-		bytes changeOutput = num2bin(changeSats, Util.OutputValueLen) + Util.writeVarint(changeScript);
+		bytes changeOutput = Util.buildOutput(changeScript, changeSats);
 
 		// output: amount + scriptlen + script
 		Sha256 hashOutputs = hash256(counterOutput + changeOutput);

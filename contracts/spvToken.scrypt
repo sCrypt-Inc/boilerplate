@@ -62,7 +62,7 @@ contract SPVToken {
         // validate parent tx
         bytes outputScript = constPart + tokenId + receiver;
 
-        bytes output = num2bin(satoshiAmount, Util.OutputValueLen) + Util.writeVarint(outputScript);
+        bytes output = Util.buildOutput(outputScript, satoshiAmount);
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 }

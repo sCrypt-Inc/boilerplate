@@ -27,11 +27,11 @@ contract NonFungibleToken {
 
         // increment token ID to mint a new token
         bytes outputScript0 = constPart + num2bin(currTokenId + 1, Util.DataLen) + issuer;
-        bytes output0 = num2bin(satoshiAmount0, Util.OutputValueLen) + Util.writeVarint(outputScript0);
+        bytes output0 = Util.buildOutput(outputScript0, satoshiAmount0);
 
         // transfer previous token to another receiver
         bytes outputScript1 = constPart + num2bin(currTokenId, Util.DataLen) + receiver;
-        bytes output1 = num2bin(satoshiAmount1, Util.OutputValueLen) + Util.writeVarint(outputScript1);
+        bytes output1 = Util.buildOutput(outputScript1, satoshiAmount1);
         
         // check outputs
 		Sha256 hashOutputs = hash256(output0 + output1);
@@ -56,7 +56,7 @@ contract NonFungibleToken {
         // transfer
         bytes outputScript = constPart + receiver;
 
-        bytes output = num2bin(satoshiAmount, Util.OutputValueLen) + Util.writeVarint(outputScript);
+        bytes output = Util.buildOutput(outputScript, satoshiAmount);
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 }

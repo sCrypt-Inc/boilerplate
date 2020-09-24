@@ -38,23 +38,23 @@ contract TicTacToe {
             // winner takes all
             Ripemd160 playerPKH = ripemd160(sha256(player));
             bytes outputScript = Util.buildPublicKeyHashScript(playerPKH);
-		    bytes output = num2bin(amount, Util.OutputValueLen) + Util.writeVarint(outputScript);
-            outputs = output;
+            bytes output = Util.buildOutput(outputScript, amount);
+		    outputs = output;
         } else if (this.full(board)) {
             // draw: equally split, i.e., both outputs have the same amount
             Ripemd160 alicePKH = ripemd160(sha256(this.alice));
             bytes aliceScript = Util.buildPublicKeyHashScript(alicePKH);
-		    bytes aliceOutput = num2bin(amount, Util.OutputValueLen) + Util.writeVarint(aliceScript);
+            bytes aliceOutput = Util.buildOutput(aliceScript, amount);
 
             Ripemd160 bobPKH = ripemd160(sha256(this.bob));
             bytes bobScript = Util.buildPublicKeyHashScript(bobPKH);
-		    bytes bobOutput = num2bin(amount, Util.OutputValueLen) + Util.writeVarint(bobScript);
+            bytes bobOutput = Util.buildOutput(bobScript, amount);
 
             outputs = aliceOutput + bobOutput;
         } else {
             // update state: next turn & next board
             bytes scriptCode_ = scriptCode[: scriptLen - TicTacToe.BOARDLEN] + num2bin(1 - turn, TicTacToe.TURNLEN) + board;
-            outputs = num2bin(amount, Util.OutputValueLen) + Util.writeVarint(scriptCode_);
+            bytes output = Util.buildOutput(scriptCode_, amount);
         }
 
   		require(hash256(outputs) == Util.hashOutputs(txPreimage));

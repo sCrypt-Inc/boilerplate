@@ -9,7 +9,7 @@ contract P2SH {
 		require(hash160(redeemScript) == this.scriptHash);
 				
 		// use redeem script as the new locking script, while maintaining value
-		bytes output = num2bin(Util.value(txPreimage), Util.OutputValueLen) + Util.writeVarint(redeemScript);
+		bytes output = Util.buildOutput(redeemScript, Util.value(txPreimage));
 		require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 }

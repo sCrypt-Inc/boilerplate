@@ -35,9 +35,9 @@ contract Token {
         
         // setting first balance as 0 is just a convention, not a requirement
         bytes outputScript0 = codePart + receiver0 + num2bin(0, Util.DataLen) + num2bin(tokenAmount0, Util.DataLen);
-        bytes output0 = num2bin(satoshiAmount0, Util.OutputValueLen) + Util.writeVarint(outputScript0);
+        bytes output0 = Util.buildOutput(outputScript0, satoshiAmount0);
         bytes outputScript1 = codePart + receiver1 + num2bin(0, Util.DataLen) + num2bin(tokenAmount1, Util.DataLen);
-        bytes output1 = (tokenAmount1 > 0) ? num2bin(satoshiAmount1, Util.OutputValueLen) + Util.writeVarint(outputScript1) : b'';
+        bytes output1 = (tokenAmount1 > 0) ? Util.buildOutput(outputScript1, satoshiAmount1) : b'';
 		Sha256 hashOutputs = hash256(output0 + output1);
         
         require(hashOutputs == Util.hashOutputs(txPreimage));
@@ -79,7 +79,7 @@ contract Token {
             num2bin(otherTokenAmount, Util.DataLen) + num2bin(balance0 + balance1, Util.DataLen);
         // merge
         bytes outputScript = codePart + receiver + amountPart;
-        bytes output = num2bin(satoshiAmount, Util.OutputValueLen) + Util.writeVarint(outputScript);
+        bytes output = Util.buildOutput(outputScript, satoshiAmount);
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 
@@ -101,7 +101,7 @@ contract Token {
 
         // send to a P2PKH script
         bytes lockingScript_ = Util.buildPublicKeyHashScript(receiverPkh);
-		bytes output = num2bin(satoshiAmount, Util.OutputValueLen) + Util.writeVarint(lockingScript_);
+		bytes output = Util.buildOutput(lockingScript_, satoshiAmount);
         Sha256 hashOutputs = hash256(output);
         require(hashOutputs == Util.hashOutputs(txPreimage));
     }
