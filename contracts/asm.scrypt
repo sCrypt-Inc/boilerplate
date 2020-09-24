@@ -1,0 +1,65 @@
+contract Asm {
+    public function double(int a, int b) {
+        asm {
+            op_dup
+            op_aDd
+            OP_NumEqual
+        }
+    }
+
+    function equalImpl(int a): bool {
+        // mix all
+        asm {
+            $x
+            ab12
+            op_size
+            op_nip
+            op_mul
+            op_1
+            op_mul
+            $x
+            op_sub
+            op_equal
+        }
+    }
+
+    public function equal(int a) {
+        require(this.equalImpl(a));
+    }
+
+    public function p2pkh(Sig sig, PubKey pubKey) {
+        asm {
+            op_dup
+            op_hash160
+            $pkh
+            op_equalverify
+            op_checksig
+        }
+    }
+
+    function len(bytes b): int {
+        asm {
+            op_size
+            op_nip
+        }
+    }
+
+    function lenFail(bytes b): int {
+        // this is wrong since there are multiple elements on stack upon return
+        asm {
+            op_size
+        }
+    }
+
+    public function checkLen(bytes b, int l) {
+        require(this.len(b) == l);
+        require(this.len(b) == l);
+        require(this.len(b) == l);
+    }
+
+    public function checkLenFail(bytes b, int l) {
+        // expect to fail after multiple calls since the stack is messed
+        require(this.lenFail(b) == l);
+        require(this.lenFail(b) == l);
+    }
+}
