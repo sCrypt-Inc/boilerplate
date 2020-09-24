@@ -12,14 +12,14 @@ contract Asm {
         asm {
             $x
             ab12
-            op_size
-            op_nip
-            op_mul
-            op_1
-            op_mul
+            OP_SIZE
+            OP_NIP
+            OP_MUL
+            OP_1
+            OP_MUL
             $x
-            op_sub
-            op_equal
+            OP_SUB
+            OP_EQUAL
         }
     }
 
@@ -29,25 +29,25 @@ contract Asm {
 
     public function p2pkh(Sig sig, PubKey pubKey) {
         asm {
-            op_dup
-            op_hash160
+            OP_DUP
+            OP_HASH160
             $pkh
-            op_equalverify
-            op_checksig
+            OP_EQUALVERIFY
+            OP_CHECKSIG
         }
     }
 
     function len(bytes b): int {
         asm {
-            op_size
-            op_nip
+            OP_SIZE
+            OP_NIP
         }
     }
 
     function lenFail(bytes b): int {
         // this is wrong since there are multiple elements on stack upon return
         asm {
-            op_size
+            OP_SIZE
         }
     }
 
