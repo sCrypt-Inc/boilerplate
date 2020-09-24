@@ -49,7 +49,9 @@ describe('Test sCrypt contract Counter In Javascript', () => {
   });
 
   it('should succeed when pushing right preimage & amount', () => {
-    result = counter.increment(new Bytes(toHex(preimage)), outputAmount, new Ripemd160(toHex(pkh)), changeAmount).verify( { tx: tx_, inputIndex, inputSatoshis } )
+    // any contract that includes checkSig() must be verified in a given context
+    const context = { tx: tx_, inputIndex, inputSatoshis }
+    result = counter.increment(new Bytes(toHex(preimage)), outputAmount, new Ripemd160(toHex(pkh)), changeAmount).verify(context)
     expect(result.success, result.error).to.be.true;
   });
 });

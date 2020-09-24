@@ -10,7 +10,8 @@
     "test": "mocha -r ts-node/register tests/**/*scrypttest.*  --reporter spec --timeout 120000",
     "single-test": "mocha -r ts-node/register --reporter spec --timeout 120000",
     "testnet": "node tests/testnet/demo.js",
-    "watch": "node watcher.js"
+    "watch": "node watcher.js",
+    "gen-desc": "node watcher.js --gen-desc"
   },
   "repository": {
     "type": "git",
@@ -28,8 +29,7 @@
   "dependencies": {
     "axios": "^0.19.2",
     "glob": "^7.1.6",
-    "scryptc": "^0.1.20",
-    "scryptlib": "0.1.7",
+    "scryptlib": "^0.2.3",
     "watch": "^1.0.2"
   },
   "devDependencies": {

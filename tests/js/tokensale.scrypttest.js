@@ -32,12 +32,14 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
   });
 
   it('should succeed when publicKey1 buys tokens', () => {
+    // any contract that includes checkSig() must be verified in a given context
+    const context = { tx: tx_, inputIndex, inputSatoshis }
     const preimage = getPreimageAfterPurchase(publicKey1)
     result = tokenSale.buy(
         new PubKey(toHex(publicKey1)),
         numTokens,
         new Bytes(toHex(preimage))
-      ).verify( { tx: tx_, inputIndex, inputSatoshis })
+      ).verify(context)
     expect(result.success, result.error).to.be.true
   });
 });
