@@ -11,6 +11,11 @@ contract Util {
 	// number of bytes to denote a public key hash
     static int PubKeyHashLen = 20;
 
+	/*
+	 * VarInt (variable integer) is used to encode fields of variable length in a bitcoin transaction
+	 * https://learnmeabitcoin.com/technical/varint
+	 */
+	// read a VarInt field from the beginning of 'b'
     static function readVarint(bytes b): bytes {
 		int l = 0;
 		bytes ret = b'';
@@ -33,6 +38,7 @@ contract Util {
 		return ret;
 	}
 
+	// number of bytes of the VarInt field read from the beginning of 'b'
     static function readVarintLen(bytes b): int {
         int len = 0;
         byte header = b[0];
@@ -50,6 +56,7 @@ contract Util {
         return len;
     }
 
+	// convert 'b' to a VarInt field, including the preceding length
     static function writeVarint(bytes b): bytes {
 		int n = len(b);
 		
@@ -76,11 +83,13 @@ contract Util {
 		return m[0 : len(m) - 1];
 	}
 
+	// convert bytes to unsigned integer, in sign-magnitude little endian
     static function fromLEUnsigned(bytes b): int {
 		// append positive sign byte. This does not hurt even when sign bit is already positive
 		return unpack(b + b'00');
 	}
 
+	// build P2PKH script from public key hash
 	static function buildPublicKeyHashScript(Ripemd160 pubKeyHash): bytes {
 	 	return OpCode.OP_DUP + OpCode.OP_HASH160 + pack(Util.PubKeyHashLen) /* "OP_PUSHDATA0" */ + 
 		 		pubKeyHash + OpCode.OP_EQUALVERIFY + OpCode.OP_CHECKSIG;
@@ -91,6 +100,7 @@ contract Util {
 		return num2bin(outputSatoshis, Util.OutputValueLen) + Util.writeVarint(outputScript);
 	}
 
+	// wrapper for OP_PUSH_TX with customized sighash type
 	static function checkPreimageSigHashType(bytes txPreimage, SigHashType sigHashType): bool {
         // The following arguments can be generated using sample code at
         // https://gist.github.com/scrypt-sv/f6882be580780a88984cee75dd1564c4.js
@@ -106,8 +116,9 @@ contract Util {
         return Tx.checkPreimageAdvanced(txPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType);
 	}
 
+
 	/*
-	 * parse sighash preimage
+	 * util functions to parse every filed of a sighash preimage
 	 * Note: only to be used after preimage is validated
 	 * spec is at https://github.com/bitcoin-sv/bitcoin-sv/blob/master/doc/abc/replay-protected-sighash.md
 	 */
@@ -169,6 +180,7 @@ contract Util {
 		return SigHashType(preimage[l - 4 :]);
 	}
 
+	// used only for testing
     public function testPreimageParsing(bytes preimage) {
 			require(Tx.checkPreimage(preimage));
 		bytes preimage_ = Util.nVersion(preimage) + Util.hashPrevouts(preimage) + Util.hashSequence(preimage) +
