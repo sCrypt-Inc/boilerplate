@@ -1,13 +1,13 @@
 contract Asm {
     public function double(int a, int b) {
         asm {
-            op_dup
-            op_aDd
-            OP_NumEqual
+            OP_DUP
+            OP_ADD
+            OP_NUMEQUAL
         }
     }
 
-    function equalImpl(int a): bool {
+    function equalImpl(int a) : bool {
         // mix all
         asm {
             $x
@@ -37,14 +37,14 @@ contract Asm {
         }
     }
 
-    function len(bytes b): int {
+    function len(bytes b) : int {
         asm {
             OP_SIZE
             OP_NIP
         }
     }
 
-    function lenFail(bytes b): int {
+    function lenFail(bytes b) : int {
         // this is wrong since there are multiple elements on stack upon return
         asm {
             OP_SIZE
