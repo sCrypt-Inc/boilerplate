@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, Sig, PubKey, Bytes } = require('scryptlib');
+const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, Sig, PubKey, SigHashPreimage } = require('scryptlib');
 const { inputIndex, inputSatoshis, tx, compileContract, DataLen } = require('../../helper');
 
 // make a copy since it will be mutated
@@ -44,7 +44,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
         new Sig(toHex(sig1)),
         new PubKey(toHex(publicKey2)),
         40,
-        new Bytes(toHex(preimage)),
+        new SigHashPreimage(toHex(preimage)),
         outputAmount
       ).verify()
     expect(result.success, result.error).to.be.true
@@ -59,7 +59,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
           new Sig(toHex(sig1)),
           new PubKey(toHex(publicKey2)),
           40,
-          new Bytes(toHex(preimage)),
+          new SigHashPreimage(toHex(preimage)),
           outputAmount
         ).verify()
     expect(result.success, result.error).to.be.false
@@ -73,7 +73,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
           new Sig(toHex(sig2)),
           new PubKey(toHex(publicKey1)),
           40,
-          new Bytes(toHex(preimage)),
+          new SigHashPreimage(toHex(preimage)),
           outputAmount
         ).verify()
     expect(result.success, result.error).to.be.false
@@ -87,7 +87,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
           new Sig(toHex(sig2)),
           new PubKey(toHex(publicKey2)),
           40,
-          new Bytes(toHex(preimage)),
+          new SigHashPreimage(toHex(preimage)),
           outputAmount
         ).verify()
     expect(result.success, result.error).to.be.false

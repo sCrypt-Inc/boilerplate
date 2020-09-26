@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, PubKey, Bytes, Sig } = require('scryptlib');
+const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, PubKey, SigHashPreimage, Sig } = require('scryptlib');
 const { inputIndex, inputSatoshis, tx, compileContract, DataLen, dummyTxId } = require('../../helper');
 
 // make a copy since it will be mutated
@@ -58,7 +58,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         new PubKey(toHex(publicKey2)),
         outputAmount,
         outputAmount,
-        new Bytes(toHex(preimage))
+        new SigHashPreimage(toHex(preimage))
       )
     }
 
@@ -108,7 +108,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         new Sig(toHex(sig)),
         new PubKey(toHex(publicKey2)),
         outputAmount,
-        new Bytes(toHex(preimage))
+        new SigHashPreimage(toHex(preimage))
       )
     }
 
@@ -157,7 +157,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         new PubKey(toHex(publicKey2)),
         outputAmount,
         outputAmount,
-        new Bytes(toHex(preimage))
+        new SigHashPreimage(toHex(preimage))
       )
     }
 

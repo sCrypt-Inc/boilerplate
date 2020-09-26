@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, toHex, getPreimage, num2bin, signTx, PubKey, Bytes, Sig, Ripemd160 } = require('scryptlib');
+const { bsv, buildContractClass, toHex, getPreimage, num2bin, signTx, PubKey, Bytes, Sig, SigHashPreimage,Ripemd160 } = require('scryptlib');
 const { inputIndex, inputSatoshis, tx, compileContract, DataLen, dummyTxId, reversedDummyTxId } = require('../../helper');
 
 // make a copy since it will be mutated
@@ -64,7 +64,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         new PubKey(toHex(publicKey3)),
         balanceInput1,
         outputAmount,
-        new Bytes(toHex(preimage))
+        new SigHashPreimage(toHex(preimage))
       )
     }
 
@@ -145,7 +145,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         new Bytes(prevouts),
         inputIndex == 0 ? balance1 : balance0,
         outputAmount,
-        new Bytes(toHex(preimage))
+        new SigHashPreimage(toHex(preimage))
       )
     }
 
@@ -194,7 +194,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         new Sig(toHex(sig)),
         new Ripemd160(toHex(pkh1)),
         outputAmount,
-        new Bytes(toHex(preimage))
+        new SigHashPreimage(toHex(preimage))
       )
     }
 

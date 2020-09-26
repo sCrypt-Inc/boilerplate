@@ -6,7 +6,7 @@ import "util.scrypt";
 contract SPVToken {
     // prevTx: tx being spent by the current tx
     // prevPrevTx: tx being spent by prevTx
-    public function transfer(Sig senderSig, PubKey receiver, int satoshiAmount, bytes txPreimage, bytes prevTx, bytes prevPrevTx) {
+    public function transfer(Sig senderSig, PubKey receiver, int satoshiAmount, SigHashPreimage txPreimage, bytes prevTx, bytes prevPrevTx) {
         // constants
         int TxIdLen = 32;
         int TokenIdLen = TxIdLen;
