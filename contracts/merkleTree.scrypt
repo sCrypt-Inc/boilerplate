@@ -19,7 +19,6 @@ contract MerkleTree {
 
   static function verifyLeaf(bytes leaf, bytes merklePath, bytes merkleRoot) : bool {
     bytes merkleValue = MerkleTree.calculateMerkleRoot(leaf, merklePath);
-    require(merkleValue == merkleRoot);
     return merkleValue == merkleRoot;
   }
 

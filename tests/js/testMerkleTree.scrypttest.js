@@ -12,7 +12,7 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
   })
 
   it("should calculate the merkle root", () => {
-    const merkleRoot = new Bytes("cd53a2ce68e6476c29512ea53c395c7f5d8fbcb4614d89298db14e2a5bdb5456")
+    let merkleRoot = new Bytes("cd53a2ce68e6476c29512ea53c395c7f5d8fbcb4614d89298db14e2a5bdb5456")
     let leaf, merklePath
 
     leaf = new Bytes("6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b")
@@ -39,6 +39,42 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
     )
 
     result = testMerkleTree.testCalculateMerkleRoot(leaf, merklePath, merkleRoot).verify()
+    expect(result.success, result.error).to.be.true
+  })
+
+  it("should calculate the merkle root for merkletrees of uneven length", () => {
+    let merkleRoot = new Bytes("f58e5706462d76bde8db3498c15883aabe4585180e3cba0e7b15bb6f45ac3994")
+    leaf = new Bytes("ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d")
+    merklePath = new Bytes(
+      [
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "01",
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "01",
+        "cd53a2ce68e6476c29512ea53c395c7f5d8fbcb4614d89298db14e2a5bdb5456",
+        "00"
+      ].join("")
+    )
+
+    result = testMerkleTree.testCalculateMerkleRoot(leaf, merklePath, merkleRoot).verify()
+    expect(result.success, result.error).to.be.true
+  })
+
+  it("should verify leafs", () => {
+    let merkleRoot = new Bytes("cd53a2ce68e6476c29512ea53c395c7f5d8fbcb4614d89298db14e2a5bdb5456")
+    let leaf, merklePath
+
+    leaf = new Bytes("6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b")
+    merklePath = new Bytes(
+      [
+        "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+        "01",
+        "20ab747d45a77938a5b84c2944b8f5355c49f21db0c549451c6281c91ba48d0d",
+        "01"
+      ].join("")
+    )
+
+    result = testMerkleTree.testVerifyLeaf(leaf, merklePath, merkleRoot).verify()
     expect(result.success, result.error).to.be.true
   })
 
