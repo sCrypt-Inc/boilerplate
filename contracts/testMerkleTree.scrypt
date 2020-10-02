@@ -1,0 +1,18 @@
+import "./merkleTree.scrypt";
+
+contract MerkleTreeTest {
+  public function testCalculateMerkleRoot(bytes leaf, bytes merklePath, bytes merkleRoot) {
+    require(MerkleTree.calculateMerkleRoot(leaf, merklePath) == merkleRoot);
+  }
+
+  public function testVerifyLeaf(bytes leaf, bytes merklePath, bytes merkleRoot) {
+    require(MerkleTree.verifyLeaf(leaf, merklePath, merkleRoot));
+  }
+
+  public function testUpdateLeaf(bytes oldLeaf,
+    bytes newLeaf,
+    bytes merklePath,
+    bytes oldMerkleRoot, bytes newMerkleRoot) {
+    require(MerkleTree.updateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot) == newMerkleRoot);
+  }
+}

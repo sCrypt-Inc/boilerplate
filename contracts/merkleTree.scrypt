@@ -1,0 +1,32 @@
+contract MerkleTree {
+  static function calculateMerkleRoot(bytes leaf, bytes merklePath) : bytes {
+    int i = 0;
+    int merklePathLength = len(merklePath) / 33;
+    bytes merkleValue = leaf;
+    loop (20) {
+      if (i < merklePathLength) {
+        int left = unpack(merklePath[i * 33 + 32 : i * 33 + 33]);
+        if (left) {
+          merkleValue = sha256(merkleValue + merklePath[i * 33 : i * 33 + 32]);
+        } else {
+          merkleValue = sha256(merklePath[i * 33 : i * 33 + 32] + merkleValue);
+        }
+        i = i + 1;
+      }
+    }
+    return merkleValue;
+  }
+
+  static function verifyLeaf(bytes leaf, bytes merklePath, bytes merkleRoot) : bool {
+    bytes merkleValue = MerkleTree.calculateMerkleRoot(leaf, merklePath);
+    return merkleValue == merkleRoot;
+  }
+
+  static function updateLeaf(bytes oldLeaf,
+    bytes newLeaf,
+    bytes merklePath,
+    bytes oldMerkleRoot) : bytes {
+    require(MerkleTree.verifyLeaf(oldLeaf, merklePath, oldMerkleRoot));
+    return MerkleTree.calculateMerkleRoot(newLeaf, merklePath);
+  }
+}
