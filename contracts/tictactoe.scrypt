@@ -10,7 +10,7 @@ contract TicTacToe {
     static byte ALICE = '01';
     static byte BOB = '02';
 
-	public function move(int n, Sig sig, int amount, bytes txPreimage) {
+	public function move(int n, Sig sig, int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
         require(n >=0 && n < TicTacToe.BOARDLEN);
 

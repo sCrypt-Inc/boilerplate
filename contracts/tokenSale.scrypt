@@ -11,7 +11,7 @@ contract TokenSale {
 		this.price = price;
 	}
 
-    public function buy(PubKey buyer, int numTokens, bytes txPreimage) {
+    public function buy(PubKey buyer, int numTokens, SigHashPreimage txPreimage) {
         // this ensures the preimage is for the current tx
         require(Tx.checkPreimage(txPreimage));
 

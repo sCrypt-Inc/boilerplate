@@ -5,7 +5,7 @@ const {
   toHex,
   bsv,
   Ripemd160,
-  Bytes
+  SigHashPreimage
 } = require('scryptlib');
 const {
   loadDesc,
@@ -83,7 +83,7 @@ function sleep(ms) {
       const preimage = getPreimage(unlockingTx, prevLockingScript.toASM(), amount, curInputIndex, sighashType)
 
       const unlockingScript = advCounter.increment(
-        new Bytes(toHex(preimage)),
+        new SigHashPreimage(toHex(preimage)),
         amount,
         new Ripemd160(toHex(pkh)),
         changeAmount

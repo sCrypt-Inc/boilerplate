@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { buildContractClass, getPreimage, toHex, Bytes } = require('scryptlib');
+const { buildContractClass, getPreimage, toHex, SigHashPreimage } = require('scryptlib');
 
 const { tx, compileContract, inputIndex, inputSatoshis } = require('../../helper');
 
@@ -14,7 +14,7 @@ describe('Test sCrypt contract Util In Javascript', () => {
 
     it('should return true', () => {
         const context = { tx, inputIndex, inputSatoshis }
-        result = util.testPreimageParsing(new Bytes(toHex(preimage))).verify(context)
+        result = util.testPreimageParsing(new SigHashPreimage(toHex(preimage))).verify(context)
         expect(result.success, result.error).to.be.true
     });
 });

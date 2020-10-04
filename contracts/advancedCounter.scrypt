@@ -4,7 +4,7 @@ import "util.scrypt";
  * Demonstrates TxAdvanced, with external funding (additional input) and a change output
  */
 contract AdvancedCounter {
-	public function increment(bytes txPreimage, int amount, Ripemd160 changePKH, int changeSats) {
+	public function increment(SigHashPreimage txPreimage, int amount, Ripemd160 changePKH, int changeSats) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         // this ensures the preimage is for the current tx
         require(Util.checkPreimageSigHashType(txPreimage, sigHashType));

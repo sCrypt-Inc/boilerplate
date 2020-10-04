@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, getPreimage, toHex, num2bin, Bytes, Ripemd160 } = require('scryptlib');
+const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Ripemd160 } = require('scryptlib');
 const {
   inputIndex,
   inputSatoshis,
@@ -51,7 +51,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
   it('should succeed when pushing right preimage & amount', () => {
     // any contract that includes checkSig() must be verified in a given context
     const context = { tx: tx_, inputIndex, inputSatoshis }
-    result = counter.increment(new Bytes(toHex(preimage)), outputAmount, new Ripemd160(toHex(pkh)), changeAmount).verify(context)
+    result = counter.increment(new SigHashPreimage(toHex(preimage)), outputAmount, new Ripemd160(toHex(pkh)), changeAmount).verify(context)
     expect(result.success, result.error).to.be.true;
   });
 });

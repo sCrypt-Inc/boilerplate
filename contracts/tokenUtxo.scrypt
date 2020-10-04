@@ -5,7 +5,7 @@ import "util.scrypt";
  */
 contract Token {
     public function split(Sig senderSig, PubKey receiver0, int tokenAmount0, int satoshiAmount0, 
-                            PubKey receiver1, int tokenAmount1, int satoshiAmount1, bytes txPreimage) {
+                            PubKey receiver1, int tokenAmount1, int satoshiAmount1, SigHashPreimage txPreimage) {
         require(tokenAmount0 > 0);
         // 1 to 1 transfer when tokenAmount1 is 0
         require(tokenAmount1 >= 0);
@@ -43,7 +43,7 @@ contract Token {
         require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 
-    public function merge(Sig senderSig, PubKey receiver, bytes prevouts, int otherTokenAmount, int satoshiAmount, bytes txPreimage) {
+    public function merge(Sig senderSig, PubKey receiver, bytes prevouts, int otherTokenAmount, int satoshiAmount, SigHashPreimage txPreimage) {
         require(otherTokenAmount >= 0);
 
         // this ensures the preimage is for the current tx
@@ -84,7 +84,7 @@ contract Token {
     }
 
     // burn a token back to normal bitcoins
-    public function burn(Sig senderSig, Ripemd160 receiverPkh, int satoshiAmount, bytes txPreimage) {
+    public function burn(Sig senderSig, Ripemd160 receiverPkh, int satoshiAmount, SigHashPreimage txPreimage) {
         // this ensures the preimage is for the current tx
 		require(Tx.checkPreimage(txPreimage));
 
