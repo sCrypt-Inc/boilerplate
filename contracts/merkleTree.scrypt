@@ -29,4 +29,49 @@ contract MerkleTree {
     require(MerkleTree.verifyLeaf(oldLeaf, merklePath, oldMerkleRoot));
     return MerkleTree.calculateMerkleRoot(newLeaf, merklePath);
   }
+
+  static function addLeaf(bytes lastLeaf,
+    bytes lastMerklePath,
+    bytes oldMerkleRoot,
+    bytes newLeaf) : bytes {
+    require(MerkleTree.verifyLeaf(lastLeaf, lastMerklePath, oldMerkleRoot));
+
+    int i = 0;
+    int depth = len(lastMerklePath) / 33;
+    bytes merkleValue = newLeaf;
+    bytes lastLeafValue = lastLeaf;
+    bool joined = false;
+
+    loop (20) {
+      if (i < depth) {
+        bytes sibling = lastMerklePath[i * 33 : i * 33 + 32];
+        int left = unpack(lastMerklePath[i * 33 + 32 : i * 33 + 33]);
+
+        if (left) {
+          if (joined) {
+            require(sibling == merkleValue);
+            merkleValue = sha256(merkleValue + sibling);
+          } else {
+            require(sibling == lastLeafValue);
+            merkleValue = sha256(lastLeafValue + merkleValue);
+          }
+          joined = true;
+        } else {
+          if (joined) {
+            merkleValue = sha256(sibling + merkleValue);
+          } else {
+            merkleValue = sha256(merkleValue + merkleValue);
+            lastLeafValue = sha256(sibling + lastLeafValue);
+          }
+        }
+        i = i + 1;
+      }
+    }
+
+    if (! joined) {
+      merkleValue = sha256(oldMerkleRoot + merkleValue);
+    }
+
+    return merkleValue;
+  }
 }
