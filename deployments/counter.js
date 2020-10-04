@@ -1,4 +1,4 @@
-const { bsv, buildContractClass, getPreimage, toHex, num2bin, Bytes } = require('scryptlib');
+const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage } = require('scryptlib');
 const { DataLen, loadDesc, createUnlockingTx, createLockingTx, sendTx, showError  } = require('../helper');
 
 (async() => {
@@ -30,7 +30,7 @@ const { DataLen, loadDesc, createUnlockingTx, createLockingTx, sendTx, showError
             const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
 
             const preimage = getPreimage(unlockingTx, prevLockingScript, amount)
-            const unlockingScript = counter.increment(new Bytes(toHex(preimage)), newAmount).toScript()
+            const unlockingScript = counter.increment(new SigHashPreimage(toHex(preimage)), newAmount).toScript()
             unlockingTx.inputs[0].setScript(unlockingScript)
 
             lockingTxid = await sendTx(unlockingTx)

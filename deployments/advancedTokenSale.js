@@ -6,6 +6,7 @@ const {
   num2bin,
   Bytes,
   signTx,
+  SigHashPreimage,
   Ripemd160
 } = require('scryptlib');
 const {
@@ -119,7 +120,7 @@ function sleep(ms) {
       const preimage = getPreimage(unlockingTx, prevLockingScript.toASM(), amount, curInputIndex, sighashType)
 
       const unlockingScript = advTokenSale.buy(
-        new Bytes(toHex(preimage)), // sighashPreimage
+        new SigHashPreimage(toHex(preimage)), // sighashPreimage
         new Ripemd160(toHex(pkhs[i])), // changePKH
         changeAmount, // changeSats
         new Bytes(toHex(publicKeys[i])), // buyer's public key

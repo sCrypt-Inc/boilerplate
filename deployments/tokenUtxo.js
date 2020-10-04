@@ -7,6 +7,7 @@ const {
   Bytes,
   signTx,
   PubKey,
+  SigHashPreimage,
   Sig
 } = require('scryptlib');
 const {
@@ -79,7 +80,7 @@ const {
         new PubKey(toHex(publicKey3)),
         30,
         outputAmount,
-        new Bytes(toHex(preimage))
+        new SigHashPreimage(toHex(preimage))
       ).toScript()
       tx.inputs[0].setScript(unlockingScript);
       splitTxid = await sendTx(tx);
@@ -121,7 +122,7 @@ const {
           new Sig(toHex(sig2)),
           new PubKey(toHex(publicKey1)),
           new Bytes(prevouts), 30, outputAmount,
-          new Bytes(toHex(preimage))
+          new SigHashPreimage(toHex(preimage))
         ).toScript()
         tx.inputs[0].setScript(unlockingScript);
       }
@@ -134,7 +135,7 @@ const {
           new Sig(toHex(sig3)),
           new PubKey(toHex(publicKey1)),
           new Bytes(prevouts), 70, outputAmount,
-          new Bytes(toHex(preimage))
+          new SigHashPreimage(toHex(preimage))
         ).toScript()
         tx.inputs[1].setScript(unlockingScript);
       }

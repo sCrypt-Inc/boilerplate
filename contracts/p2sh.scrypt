@@ -3,7 +3,7 @@ import "util.scrypt";
 contract P2SH {
 	Ripemd160 scriptHash;
 
-	public function redeem(bytes redeemScript, bytes txPreimage) {
+	public function redeem(bytes redeemScript, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
 		require(hash160(redeemScript) == this.scriptHash);

@@ -4,7 +4,7 @@ import "util.scrypt";
  * A non-fungible token protocol based on UTXO model
  */
 contract NonFungibleToken {
-    public function issue(Sig issuerSig, PubKey receiver, int satoshiAmount0, int satoshiAmount1, bytes txPreimage) {
+    public function issue(Sig issuerSig, PubKey receiver, int satoshiAmount0, int satoshiAmount1, SigHashPreimage txPreimage) {
         // this ensures the preimage is for the current tx
 		require(Tx.checkPreimage(txPreimage));
 
@@ -38,7 +38,7 @@ contract NonFungibleToken {
         require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 
-    public function transfer(Sig senderSig, PubKey receiver, int satoshiAmount, bytes txPreimage) {
+    public function transfer(Sig senderSig, PubKey receiver, int satoshiAmount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
         // read previous locking script: codePart + OP_RETURN + tokenID + ownerPublicKey

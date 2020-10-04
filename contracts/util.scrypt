@@ -37,7 +37,7 @@ contract Util {
 	}
 
 	// wrapper for OP_PUSH_TX with customized sighash type
-	static function checkPreimageSigHashType(bytes txPreimage, SigHashType sigHashType): bool {
+	static function checkPreimageSigHashType(SigHashPreimage txPreimage, SigHashType sigHashType): bool {
         // The following arguments can be generated using sample code at
         // https://gist.github.com/scrypt-sv/f6882be580780a88984cee75dd1564c4.js
         PrivKey privKey = PrivKey(0x621de38d9af72be8585d19584e3954d3fd0dc9752bb9f9fb28c4f9ed7c1e40ea);
@@ -123,70 +123,70 @@ contract Util {
 	 * Note: only to be used after preimage is validated
 	 * spec is at https://github.com/bitcoin-sv/bitcoin-sv/blob/master/doc/abc/replay-protected-sighash.md
 	 */
-	static function nVersion(bytes preimage): bytes {
+	static function nVersion(SigHashPreimage preimage): bytes {
 		return preimage[:4];
 	}
 
-	static function hashPrevouts(bytes preimage): bytes {
+	static function hashPrevouts(SigHashPreimage preimage): bytes {
 		return preimage[4:36];
 	}
 	
-	static function hashSequence(bytes preimage): bytes {
+	static function hashSequence(SigHashPreimage preimage): bytes {
 		return preimage[36:68];
 	}
 
-	static function outpoint(bytes preimage): bytes {
+	static function outpoint(SigHashPreimage preimage): bytes {
 		return preimage[68:104];
 	}
 
 	// scriptCode is just scriptPubKey if there is no CODESEPARATOR in the latter
-	static function scriptCode(bytes preimage): bytes {
+	static function scriptCode(SigHashPreimage preimage): bytes {
 		return Util.readVarint(preimage[104:]);
 	}
 
-	static function valueRaw(bytes preimage): bytes {
+	static function valueRaw(SigHashPreimage preimage): bytes {
 		int l = len(preimage);
 		return preimage[l - 52 : l - 44];
 	}
 
-	static function value(bytes preimage): int {
+	static function value(SigHashPreimage preimage): int {
 		return Util.fromLEUnsigned(Util.valueRaw(preimage));
 	}
 
-	static function nSequenceRaw(bytes preimage): bytes {
+	static function nSequenceRaw(SigHashPreimage preimage): bytes {
 		int l = len(preimage);
 		return preimage[l - 44 : l - 40];
 	}
 
-	static function nSequence(bytes preimage): int {
+	static function nSequence(SigHashPreimage preimage): int {
 		return Util.fromLEUnsigned(Util.nSequenceRaw(preimage));
 	}
 
-	static function hashOutputs(bytes preimage): bytes {
+	static function hashOutputs(SigHashPreimage preimage): bytes {
 		int l = len(preimage);
 		return preimage[l - 40 : l - 8];
 	}
 
-	static function nLocktimeRaw(bytes preimage): bytes {
+	static function nLocktimeRaw(SigHashPreimage preimage): bytes {
 		int l = len(preimage);
 		return preimage[l - 8 : l - 4];
 	}
 
-	static function nLocktime(bytes preimage): int {
+	static function nLocktime(SigHashPreimage preimage): int {
 		return Util.fromLEUnsigned(Util.nLocktimeRaw(preimage));
 	}
 
-	static function sigHashType(bytes preimage): SigHashType {
+	static function sigHashType(SigHashPreimage preimage): SigHashType {
 		int l = len(preimage);
 		return SigHashType(preimage[l - 4 :]);
 	}
 
 	// used only for testing
-    public function testPreimageParsing(bytes preimage) {
+    public function testPreimageParsing(SigHashPreimage preimage) {
 			require(Tx.checkPreimage(preimage));
-		bytes preimage_ = Util.nVersion(preimage) + Util.hashPrevouts(preimage) + Util.hashSequence(preimage) +
+		SigHashPreimage preimage_ = SigHashPreimage(Util.nVersion(preimage) + Util.hashPrevouts(preimage) + Util.hashSequence(preimage) +
 						  Util.outpoint(preimage) + Util.writeVarint(Util.scriptCode(preimage)) + Util.valueRaw(preimage) +
-            			  Util.nSequenceRaw(preimage) + Util.hashOutputs(preimage) + Util.nLocktimeRaw(preimage) + Util.sigHashType(preimage);
+            			  Util.nSequenceRaw(preimage) + Util.hashOutputs(preimage) + Util.nLocktimeRaw(preimage) + Util.sigHashType(preimage));
         require(preimage == preimage_);
     }
 }

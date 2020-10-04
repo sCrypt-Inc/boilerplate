@@ -4,7 +4,7 @@ const {
   getPreimage,
   toHex,
   num2bin,
-  Bytes,
+  SigHashPreimage,
   signTx,
   PubKey,
   Sig
@@ -65,7 +65,7 @@ const {
         new Sig(toHex(sig1)),
         new PubKey(toHex(publicKey2)),
         40,
-        new Bytes(toHex(preimage)),
+        new SigHashPreimage(toHex(preimage)),
         newAmount
       ).toScript()
 
@@ -98,7 +98,7 @@ const {
         new Sig(toHex(sig2)),
         new PubKey(toHex(publicKey1)),
         10,
-        new Bytes(toHex(preimage)),
+        new SigHashPreimage(toHex(preimage)),
         newAmount
       ).toScript()
 

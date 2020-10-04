@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, toHex, getPreimage, num2bin, PubKey, Bytes } = require('scryptlib');
+const { bsv, buildContractClass, toHex, getPreimage, num2bin, PubKey, SigHashPreimage } = require('scryptlib');
 const { inputIndex, inputSatoshis, tx, compileContract, DataLen } = require('../../helper');
 
 // make a copy since it will be mutated
@@ -38,7 +38,7 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
     result = tokenSale.buy(
         new PubKey(toHex(publicKey1)),
         numTokens,
-        new Bytes(toHex(preimage))
+        new SigHashPreimage(toHex(preimage))
       ).verify(context)
     expect(result.success, result.error).to.be.true
   });
