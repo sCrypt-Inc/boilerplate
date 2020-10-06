@@ -74,4 +74,15 @@ contract MerkleTree {
 
     return merkleValue;
   }
+
+  /**
+  *  Makes sure that the new Leaf is added at the same depth.
+  */
+  static function addLeafSafe(bytes lastEntry,
+    bytes lastMerklePath,
+    bytes oldMerkleRoot,
+    bytes newLeaf) : bytes {
+    bytes lastLeaf = sha256(lastEntry);
+    return MerkleTree.addLeaf(lastLeaf, lastMerklePath, oldMerkleRoot, newLeaf);
+  }
 }
