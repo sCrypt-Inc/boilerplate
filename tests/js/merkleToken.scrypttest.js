@@ -1,30 +1,16 @@
 const { expect } = require("chai")
-const {
-  bsv,
-  buildContractClass,
-  signTx,
-  toHex,
-  getPreimage,
-  num2bin,
-  PubKey,
-  SigHashPreimage,
-  Sig,
-  Ripemd160,
-  Bytes
-} = require("scryptlib")
-const { inputIndex, inputSatoshis, tx, compileContract, DataLen, dummyTxId } = require("../../helper")
+const { bsv, buildContractClass, toHex, getPreimage, num2bin, SigHashPreimage, Ripemd160, Bytes } = require("scryptlib")
+const { inputIndex, inputSatoshis, tx, compileContract, dummyTxId } = require("../../helper")
 const crypto = require("crypto")
 
 function sha256(x) {
   return crypto.createHash("sha256").update(x).digest("hex")
 }
 
-// make a copy since it will be mutated
-var tx_ = bsv.Transaction.shallowCopy(tx)
-
 describe("Test sCrypt contract merkleToken In Javascript", () => {
   let token, lockingScriptCodePart
 
+  const tx_ = new bsv.Transaction()
   const Signature = bsv.crypto.Signature
   const privateKey = new bsv.PrivateKey.fromRandom("testnet")
   const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
@@ -41,24 +27,16 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
 
   it("should buy token", () => {
     function testBuyMore(amount, changeAddress, payoutAddress, changeSats, prevBalance, merklePath) {
-      let contractBalance = 100
-
-      token.dataLoad = sha256(sha256(oldEntry).repeat(2))
-
-      // tx_ = new bsv.Transaction()
-
-      const oldScript = lockingScriptCodePart + " OP_RETURN " + sha256(sha256(oldEntry).repeat(2))
+      token.dataLoad = toHex(sha256(sha256(oldEntry).repeat(2)))
 
       tx_.addInput(
         new bsv.Transaction.Input({
           prevTxId: dummyTxId,
           outputIndex: 0,
           script: ""
-          // script: oldScript,
-          // satoshis: contractBalance
         }),
-        bsv.Script.fromASM(oldScript),
-        contractBalance
+        bsv.Script.fromASM(token.lockingScript.toASM()),
+        inputSatoshis
       )
 
       // tx_.addInput(
@@ -82,7 +60,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
       tx_.addOutput(
         new bsv.Transaction.Output({
           script: bsv.Script.fromASM(newLockingScript),
-          satoshis: 100
+          satoshis: inputSatoshis + satPrice * amount
         })
       )
 
@@ -94,18 +72,13 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
         })
       )
 
-      const preimage = getPreimage(tx_, token.lockingScript.toASM(), contractBalance, 0, sighashType)
+      const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
 
-      token.txContext = { tx: tx_, inputIndex: 0, inputSatoshis: contractBalance }
-      // const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSats)
+      // console.log(toHex(sha256(sha256(oldEntry).repeat(2)))) // OP_RETURN attachment
+      // console.log(toHex(preimage)) // preimage
+      // console.log(tx_.toBuffer().toString("hex")) // transaction hex
 
-      // console.log(new SigHashPreimage(toHex(preimage)))
-
-      console.log(token.lockingScript.toASM())
-      console.log(sha256(sha256(oldEntry).repeat(2)))
-      // console.log(toHex(preimage))
-      // console.log(tx_.toBuffer().toString("hex"))
-
+      token.txContext = { tx: tx_, inputIndex, inputSatoshis }
       return token.buyMore(
         new SigHashPreimage(toHex(preimage)),
         amount,
