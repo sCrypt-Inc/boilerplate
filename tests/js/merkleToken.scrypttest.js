@@ -76,7 +76,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
 
       // console.log(toHex(sha256(sha256(oldEntry).repeat(2)))) // OP_RETURN attachment
       // console.log(toHex(preimage)) // preimage
-      // console.log(tx_.toBuffer().toString("hex")) // transaction hex
+      // console.log(tx_.toString()) // transaction hex
 
       token.txContext = { tx: tx_, inputIndex, inputSatoshis }
       return token.buyMore(
