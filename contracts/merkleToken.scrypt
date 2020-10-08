@@ -34,7 +34,7 @@ contract merkleToken {
     int cost = amount * this.price;
 
     int newBalance = Util.value(txPreimage) + cost;
-    bytes marketOutput = Util.buildOutput(scriptCode, newBalance);
+    bytes marketOutput = Util.buildOutput(newScriptCode, newBalance);
 
     // Expect the additional CHANGE output
     bytes changeScript = Util.buildPublicKeyHashScript(changeAddress);
