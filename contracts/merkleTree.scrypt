@@ -27,6 +27,13 @@ contract MerkleTree {
     bytes merklePath,
     bytes oldMerkleRoot) : bytes {
     require(MerkleTree.verifyLeaf(oldLeaf, merklePath, oldMerkleRoot));
+
+    int merklePathLength = len(merklePath);
+    bytes neighbor = merklePath[merklePathLength - 33 : merklePathLength - 1];
+    if (neighbor == oldLeaf) {
+      merklePath = merklePath[ : merklePathLength - 33] + newLeaf + b'01';
+    }
+
     return MerkleTree.calculateMerkleRoot(newLeaf, merklePath);
   }
 

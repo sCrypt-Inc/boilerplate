@@ -79,9 +79,9 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
   })
 
   it("should update leafs", () => {
-    const oldMerkleRoot = new Bytes("cd53a2ce68e6476c29512ea53c395c7f5d8fbcb4614d89298db14e2a5bdb5456")
-    let oldLeaf, merklePath, newLeaf, newMerkleRoot
+    let oldMerkleRoot, oldLeaf, merklePath, newLeaf, newMerkleRoot
 
+    oldMerkleRoot = new Bytes("cd53a2ce68e6476c29512ea53c395c7f5d8fbcb4614d89298db14e2a5bdb5456")
     oldLeaf = new Bytes("6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b")
     merklePath = new Bytes(
       [
@@ -93,6 +93,15 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
     )
     newLeaf = new Bytes("ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d")
     newMerkleRoot = new Bytes("b0e44f9adb044dffb32aa1e455456f9cc6ed27d11fb7d6196b4065a1a54ea1bd")
+
+    result = testMerkleTree.testUpdateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot, newMerkleRoot).verify()
+    expect(result.success, result.error).to.be.true
+
+    oldMerkleRoot = new Bytes("dd0cb00641618c5f4184542383510d1d36cb2d94ac7086680cce4b7134021ff3")
+    oldLeaf = new Bytes("df76677628c05bc234aefe31dfc20820e546354db1a096e6b3cef9730fcb4475")
+    merklePath = new Bytes(["df76677628c05bc234aefe31dfc20820e546354db1a096e6b3cef9730fcb4475", "01"].join(""))
+    newLeaf = new Bytes("07cf2a3098945e378f269c572556e8963dfb02e87a923f243922e68126d75484")
+    newMerkleRoot = new Bytes("7a5e911a33379d003d436db3eee3699381416aadfc30367f81ab71877263647d")
 
     result = testMerkleTree.testUpdateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot, newMerkleRoot).verify()
     expect(result.success, result.error).to.be.true
