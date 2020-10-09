@@ -1,4 +1,5 @@
 import "util.scrypt";
+import "serializer.scrypt";
 
 contract Counter {
 	public function increment(SigHashPreimage txPreimage, int amount) {
@@ -6,11 +7,22 @@ contract Counter {
 
         bytes scriptCode = Util.scriptCode(txPreimage);
 		int scriptLen = len(scriptCode);
+
+		// code + opreturn + state + len
+		int LEN = 2;
+		bytes lb = scriptCode[scriptLen - LEN :];
+		Serializer s = new Serializer(lb);
+		int l = s.deserializeInt();
+		// require(l == 4);
 		
-		// state (i.e., counter value) is at the end
-		int counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
+		bytes state = scriptCode[scriptLen - l :];
+		Serializer s_ = new Serializer(state);
+		int counter = s_.deserializeInt();
+		// require(counter == 6);
+		
 		// increment counter
-		bytes scriptCode_ = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
+		bytes counterB = Serializer.serializeInt(counter + 1);
+		bytes scriptCode_ = scriptCode[: scriptLen - l] + counterB + lb;
 		bytes output = Util.buildOutput(scriptCode_, amount);
 		// ensure output is expected: amount is same with specified
 		// also output script is the same with scriptCode except counter incremented
