@@ -6,8 +6,8 @@ contract merkleToken {
 
   public function buyMore(SigHashPreimage txPreimage,
     int amount,
-    Ripemd160 changeAddress,
-    Ripemd160 payoutAddress,
+    Ripemd160 changePKH,
+    Ripemd160 payoutPKH,
     int changeSats,
     int prevBalance,
     bytes merklePath) {
@@ -22,8 +22,8 @@ contract merkleToken {
 
     bytes balanceTableRoot = scriptCode[scriptLen - 32 : ];
 
-    bytes oldLeaf = sha256(payoutAddress + num2bin(prevBalance, 1));
-    bytes newLeaf = sha256(payoutAddress + num2bin(prevBalance + amount, 1));
+    bytes oldLeaf = sha256(payoutPKH + num2bin(prevBalance, 1));
+    bytes newLeaf = sha256(payoutPKH + num2bin(prevBalance + amount, 1));
     bytes newBalanceTableRoot = MerkleTree.updateLeaf(oldLeaf,
       newLeaf,
       merklePath,
@@ -37,7 +37,7 @@ contract merkleToken {
     bytes marketOutput = Util.buildOutput(newScriptCode, newBalance);
 
     // Expect the additional CHANGE output
-    bytes changeScript = Util.buildPublicKeyHashScript(changeAddress);
+    bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
     bytes changeOutput = Util.buildOutput(changeScript, changeSats);
 
     Sha256 hashOutputs = hash256(marketOutput + changeOutput);
@@ -47,8 +47,8 @@ contract merkleToken {
 
   public function buy(SigHashPreimage txPreimage,
     int amount,
-    Ripemd160 changeAddress,
-    Ripemd160 payoutAddress,
+    Ripemd160 changePKH,
+    Ripemd160 payoutPKH,
     int changeSats,
     bytes lastEntry,
     bytes lastMerklePath) {
@@ -64,7 +64,7 @@ contract merkleToken {
     bytes balanceTableRoot = scriptCode[scriptLen - 32 : ];
 
     // Using the entry makes sure that new Leaf are added at the same depth
-    bytes newLeaf = sha256(payoutAddress + num2bin(amount, 1));
+    bytes newLeaf = sha256(payoutPKH + num2bin(amount, 1));
     bytes newBalanceTableRoot = MerkleTree.addLeafSafe(lastEntry,
       lastMerklePath,
       balanceTableRoot,
@@ -75,10 +75,10 @@ contract merkleToken {
     int cost = amount * this.price;
 
     int newBalance = Util.value(txPreimage) + cost;
-    bytes marketOutput = Util.buildOutput(scriptCode, newBalance);
+    bytes marketOutput = Util.buildOutput(newScriptCode, newBalance);
 
     // Expect the additional CHANGE output
-    bytes changeScript = Util.buildPublicKeyHashScript(changeAddress);
+    bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
     bytes changeOutput = Util.buildOutput(changeScript, changeSats);
 
     Sha256 hashOutputs = hash256(marketOutput + changeOutput);
@@ -120,7 +120,7 @@ contract merkleToken {
     int credit = amount * this.price;
     int newMarketBalance = Util.value(txPreimage) - credit;
 
-    bytes marketOutput = Util.buildOutput(scriptCode, newMarketBalance);
+    bytes marketOutput = Util.buildOutput(newScriptCode, newMarketBalance);
 
     bytes payoutScript = Util.buildPublicKeyHashScript(address);
     bytes payoutOutput = Util.buildOutput(payoutScript, payoutSats);
