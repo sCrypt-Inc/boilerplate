@@ -90,11 +90,12 @@ contract merkleToken {
   public function sell(SigHashPreimage txPreimage,
     int amount,
     PubKey pubKey,
-    int payoutSats,
     Sig sig,
     bytes merklePath,
-    int oldBalance) {
+    int oldBalance,
+    int payoutSats) {
 
+    require(Tx.checkPreimage(txPreimage));
     require(amount > 0);
 
     bytes scriptCode = Util.scriptCode(txPreimage);

@@ -1,5 +1,17 @@
 const { expect } = require("chai")
-const { bsv, buildContractClass, toHex, getPreimage, num2bin, SigHashPreimage, Ripemd160, Bytes } = require("scryptlib")
+const {
+  bsv,
+  buildContractClass,
+  toHex,
+  getPreimage,
+  num2bin,
+  SigHashPreimage,
+  Ripemd160,
+  Sig,
+  Bytes,
+  PubKey,
+  signTx
+} = require("scryptlib")
 const { inputIndex, inputSatoshis, tx, compileContract, dummyTxId } = require("../../helper")
 const crypto = require("crypto")
 
@@ -133,6 +145,63 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
         changeSats,
         prevBalance,
         merklePath
+      )
+      .verify()
+
+    expect(result.success, result.error).to.be.true
+  })
+
+  it("should sell tokens", () => {
+    const amount = 1
+    const prevBalance = 1
+    const oldEntry = toHex(payoutAddress + "01")
+    const newEntry = toHex(payoutAddress + "00")
+    const newLockingScript = lockingScriptCodePart + " OP_RETURN " + sha256(sha256(newEntry).repeat(2))
+    const merklePath = new Bytes(sha256(oldEntry) + "01")
+
+    token.dataLoad = sha256(sha256(oldEntry).repeat(2))
+
+    tx_.addInput(
+      new bsv.Transaction.Input({
+        prevTxId: dummyTxId,
+        outputIndex: 0,
+        script: ""
+      }),
+      bsv.Script.fromASM(token.lockingScript.toASM()),
+      inputSatoshis
+    )
+
+    // token output
+    tx_.addOutput(
+      new bsv.Transaction.Output({
+        script: bsv.Script.fromASM(newLockingScript),
+        satoshis: inputSatoshis - satPrice * amount
+      })
+    )
+
+    // payout output
+    tx_.addOutput(
+      new bsv.Transaction.Output({
+        script: bsv.Script.buildPublicKeyHashOut(publicKey.toAddress()),
+        satoshis: satPrice * amount
+      })
+    )
+
+    const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis)
+
+    token.txContext = { tx: tx_, inputIndex, inputSatoshis }
+
+    const sig = signTx(tx_, privateKey, token.lockingScript.toASM(), inputSatoshis)
+
+    const result = token
+      .sell(
+        new SigHashPreimage(toHex(preimage)),
+        amount,
+        new PubKey(toHex(publicKey)),
+        new Sig(toHex(sig)),
+        merklePath,
+        prevBalance,
+        100
       )
       .verify()
 
