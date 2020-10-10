@@ -22,7 +22,6 @@ function sha256(x) {
 describe("Test sCrypt contract merkleToken In Javascript", () => {
   const Signature = bsv.crypto.Signature
   const privateKey = new bsv.PrivateKey.fromRandom("testnet")
-  // const privateKey = new bsv.PrivateKey.fromString("Kyv5ikUuSt1jDjvcoFCPR9NzFif8N3vNtAFcwZXw7WpAwaK9SoC2")
   const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
   const satPrice = 100
   const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID

@@ -92,7 +92,7 @@ contract MerkleTree {
       }
     }
 
-    if (! joined) {
+    if (!joined) {
       merkleValue = sha256(oldMerkleRoot + merkleValue);
     }
 
@@ -100,7 +100,7 @@ contract MerkleTree {
   }
 
   /**
-  *  Makes sure that the new Leaf is added at the same depth.
+  *  Makes sure that the new leaf is added at the same depth.
   */
   static function addLeafSafe(bytes lastEntry,
     bytes lastMerklePath,
