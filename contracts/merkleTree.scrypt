@@ -54,14 +54,6 @@ contract MerkleTree {
     return newMerkleValue;
   }
 
-  public function testUpdateLeaf(bytes oldLeaf,
-    bytes newLeaf,
-    bytes merklePath,
-    bytes oldMerkleRoot) {
-    bytes newRoot = MerkleTree.updateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot);
-    require(true);
-  }
-
   static function addLeaf(bytes lastLeaf,
     bytes lastMerklePath,
     bytes oldMerkleRoot,
