@@ -26,15 +26,40 @@ contract MerkleTree {
     bytes newLeaf,
     bytes merklePath,
     bytes oldMerkleRoot) : bytes {
-    require(MerkleTree.verifyLeaf(oldLeaf, merklePath, oldMerkleRoot));
 
-    int merklePathLength = len(merklePath);
-    bytes neighbor = merklePath[merklePathLength - 33 : merklePathLength - 1];
-    if (neighbor == oldLeaf) {
-      merklePath = merklePath[ : merklePathLength - 33] + newLeaf + b'01';
+    int i = 0;
+    int merklePathLength = len(merklePath) / 33;
+    bytes oldMerkleValue = oldLeaf;
+    bytes newMerkleValue = newLeaf;
+
+    loop (20) {
+      if (i < merklePathLength) {
+        int left = unpack(merklePath[i * 33 + 32 : i * 33 + 33]);
+        bytes oldNeighbor = merklePath[i * 33 : i * 33 + 32];
+        bytes newNeighbor = oldNeighbor == oldMerkleValue ? newMerkleValue : oldNeighbor;
+
+        if (left) {
+          oldMerkleValue = sha256(oldMerkleValue + oldNeighbor);
+          newMerkleValue = sha256(newMerkleValue + newNeighbor);
+        } else {
+          oldMerkleValue = sha256(oldNeighbor + oldMerkleValue);
+          newMerkleValue = sha256(newNeighbor + newMerkleValue);
+        }
+        i = i + 1;
+      }
     }
 
-    return MerkleTree.calculateMerkleRoot(newLeaf, merklePath);
+    require(oldMerkleValue == oldMerkleRoot);
+
+    return newMerkleValue;
+  }
+
+  public function testUpdateLeaf(bytes oldLeaf,
+    bytes newLeaf,
+    bytes merklePath,
+    bytes oldMerkleRoot) {
+    bytes newRoot = MerkleTree.updateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot);
+    require(true);
   }
 
   static function addLeaf(bytes lastLeaf,
