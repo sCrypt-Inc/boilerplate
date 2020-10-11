@@ -1,7 +1,8 @@
 import "./util.scrypt";
 
 // a de/serializer for basic types
-contract Serializer {
+
+contract Reader {
     bytes buf;
     int pos;
 
@@ -10,32 +11,19 @@ contract Serializer {
         this.pos = 0;
     }
 
-    // uses fixed 1 byte to represent a boolean, no length prefix needed
-    static function writeBool(bool x): bytes {
-        return x ? b'00' : b'01';
-    }
-
-    function readBool(): bool {
-        bool ret = this.buf[this.pos] == '00';
-        this.pos = this.pos + 1;
-        return ret;
-    }
-
-    // VarInt encoding
-    static function writeBytes(bytes x): bytes {
-        return Util.writeVarint(x);
+    function eof(): bool {
+        return this.pos >= len(this.buf);
     }
 
     function readBytes(): bytes {
-        int len = Util.readVarintLen(this.buf[this.pos:]);
-        bytes ret = Util.readVarint(this.buf[this.pos:]);
-        this.pos = this.pos + len;
+        bytes ret = Util.readVarint(this.buf[this.pos :]);
+        int l = Util.readVarintLen(this.buf[this.pos :]);
+        this.pos = this.pos + l;
         return ret;
     }
 
-    // int is little endian 
-    static function writeInt(int x): bytes {
-        return Serializer.writeBytes(pack(x));
+    function readBool(): bool {
+        return this.readBytes() != b'00';
     }
 
     function readInt(): int {
@@ -43,44 +31,91 @@ contract Serializer {
     }
 }
 
+contract Writer {
+    bytes buf;
+
+    constructor() {
+        this.buf = b'';
+    }
+
+    function toBuf(): bytes {
+        return this.buf;
+    }
+
+    // return VarInt encoding
+    function writeBytes(bytes x): bytes {
+        // VarInt encoding
+        bytes b = Util.writeVarint(x);
+        this.buf = this.buf + b;
+        return b;
+    }
+
+    // uses fixed 1 byte to represent a boolean, plus length
+    function writeBool(bool x): bytes {
+        return this.writeBytes(x ? b'01' : b'00');
+    }
+    
+    // int is little endian
+    function writeInt(int x): bytes {
+        return this.writeBytes(pack(x));
+    }
+}
 
 contract Test {
   public function main(bool f, bytes b, int i) {
     {
-        bytes buf = Serializer.writeBool(f);
-        Serializer s = new Serializer(buf);
-        bool f_ = s.readBool();
+        Writer w = new Writer();
+        bytes buf = w.writeBool(f);
+
+        Reader r = new Reader(w.toBuf());
+        bool f_ = r.readBool();
         require(f_ == f);
+        require(r.eof());
     }
 
     {
-        bytes buf = Serializer.writeBytes(b);
-        Serializer s = new Serializer(buf);
-        bytes b_ = s.readBytes();
+        Writer w = new Writer();
+        bytes buf = w.writeBytes(b);
+
+        Reader r = new Reader(w.toBuf());
+        bytes b_ = r.readBytes();
         require(b_ == b);
+        require(r.eof());
     }
     
     {
-        bytes buf = Serializer.writeInt(i);
-        Serializer s = new Serializer(buf);
-        int i_ = s.readInt();
+        Writer w = new Writer();
+        bytes buf = w.writeInt(i);
+
+        Reader r = new Reader(w.toBuf());
+        int i_ = r.readInt();
         require(i_ == i);
+        require(r.eof());
     }
 
-    bytes buf = Serializer.writeInt(i) + Serializer.writeBytes(b) + Serializer.writeBytes(b) 
-                + Serializer.writeBool(f) + Serializer.writeInt(i) + Serializer.writeBytes(b);
-    Serializer s = new Serializer(buf);
-    int i_ = s.readInt();
+    Writer w = new Writer();
+    bytes buf = w.writeInt(i);
+    buf = w.writeBytes(b);
+    buf = w.writeBytes(b);
+    buf = w.writeBool(f);
+    buf = w.writeInt(i);
+    buf = w.writeBytes(b);
+    
+    Reader r = new Reader(w.toBuf());
+
+    int i_ = r.readInt();
     require(i_ == i);
-    bytes b_ = s.readBytes();
+    require(!r.eof());
+    bytes b_ = r.readBytes();
     require(b_ == b);
-    b_ = s.readBytes();
+    b_ = r.readBytes();
     require(b_ == b);
-    bool f_ = s.readBool();
+    bool f_ = r.readBool();
     require(f_ == f);
-    i_ = s.readInt();
+    i_ = r.readInt();
     require(i_ == i);
-    b_ = s.readBytes();
+    b_ = r.readBytes();
     require(b_ == b);
+    require(r.eof());
   }
 }
