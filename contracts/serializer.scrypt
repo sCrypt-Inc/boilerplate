@@ -2,44 +2,44 @@ import "./util.scrypt";
 
 // a de/serializer for basic types
 contract Serializer {
-    bytes data;
-    int idx;
+    bytes buf;
+    int pos;
 
-    constructor(bytes data) {
-        this.data = data;
-        this.idx = 0;
+    constructor(bytes buf) {
+        this.buf = buf;
+        this.pos = 0;
     }
 
     // uses fixed 1 byte to represent a boolean, no length prefix needed
-    static function serializeBool(bool x): bytes {
+    static function writeBool(bool x): bytes {
         return x ? b'00' : b'01';
     }
 
-    function deserializeBool(): bool {
-        bool ret = this.data[this.idx] == '00';
-        this.idx = this.idx + 1;
+    function readBool(): bool {
+        bool ret = this.buf[this.pos] == '00';
+        this.pos = this.pos + 1;
         return ret;
     }
 
     // VarInt encoding
-    static function serializeBytes(bytes x): bytes {
+    static function writeBytes(bytes x): bytes {
         return Util.writeVarint(x);
     }
 
-    function deserializeBytes(): bytes {
-        int len = Util.readVarintLen(this.data[this.idx:]);
-        bytes ret = Util.readVarint(this.data[this.idx:]);
-        this.idx = this.idx + len;
+    function readBytes(): bytes {
+        int len = Util.readVarintLen(this.buf[this.pos:]);
+        bytes ret = Util.readVarint(this.buf[this.pos:]);
+        this.pos = this.pos + len;
         return ret;
     }
 
     // int is little endian 
-    static function serializeInt(int x): bytes {
-        return Serializer.serializeBytes(pack(x));
+    static function writeInt(int x): bytes {
+        return Serializer.writeBytes(pack(x));
     }
 
-    function deserializeInt(): int {
-        return unpack(this.deserializeBytes());
+    function readInt(): int {
+        return unpack(this.readBytes());
     }
 }
 
@@ -47,40 +47,40 @@ contract Serializer {
 contract Test {
   public function main(bool f, bytes b, int i) {
     {
-        bytes buf = Serializer.serializeBool(f);
+        bytes buf = Serializer.writeBool(f);
         Serializer s = new Serializer(buf);
-        bool f_ = s.deserializeBool();
+        bool f_ = s.readBool();
         require(f_ == f);
     }
 
     {
-        bytes buf = Serializer.serializeBytes(b);
+        bytes buf = Serializer.writeBytes(b);
         Serializer s = new Serializer(buf);
-        bytes b_ = s.deserializeBytes();
+        bytes b_ = s.readBytes();
         require(b_ == b);
     }
     
     {
-        bytes buf = Serializer.serializeInt(i);
+        bytes buf = Serializer.writeInt(i);
         Serializer s = new Serializer(buf);
-        int i_ = s.deserializeInt();
+        int i_ = s.readInt();
         require(i_ == i);
     }
 
-    bytes buf = Serializer.serializeInt(i) + Serializer.serializeBytes(b) + Serializer.serializeBytes(b) 
-                + Serializer.serializeBool(f) + Serializer.serializeInt(i) + Serializer.serializeBytes(b);
+    bytes buf = Serializer.writeInt(i) + Serializer.writeBytes(b) + Serializer.writeBytes(b) 
+                + Serializer.writeBool(f) + Serializer.writeInt(i) + Serializer.writeBytes(b);
     Serializer s = new Serializer(buf);
-    int i_ = s.deserializeInt();
+    int i_ = s.readInt();
     require(i_ == i);
-    bytes b_ = s.deserializeBytes();
+    bytes b_ = s.readBytes();
     require(b_ == b);
-    b_ = s.deserializeBytes();
+    b_ = s.readBytes();
     require(b_ == b);
-    bool f_ = s.deserializeBool();
+    bool f_ = s.readBool();
     require(f_ == f);
-    i_ = s.deserializeInt();
+    i_ = s.readInt();
     require(i_ == i);
-    b_ = s.deserializeBytes();
+    b_ = s.readBytes();
     require(b_ == b);
   }
 }
