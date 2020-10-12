@@ -9,17 +9,6 @@ const {
   compileContract
 } = require('../../helper');
 
-// TODO: to be moved to scryptlib
-const BN = bsv.crypto.BN
-function pack(n) {
-  const num = BN.fromNumber(n);
-  return num.toSM({ endian: 'little' }).toString('hex');
-}
-
-function serialize(data) {
-  return pack(data)
-}
-
 // make a copy since it will be mutated
 const tx_ = bsv.Transaction.shallowCopy(tx)
 const outputAmount = 222222
@@ -32,9 +21,9 @@ describe('Test sCrypt contract Counter In Javascript', () => {
     counter = new Counter()
 
     // set initial OP_RETURN value
-    counter.dataLoad = [6, 4].map(x => serialize(x)).join(' ')
+    counter.dataLoad = num2bin(0, DataLen)
 
-    const newLockingScript = counter.codePart.toASM() + ' OP_RETURN ' + [7, 4].map(x => serialize(x)).join(' ')
+    const newLockingScript = counter.codePart.toASM() + ' OP_RETURN ' + num2bin(1, DataLen)
 
     tx_.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),
