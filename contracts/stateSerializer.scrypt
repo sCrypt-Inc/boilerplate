@@ -14,14 +14,13 @@ contract StateSerializer {
 		// locking script: code + opreturn + state + state_len
 		
 		// read state length
-		int STATE_LEN = 2;
-		bytes lb = scriptCode[scriptLen - STATE_LEN :];
+		bytes lb = scriptCode[scriptLen - Util.StateLen :];
 		Reader lr = new Reader(lb);
 		int stateLen = lr.readInt();
 		require(stateLen == 7);
 		
 		// read state
-		int stateStart = scriptLen - stateLen - STATE_LEN;
+		int stateStart = scriptLen - stateLen - Util.StateLen;
 		bytes state = scriptCode[stateStart :];
 		Reader r = new Reader(state);
 		auto counter = r.readInt();
@@ -37,8 +36,8 @@ contract StateSerializer {
 		ignored = w.writeBytes(b + b'ff');
 		ignored = w.writeBool(!flag);
 
-		// write state length
-		ignored = w.writeInt(len(w.toBuf()));
+		// write state length in fixed size
+		ignored = w.writeBytes(num2bin(len(w.toBuf()), Util.StateLen - 1 /* varint prefix byte */));
 		
 		bytes scriptCode_ = scriptCode[: stateStart] + w.toBuf();
 		bytes output = Util.buildOutput(scriptCode_, amount);
