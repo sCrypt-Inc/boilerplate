@@ -15,4 +15,12 @@ contract MerkleTreeTest {
     bytes oldMerkleRoot, bytes newMerkleRoot) {
     require(MerkleTree.updateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot) == newMerkleRoot);
   }
+
+  public function testAddLeaf(bytes lastLeaf,
+    bytes lastMerklePath,
+    bytes oldMerkleRoot,
+    bytes newLeaf,
+    bytes newMerkleRoot) {
+    require(MerkleTree.addLeaf(lastLeaf, lastMerklePath, oldMerkleRoot, newLeaf) == newMerkleRoot);
+  }
 }

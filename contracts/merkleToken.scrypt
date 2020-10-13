@@ -1,0 +1,133 @@
+import "util.scrypt";
+import "./merkleTree.scrypt";
+
+contract merkleToken {
+  int price;
+
+  public function buyMore(SigHashPreimage txPreimage,
+    int amount,
+    Ripemd160 changePKH,
+    Ripemd160 payoutPKH,
+    int changeSats,
+    int prevBalance,
+    bytes merklePath) {
+
+    SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
+    require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+
+    require(amount > 0);
+
+    bytes scriptCode = Util.scriptCode(txPreimage);
+    int scriptLen = len(scriptCode);
+
+    bytes balanceTableRoot = scriptCode[scriptLen - 32 : ];
+
+    bytes oldLeaf = sha256(payoutPKH + num2bin(prevBalance, 1));
+    bytes newLeaf = sha256(payoutPKH + num2bin(prevBalance + amount, 1));
+    bytes newBalanceTableRoot = MerkleTree.updateLeaf(oldLeaf,
+      newLeaf,
+      merklePath,
+      balanceTableRoot);
+
+    bytes newScriptCode = scriptCode[ : scriptLen - 32] + newBalanceTableRoot;
+
+    int cost = amount * this.price;
+
+    int newBalance = Util.value(txPreimage) + cost;
+    bytes marketOutput = Util.buildOutput(newScriptCode, newBalance);
+
+    // Expect the additional CHANGE output
+    bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
+    bytes changeOutput = Util.buildOutput(changeScript, changeSats);
+
+    Sha256 hashOutputs = hash256(marketOutput + changeOutput);
+
+    require(hashOutputs == Util.hashOutputs(txPreimage));
+  }
+
+  public function buy(SigHashPreimage txPreimage,
+    int amount,
+    Ripemd160 changePKH,
+    Ripemd160 payoutPKH,
+    int changeSats,
+    bytes lastEntry,
+    bytes lastMerklePath) {
+
+    SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
+    require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+
+    require(amount > 0);
+
+    bytes scriptCode = Util.scriptCode(txPreimage);
+    int scriptLen = len(scriptCode);
+
+    bytes balanceTableRoot = scriptCode[scriptLen - 32 : ];
+
+    // Using the entry makes sure that new Leaf are added at the same depth
+    bytes newLeaf = sha256(payoutPKH + num2bin(amount, 1));
+    bytes newBalanceTableRoot = MerkleTree.addLeafSafe(lastEntry,
+      lastMerklePath,
+      balanceTableRoot,
+      newLeaf);
+
+    bytes newScriptCode = scriptCode[ : scriptLen - 32] + newBalanceTableRoot;
+
+    int cost = amount * this.price;
+
+    int newBalance = Util.value(txPreimage) + cost;
+    bytes marketOutput = Util.buildOutput(newScriptCode, newBalance);
+
+    // Expect the additional CHANGE output
+    bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
+    bytes changeOutput = Util.buildOutput(changeScript, changeSats);
+
+    Sha256 hashOutputs = hash256(marketOutput + changeOutput);
+
+    require(hashOutputs == Util.hashOutputs(txPreimage));
+
+  }
+
+  public function sell(SigHashPreimage txPreimage,
+    int amount,
+    PubKey pubKey,
+    Sig sig,
+    bytes merklePath,
+    int oldBalance,
+    int payoutSats) {
+
+    require(Tx.checkPreimage(txPreimage));
+    require(amount > 0);
+
+    bytes scriptCode = Util.scriptCode(txPreimage);
+    int scriptLen = len(scriptCode);
+
+    bytes balanceTableRoot = scriptCode[scriptLen - 32 : ];
+
+    Ripemd160 address = hash160(pubKey);
+    require(checkSig(sig, pubKey));
+
+    int newBalance = oldBalance - amount;
+    require(newBalance >= 0);
+
+    bytes oldEntry = address + num2bin(oldBalance, 1);
+    bytes newEntry = address + num2bin(newBalance, 1);
+
+    bytes newBalanceTableRoot = MerkleTree.updateLeaf(sha256(oldEntry),
+      sha256(newEntry),
+      merklePath,
+      balanceTableRoot);
+
+    bytes newScriptCode = scriptCode[ : scriptLen - 32] + newBalanceTableRoot;
+    int credit = amount * this.price;
+    int newMarketBalance = Util.value(txPreimage) - credit;
+
+    bytes marketOutput = Util.buildOutput(newScriptCode, newMarketBalance);
+
+    bytes payoutScript = Util.buildPublicKeyHashScript(address);
+    bytes payoutOutput = Util.buildOutput(payoutScript, payoutSats);
+
+    Sha256 hashOutputs = hash256(marketOutput + payoutOutput);
+
+    require(hashOutputs == Util.hashOutputs(txPreimage));
+  }
+}
