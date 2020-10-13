@@ -18,7 +18,7 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
     tokenSale = new TokenSale(tokenPriceInSatoshis)
 
     // initial empty state
-    tokenSale.dataLoad = ''
+    tokenSale.setDataPart('')
 
     getPreimageAfterPurchase = (publicKey) => {
       const newLockingScriptHex = tokenSale.lockingScript.toHex() + toHex(publicKey) + num2bin(numTokens, DataLen)

@@ -20,7 +20,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
     token = new Token()
 
     // initial supply 100 tokens: publicKey1 has 100, publicKey2 0
-    token.dataLoad = toHex(publicKey1) + num2bin(100, DataLen) + toHex(publicKey2) + num2bin(0, DataLen)
+    token.setDataPart(toHex(publicKey1) + num2bin(100, DataLen) + toHex(publicKey2) + num2bin(0, DataLen))
     
     getPreimageAfterTransfer = (balance1, balance2) => {
       const newLockingScript = token.codePart.toASM() + ' OP_RETURN ' + toHex(publicKey1) + num2bin(balance1, DataLen) + toHex(publicKey2) + num2bin(balance2, DataLen)

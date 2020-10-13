@@ -21,7 +21,7 @@ describe('Test sCrypt contract StateSerializer In Javascript', () => {
 
     // set initial state
     let state = {'counter': 11, 'bytes': '1234', 'flag': true}
-    counter.dataLoad = serializeState(state)
+    counter.setDataPart(serializeState(state))
     
     // mutate state
     state.counter++

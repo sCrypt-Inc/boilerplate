@@ -36,7 +36,7 @@ function sleep(ms) {
     const advCounter = new AdvancedCounter()
 
     // append state as passive data
-    advCounter.dataLoad = num2bin(0, DataLen)
+    advCounter.setDataPart(num2bin(0, DataLen))
 
     // initial contract funding
     let amount = 10000
@@ -60,7 +60,7 @@ function sleep(ms) {
       const prevLockingScript = advCounter.lockingScript
 
       // Set the state for the next transaction
-      advCounter.dataLoad = num2bin(i + 1, DataLen)
+      advCounter.setDataPart(num2bin(i + 1, DataLen))
 
       // keep the contract funding constant
       const newAmount = amount

@@ -66,7 +66,7 @@ function sleep(ms) {
     const advTokenSale = new AdvancedTokenSale(satsPerToken)
 
     // append state as passive data
-    advTokenSale.dataLoad = '00'
+    advTokenSale.setDataPart('00')
 
     // initial contract funding - arbitrary amount
     let amount = 1000
@@ -96,7 +96,7 @@ function sleep(ms) {
       const spendAmount = numBought * satsPerToken
 
       // build-up a list of sales
-      advTokenSale.dataLoad += toHex(publicKeys[i]) + numBoughtHex
+      advTokenSale.setDataPart(advTokenSale.dataPart.toASM() + toHex(publicKeys[i]) + numBoughtHex)
 
       // Increase contract funding to match proceeds from sale
       // The contract expects/enforces this

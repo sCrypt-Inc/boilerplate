@@ -36,7 +36,7 @@ const {
 
     // append state as passive data part
     // initial token supply 100: publicKey1 has 100, publicKey2 0
-    token.dataLoad = toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen)
+    token.setDataPart(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
 
     let inputSatoshis = 10000
     const FEE = inputSatoshis / 4

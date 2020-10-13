@@ -26,7 +26,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
   });
 
   it('should succeed when one new token is issued', () => {
-    token.dataLoad = num2bin(currTokenId, DataLen) + toHex(issuer)
+    token.setDataPart(num2bin(currTokenId, DataLen) + toHex(issuer))
     
     const testIssue = (privKey, receiver, newIssuer = issuer, nextTokenId = currTokenId + 1, issuedTokenId = currTokenId) => {
       tx_ = new bsv.Transaction()
@@ -83,7 +83,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
   });
 
   it('should succeed when a token is transferred', () => {
-    token.dataLoad = num2bin(currTokenId, DataLen) + toHex(sender)
+    token.setDataPart(num2bin(currTokenId, DataLen) + toHex(sender))
     
     const testTransfer = (privKey, receiver, receivedTokenId = currTokenId) => {
       tx_ = new bsv.Transaction()
@@ -125,7 +125,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
   });
 
   it('should fail if receiver is the isssuer when a new token is issued, so issuer can not double mint', () => {
-    token.dataLoad = num2bin(currTokenId, DataLen) + toHex(issuer)
+    token.setDataPart(num2bin(currTokenId, DataLen) + toHex(issuer))
     
     const testIssue = (privKey, receiver, newIssuer = issuer, nextTokenId = currTokenId + 1, issuedTokenId = currTokenId) => {
       tx_ = new bsv.Transaction()
