@@ -20,10 +20,10 @@ describe('Test sCrypt contract Counter In Javascript', () => {
     const Counter = buildContractClass(compileContract('counter.scrypt'))
     counter = new Counter()
 
-    // set initial OP_RETURN value
+    // set initial counter value
     counter.setDataPart(num2bin(0, DataLen))
 
-    const newLockingScript = counter.codePart.toASM() + ' OP_RETURN ' + num2bin(1, DataLen)
+    const newLockingScript = [counter.codePart.toASM(), num2bin(1, DataLen)].join(' ')
 
     tx_.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),

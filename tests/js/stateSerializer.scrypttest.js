@@ -28,7 +28,7 @@ describe('Test sCrypt contract StateSerializer In Javascript', () => {
     state.bytes += 'ff'
     state.flag = !state.flag
 
-    const newLockingScript = counter.codePart.toASM() + ' OP_RETURN ' + serializeState(state)
+    const newLockingScript = [counter.codePart.toASM(), serializeState(state)].join(' ')
 
     tx_.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),

@@ -32,7 +32,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
     // append state as passive data
     counter.setDataPart(num2bin(0, DataLen))
 
-    const newLockingScript = counter.codePart.toASM() + ' OP_RETURN ' + num2bin(1, DataLen)
+    const newLockingScript = [counter.codePart.toASM(), num2bin(1, DataLen)].join(' ')
     // counter output
     tx_.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),

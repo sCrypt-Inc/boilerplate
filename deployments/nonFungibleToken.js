@@ -60,14 +60,14 @@ const {
       }), token.lockingScript, inputSatoshis)
 
       // issue new token
-      lockingScript0 = token.codePart.toASM() + ' OP_RETURN ' + num2bin((uniqTokenId + 1), DataLen) + toHex(publicKeyIssuer)
+      lockingScript0 = [token.codePart.toASM(), num2bin((uniqTokenId + 1), DataLen) + toHex(publicKeyIssuer)].join(' ')
       tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(lockingScript0),
         satoshis: outputSatoshis
       }))
 
       // transfer previous token to another receiver
-      lockingScript1 = token.codePart.toASM() + ' OP_RETURN ' + num2bin(uniqTokenId, DataLen) + toHex(publicKeyReceiver1)
+      lockingScript1 = [token.codePart.toASM(), num2bin(uniqTokenId, DataLen) + toHex(publicKeyReceiver1)].join(' ')
       tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(lockingScript1),
         satoshis: outputSatoshis
@@ -100,7 +100,7 @@ const {
         script: ''
       }), bsv.Script.fromASM(lockingScript1), inputSatoshis)
 
-      const lockingScript2 = token.codePart.toASM() + ' OP_RETURN ' + num2bin(uniqTokenId, DataLen) + toHex(publicKeyReceiver2)
+      const lockingScript2 = [token.codePart.toASM(), num2bin(uniqTokenId, DataLen) + toHex(publicKeyReceiver2)].join(' ')
 
       tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(lockingScript2),

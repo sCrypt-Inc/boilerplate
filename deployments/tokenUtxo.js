@@ -59,12 +59,12 @@ const {
         script: ''
       }), token.lockingScript, inputSatoshis)
 
-      lockingScript0 = token.codePart.toASM() + ' OP_RETURN ' + toHex(publicKey2) + num2bin(0, DataLen) + num2bin(70, DataLen)
+      lockingScript0 = [token.codePart.toASM(), toHex(publicKey2) + num2bin(0, DataLen) + num2bin(70, DataLen)].join(' ')
       tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(lockingScript0),
         satoshis: outputAmount
       }))
-      lockingScript1 = token.codePart.toASM() + ' OP_RETURN ' + toHex(publicKey3) + num2bin(0, DataLen) + num2bin(30, DataLen)
+      lockingScript1 = [token.codePart.toASM(), toHex(publicKey3) + num2bin(0, DataLen) + num2bin(30, DataLen)].join(' ')
       tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(lockingScript1),
         satoshis: outputAmount
@@ -104,7 +104,7 @@ const {
         script: ''
       }), bsv.Script.fromASM(lockingScript1), inputSatoshis)
 
-      const lockingScript2 = token.codePart.toASM() + ' OP_RETURN ' + toHex(publicKey1) + num2bin(70, DataLen) + num2bin(30, DataLen)
+      const lockingScript2 = [token.codePart.toASM(), toHex(publicKey1) + num2bin(70, DataLen) + num2bin(30, DataLen)].join(' ')
       tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(lockingScript2),
         satoshis: outputAmount

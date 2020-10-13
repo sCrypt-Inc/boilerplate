@@ -46,7 +46,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     const amount = 1
     const newEntry = toHex(payoutAddress + num2bin(amount, 1))
     const lastEntry = toHex("00".repeat(20) + "01")
-    const newLockingScript = lockingScriptCodePart + " OP_RETURN " + sha256(sha256(lastEntry) + sha256(newEntry))
+    const newLockingScript = [lockingScriptCodePart, sha256(sha256(lastEntry) + sha256(newEntry))].join(' ')
     const lastMerklePath = new Bytes(sha256(lastEntry) + "01")
 
     token.setDataPart(sha256(sha256(lastEntry).repeat(2)))
@@ -101,7 +101,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     const oldEntry = toHex(payoutAddress + "01")
     const tokenBalance = num2bin(amount + 1, 1)
     const newEntry = toHex(payoutAddress + tokenBalance)
-    const newLockingScript = lockingScriptCodePart + " OP_RETURN " + sha256(sha256(newEntry).repeat(2))
+    const newLockingScript = [lockingScriptCodePart, sha256(sha256(newEntry).repeat(2))].join(' ')
     const merklePath = new Bytes(sha256(oldEntry) + "01")
 
     token.setDataPart(sha256(sha256(oldEntry).repeat(2)))
@@ -155,7 +155,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     const prevBalance = 1
     const oldEntry = toHex(payoutAddress + "01")
     const newEntry = toHex(payoutAddress + "00")
-    const newLockingScript = lockingScriptCodePart + " OP_RETURN " + sha256(sha256(newEntry).repeat(2))
+    const newLockingScript = [lockingScriptCodePart, sha256(sha256(newEntry).repeat(2))].join(' ')
     const merklePath = new Bytes(sha256(oldEntry) + "01")
 
     token.setDataPart(sha256(sha256(oldEntry).repeat(2)))

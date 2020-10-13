@@ -38,14 +38,14 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         script: ''
       }), bsv.Script.fromASM(token.lockingScript.toASM()), inputSatoshis)
 
-      const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey2) + num2bin(0, DataLen) + num2bin(balance0, DataLen)
+      const newLockingScript0 = [lockingScriptCodePart, toHex(publicKey2) + num2bin(0, DataLen) + num2bin(balance0, DataLen)].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
       }))
 
       if (balance1 > 0) {
-        const newLockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(0, DataLen) + num2bin(balance1, DataLen)
+        const newLockingScript1 = [lockingScriptCodePart, toHex(publicKey3) + num2bin(0, DataLen) + num2bin(balance1, DataLen)].join(' ')
         tx_.addOutput(new bsv.Transaction.Output({
           script: bsv.Script.fromASM(newLockingScript1),
           satoshis: outputAmount
@@ -101,13 +101,13 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
     const x1 = 50
     const expectedBalance0 = x0 + x1
     const dataPart0 = toHex(publicKey1) + num2bin(x0, DataLen) + num2bin(x1, DataLen)
-    const lockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + dataPart0
+    const lockingScript0 = [lockingScriptCodePart, dataPart0].join(' ')
     
     const y0 = 13
     const y1 = 27
     const expectedBalance1 = y0 + y1
     const dataPart1 = toHex(publicKey2) + num2bin(y0, DataLen) + num2bin(y1, DataLen)
-    const lockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + dataPart1
+    const lockingScript1 = [lockingScriptCodePart, dataPart1].join(' ')
     
     const testMerge = (inputIndex, balance0, balance1) => {
       tx_ = new bsv.Transaction()
@@ -127,7 +127,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       // use reversed txid in outpoint
       const prevouts = reversedDummyTxId + num2bin(0, 4) + reversedDummyTxId + num2bin(1, 4)
 
-      const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + toHex(publicKey3) + num2bin(balance0, DataLen) + num2bin(balance1, DataLen)
+      const newLockingScript0 = [lockingScriptCodePart, toHex(publicKey3) + num2bin(balance0, DataLen) + num2bin(balance1, DataLen)].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount

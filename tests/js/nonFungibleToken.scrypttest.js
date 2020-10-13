@@ -37,13 +37,13 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         script: ''
       }), bsv.Script.fromASM(token.lockingScript.toASM()), inputSatoshis)
 
-      const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + num2bin(nextTokenId, DataLen) + toHex(newIssuer)
+      const newLockingScript0 = [lockingScriptCodePart, num2bin(nextTokenId, DataLen) + toHex(newIssuer)].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
       }))
 
-      const newLockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + num2bin(issuedTokenId, DataLen) + toHex(receiver)
+      const newLockingScript1 = [lockingScriptCodePart, num2bin(issuedTokenId, DataLen) + toHex(receiver)].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript1),
         satoshis: outputAmount
@@ -94,7 +94,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         script: ''
       }), bsv.Script.fromASM(token.lockingScript.toASM()), inputSatoshis)
 
-      const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + num2bin(receivedTokenId, DataLen) + toHex(receiver)
+      const newLockingScript0 = [lockingScriptCodePart, num2bin(receivedTokenId, DataLen) + toHex(receiver)].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
@@ -136,13 +136,14 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         script: ''
       }), bsv.Script.fromASM(token.lockingScript.toASM()), inputSatoshis)
 
-      const newLockingScript0 = lockingScriptCodePart + ' OP_RETURN ' + num2bin(nextTokenId, DataLen) + toHex(newIssuer)
+      const newLockingScript0 = [lockingScriptCodePart, num2bin(nextTokenId, DataLen) + toHex(newIssuer)].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
       }))
 
-      const newLockingScript1 = lockingScriptCodePart + ' OP_RETURN ' + num2bin(issuedTokenId, DataLen) + toHex(issuer) // set token receiver to be issuer
+       // set token receiver to be issuer
+      const newLockingScript1 = [lockingScriptCodePart, num2bin(issuedTokenId, DataLen) + toHex(issuer)].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript1),
         satoshis: outputAmount
