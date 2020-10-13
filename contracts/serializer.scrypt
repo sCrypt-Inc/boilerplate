@@ -1,0 +1,121 @@
+import "./util.scrypt";
+
+// a de/serializer for basic types
+
+contract Reader {
+    bytes buf;
+    int pos;
+
+    constructor(bytes buf) {
+        this.buf = buf;
+        this.pos = 0;
+    }
+
+    function eof(): bool {
+        return this.pos >= len(this.buf);
+    }
+
+    function readBytes(): bytes {
+        bytes ret = Util.readVarint(this.buf[this.pos :]);
+        int l = Util.readVarintLen(this.buf[this.pos :]);
+        this.pos = this.pos + l;
+        return ret;
+    }
+
+    function readBool(): bool {
+        return this.readBytes() != b'00';
+    }
+
+    function readInt(): int {
+        return unpack(this.readBytes());
+    }
+}
+
+contract Writer {
+    bytes buf;
+
+    constructor() {
+        this.buf = b'';
+    }
+
+    function toBuf(): bytes {
+        return this.buf;
+    }
+
+    // return VarInt encoding
+    function writeBytes(bytes x): bytes {
+        // VarInt encoding
+        bytes b = Util.writeVarint(x);
+        this.buf = this.buf + b;
+        return b;
+    }
+
+    // uses fixed 1 byte to represent a boolean, plus length
+    function writeBool(bool x): bytes {
+        return this.writeBytes(x ? b'01' : b'00');
+    }
+    
+    // int is little endian
+    function writeInt(int x): bytes {
+        return this.writeBytes(pack(x));
+    }
+}
+
+contract Test {
+  public function main(bool f, bytes b, int i) {
+    {
+        Writer w = new Writer();
+        bytes buf = w.writeBool(f);
+
+        Reader r = new Reader(w.toBuf());
+        bool f_ = r.readBool();
+        require(f_ == f);
+        require(r.eof());
+    }
+
+    {
+        Writer w = new Writer();
+        bytes buf = w.writeBytes(b);
+
+        Reader r = new Reader(w.toBuf());
+        bytes b_ = r.readBytes();
+        require(b_ == b);
+        require(r.eof());
+    }
+    
+    {
+        Writer w = new Writer();
+        bytes buf = w.writeInt(i);
+
+        Reader r = new Reader(w.toBuf());
+        int i_ = r.readInt();
+        require(i_ == i);
+        require(r.eof());
+    }
+
+    Writer w = new Writer();
+    bytes buf = w.writeInt(i);
+    buf = w.writeBytes(b);
+    buf = w.writeBytes(b);
+    buf = w.writeBool(f);
+    buf = w.writeInt(i);
+    buf = w.writeBytes(b);
+    
+    Reader r = new Reader(w.toBuf());
+
+    int i_ = r.readInt();
+    require(i_ == i);
+    require(!r.eof());
+    bytes b_ = r.readBytes();
+    require(b_ == b);
+    b_ = r.readBytes();
+    require(b_ == b);
+    bool f_ = r.readBool();
+    require(f_ == f);
+    i_ = r.readInt();
+    require(i_ == i);
+    b_ = r.readBytes();
+    require(b_ == b);
+    require(r.eof());
+  }
+}

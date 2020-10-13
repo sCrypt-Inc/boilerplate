@@ -21,7 +21,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
     counter = new Counter()
 
     // set initial OP_RETURN value
-    counter.dataLoad = num2bin(0, DataLen)
+    counter.setDataPart(num2bin(0, DataLen))
 
     const newLockingScript = counter.codePart.toASM() + ' OP_RETURN ' + num2bin(1, DataLen)
 

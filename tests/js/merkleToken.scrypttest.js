@@ -49,7 +49,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     const newLockingScript = lockingScriptCodePart + " OP_RETURN " + sha256(sha256(lastEntry) + sha256(newEntry))
     const lastMerklePath = new Bytes(sha256(lastEntry) + "01")
 
-    token.dataLoad = sha256(sha256(lastEntry).repeat(2))
+    token.setDataPart(sha256(sha256(lastEntry).repeat(2)))
 
     tx_.addInput(
       new bsv.Transaction.Input({
@@ -104,7 +104,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     const newLockingScript = lockingScriptCodePart + " OP_RETURN " + sha256(sha256(newEntry).repeat(2))
     const merklePath = new Bytes(sha256(oldEntry) + "01")
 
-    token.dataLoad = sha256(sha256(oldEntry).repeat(2))
+    token.setDataPart(sha256(sha256(oldEntry).repeat(2)))
 
     tx_.addInput(
       new bsv.Transaction.Input({
@@ -158,7 +158,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     const newLockingScript = lockingScriptCodePart + " OP_RETURN " + sha256(sha256(newEntry).repeat(2))
     const merklePath = new Bytes(sha256(oldEntry) + "01")
 
-    token.dataLoad = sha256(sha256(oldEntry).repeat(2))
+    token.setDataPart(sha256(sha256(oldEntry).repeat(2)))
 
     tx_.addInput(
       new bsv.Transaction.Input({

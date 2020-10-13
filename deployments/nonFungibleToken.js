@@ -36,7 +36,7 @@ const {
     const uniqTokenId = 1;
 
     // append state as passive data part, initial uniqTokenId
-    token.dataLoad = num2bin(uniqTokenId, DataLen) + toHex(publicKeyIssuer)
+    token.setDataPart(num2bin(uniqTokenId, DataLen) + toHex(publicKeyIssuer))
 
     let inputSatoshis = 10000
     const FEE = inputSatoshis / 4

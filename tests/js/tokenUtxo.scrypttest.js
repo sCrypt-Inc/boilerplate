@@ -27,7 +27,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
 
   it('should succeed when one token is split into two', () => {
     // split 100 tokens
-    token.dataLoad = toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen)
+    token.setDataPart(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
     
     const testSplit = (privKey, balance0, balance1, balanceInput0 = balance0, balanceInput1 = balance1) => {
       tx_ = new bsv.Transaction()
@@ -135,7 +135,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
 
       token.txContext = { tx: tx_, inputIndex, inputSatoshis }
 
-      token.dataLoad = inputIndex == 0 ? dataPart0 : dataPart1
+      token.setDataPart(inputIndex == 0 ? dataPart0 : dataPart1)
       
       const preimage = getPreimage(tx_, inputIndex == 0 ? lockingScript0 : lockingScript1, inputSatoshis, inputIndex)
       const sig = signTx(tx_, inputIndex == 0 ? privateKey1 : privateKey2, inputIndex == 0 ? lockingScript0 : lockingScript1, inputSatoshis, inputIndex)
@@ -171,7 +171,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
 
   it('should succeed when one token UTXO is burnt', () => {
     // burn 100 tokens
-    token.dataLoad = toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen)
+    token.setDataPart(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
     
     const testBurn = (privKey) => {
       tx_ = new bsv.Transaction()

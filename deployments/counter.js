@@ -6,7 +6,7 @@ const { DataLen, loadDesc, createUnlockingTx, createLockingTx, sendTx, showError
         const Counter = buildContractClass(loadDesc('counter_desc.json'))
         const counter = new Counter()
         // append state as op_return data
-        counter.dataLoad = num2bin(0, DataLen)
+        counter.setDataPart(num2bin(0, DataLen))
         
         let amount = 10000
         const FEE = amount / 10
@@ -23,7 +23,7 @@ const { DataLen, loadDesc, createUnlockingTx, createLockingTx, sendTx, showError
             let prevLockingScript = counter.lockingScript.toASM();
             
             // update state
-            counter.dataLoad = num2bin(i + 1, DataLen)
+            counter.setDataPart(num2bin(i + 1, DataLen))
             const newLockingScript = counter.lockingScript.toASM();
             const newAmount = amount - FEE
 
