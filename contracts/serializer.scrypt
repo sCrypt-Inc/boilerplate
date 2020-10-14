@@ -32,31 +32,19 @@ contract Reader {
 }
 
 contract Writer {
-    bytes buf;
-
-    constructor() {
-        this.buf = b'';
-    }
-
-    function toBuf(): bytes {
-        return this.buf;
-    }
-
     // return VarInt encoding
-    function writeBytes(bytes x): bytes {
+    static function writeBytes(bytes x): bytes {
         // VarInt encoding
-        bytes b = Util.writeVarint(x);
-        this.buf = this.buf + b;
-        return b;
+        return Util.writeVarint(x);
     }
 
     // uses fixed 1 byte to represent a boolean, plus length
-    function writeBool(bool x): bytes {
+    static function writeBool(bool x): bytes {
         return this.writeBytes(x ? b'01' : b'00');
     }
     
     // int is little endian
-    function writeInt(int x): bytes {
+    static function writeInt(int x): bytes {
         return this.writeBytes(pack(x));
     }
 }
@@ -64,44 +52,36 @@ contract Writer {
 contract Test {
   public function main(bool f, bytes b, int i) {
     {
-        Writer w = new Writer();
-        bytes buf = w.writeBool(f);
+        bytes buf = Writer.writeBool(f);
 
-        Reader r = new Reader(w.toBuf());
+        Reader r = new Reader(buf);
         bool f_ = r.readBool();
         require(f_ == f);
         require(r.eof());
     }
 
     {
-        Writer w = new Writer();
-        bytes buf = w.writeBytes(b);
+        bytes buf = Writer.writeBytes(b);
 
-        Reader r = new Reader(w.toBuf());
+        Reader r = new Reader(buf);
         bytes b_ = r.readBytes();
         require(b_ == b);
         require(r.eof());
     }
     
     {
-        Writer w = new Writer();
-        bytes buf = w.writeInt(i);
+        bytes buf = Writer.writeInt(i);
 
-        Reader r = new Reader(w.toBuf());
+        Reader r = new Reader(buf);
         int i_ = r.readInt();
         require(i_ == i);
         require(r.eof());
     }
 
-    Writer w = new Writer();
-    bytes buf = w.writeInt(i);
-    buf = w.writeBytes(b);
-    buf = w.writeBytes(b);
-    buf = w.writeBool(f);
-    buf = w.writeInt(i);
-    buf = w.writeBytes(b);
+    bytes buf = Writer.writeInt(i) + Writer.writeBytes(b) + Writer.writeBytes(b) +
+                Writer.writeBool(f) + Writer.writeInt(i) + Writer.writeBytes(b);
     
-    Reader r = new Reader(w.toBuf());
+    Reader r = new Reader(buf);
 
     int i_ = r.readInt();
     require(i_ == i);

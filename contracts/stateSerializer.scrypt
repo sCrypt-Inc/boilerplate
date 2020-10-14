@@ -30,16 +30,12 @@ contract StateSerializer {
 		bool flag = r.readBool();
 		require(flag);
 
-		// write state
-		Writer w = new Writer();
-		bytes ignored = w.writeInt(counter + 1);
-		ignored = w.writeBytes(b + b'ff');
-		ignored = w.writeBool(!flag);
-
-		// write state length in fixed size
-		ignored = w.writeBytes(num2bin(len(w.toBuf()), Util.StateLen - 1 /* varint prefix byte */));
+		// serialize state
+		bytes stateBuf = Writer.writeInt(counter + 1) + Writer.writeBytes(b + b'ff') + Writer.writeBool(!flag);
+		// serialize state size in fixed length
+		bytes lenBuf = Writer.writeBytes(num2bin(len(stateBuf), Util.StateLen - 1 /* varint prefix byte */));
 		
-		bytes scriptCode_ = scriptCode[: stateStart] + w.toBuf();
+		bytes scriptCode_ = scriptCode[: stateStart] + stateBuf + lenBuf;
 		bytes output = Util.buildOutput(scriptCode_, amount);
 		require(hash256(output) == Util.hashOutputs(txPreimage));
     }
