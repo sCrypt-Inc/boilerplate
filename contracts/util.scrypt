@@ -54,7 +54,11 @@ contract Util {
         return Tx.checkPreimageAdvanced(txPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType);
 	}
 
-
+	// serialize state size in fixed length
+	static function encodeStateSize(bytes state): bytes {
+		return num2bin(len(state), Util.StateLen - 1 /* varint prefix byte */);
+	}
+	
 	/*
 	 * VarInt (variable integer) is used to encode fields of variable length in a bitcoin transaction
 	 * https://learnmeabitcoin.com/technical/varint
