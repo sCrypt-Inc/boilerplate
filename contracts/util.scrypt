@@ -1,8 +1,8 @@
 contract Util {
 	// number of bytes to denote some numeric value
     static int DataLen = 1;
-	// number of bytes to denote length serialized state, including varint prefix (1 byte) + length (2 bytes)
-    static int StateLen = 3;
+	// number of bytes to denote length serialized state, including varint prefix (1 byte) + length (4 bytes)
+    static int StateLen = 5;
 
 	// number of bytes to denote input sequence
 	static int InputSeqLen = 4;

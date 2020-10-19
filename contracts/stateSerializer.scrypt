@@ -17,12 +17,16 @@ contract StateSerializer {
 		bytes lb = scriptCode[scriptLen - Util.StateLen :];
 		Reader lr = new Reader(lb);
 		int stateLen = lr.readInt();
-		require(stateLen == 7);
+		require(stateLen == 11);
 		
 		// read state
 		int stateStart = scriptLen - stateLen - Util.StateLen;
 		bytes state = scriptCode[stateStart :];
 		Reader r = new Reader(state);
+		auto zero = r.readInt();
+		require(zero == 0);
+		auto negOne = r.readInt();
+		require(negOne == -1);
 		auto counter = r.readInt();
 		require(counter == 11);
 		auto b = r.readBytes();
@@ -31,7 +35,8 @@ contract StateSerializer {
 		require(flag);
 
 		// serialize state
-		bytes stateBuf = Writer.writeInt(counter + 1) + Writer.writeBytes(b + b'ff') + Writer.writeBool(!flag);
+    bytes ext = b'ffff';
+		bytes stateBuf = Writer.writeInt(counter + 1) + Writer.writeBytes(b + b'ff') + Writer.writeBool(!flag) + Writer.writeBytes(ext);
 		// serialize state size
 		bytes lenBuf = Writer.writeBytes(Util.encodeStateSize(stateBuf));
 		
