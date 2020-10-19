@@ -49,7 +49,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
     └── ts                              # Typescript unit tests
 </pre>
 
-## How to write test for a sCrypt contract
+## How to write test for an sCrypt contract
 
 The major steps to write a sCrypt test are exemplified by `tests/demo.scrypttest.js`.
 
