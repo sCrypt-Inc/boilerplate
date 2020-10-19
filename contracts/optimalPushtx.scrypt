@@ -1,0 +1,17 @@
+/**
+ * test contract to compare OP_PUSH_TX with and without optimization
+ */
+ contract OptimalPushTx {
+     public function validate(SigHashPreimage txPreimage) {
+        // compare the output script size of the following two to see effect of optimization
+
+        // 633 bytes
+        // require(Tx.checkPreimage(txPreimage));
+
+        // 92 bytes
+        require(Tx.checkPreimageOpt(txPreimage));
+
+        // use this if you want to set sighash type explicitly
+        // require(Tx.checkPreimageOpt_(txPreimage));
+    }
+}
