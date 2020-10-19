@@ -17,7 +17,7 @@ contract StateSerializer {
 		bytes lb = scriptCode[scriptLen - Util.StateLen :];
 		Reader lr = new Reader(lb);
 		int stateLen = lr.readInt();
-		require(stateLen == 11);
+		require(stateLen == 10);
 		
 		// read state
 		int stateStart = scriptLen - stateLen - Util.StateLen;
