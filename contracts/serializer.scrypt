@@ -37,7 +37,10 @@ contract Reader {
 			len = Util.fromLEUnsigned(b[this.pos:this.pos+4]);
       this.pos = this.pos + 4;
 			ret = b[this.pos:this.pos+len];
-		}
+		} else {
+      // shall not reach here
+      require(false);
+    }
 
     this.pos = this.pos + len;
     return ret;
@@ -72,6 +75,9 @@ contract Writer {
     }
     else if (n < 0x100000000) {
       header = b'4e' + Util.toLEUnsigned(n, 4);
+    } else {
+      // shall not reach here
+      require(false);
     }
 
     return header + b;
