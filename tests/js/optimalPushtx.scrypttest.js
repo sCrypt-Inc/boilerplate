@@ -7,10 +7,14 @@ const {
     inputSatoshis,
     tx,
     compileContract,
+    sighashType2Hex,
 } = require("../../helper");
 
 const Hash = bsv.crypto.Hash
 const tx_ = bsv.Transaction.shallowCopy(tx)
+
+const Signature = bsv.crypto.Signature
+const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
 
 // MSB of the sighash  due to lower S policy
 const MSB_THRESHOLD = 0x7E
@@ -23,7 +27,7 @@ describe('Test sCrypt contract OptimalPushTx In Javascript', () => {
         test = new Test();
         
         // // use this if sigHashType needs to be customized, using Tx.checkPreimageOpt_(txPreimage)
-        // const asmVars = {'Tx.checkPreimageOpt_.sigHashType': '41'} // FORKID | ALL
+        // const asmVars = {'Tx.checkPreimageOpt_.sigHashType': sighashType2Hex(sighashType)}
         // test.replaceAsmVars(asmVars)
 
         console.log(`locking script length: ${test.lockingScript.toHex().length / 2}`)
@@ -40,7 +44,7 @@ describe('Test sCrypt contract OptimalPushTx In Javascript', () => {
         for (i = 0; ; i++) {
             // malleate tx and thus sighash to satisfy constraint
             tx_.nLockTime = i
-            const preimage_ = getPreimage(tx_, test.lockingScript.toASM(), inputSatoshis)
+            const preimage_ = getPreimage(tx_, test.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
             preimage = toHex(preimage_)
             const h = Hash.sha256sha256(Buffer.from(preimage, 'hex'))
             const msb = h.readUInt8()

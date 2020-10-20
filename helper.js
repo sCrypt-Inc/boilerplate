@@ -25,6 +25,7 @@ const flags = Interpreter.SCRIPT_VERIFY_MINIMALDATA | Interpreter.SCRIPT_ENABLE_
 const minFee = 546
 const dummyTxId = 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458'
 const reversedDummyTxId = '5884e5db9de218238671572340b207ee85b628074e7e467096c267266baf77a4'
+const sighashType2Hex = s => s.toString(16)
 
 const utxo = {
   txId: dummyTxId,
@@ -176,5 +177,6 @@ module.exports = {
   sendTx,
   compileContract,
   loadDesc,
+  sighashType2Hex,
   showError
 }
