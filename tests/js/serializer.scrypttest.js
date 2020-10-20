@@ -65,10 +65,10 @@ describe( 'Test sCrypt contract Serializer In Javascript', () => {
     expect( result.success, result.error ).to.be.true
   } );
 
-  it( 'pushdata 4', () => {
-    result = demo.testBytes( new Bytes( '11'.repeat( 2 ** 16 ) ) ).verify()
-    expect( result.success, result.error ).to.be.true
-  } );
+  // it( 'pushdata 4', () => {
+  //   result = demo.testBytes( new Bytes( '11'.repeat( 2 ** 16 ) ) ).verify()
+  //   expect( result.success, result.error ).to.be.true
+  // } );
 
   it( 'should return true', () => {
     // skip largest two bounds since they cause out of memory error

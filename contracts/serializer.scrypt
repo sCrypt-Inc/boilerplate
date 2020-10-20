@@ -46,7 +46,7 @@ contract Reader {
   function readBool() : bool {
     byte b = this.buf[this.pos];
     this.pos = this.pos + 1;
-    return b != '00';
+    return OpCode.OP_0 != [b];
   }
 
   function readInt() : int {
@@ -79,7 +79,7 @@ contract Writer {
 
   // uses fixed 1 byte to represent a boolean, plus length
   static function writeBool(bool x) : bytes {
-    return x ? b'51' : b'00';
+    return x ? OpCode.OP_1 : OpCode.OP_0;
   }
 
   // int is little endian
