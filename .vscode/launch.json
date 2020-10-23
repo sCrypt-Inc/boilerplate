@@ -7,6 +7,15 @@
     {
       "type": "scrypt",
       "request": "launch",
+      "name": "Debug Demo",
+      "program": "${workspaceFolder}/contracts/demo.scrypt",
+      "constructorParams": "12,30",
+      "entryMethod": "add",
+      "entryMethodParams": "42"
+    },
+    {
+      "type": "scrypt",
+      "request": "launch",
       "name": "Debug P2PKH",
       "program": "${workspaceFolder}/contracts/p2pkh.scrypt",
       "constructorParams": "Ripemd160(b'92474c7477ba646adfb72ebe6347bfa233887086')",
