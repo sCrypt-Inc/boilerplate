@@ -1,7 +1,6 @@
 const { expect } = require('chai');
 const { buildContractClass } = require('scryptlib');
 const { compileContract } = require('../../helper');
-const { DEFAULT_FLAGS } = require('scryptlib/dist/utils');
 
 describe('Test sCrypt contract Demo In Javascript', () => {
   let demo, result
