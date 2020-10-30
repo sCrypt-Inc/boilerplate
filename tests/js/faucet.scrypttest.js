@@ -1,18 +1,15 @@
 const { expect } = require('chai');
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Ripemd160 } = require('scryptlib');
-const {privateKey} = require('../../privateKey');
 
 const {
   inputIndex,
   inputSatoshis,
   tx,
-  DataLen,
   compileContract
 } = require('../../helper');
-const { Console } = require('console');
 
 // make a copy since it will be mutated
-// const privateKey = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 
