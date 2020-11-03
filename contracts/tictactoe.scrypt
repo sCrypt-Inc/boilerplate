@@ -55,6 +55,7 @@ contract TicTacToe {
             // update state: next turn & next board
             bytes scriptCode_ = scriptCode[: scriptLen - TicTacToe.BOARDLEN] + num2bin(1 - turn, TicTacToe.TURNLEN) + board;
             bytes output = Util.buildOutput(scriptCode_, amount);
+            outputs = output;
         }
 
   		require(hash256(outputs) == Util.hashOutputs(txPreimage));
