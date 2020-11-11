@@ -22,7 +22,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
     
 
     it('should return true', () => {
-        result = arraydemo.testArrayConstructor([
+        result = arraydemo.testArrayConstructor(
             33,
             [
                 true,
@@ -36,7 +36,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
                 "Ripemd160(b'2235c953af7c83cffa6f192477fb431941400162')",
                 "Ripemd160(b'0176de27477fb7ffd7c99a7e9b931c22fd125c2b')"
             ]
-        ]).verify()
+        ).verify()
         expect(result.success, result.error).to.be.true
     });
 
