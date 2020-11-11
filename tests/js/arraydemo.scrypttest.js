@@ -15,8 +15,8 @@ describe('Test sCrypt contract Demo In Javascript', () => {
             3311,
             333
         ], [
-            "Ripemd160(b'2235c953af7c83cffa6f192477fb431941400162')",
-            "Ripemd160(b'0176de27477fb7ffd7c99a7e9b931c22fd125c2b')"
+            new Ripemd160('2235c953af7c83cffa6f192477fb431941400162'),
+            new Ripemd160('0176de27477fb7ffd7c99a7e9b931c22fd125c2b')
         ]);
     });
     
@@ -33,8 +33,8 @@ describe('Test sCrypt contract Demo In Javascript', () => {
                 333
             ],
             [
-                "Ripemd160(b'2235c953af7c83cffa6f192477fb431941400162')",
-                "Ripemd160(b'0176de27477fb7ffd7c99a7e9b931c22fd125c2b')"
+                new Ripemd160('2235c953af7c83cffa6f192477fb431941400162'),
+                new Ripemd160('0176de27477fb7ffd7c99a7e9b931c22fd125c2b')
             ]
         ).verify()
         expect(result.success, result.error).to.be.true
