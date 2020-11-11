@@ -4,33 +4,37 @@ import "util.scrypt";
  * A non-fungible token protocol based on UTXO model
  */
 contract NonFungibleToken {
+    static bytes ISSUE = b'00';
+    static bytes TRANSFER = b'01';
+
     public function issue(Sig issuerSig, PubKey receiver, int satoshiAmount0, int satoshiAmount1, SigHashPreimage txPreimage) {
         // this ensures the preimage is for the current tx
 		require(Tx.checkPreimage(txPreimage));
 
-        // read previous locking script: codePart + OP_RETURN + currTokenId + issuer
+        // read previous locking script: codePart + OP_RETURN + currTokenId + issuer + matchAction
         bytes lockingScript = Util.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
 
         // constant part of locking script: upto op_return
-        int constStart = scriptLen - Util.DataLen - Util.PubKeyLen;
+        int constStart = scriptLen - Util.DataLen - Util.PubKeyLen - 1;
         bytes constPart = lockingScript[: constStart];
-                
-        PubKey issuer = PubKey(lockingScript[constStart + Util.DataLen :]);
+
+        bytes matchAction = lockingScript[scriptLen - 1:];
+        // action must be issue
+        require(matchAction == NonFungibleToken.ISSUE);
+
+        PubKey issuer = PubKey(lockingScript[constStart + Util.DataLen : scriptLen - 1]);
         // authorize: only the issuer can mint new tokens
         require(checkSig(issuerSig, issuer));
-        
-        // prevent double mint: the previous token's receiver can not be issuer
-        require(issuer != receiver);
 
         int currTokenId = unpack(lockingScript[constStart : constStart + Util.DataLen]);
 
         // increment token ID to mint a new token
-        bytes outputScript0 = constPart + num2bin(currTokenId + 1, Util.DataLen) + issuer;
+        bytes outputScript0 = constPart + num2bin(currTokenId + 1, Util.DataLen) + issuer + NonFungibleToken.ISSUE;
         bytes output0 = Util.buildOutput(outputScript0, satoshiAmount0);
 
         // transfer previous token to another receiver
-        bytes outputScript1 = constPart + num2bin(currTokenId, Util.DataLen) + receiver;
+        bytes outputScript1 = constPart + num2bin(currTokenId, Util.DataLen) + receiver + NonFungibleToken.TRANSFER;
         bytes output1 = Util.buildOutput(outputScript1, satoshiAmount1);
         
         // check outputs
@@ -41,20 +45,24 @@ contract NonFungibleToken {
     public function transfer(Sig senderSig, PubKey receiver, int satoshiAmount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
-        // read previous locking script: codePart + OP_RETURN + tokenID + ownerPublicKey
+        // read previous locking script: codePart + OP_RETURN + tokenID + ownerPublicKey + matchAction
         bytes lockingScript = Util.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
 
         // constant part of locking script: upto tokenID
-        int constStart = scriptLen - Util.PubKeyLen;
+        int constStart = scriptLen - Util.PubKeyLen - 1;
         bytes constPart = lockingScript[: constStart];
 
-        PubKey sender = PubKey(lockingScript[constStart : ]);
+        bytes matchAction = lockingScript[scriptLen - 1:];
+        // action must be transfer
+        require(matchAction == NonFungibleToken.TRANSFER);
+
+        PubKey sender = PubKey(lockingScript[constStart : scriptLen - 1]);
         // authorize
         require(checkSig(senderSig, sender));
 
         // transfer
-        bytes outputScript = constPart + receiver;
+        bytes outputScript = constPart + receiver + NonFungibleToken.TRANSFER;
 
         bytes output = Util.buildOutput(outputScript, satoshiAmount);
         require(hash256(output) == Util.hashOutputs(txPreimage));

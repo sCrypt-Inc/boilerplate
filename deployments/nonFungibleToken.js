@@ -27,6 +27,8 @@ const {
   const publicKeyReceiver1 = bsv.PublicKey.fromPrivateKey(privateKeyReceiver1)
   const privateKeyReceiver2 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKeyReceiver2 = bsv.PublicKey.fromPrivateKey(privateKeyReceiver2)
+  const actionIssue = '00'
+  const actionTransfer = '01'
 
   try {
     const NonFungibleToken = buildContractClass(loadDesc('nonFungibleToken_desc.json'))
@@ -36,7 +38,7 @@ const {
     const uniqTokenId = 1;
 
     // append state as passive data part, initial uniqTokenId
-    token.setDataPart(num2bin(uniqTokenId, DataLen) + toHex(publicKeyIssuer))
+    token.setDataPart(num2bin(uniqTokenId, DataLen) + toHex(publicKeyIssuer) + actionIssue)
 
     let inputSatoshis = 10000
     const FEE = inputSatoshis / 4
@@ -60,14 +62,14 @@ const {
       }), token.lockingScript, inputSatoshis)
 
       // issue new token
-      lockingScript0 = [token.codePart.toASM(), num2bin((uniqTokenId + 1), DataLen) + toHex(publicKeyIssuer)].join(' ')
+      lockingScript0 = [token.codePart.toASM(), num2bin((uniqTokenId + 1), DataLen) + toHex(publicKeyIssuer) + actionIssue].join(' ')
       tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(lockingScript0),
         satoshis: outputSatoshis
       }))
 
       // transfer previous token to another receiver
-      lockingScript1 = [token.codePart.toASM(), num2bin(uniqTokenId, DataLen) + toHex(publicKeyReceiver1)].join(' ')
+      lockingScript1 = [token.codePart.toASM(), num2bin(uniqTokenId, DataLen) + toHex(publicKeyReceiver1) + actionTransfer].join(' ')
       tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(lockingScript1),
         satoshis: outputSatoshis
@@ -91,16 +93,14 @@ const {
     outputSatoshis -= FEE
     // transfer token to publicKeyReceiver2
     {
-
       const tx = new bsv.Transaction()
-
       tx.addInput(new bsv.Transaction.Input({
         prevTxId: issueTxid,
         outputIndex: 1,
         script: ''
       }), bsv.Script.fromASM(lockingScript1), inputSatoshis)
 
-      const lockingScript2 = [token.codePart.toASM(), num2bin(uniqTokenId, DataLen) + toHex(publicKeyReceiver2)].join(' ')
+      const lockingScript2 = [token.codePart.toASM(), num2bin(uniqTokenId, DataLen) + toHex(publicKeyReceiver2) + actionTransfer].join(' ')
 
       tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(lockingScript2),
