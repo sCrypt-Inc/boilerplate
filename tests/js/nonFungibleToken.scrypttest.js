@@ -5,7 +5,7 @@ const { inputIndex, inputSatoshis, tx, compileContract, DataLen, dummyTxId } = r
 // make a copy since it will be mutated
 var tx_ = bsv.Transaction.shallowCopy(tx)
 const outputAmount = 22222
-    
+
 describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
   let token, lockingScriptCodePart
 
@@ -16,7 +16,9 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
   const currTokenId = 42
   const issuer = publicKey1
   const sender = publicKey1
-  
+  const actionIssue = '00'
+  const actionTransfer = '01'
+
   before(() => {
     const Token = buildContractClass(compileContract('nonFungibleToken.scrypt'))
     token = new Token()
@@ -26,8 +28,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
   });
 
   it('should succeed when one new token is issued', () => {
-    token.setDataPart(num2bin(currTokenId, DataLen) + toHex(issuer))
-    
+    token.setDataPart(num2bin(currTokenId, DataLen) + toHex(issuer) + actionIssue)
     const testIssue = (privKey, receiver, newIssuer = issuer, nextTokenId = currTokenId + 1, issuedTokenId = currTokenId) => {
       tx_ = new bsv.Transaction()
 
@@ -37,25 +38,25 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         script: ''
       }), bsv.Script.fromASM(token.lockingScript.toASM()), inputSatoshis)
 
-      const newLockingScript0 = [lockingScriptCodePart, num2bin(nextTokenId, DataLen) + toHex(newIssuer)].join(' ')
+      const newLockingScript0 = [lockingScriptCodePart, num2bin(nextTokenId, DataLen) + toHex(newIssuer) + actionIssue].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
       }))
 
-      const newLockingScript1 = [lockingScriptCodePart, num2bin(issuedTokenId, DataLen) + toHex(receiver)].join(' ')
+      const newLockingScript1 = [lockingScriptCodePart, num2bin(issuedTokenId, DataLen) + toHex(receiver) + actionTransfer].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript1),
         satoshis: outputAmount
       }))
-      
+
       token.txContext = { tx: tx_, inputIndex, inputSatoshis }
 
       const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex)
       const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSatoshis)
       return token.issue(
         new Sig(toHex(sig)),
-        new PubKey(toHex(publicKey2)),
+        new PubKey(toHex(receiver)),
         outputAmount,
         outputAmount,
         new SigHashPreimage(toHex(preimage))
@@ -68,23 +69,23 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
     // issuer must not change
     result = testIssue(privateKey1, publicKey2, publicKey2, currTokenId + 1, currTokenId).verify()
     expect(result.success, result.error).to.be.false
-    
+
     // unauthorized key
     result = testIssue(privateKey2, publicKey2, publicKey1, currTokenId + 1, currTokenId).verify()
     expect(result.success, result.error).to.be.false
-    
+
     // mismatched next token ID
     result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 2, currTokenId).verify()
     expect(result.success, result.error).to.be.false
-    
+
     // mismatched issued token ID
     result = testIssue(privateKey1, publicKey2, publicKey1, currTokenId + 1, currTokenId - 1).verify()
     expect(result.success, result.error).to.be.false
   });
 
   it('should succeed when a token is transferred', () => {
-    token.setDataPart(num2bin(currTokenId, DataLen) + toHex(sender))
-    
+    token.setDataPart(num2bin(currTokenId, DataLen) + toHex(sender) + actionTransfer)
+
     const testTransfer = (privKey, receiver, receivedTokenId = currTokenId) => {
       tx_ = new bsv.Transaction()
 
@@ -94,7 +95,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         script: ''
       }), bsv.Script.fromASM(token.lockingScript.toASM()), inputSatoshis)
 
-      const newLockingScript0 = [lockingScriptCodePart, num2bin(receivedTokenId, DataLen) + toHex(receiver)].join(' ')
+      const newLockingScript0 = [lockingScriptCodePart, num2bin(receivedTokenId, DataLen) + toHex(receiver) + actionTransfer].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
@@ -106,7 +107,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSatoshis)
       return token.transfer(
         new Sig(toHex(sig)),
-        new PubKey(toHex(publicKey2)),
+        new PubKey(toHex(receiver)),
         outputAmount,
         new SigHashPreimage(toHex(preimage))
       )
@@ -114,7 +115,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
 
     result = testTransfer(privateKey1, publicKey2, currTokenId).verify()
     expect(result.success, result.error).to.be.true
-    
+
     // unauthorized key
     result = testTransfer(privateKey2, publicKey2, currTokenId).verify()
     expect(result.success, result.error).to.be.false
@@ -124,9 +125,9 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
     expect(result.success, result.error).to.be.false
   });
 
-  it('should fail if receiver is the isssuer when a new token is issued, so issuer can not double mint', () => {
-    token.setDataPart(num2bin(currTokenId, DataLen) + toHex(issuer))
-    
+  it('should fail when receiver pretending to be the issuer', () => {
+    token.setDataPart(num2bin(currTokenId, DataLen) + toHex(sender) + actionTransfer)
+
     const testIssue = (privKey, receiver, newIssuer = issuer, nextTokenId = currTokenId + 1, issuedTokenId = currTokenId) => {
       tx_ = new bsv.Transaction()
 
@@ -136,14 +137,14 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         script: ''
       }), bsv.Script.fromASM(token.lockingScript.toASM()), inputSatoshis)
 
-      const newLockingScript0 = [lockingScriptCodePart, num2bin(nextTokenId, DataLen) + toHex(newIssuer)].join(' ')
+      const newLockingScript0 = [lockingScriptCodePart, num2bin(nextTokenId, DataLen) + toHex(newIssuer) + actionIssue].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
       }))
 
        // set token receiver to be issuer
-      const newLockingScript1 = [lockingScriptCodePart, num2bin(issuedTokenId, DataLen) + toHex(issuer)].join(' ')
+      const newLockingScript1 = [lockingScriptCodePart, num2bin(issuedTokenId, DataLen) + toHex(receiver) + actionTransfer].join(' ')
       tx_.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript1),
         satoshis: outputAmount
@@ -155,7 +156,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSatoshis)
       return token.issue(
         new Sig(toHex(sig)),
-        new PubKey(toHex(publicKey2)),
+        new PubKey(toHex(receiver)),
         outputAmount,
         outputAmount,
         new SigHashPreimage(toHex(preimage))
