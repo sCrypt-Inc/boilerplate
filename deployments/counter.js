@@ -1,5 +1,6 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage } = require('scryptlib');
 const { DataLen, loadDesc, createUnlockingTx, createLockingTx, sendTx, showError  } = require('../helper');
+const { privateKey } = require('../privateKey');
 
 (async() => {
     try {
