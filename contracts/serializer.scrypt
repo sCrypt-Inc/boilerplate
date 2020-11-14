@@ -47,9 +47,9 @@ contract Reader {
   }
 
   function readBool() : bool {
-    byte b = this.buf[this.pos];
+    bytes b = this.buf[this.pos : this.pos + 1];
     this.pos = this.pos + 1;
-    return OpCode.OP_0 != [b];
+    return OpCode.OP_0 != b;
   }
 
   function readInt() : int {

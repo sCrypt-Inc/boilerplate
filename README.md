@@ -1,5 +1,5 @@
 # sCrypt Project Boilerplate
-[![Build Status](https://travis-ci.com/scrypt-sv/boilerplate.svg?branch=master)](https://travis-ci.com/scrypt-sv/boilerplate)
+[![Build Status](https://travis-ci.com/sCrypt-Inc/boilerplate.svg?branch=master)](https://travis-ci.com/sCrypt-Inc/boilerplate)
 ## Guide
 
 [**sCrypt**](https://scryptdoc.readthedocs.io) is a high-level programming language for writing smart contracts on Bitcoin SV. This project provides examples to help developers learn and integrate sCrypt smart contracts to their Javascript-based projects. Our recommended procedure of developing smart contract based applications is as follows:
@@ -23,10 +23,12 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 <pre>
 .
 ├── contracts                       # sCrypt contract files
+│   ├── accumulatorMultiSig.scrypt      # <a href="https://xiaohuiliu.medium.com/accumulator-multisig-d5a5a1b5fc42">Accumulator MultiSig</a>
 │   ├── ackermann.scrypt                # <a href="https://scryptdoc.readthedocs.io/en/latest/ackermann.html">Ackermann function</a>
 │   ├── advancedCounter.scrypt          # Use external UTXOs to pay <a href="https://medium.com/@xiaohuiliu/advanced-op-push-tx-78ce84f69a66">counter</a> contract tx fees using sighash <i>ANYONECANPAY</i>
 │   ├── advancedTokenSale.scrypt        # Sambe as above, but for token sale contract
 │   ├── asm.scrypt                      # Embed Script directly into sCrypt <a href="https://medium.com/@xiaohuiliu/inline-script-inside-scrypt-27d5aa279fd3">using inline assembly</a>
+│   ├── binaryOption.scrypt             # <a href="https://powping.com/posts/425fe57d0d7cc11317d0e7b7d412770a11ef18c6f159d5deade78b79725833ab">A binary option contract</a>
 │   ├── counter.scrypt                  # Count the number of times a function has been called to showcase <a href="https://medium.com/coinmonks/stateful-smart-contracts-on-bitcoin-sv-c24f83a0f783">stateful contract</a>
 │   ├── demo.scrypt                     # "hello world" contract
 │   ├── hashpuzzlep2pkh.scrypt          # combining <a href="https://scryptdoc.readthedocs.io/en/latest/multipartyhashpuzzles.html">hash puzzle</a> and p2pkh contracts

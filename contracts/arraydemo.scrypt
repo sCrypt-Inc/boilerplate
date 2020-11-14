@@ -1,0 +1,47 @@
+contract ArrayDemo {
+    int m;
+    bool[2] arr_bool;
+    int [2] arr_int;
+    Ripemd160[2] arr_Ripemd160;
+
+    public function testArrayConstructor(int m, bool[2] arr1, int [2] arr2, Ripemd160[2] arr3) {
+
+        require(this.m == m);
+        require(this.arr_bool[0] == arr1[0]);
+        require(this.arr_bool[1] == arr1[1]);
+        require(this.arr_int[0] == arr2[0]);
+        require(this.arr_int[1] == arr2[1]);
+        require(this.arr_Ripemd160[0] == arr3[0]);
+        require(this.arr_Ripemd160[1] == arr3[1]);
+    }
+
+    public function testArrayInt(int[4] arr) {
+
+        require(arr[0] == 0);
+        require(arr[1] == 1321);
+        require(arr[2] == 243213);
+        require(arr[3] == 32132);
+    }
+
+    public function testArrayBool(bool[5] arr) {
+        require(this.arr_bool[0] == arr[0]);
+        require(arr[1]);
+        require(! arr[2]);
+        require(arr[3]);
+        require(arr[4]);
+    }
+
+    public function testArrayRipemd160(Ripemd160[2] arr) {
+        require(arr[0] == b'0176de27477fb7ffd7c99a7e9b931c22fd125c2b');
+        require(arr[1] == b'0176de27477fb7ffd7c99a7e9b931c22fd125c2b');
+    }
+
+    public function testArraySig(Sig[2] arr) {
+        require(arr[0] == b'30440220349eb89c004114bf238ea1b5db996b709675a9446aa33677f2848e839d64dfe2022046af3cf48ef13855594e7cc8c31771c5b159af19ea077b9c986beacf9a43791841');
+        require(arr[1] == b'30440220349eb89c004114bf238ea1b5db996b709675a9446aa33677f2848e839d64dfe2022046af3cf48ef13855594e7cc8c31771c5b159af19ea077b9c986beacf9a437918414444');
+    }
+
+}
+
+
+

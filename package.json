@@ -29,7 +29,7 @@
   "dependencies": {
     "axios": "^0.19.2",
     "glob": "^7.1.6",
-    "scryptlib": "^0.2.18",
+    "scryptlib": "^0.2.20-beta",
     "watch": "^1.0.2"
   },
   "devDependencies": {

@@ -6,11 +6,11 @@ contract TicTacToe {
 
     static int TURNLEN = 1;
     static int BOARDLEN = 9;
-    static byte EMPTY = '00';
-    static byte ALICE = '01';
-    static byte BOB = '02';
+    static bytes EMPTY = b'00';
+    static bytes ALICE = b'01';
+    static bytes BOB = b'02';
 
-	public function move(int n, Sig sig, int amount, SigHashPreimage txPreimage) {
+    public function move(int n, Sig sig, int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
         require(n >=0 && n < TicTacToe.BOARDLEN);
 
@@ -23,15 +23,15 @@ contract TicTacToe {
 		bytes board = scriptCode[boardStart : ];
         
         // not filled
-        require(board[n] == TicTacToe.EMPTY);
+        require(Util.getElemAt(board, n) == TicTacToe.EMPTY);
 
-        byte play = turn == 0 ? TicTacToe.ALICE : TicTacToe.BOB;
+        bytes play = turn == 0 ? TicTacToe.ALICE : TicTacToe.BOB;
         PubKey player = turn == 0 ? this.alice: this.bob;
         
         // ensure it's player's turn
         require(checkSig(sig, player));
         // make the move
-        board[n] = play;
+        board = Util.setElemAt(board, n, play);
 
         bytes outputs = b'';
         if (this.won(board, play)) {
@@ -62,16 +62,16 @@ contract TicTacToe {
     }
 
     // does play win after current move?
-    function won(bytes board, byte play): bool {
+    function won(bytes board, bytes play): bool {
         // three in a row, a column, or a diagnoal
-        return board[0] == play && board[1] == play && board[2] == play
-            || board[3] == play && board[4] == play && board[5] == play
-            || board[6] == play && board[7] == play && board[8] == play
-            || board[0] == play && board[3] == play && board[6] == play
-            || board[1] == play && board[4] == play && board[7] == play
-            || board[2] == play && board[5] == play && board[8] == play
-            || board[0] == play && board[4] == play && board[8] == play
-            || board[2] == play && board[4] == play && board[6] == play;
+        return Util.getElemAt(board, 0) == play && Util.getElemAt(board, 1) == play && Util.getElemAt(board, 2) == play
+            || Util.getElemAt(board, 3) == play && Util.getElemAt(board, 4) == play && Util.getElemAt(board, 5) == play
+            || Util.getElemAt(board, 6) == play && Util.getElemAt(board, 7) == play && Util.getElemAt(board, 8) == play
+            || Util.getElemAt(board, 0) == play && Util.getElemAt(board, 3) == play && Util.getElemAt(board, 6) == play
+            || Util.getElemAt(board, 1) == play && Util.getElemAt(board, 4) == play && Util.getElemAt(board, 7) == play
+            || Util.getElemAt(board, 2) == play && Util.getElemAt(board, 5) == play && Util.getElemAt(board, 8) == play
+            || Util.getElemAt(board, 0) == play && Util.getElemAt(board, 4) == play && Util.getElemAt(board, 8) == play
+            || Util.getElemAt(board, 2) == play && Util.getElemAt(board, 4) == play && Util.getElemAt(board, 6) == play;
     }
 
     // is board full?
@@ -81,7 +81,7 @@ contract TicTacToe {
 
         loop (9) {
             if (full) {
-                if (board[i] == TicTacToe.EMPTY) {
+                if (Util.getElemAt(board, i) == TicTacToe.EMPTY) {
                     full = false;
                 }
             }
