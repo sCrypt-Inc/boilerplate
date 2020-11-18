@@ -121,7 +121,9 @@ function compileContract(fileName) {
 
   const result = compile(
     { path: filePath },
-    { desc: true, outputDir: path.join(__dirname, 'deployments/fixture/autoGen') }
+    { desc: true, outputDir: path.join(__dirname, 'deployments/fixture/autoGen'),
+		  cmdPrefix: `node "${path.join(__dirname, '/node_modules/scryptc/scrypt.js')}"`
+    }
   );
 
   if (result.errors.length > 0) {
