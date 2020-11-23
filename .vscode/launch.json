@@ -18,6 +18,21 @@
         42
       ]
     },
+
+    {
+      "type": "scrypt",
+      "request": "launch",
+      "name": "Debug Demo bigint",
+      "program": "${workspaceFolder}/contracts/demo.scrypt",
+      "constructorParams": [
+        "0x304402205b131a25e067bd9d692e2e5b5ccef30f74a1c0dfb3dd19f97e8cd65871ec703f0220323e5747dccb2a8698ab02b61b6a39867b57b824c8569a6398fe2d8a2cd4ab3f41", //hex string
+        "30"   //dec string
+      ],
+      "entryMethod": "add",
+      "entryMethodParams": [
+        "182152777611009147713961771110418164117488507161007978051976495741490223813325323875256303997022886706984087636507589369803363244783178649156051633951688639959604528889695"
+      ]
+    },
     {
       "type": "scrypt",
       "request": "launch",
