@@ -1,0 +1,11 @@
+import "util.scrypt";
+
+contract Clone {
+
+  public function unlock(SigHashPreimage txPreimage) {
+    require(Tx.checkPreimage(txPreimage));
+
+    bytes output = Util.buildOutput(Util.scriptCode(txPreimage), Util.value(txPreimage));
+    require(hash256(output) == Util.hashOutputs(txPreimage));
+  }
+}
