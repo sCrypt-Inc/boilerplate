@@ -119,10 +119,13 @@ function compileContract(fileName) {
   const filePath = path.join(__dirname, 'contracts', fileName);
   console.log(`Compiling contract ${filePath} ...`);
 
+
+  var argv = require('minimist')(process.argv.slice(2));
+  
   const result = compile(
     { path: filePath },
     { desc: true, outputDir: path.join(__dirname, 'deployments/fixture/autoGen'),
-		  cmdPrefix: `node "${path.join(__dirname, '/node_modules/scryptc/scrypt.js')}"`
+		  cmdPrefix: argv.scryptc
     }
   );
 
