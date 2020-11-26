@@ -115,17 +115,36 @@ async function sendTx(tx) {
   return txid
 }
 
+function getCisCryptc()  {
+
+	switch (require('os').platform()) {
+		case "win32":
+			return  path.join(__dirname, "../compiler/scryptc/win32/scryptc.exe");
+		case "linux":
+      return  path.join(__dirname, "../compiler/scryptc/linux/scryptc");
+		case "darwin":
+      return  path.join(__dirname, "../compiler/scryptc/mac/scryptc");
+		default:
+			throw "sCrypt don't support your OS now";
+	}
+}
+
 function compileContract(fileName) {
   const filePath = path.join(__dirname, 'contracts', fileName);
   console.log(`Compiling contract ${filePath} ...`);
 
 
   var argv = require('minimist')(process.argv.slice(2));
-  
+
+  let scryptc = argv.scryptc;
+  if(argv.ci) {
+    scryptc = getCisCryptc();
+  }
+
   const result = compile(
     { path: filePath },
     { desc: true, outputDir: path.join(__dirname, 'deployments/fixture/autoGen'),
-		  cmdPrefix: argv.scryptc
+		  cmdPrefix: scryptc
     }
   );
 
