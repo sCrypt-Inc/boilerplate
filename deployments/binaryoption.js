@@ -28,7 +28,8 @@ const {
         const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, fee)
         lockingTx.outputs[0].setScript(binaryOption.lockingScript)
         lockingTx.sign(privateKey)
-        let lockingTxid = await sendTx(lockingTx)
+        //let lockingTxid = await sendTx(lockingTx)
+        let lockingTxid = lockingTx.id
         console.log('binaryoption txid: ', lockingTxid)
 
         let prevLockingScript = binaryOption.lockingScript.toASM();
