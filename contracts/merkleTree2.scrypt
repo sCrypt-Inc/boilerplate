@@ -1,0 +1,71 @@
+contract MerkleTree {
+    // TODO second preimage attack
+    static function calculateMerkleRoot(bytes leaf, bytes merklePath) : bytes {
+        int i = 0;
+        int merklePathLength = len(merklePath) / 33;
+        bytes merkleValue = leaf;
+        loop (5) {
+            if (i < merklePathLength) {
+                int left = unpack(merklePath[i * 33 + 32 : i * 33 + 33]);
+                if (left == 2) {
+                    merkleValue = sha256(merkleValue);
+                }
+                else if (left) {
+                    merkleValue = sha256(merkleValue + merklePath[i * 33 : i * 33 + 32]);
+                } else {
+                    merkleValue = sha256(merklePath[i * 33 : i * 33 + 32] + merkleValue);
+                }
+                i = i + 1;
+            }
+        }
+        return merkleValue;
+    }
+
+    static function verifyLeaf(bytes leaf, bytes merklePath, bytes merkleRoot) : bool {
+        bytes merkleValue = MerkleTree.calculateMerkleRoot(leaf, merklePath);
+        return merkleValue == merkleRoot;
+    }
+
+    static function verifyTwoLeafPath(
+        bytes leafA, 
+        bytes leafAMerklePath, 
+        bytes leafB, 
+        bytes leafBMerklePath, 
+        bytes mergeMerklePath, 
+        bool leafAIsLeft, 
+        bytes merkleRoot) : bool {
+        bytes leafARoot = MerkleTree.calculateMerkleRoot(leafA, leafAMerklePath);
+
+        bytes leafBRoot = MerkleTree.calculateMerkleRoot(leafB, leafBMerklePath); 
+
+        bytes mergeNode = b'';
+        if (leafAIsLeft) {
+            mergeNode = sha256(leafARoot + leafBRoot);
+        }
+        else {
+            mergeNode = sha256(leafBRoot + leafARoot);
+        }
+        return MerkleTree.verifyLeaf(mergeNode, mergeMerklePath, merkleRoot);
+    }
+
+    static function calculateTwoLeafMerkleRoot(
+        bytes leafA, 
+        bytes leafAMerklePath, 
+        bytes leafB, 
+        bytes leafBMerklePath, 
+        bytes mergeMerklePath, 
+        bool leafAIsLeft): bytes {
+
+        bytes leafARoot = MerkleTree.calculateMerkleRoot(leafA, leafAMerklePath);
+        bytes leafBRoot = MerkleTree.calculateMerkleRoot(leafB, leafBMerklePath);
+
+        bytes mergeNode = b'';
+        if (leafAIsLeft) {
+            mergeNode = sha256(leafARoot + leafBRoot);
+        }
+        else {
+            mergeNode = sha256(leafBRoot + leafARoot);
+        }
+        return MerkleTree.calculateMerkleRoot(mergeNode, mergeMerklePath); 
+    }
+}
