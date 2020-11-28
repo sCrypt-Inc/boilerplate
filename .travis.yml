@@ -11,3 +11,5 @@ before_install:
 
 script:
   - git clone -b master https://github.com/sCrypt-Inc/compiler_dist.git compiler
+  - npm install
+  - npm test -- --ci=true
