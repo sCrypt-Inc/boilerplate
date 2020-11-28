@@ -5,8 +5,11 @@ const {
 } = require('fs')
 const {
   bsv,
-  compile
+  compile,
 } = require('scryptlib')
+const {
+  getPlatformScryptc,
+} = require('scryptlib/dist/compilerWrapper')
 const { exit } = require('process');
 
 const Signature = bsv.crypto.Signature
@@ -116,17 +119,8 @@ async function sendTx(tx) {
 }
 
 function getCisCryptc()  {
-
-	switch (require('os').platform()) {
-		case "win32":
-			return  path.join(__dirname, "../compiler/scryptc/win32/scryptc.exe");
-		case "linux":
-      return  path.join(__dirname, "../compiler/scryptc/linux/scryptc");
-		case "darwin":
-      return  path.join(__dirname, "../compiler/scryptc/mac/scryptc");
-		default:
-			throw "sCrypt don't support your OS now";
-	}
+  let dir = existsSync('./compiler') ? "./" : "../";
+	return  path.join(__dirname, `${dir}/${getPlatformScryptc()}`);
 }
 
 function compileContract(fileName) {
