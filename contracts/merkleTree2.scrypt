@@ -3,6 +3,7 @@ contract MerkleTree {
     static function calculateMerkleRoot(bytes leaf, bytes merklePath) : bytes {
         int i = 0;
         int merklePathLength = len(merklePath) / 33;
+        require(merklePathLength <= 5);
         bytes merkleValue = leaf;
         loop (5) {
             if (i < merklePathLength) {

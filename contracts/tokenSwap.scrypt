@@ -362,11 +362,11 @@ contract TokenSwap {
         bool poolIsLeft,
         int bsvAmount) {
         // check preimage with sighash_all
-        //SigHashType sigHashType = SigHash.SINGLE | SigHash.FORKID;
-        //require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        SigHashType sigHashType = SigHash.SINGLE | SigHash.FORKID;
+        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
 
-        //// check sender sig
-        //require(checkSig(senderSig, sender));
+        // check sender sig
+        require(checkSig(senderSig, sender));
 
         // get the tokenMerkleRoot
         bytes lockingScript = Util.scriptCode(txPreimage);
