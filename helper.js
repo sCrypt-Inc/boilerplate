@@ -116,14 +116,15 @@ async function sendTx(tx) {
 }
 
 function getCisCryptc()  {
+  let compiler = existsSync('./compiler') ? "./compiler" : "../compiler";
 
 	switch (require('os').platform()) {
 		case "win32":
-			return  path.join(__dirname, "../compiler/scryptc/win32/scryptc.exe");
+			return  path.join(__dirname, `${compiler}/scryptc/win32/scryptc.exe`);
 		case "linux":
-      return  path.join(__dirname, "../compiler/scryptc/linux/scryptc");
+      return  path.join(__dirname, `${compiler}/scryptc/linux/scryptc`);
 		case "darwin":
-      return  path.join(__dirname, "../compiler/scryptc/mac/scryptc");
+      return  path.join(__dirname, `${compiler}/scryptc/mac/scryptc`);
 		default:
 			throw "sCrypt don't support your OS now";
 	}
