@@ -4,7 +4,7 @@ const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, R
 const {
   inputIndex,
   inputSatoshis,
-  tx,
+  newTx,
   compileContract
 } = require('../../helper');
 
@@ -15,26 +15,26 @@ const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 
 describe('Deposit', ()=>{
   describe('Without change', () => {
-    let faucet, preimage, result, tx_;
+    let faucet, preimage, result, tx;
     const depositAmount = 100000;
     const outputAmount = depositAmount + inputSatoshis;
   
     before(() => {
-      tx_ = bsv.Transaction.shallowCopy(tx)
       const Faucet = buildContractClass(compileContract('faucet.scrypt'))
       faucet = new Faucet();
       faucet.setDataPart(num2bin(1602553516, 4));
   
-      tx_.addOutput(new bsv.Transaction.Output({
+      tx = newTx()
+      tx.addOutput(new bsv.Transaction.Output({
         script: faucet.lockingScript,
         satoshis: outputAmount
       }))
   
-      preimage = getPreimage(tx_, faucet.lockingScript.toASM(), inputSatoshis);
+      preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis);
   
       // set txContext for verification
       faucet.txContext = {
-        tx: tx_,
+        tx: tx,
         inputIndex,
         inputSatoshis
       }
@@ -57,31 +57,31 @@ describe('Deposit', ()=>{
   });
   
   describe('With change', () => {
-    let faucet, preimage, result, tx_;
+    let faucet, preimage, result, tx;
   
     const depositAmount = 100000;
     const outputAmount = depositAmount + inputSatoshis;
     const changeAmount = 547;
   
     before(() => {
-      tx_ = bsv.Transaction.shallowCopy(tx)
+      tx = newTx()
       const Faucet = buildContractClass(compileContract('faucet.scrypt'))
       faucet = new Faucet();
       faucet.setDataPart(num2bin(1602553516, 4));
   
-      tx_.addOutput(new bsv.Transaction.Output({
+      tx.addOutput(new bsv.Transaction.Output({
         script: faucet.lockingScript,
         satoshis: outputAmount
       }));
   
-      tx_.addOutput(new bsv.Transaction.Output({
+      tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()),
         satoshis: changeAmount
       }));
   
-      preimage = getPreimage(tx_, faucet.lockingScript.toASM(), inputSatoshis)
+      preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis)
       faucet.txContext = {
-        tx: tx_,
+        tx: tx,
         inputIndex,
         inputSatoshis
       }
@@ -100,7 +100,7 @@ describe('Deposit', ()=>{
 });
 
 describe('Withdraw', () => {
-  let faucet, preimage, result, tx_;
+  let faucet, preimage, result, tx;
   const withdrawAmount = 2000000;
   const fee = 3000;
   const inputSatoshis = 10000000;
@@ -108,30 +108,30 @@ describe('Withdraw', () => {
   const matureTime = 1602553516;
 
   before(() => {
-    tx_ = bsv.Transaction.shallowCopy(tx)
+    tx = newTx();
     const Faucet = buildContractClass(compileContract('faucet.scrypt'))
     faucet = new Faucet();
     faucet.setDataPart(num2bin(matureTime, 4));
   });
 
   it('Everything is OK, should successed', ()=>{
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(faucet.codePart.toASM() + ' ' + num2bin(matureTime + 300, 4)),
       satoshis: outputAmount
     }));
 
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()),
       satoshis: withdrawAmount
     }));
-    tx_.inputs[0].sequenceNumber = 0xFFFFFFFE;
-    tx_.nLockTime = matureTime + 300;
+    tx.inputs[0].sequenceNumber = 0xFFFFFFFE;
+    tx.nLockTime = matureTime + 300;
 
-    preimage = getPreimage(tx_, faucet.lockingScript.toASM(), inputSatoshis);
+    preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis);
 
     // set txContext for verification
     faucet.txContext = {
-      tx: tx_,
+      tx: tx,
       inputIndex,
       inputSatoshis
     }
@@ -140,23 +140,23 @@ describe('Withdraw', () => {
   });
 
   it('The increase of matureTime is not 300, should fail', ()=>{
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(faucet.codePart.toASM() + ' ' + num2bin(matureTime + 299, 4)),
       satoshis: outputAmount
     }));
 
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()),
       satoshis: withdrawAmount
     }));
-    tx_.inputs[0].sequenceNumber = 0xFFFFFFFE;
-    tx_.nLockTime = matureTime + 299;
+    tx.inputs[0].sequenceNumber = 0xFFFFFFFE;
+    tx.nLockTime = matureTime + 299;
 
-    preimage = getPreimage(tx_, faucet.lockingScript.toASM(), inputSatoshis);
+    preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis);
 
     // set txContext for verification
     faucet.txContext = {
-      tx: tx_,
+      tx: tx,
       inputIndex,
       inputSatoshis
     };
@@ -166,23 +166,23 @@ describe('Withdraw', () => {
   });
 
   it('matureTime != nLockTime, should fail', ()=>{
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(faucet.codePart.toASM() + ' ' + num2bin(matureTime + 299, 4)),
       satoshis: outputAmount
     }));
 
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()),
       satoshis: withdrawAmount
     }));
-    tx_.inputs[0].sequenceNumber = 0xFFFFFFFE;
-    tx_.nLockTime = matureTime + 300;
+    tx.inputs[0].sequenceNumber = 0xFFFFFFFE;
+    tx.nLockTime = matureTime + 300;
 
-    preimage = getPreimage(tx_, faucet.lockingScript.toASM(), inputSatoshis);
+    preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis);
 
     // set txContext for verification
     faucet.txContext = {
-      tx: tx_,
+      tx: tx,
       inputIndex,
       inputSatoshis
     };

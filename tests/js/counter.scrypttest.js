@@ -4,13 +4,13 @@ const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage } 
 const {
   inputIndex,
   inputSatoshis,
-  tx,
+  newTx,
   DataLen,
   compileContract
 } = require('../../helper');
 
 // make a copy since it will be mutated
-const tx_ = bsv.Transaction.shallowCopy(tx)
+const tx = newTx();
 const outputAmount = 222222
 
 describe('Test sCrypt contract Counter In Javascript', () => {
@@ -25,16 +25,16 @@ describe('Test sCrypt contract Counter In Javascript', () => {
 
     const newLockingScript = [counter.codePart.toASM(), num2bin(1, DataLen)].join(' ')
 
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),
       satoshis: outputAmount
     }))
 
-    preimage = getPreimage(tx_, counter.lockingScript.toASM(), inputSatoshis)
+    preimage = getPreimage(tx, counter.lockingScript.toASM(), inputSatoshis)
 
     // set txContext for verification
     counter.txContext = {
-      tx: tx_,
+      tx: tx,
       inputIndex,
       inputSatoshis
     }

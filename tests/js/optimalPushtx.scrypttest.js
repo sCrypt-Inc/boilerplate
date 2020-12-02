@@ -5,13 +5,13 @@ const { bsv, buildContractClass, getPreimage, toHex, SigHashPreimage } = require
 const {
     inputIndex,
     inputSatoshis,
-    tx,
+    newTx,
     compileContract,
     sighashType2Hex,
 } = require("../../helper");
 
 const Hash = bsv.crypto.Hash
-const tx_ = bsv.Transaction.shallowCopy(tx)
+const tx = newTx();
 
 const Signature = bsv.crypto.Signature
 const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
@@ -34,7 +34,7 @@ describe('Test sCrypt contract OptimalPushTx In Javascript', () => {
         
         // set txContext for verification
         test.txContext = {
-            tx: tx_,
+            tx: tx,
             inputIndex,
             inputSatoshis
         }
@@ -43,8 +43,8 @@ describe('Test sCrypt contract OptimalPushTx In Javascript', () => {
     it('should return true', () => {
         for (i = 0; ; i++) {
             // malleate tx and thus sighash to satisfy constraint
-            tx_.nLockTime = i
-            const preimage_ = getPreimage(tx_, test.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
+            tx.nLockTime = i
+            const preimage_ = getPreimage(tx, test.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
             preimage = toHex(preimage_)
             const h = Hash.sha256sha256(Buffer.from(preimage, 'hex'))
             const msb = h.readUInt8()

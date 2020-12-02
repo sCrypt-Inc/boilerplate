@@ -1,10 +1,10 @@
 const { expect } = require('chai');
 const { buildContractClass, getPreimage, toHex, SigHashPreimage } = require('scryptlib');
 
-const { tx, compileContract, inputIndex, inputSatoshis } = require('../../helper');
+const { newTx, compileContract, inputIndex, inputSatoshis } = require('../../helper');
 
 describe('Test sCrypt contract Util In Javascript', () => {
-    let util, preimage, result
+    let util, preimage, result, tx = newTx()
 
     before(() => {
         const Util = buildContractClass(compileContract('util.scrypt'));

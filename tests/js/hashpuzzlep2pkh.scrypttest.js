@@ -4,7 +4,7 @@
 const path = require('path');
 const { expect } = require('chai');
 const { bsv, buildContractClass, signTx, toHex, Ripemd160, Sig, PubKey, Sha256, Bytes } = require('scryptlib');
-const { inputIndex, inputSatoshis, tx, compileContract } = require('../../helper');
+const { inputIndex, inputSatoshis, newTx, compileContract } = require('../../helper');
 
 // Test keys
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
@@ -18,10 +18,10 @@ const data =  dataBuffer
 const sha256Data = bsv.crypto.Hash.sha256(dataBuffer);
 
 describe('Test sCrypt contract HashPuzzleP2PKH In Javascript', () => {
-  let hashPuzzleP2PKH, sig, result
+  let hashPuzzleP2PKH, sig, result, tx = newTx();
 
   before(() => {
-    const HashPuzzleP2PKH = buildContractClass(compileContract('hashpuzzlep2pkh.scrypt'))
+    HashPuzzleP2PKH = buildContractClass(compileContract('hashpuzzlep2pkh.scrypt'))
     hashPuzzleP2PKH = new HashPuzzleP2PKH(new Ripemd160(toHex(pkh)), new Sha256(toHex(sha256Data)))
     hashPuzzleP2PKH.txContext = { tx, inputIndex, inputSatoshis }
   });

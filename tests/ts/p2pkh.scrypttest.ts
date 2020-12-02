@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { buildContractClass, signTx, toHex, bsv, Ripemd160, PubKey, Sig, VerifyResult } from 'scryptlib';
-import { loadDesc } from "../../helper";
+import { loadDesc, newTx } from "../../helper";
 
 /**
  * an example test for contract containing signature verification
@@ -16,6 +16,7 @@ describe('Test sCrypt contract DemoP2PKH In Typescript', () => {
   let demo: any;
   let sig: any;
   let result: VerifyResult
+  let tx:any = newTx();
 
   before(() => {
     const DemoP2PKH = buildContractClass(loadDesc('p2pkh_desc.json'))

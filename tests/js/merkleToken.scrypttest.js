@@ -12,7 +12,7 @@ const {
   PubKey,
   signTx
 } = require("scryptlib")
-const { inputIndex, inputSatoshis, tx, compileContract, dummyTxId } = require("../../helper")
+const { inputIndex, inputSatoshis, newTx, compileContract, dummyTxId } = require("../../helper")
 const crypto = require("crypto")
 
 function sha256(x) {
@@ -33,10 +33,10 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
 
   const Token = buildContractClass(compileContract("merkleToken.scrypt"))
 
-  let token, lockingScriptCodePart, tx_
+  let token, lockingScriptCodePart, tx
 
   beforeEach(() => {
-    tx_ = new bsv.Transaction()
+    tx = newTx();
     token = new Token(satPrice)
 
     lockingScriptCodePart = token.codePart.toASM()
@@ -51,7 +51,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
 
     token.setDataPart(sha256(sha256(lastEntry).repeat(2)))
 
-    tx_.addInput(
+    tx.addInput(
       new bsv.Transaction.Input({
         prevTxId: dummyTxId,
         outputIndex: 0,
@@ -62,7 +62,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     )
 
     // token output
-    tx_.addOutput(
+    tx.addOutput(
       new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript),
         satoshis: inputSatoshis + satPrice * amount
@@ -70,16 +70,16 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     )
 
     // change output
-    tx_.addOutput(
+    tx.addOutput(
       new bsv.Transaction.Output({
         script: bsv.Script.buildPublicKeyHashOut(publicKey.toAddress()),
         satoshis: changeSats
       })
     )
 
-    const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
+    const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
 
-    token.txContext = { tx: tx_, inputIndex, inputSatoshis }
+    token.txContext = { tx: tx, inputIndex, inputSatoshis }
     const result = token
       .buy(
         new SigHashPreimage(toHex(preimage)),
@@ -106,7 +106,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
 
     token.setDataPart(sha256(sha256(oldEntry).repeat(2)))
 
-    tx_.addInput(
+    tx.addInput(
       new bsv.Transaction.Input({
         prevTxId: dummyTxId,
         outputIndex: 0,
@@ -117,7 +117,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     )
 
     // token output
-    tx_.addOutput(
+    tx.addOutput(
       new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript),
         satoshis: inputSatoshis + satPrice * amount
@@ -125,16 +125,16 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     )
 
     // change output
-    tx_.addOutput(
+    tx.addOutput(
       new bsv.Transaction.Output({
         script: bsv.Script.buildPublicKeyHashOut(publicKey.toAddress()),
         satoshis: changeSats
       })
     )
 
-    const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
+    const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
 
-    token.txContext = { tx: tx_, inputIndex, inputSatoshis }
+    token.txContext = { tx: tx, inputIndex, inputSatoshis }
     const result = token
       .buyMore(
         new SigHashPreimage(toHex(preimage)),
@@ -160,7 +160,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
 
     token.setDataPart(sha256(sha256(oldEntry).repeat(2)))
 
-    tx_.addInput(
+    tx.addInput(
       new bsv.Transaction.Input({
         prevTxId: dummyTxId,
         outputIndex: 0,
@@ -171,7 +171,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     )
 
     // token output
-    tx_.addOutput(
+    tx.addOutput(
       new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript),
         satoshis: inputSatoshis - satPrice * amount
@@ -179,18 +179,18 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     )
 
     // payout output
-    tx_.addOutput(
+    tx.addOutput(
       new bsv.Transaction.Output({
         script: bsv.Script.buildPublicKeyHashOut(publicKey.toAddress()),
         satoshis: satPrice * amount
       })
     )
 
-    const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis)
+    const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis)
 
-    token.txContext = { tx: tx_, inputIndex, inputSatoshis }
+    token.txContext = { tx: tx, inputIndex, inputSatoshis }
 
-    const sig = signTx(tx_, privateKey, token.lockingScript.toASM(), inputSatoshis)
+    const sig = signTx(tx, privateKey, token.lockingScript.toASM(), inputSatoshis)
 
     const result = token
       .sell(
