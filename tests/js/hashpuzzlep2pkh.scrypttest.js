@@ -17,8 +17,10 @@ const dataBuffer = Buffer.from("abc");
 const data =  dataBuffer
 const sha256Data = bsv.crypto.Hash.sha256(dataBuffer);
 
+const tx = newTx();
+
 describe('Test sCrypt contract HashPuzzleP2PKH In Javascript', () => {
-  let hashPuzzleP2PKH, sig, result, tx = newTx();
+  let hashPuzzleP2PKH, sig, result
 
   before(() => {
     HashPuzzleP2PKH = buildContractClass(compileContract('hashpuzzlep2pkh.scrypt'))

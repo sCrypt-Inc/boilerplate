@@ -1,8 +1,7 @@
 const { expect } = require('chai');
 const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, PubKey, SigHashPreimage, Sig } = require('scryptlib');
-const { inputIndex, inputSatoshis, newTx, compileContract, DataLen, dummyTxId } = require('../../helper');
+const { inputIndex, inputSatoshis, compileContract, DataLen, dummyTxId } = require('../../helper');
 
-// make a copy since it will be mutated
 
 const outputAmount = 22222
 
@@ -30,7 +29,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
   it('should succeed when one new token is issued', () => {
     token.setDataPart(num2bin(currTokenId, DataLen) + toHex(issuer) + actionIssue)
     const testIssue = (privKey, receiver, newIssuer = issuer, nextTokenId = currTokenId + 1, issuedTokenId = currTokenId) => {
-      let tx = newTx();
+      const tx = new bsv.Transaction()
 
       tx.addInput(new bsv.Transaction.Input({
         prevTxId: dummyTxId,
@@ -87,7 +86,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
     token.setDataPart(num2bin(currTokenId, DataLen) + toHex(sender) + actionTransfer)
 
     const testTransfer = (privKey, receiver, receivedTokenId = currTokenId) => {
-      let tx = newTx();
+      const tx = new bsv.Transaction()
 
       tx.addInput(new bsv.Transaction.Input({
         prevTxId: dummyTxId,
@@ -129,7 +128,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
     token.setDataPart(num2bin(currTokenId, DataLen) + toHex(sender) + actionTransfer)
 
     const testIssue = (privKey, receiver, newIssuer = issuer, nextTokenId = currTokenId + 1, issuedTokenId = currTokenId) => {
-      let tx = newTx();
+      const tx = new bsv.Transaction()
 
       tx.addInput(new bsv.Transaction.Input({
         prevTxId: dummyTxId,

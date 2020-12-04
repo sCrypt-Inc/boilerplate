@@ -6,8 +6,9 @@ const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 
+const tx = newTx();
 describe('Test sCrypt contract Asm In Javascript', () => {
-  let asm, result, tx = newTx()
+  let asm, result
 
   before(() => {
     const Asm = buildContractClass(compileContract('asm.scrypt'))

@@ -2,7 +2,6 @@ const { expect } = require('chai');
 const { bsv, buildContractClass, toHex, getPreimage, num2bin, signTx, PubKey, Bytes, Sig, SigHashPreimage,Ripemd160 } = require('scryptlib');
 const { inputIndex, inputSatoshis, newTx, compileContract, DataLen, dummyTxId, reversedDummyTxId } = require('../../helper');
 
-// make a copy since it will be mutated
 const outputAmount = 22222
     
 describe('Test sCrypt contract UTXO Token In Javascript', () => {

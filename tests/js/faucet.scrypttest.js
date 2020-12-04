@@ -8,7 +8,7 @@ const {
   compileContract
 } = require('../../helper');
 
-// make a copy since it will be mutated
+
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())

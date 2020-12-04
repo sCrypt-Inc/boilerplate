@@ -6,7 +6,7 @@ const { bsv, buildContractClass, Ripemd160, toHex, Bytes, getPreimage, SigHashPr
  */
 const { compileContract, inputIndex, inputSatoshis, dummyTxId, newTx, DataLen } = require('../../helper');
 
-// make a copy since it will be mutated
+
 const tx = newTx();
 const outputAmount = 222222
 

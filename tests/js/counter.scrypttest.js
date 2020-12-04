@@ -9,7 +9,6 @@ const {
   compileContract
 } = require('../../helper');
 
-// make a copy since it will be mutated
 const tx = newTx();
 const outputAmount = 222222
 

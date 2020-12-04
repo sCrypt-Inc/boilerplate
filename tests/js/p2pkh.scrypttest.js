@@ -10,9 +10,10 @@ const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
+const tx = newTx();
 
 describe('Test sCrypt contract DemoP2PKH In Javascript', () => {
-  let demo, sig, context, tx = newTx()
+  let demo, sig, context
 
   before(() => {
     const DemoP2PKH = buildContractClass(compileContract('p2pkh.scrypt'))

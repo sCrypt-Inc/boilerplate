@@ -2,7 +2,6 @@ const { expect } = require('chai');
 const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, Sig, PubKey, SigHashPreimage } = require('scryptlib');
 const { inputIndex, inputSatoshis, newTx, compileContract, DataLen } = require('../../helper');
 
-// make a copy since it will be mutated
 const tx = newTx();
 
 const outputAmount = 222222

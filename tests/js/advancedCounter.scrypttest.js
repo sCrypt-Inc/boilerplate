@@ -8,7 +8,7 @@ const {
   compileContract
 } = require('../../helper');
 
-
+const tx = newTx();
 
 // Test keys
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
@@ -22,7 +22,7 @@ const outputAmount = 222222
 const changeAmount = 111111
 
 describe('Test sCrypt contract Counter In Javascript', () => {
-  let counter, preimage, result, tx = newTx();
+  let counter, preimage, result
 
   before(() => {
     const Counter = buildContractClass(compileContract('advancedCounter.scrypt'))

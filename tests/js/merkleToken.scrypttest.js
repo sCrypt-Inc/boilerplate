@@ -36,7 +36,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
   let token, lockingScriptCodePart, tx
 
   beforeEach(() => {
-    tx = newTx();
+    tx = new bsv.Transaction();
     token = new Token(satPrice)
 
     lockingScriptCodePart = token.codePart.toASM()

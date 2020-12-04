@@ -6,9 +6,9 @@ const { bsv, buildContractClass, Ripemd160, toHex, Bytes, getPreimage, SigHashPr
  */
 const { compileContract, inputIndex, inputSatoshis, dummyTxId, newTx } = require('../../helper');
 
-
+const tx = newTx();
 describe('Test sCrypt contract P2SH In Javascript', () => {
-  let demoContract, p2sh, preimage, tx = newTx(), context
+  let demoContract, p2sh, preimage, context
 
   before(() => {
     const P2SH = buildContractClass(compileContract('p2sh.scrypt'))
