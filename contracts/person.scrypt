@@ -1,0 +1,42 @@
+struct Person {
+    bytes addr;
+    bool isMale;
+    int age;
+}
+
+struct Block {
+    bytes hash;
+    bytes header;
+    int time;
+}
+
+contract Main {
+    Person person;
+    int x;
+
+    constructor(Person some, int x) {
+        this.person = some;
+        this.person.age = x;
+        this.x = x;
+    }
+
+    public function main(Person p, int x, bool isMale) {
+
+        require(p.isMale == isMale);
+        require(p.age > x);
+        require(! p.isMale);
+
+        Person c = this.incAge(p);
+        require(c.age == 34);
+        require(p.age == 33);
+
+        p = this.incAge(p);
+        require(p.age == 34);
+    }
+
+    function incAge(Person p1) : Person {
+        p1.age = p1.age + 1;
+        return p1;
+    }
+}
+
