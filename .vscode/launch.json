@@ -132,24 +132,60 @@
       "type": "scrypt",
       "request": "launch",
       "name": "Debug struct",
-      "program": "${workspaceFolder}/contracts/person.scrypt",
+      "program": "${workspaceFolder}/contracts/structdemo.scrypt",
       "constructorParams": [
         {
+          "name": "b'7361746f736869206e616b616d6f746f'",
           "addr": "b'68656c6c6f20776f726c6421'",
           "age": 33,
           "isMale": false
-        },
-        18
+        }
       ],
       "entryMethod": "main",
       "entryMethodParams": [
         {
+          "name": "b'7361746f736869206e616b616d6f746f'",
           "addr": "b'68656c6c6f20776f726c6421'",
           "age": 33,
           "isMale": false
-        },
-        10,
-        false
+        }
+      ]
+    },
+    {
+      "type": "scrypt",
+      "request": "launch",
+      "name": "Debug arraydemo",
+      "program": "${workspaceFolder}/contracts/arraydemo.scrypt",
+      "constructorParams": [
+        33,
+        [
+            true,
+            false
+        ],
+        [
+            3311,
+            333
+        ],
+        [
+            "Ripemd160(b'2235c953af7c83cffa6f192477fb431941400162')",
+            "Ripemd160(b'0176de27477fb7ffd7c99a7e9b931c22fd125c2b')"
+        ]
+      ],
+      "entryMethod": "testArrayConstructor",
+      "entryMethodParams": [
+        33,
+        [
+            true,
+            false
+        ],
+        [
+            3311,
+            333
+        ],
+        [
+            "Ripemd160(b'2235c953af7c83cffa6f192477fb431941400162')",
+            "Ripemd160(b'0176de27477fb7ffd7c99a7e9b931c22fd125c2b')"
+        ]
       ]
     }
   ]
