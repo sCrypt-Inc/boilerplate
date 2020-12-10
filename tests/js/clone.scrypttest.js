@@ -4,10 +4,10 @@ const { bsv, buildContractClass, Ripemd160, toHex, Bytes, getPreimage, SigHashPr
 /**
  * an example test for contract containing signature verification
  */
-const { compileContract, inputIndex, inputSatoshis, dummyTxId, tx, DataLen } = require('../../helper');
+const { compileContract, inputIndex, inputSatoshis, dummyTxId, newTx, DataLen } = require('../../helper');
 
-// make a copy since it will be mutated
-const tx_ = bsv.Transaction.shallowCopy(tx)
+
+const tx = newTx();
 const outputAmount = 222222
 
 describe('Test sCrypt contract Clone In Javascript', () => {
@@ -23,14 +23,14 @@ describe('Test sCrypt contract Clone In Javascript', () => {
 
     const newLockingScript = clone.lockingScript.toASM()
 
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),
       satoshis: inputSatoshis
     }))
 
-    preimage = getPreimage(tx_, clone.lockingScript.toASM(), inputSatoshis)
+    preimage = getPreimage(tx, clone.lockingScript.toASM(), inputSatoshis)
 
-    context = { tx: tx_, inputSatoshis, inputIndex }
+    context = { tx: tx, inputSatoshis, inputIndex }
 
     const unlockFn = clone.unlock(new SigHashPreimage(toHex(preimage)))
     result = unlockFn.verify(context)

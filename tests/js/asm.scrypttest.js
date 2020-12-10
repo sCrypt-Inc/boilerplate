@@ -1,11 +1,12 @@
 const { expect } = require('chai');
 const { bsv, buildContractClass, Ripemd160, Sig, PubKey, signTx, toHex, Bytes } = require('scryptlib');
-const { compileContract, inputIndex, inputSatoshis, tx } = require('../../helper');
+const { compileContract, inputIndex, inputSatoshis, newTx } = require('../../helper');
 
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 
+const tx = newTx();
 describe('Test sCrypt contract Asm In Javascript', () => {
   let asm, result
 

@@ -30,13 +30,17 @@ const dummyTxId = 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58
 const reversedDummyTxId = '5884e5db9de218238671572340b207ee85b628074e7e467096c267266baf77a4'
 const sighashType2Hex = s => s.toString(16)
 
-const utxo = {
-  txId: dummyTxId,
-  outputIndex: 0,
-  script: '', // placeholder
-  satoshis: inputSatoshis
+function newTx() {
+  const utxo = {
+    txId: 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458',
+    outputIndex: 0,
+    script: '',   // placeholder
+    satoshis: inputSatoshis
+  };
+  return new bsv.Transaction().from(utxo);
 }
-const tx = new bsv.Transaction().from(utxo)
+
+
 
 // reverse hexStr byte order
 function reverseEndian(hexStr) {
@@ -184,7 +188,7 @@ function showError(error) {
 module.exports = {
   inputIndex,
   inputSatoshis,
-  tx,
+  newTx,
   createLockingTx,
   createUnlockingTx,
   DataLen,

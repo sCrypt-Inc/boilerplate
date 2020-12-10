@@ -4,12 +4,11 @@ const { bsv, buildContractClass, getPreimage, toHex, serializeState, deserialize
 const {
   inputIndex,
   inputSatoshis,
-  tx,
+  newTx,
   compileContract
 } = require('../../helper');
 
-// make a copy since it will be mutated
-const tx_ = bsv.Transaction.shallowCopy(tx)
+const tx = newTx();
 const outputAmount = 222222
 
 describe('Test sCrypt contract StateSerializer In Javascript', () => {
@@ -53,16 +52,16 @@ describe('Test sCrypt contract StateSerializer In Javascript', () => {
     // console.log(deStats[2].toBoolean())
     // console.log(deStats[3].toHex())
 
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),
       satoshis: outputAmount
     }))
 
-    preimage = getPreimage(tx_, counter.lockingScript.toASM(), inputSatoshis)
+    preimage = getPreimage(tx, counter.lockingScript.toASM(), inputSatoshis)
 
     // set txContext for verification
     counter.txContext = {
-      tx: tx_,
+      tx: tx,
       inputIndex,
       inputSatoshis
     }

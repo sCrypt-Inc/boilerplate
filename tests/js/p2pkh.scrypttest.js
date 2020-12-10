@@ -4,12 +4,13 @@ const { bsv, buildContractClass, Ripemd160, Sig, PubKey, signTx, toHex } = requi
 /**
  * an example test for contract containing signature verification
  */
-const { compileContract, inputIndex, inputSatoshis, tx } = require('../../helper');
+const { compileContract, inputIndex, inputSatoshis, newTx } = require('../../helper');
 
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
+const tx = newTx();
 
 describe('Test sCrypt contract DemoP2PKH In Javascript', () => {
   let demo, sig, context

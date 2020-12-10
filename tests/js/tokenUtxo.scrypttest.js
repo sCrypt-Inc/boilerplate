@@ -1,9 +1,7 @@
 const { expect } = require('chai');
 const { bsv, buildContractClass, toHex, getPreimage, num2bin, signTx, PubKey, Bytes, Sig, SigHashPreimage,Ripemd160 } = require('scryptlib');
-const { inputIndex, inputSatoshis, tx, compileContract, DataLen, dummyTxId, reversedDummyTxId } = require('../../helper');
+const { inputIndex, inputSatoshis, newTx, compileContract, DataLen, dummyTxId, reversedDummyTxId } = require('../../helper');
 
-// make a copy since it will be mutated
-var tx_ = bsv.Transaction.shallowCopy(tx)
 const outputAmount = 22222
     
 describe('Test sCrypt contract UTXO Token In Javascript', () => {
@@ -16,7 +14,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
   const privateKey3 = new bsv.PrivateKey.fromRandom('testnet')
   const publicKey3 = bsv.PublicKey.fromPrivateKey(privateKey3)
-    
+
   before(() => {
     const Token = buildContractClass(compileContract('tokenUtxo.scrypt'))
     token = new Token()
@@ -26,36 +24,37 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
   });
 
   it('should succeed when one token is split into two', () => {
+
     // split 100 tokens
     token.setDataPart(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
     
     const testSplit = (privKey, balance0, balance1, balanceInput0 = balance0, balanceInput1 = balance1) => {
-      tx_ = new bsv.Transaction()
+      let tx = new bsv.Transaction()
 
-      tx_.addInput(new bsv.Transaction.Input({
+      tx.addInput(new bsv.Transaction.Input({
         prevTxId: dummyTxId,
         outputIndex: 0,
         script: ''
       }), bsv.Script.fromASM(token.lockingScript.toASM()), inputSatoshis)
 
       const newLockingScript0 = [lockingScriptCodePart, toHex(publicKey2) + num2bin(0, DataLen) + num2bin(balance0, DataLen)].join(' ')
-      tx_.addOutput(new bsv.Transaction.Output({
+      tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
       }))
 
       if (balance1 > 0) {
         const newLockingScript1 = [lockingScriptCodePart, toHex(publicKey3) + num2bin(0, DataLen) + num2bin(balance1, DataLen)].join(' ')
-        tx_.addOutput(new bsv.Transaction.Output({
+        tx.addOutput(new bsv.Transaction.Output({
           script: bsv.Script.fromASM(newLockingScript1),
           satoshis: outputAmount
         }))
       }
 
-      token.txContext = { tx: tx_, inputIndex, inputSatoshis }
+      token.txContext = { tx: tx, inputIndex, inputSatoshis }
       
-      const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex)
-      const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSatoshis)
+      const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
+      const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)
       return token.split(
         new Sig(toHex(sig)),
         new PubKey(toHex(publicKey2)),
@@ -108,17 +107,17 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
     const expectedBalance1 = y0 + y1
     const dataPart1 = toHex(publicKey2) + num2bin(y0, DataLen) + num2bin(y1, DataLen)
     const lockingScript1 = [lockingScriptCodePart, dataPart1].join(' ')
-    
-    const testMerge = (inputIndex, balance0, balance1) => {
-      tx_ = new bsv.Transaction()
 
-      tx_.addInput(new bsv.Transaction.Input({
+    const testMerge = (inputIndex, balance0, balance1) => {
+      let tx = new bsv.Transaction()
+
+      tx.addInput(new bsv.Transaction.Input({
         prevTxId: dummyTxId,
         outputIndex: 0,
         script: ''
       }), bsv.Script.fromASM(lockingScript0), inputSatoshis)
       
-      tx_.addInput(new bsv.Transaction.Input({
+      tx.addInput(new bsv.Transaction.Input({
         prevTxId: dummyTxId,
         outputIndex: 1,
         script: ''
@@ -128,17 +127,17 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       const prevouts = reversedDummyTxId + num2bin(0, 4) + reversedDummyTxId + num2bin(1, 4)
 
       const newLockingScript0 = [lockingScriptCodePart, toHex(publicKey3) + num2bin(balance0, DataLen) + num2bin(balance1, DataLen)].join(' ')
-      tx_.addOutput(new bsv.Transaction.Output({
+      tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript0),
         satoshis: outputAmount
       }))
 
-      token.txContext = { tx: tx_, inputIndex, inputSatoshis }
+      token.txContext = { tx: tx, inputIndex, inputSatoshis }
 
       token.setDataPart(inputIndex == 0 ? dataPart0 : dataPart1)
       
-      const preimage = getPreimage(tx_, inputIndex == 0 ? lockingScript0 : lockingScript1, inputSatoshis, inputIndex)
-      const sig = signTx(tx_, inputIndex == 0 ? privateKey1 : privateKey2, inputIndex == 0 ? lockingScript0 : lockingScript1, inputSatoshis, inputIndex)
+      const preimage = getPreimage(tx, inputIndex == 0 ? lockingScript0 : lockingScript1, inputSatoshis, inputIndex)
+      const sig = signTx(tx, inputIndex == 0 ? privateKey1 : privateKey2, inputIndex == 0 ? lockingScript0 : lockingScript1, inputSatoshis, inputIndex)
       return token.merge(
         new Sig(toHex(sig)),
         new PubKey(toHex(publicKey3)),
@@ -172,24 +171,24 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
   it('should succeed when one token UTXO is burnt', () => {
     // burn 100 tokens
     token.setDataPart(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
+    let tx = newTx();
     
     const testBurn = (privKey) => {
-      tx_ = new bsv.Transaction()
 
-      tx_.addInput(new bsv.Transaction.Input({
+      tx.addInput(new bsv.Transaction.Input({
         prevTxId: dummyTxId,
         outputIndex: 0,
         script: ''
       }), bsv.Script.fromASM(token.lockingScript.toASM()), inputSatoshis)
 
       // p2pkh
-      tx_.addOutput(new bsv.Transaction.Output({
+      tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.buildPublicKeyHashOut(privateKey1.toAddress()),
         satoshis: outputAmount
       }))
       
-      const preimage = getPreimage(tx_, token.lockingScript.toASM(), inputSatoshis, inputIndex)
-      const sig = signTx(tx_, privKey, token.lockingScript.toASM(), inputSatoshis)
+      const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
+      const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)
       return token.burn(
         new Sig(toHex(sig)),
         new Ripemd160(toHex(pkh1)),
@@ -198,11 +197,11 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       )
     }
 
-    result = testBurn(privateKey1).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testBurn(privateKey1).verify({ tx: tx, inputIndex, inputSatoshis })
     expect(result.success, result.error).to.be.true
     
     // unauthorized key
-    result = testBurn(privateKey2).verify({ tx: tx_, inputIndex, inputSatoshis })
+    result = testBurn(privateKey2).verify({ tx: tx, inputIndex, inputSatoshis })
     expect(result.success, result.error).to.be.false
   });
 });

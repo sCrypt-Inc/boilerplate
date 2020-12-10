@@ -4,11 +4,11 @@ const { bsv, buildContractClass, Ripemd160, toHex, Bytes, getPreimage, SigHashPr
 /**
  * an example test for contract containing signature verification
  */
-const { compileContract, inputIndex, inputSatoshis, dummyTxId } = require('../../helper');
+const { compileContract, inputIndex, inputSatoshis, dummyTxId, newTx } = require('../../helper');
 
-
+const tx = newTx();
 describe('Test sCrypt contract P2SH In Javascript', () => {
-  let demoContract, p2sh, preimage, tx_, context
+  let demoContract, p2sh, preimage, context
 
   before(() => {
     const P2SH = buildContractClass(compileContract('p2sh.scrypt'))
@@ -21,24 +21,23 @@ describe('Test sCrypt contract P2SH In Javascript', () => {
 
     p2sh = new P2SH(new Ripemd160(toHex(scriptHash)))
 
-    tx_ = new bsv.Transaction()
 
-    tx_.addInput(new bsv.Transaction.Input({
+    tx.addInput(new bsv.Transaction.Input({
       prevTxId: dummyTxId,
       outputIndex: inputIndex,
       script: ''
     }), bsv.Script.fromASM(p2sh.lockingScript.toASM()), inputSatoshis)
 
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: demoContract.codePart,
       satoshis: inputSatoshis
     }))
 
-    context = { tx: tx_, inputIndex, inputSatoshis }
+    context = { tx: tx, inputIndex, inputSatoshis }
   });
 
   it('redeem should succeed', () => {
-    preimage = getPreimage(tx_, p2sh.lockingScript.toASM(), inputSatoshis, 0)
+    preimage = getPreimage(tx, p2sh.lockingScript.toASM(), inputSatoshis, 0)
     // expect(toHex( p2sh.lockingScript.toBuffer())).is.eql(preimage.scriptCode)
 
     const codeScript = demoContract.codePart.toBuffer()

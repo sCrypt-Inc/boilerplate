@@ -3,13 +3,12 @@ const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, R
 const {
   inputIndex,
   inputSatoshis,
-  tx,
+  newTx,
   DataLen,
   compileContract
 } = require('../../helper');
 
-// make a copy since it will be mutated
-const tx_ = bsv.Transaction.shallowCopy(tx)
+const tx = newTx();
 
 // Test keys
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
@@ -34,23 +33,23 @@ describe('Test sCrypt contract Counter In Javascript', () => {
 
     const newLockingScript = [counter.codePart.toASM(), num2bin(1, DataLen)].join(' ')
     // counter output
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),
       satoshis: outputAmount
     }))
 
     // change output
-    tx_.addOutput(new bsv.Transaction.Output({
+    tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()),
       satoshis: changeAmount
     }))
 
-    preimage = getPreimage(tx_, counter.lockingScript.toASM(), inputSatoshis, 0, sighashType)
+    preimage = getPreimage(tx, counter.lockingScript.toASM(), inputSatoshis, 0, sighashType)
   });
 
   it('should succeed when pushing right preimage & amount', () => {
     // any contract that includes checkSig() must be verified in a given context
-    const context = { tx: tx_, inputIndex, inputSatoshis }
+    const context = { tx: tx, inputIndex, inputSatoshis }
     result = counter.increment(new SigHashPreimage(toHex(preimage)), outputAmount, new Ripemd160(toHex(pkh)), changeAmount).verify(context)
     expect(result.success, result.error).to.be.true;
   });
