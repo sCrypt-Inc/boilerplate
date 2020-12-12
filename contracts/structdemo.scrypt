@@ -1,0 +1,52 @@
+struct Person {
+    bytes name;
+    bytes addr;
+    bool leftHanded;
+    int age;
+
+}
+
+struct Block {
+    bytes hash;
+    int time;
+    bytes coinbase;
+}
+
+contract StructDemo {
+    Person person;
+
+    constructor(Person some) {
+        this.person = some;
+    }
+
+    public function main(Person person1) {
+
+        require(person1.leftHanded == this.person.leftHanded);
+        require(person1.addr == this.person.addr);
+        require(person1.age == this.person.age);
+
+        this.person = this.incAge(person1);
+        require(this.person.age == 34);
+
+        Block block = this.genisBlock(person1);
+        require(block.coinbase == b'7361746f736869206e616b616d6f746f');
+        require(block.hash == b'000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f');
+    }
+
+    function incAge(Person p1) : Person {
+        p1.age = p1.age + 1;
+        return p1;
+    }
+
+    function genisBlock(Person p1) : Block {
+
+        Block blk = {
+            b'000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f',
+            1231006505,
+            p1.name
+        };
+
+        return blk;
+    }
+}
+
