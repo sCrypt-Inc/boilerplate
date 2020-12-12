@@ -1,7 +1,7 @@
 struct Person {
     bytes name;
     bytes addr;
-    bool isMale;
+    bool leftHanded;
     int age;
 
 }
@@ -21,7 +21,7 @@ contract StructDemo {
 
     public function main(Person person1) {
 
-        require(person1.isMale == this.person.isMale);
+        require(person1.leftHanded == this.person.leftHanded);
         require(person1.addr == this.person.addr);
         require(person1.age == this.person.age);
 

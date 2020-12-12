@@ -12,7 +12,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
     StructDemo = buildContractClass(compileContract('structdemo.scrypt'));
     person = new StructDemo(new Struct({
       name: new Bytes("7361746f736869206e616b616d6f746f"),
-      isMale: false,
+      leftHanded: false,
       age: 33,
       addr: new Bytes("68656c6c6f20776f726c6421")
     }));
@@ -23,7 +23,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
   it('should success', () => {
     result = person.main(new Struct({
       name: new Bytes("7361746f736869206e616b616d6f746f"),
-      isMale: false,
+      leftHanded: false,
       age: 33,
       addr: new Bytes("68656c6c6f20776f726c6421")
     })).verify()
@@ -45,7 +45,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
 
     expect(() => {
       person.main(new Struct({
-        isMale: false,
+        leftHanded: false,
         age: 33,
         addr: new Bytes("68656c6c6f20776f726c6421")
       })).verify()
@@ -55,7 +55,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
       person.main(new Struct({
         id: 01,
         name: new Bytes("7361746f736869206e616b616d6f746f"),
-        isMale: false,
+        leftHanded: false,
         age: 33,
         addr: new Bytes("68656c6c6f20776f726c6421")
       })).verify()
@@ -66,7 +66,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
 
       result = person.main(new Struct({
         name: new Bytes("7361746f736869206e616b616d6f746f"),
-        isMale: false,
+        leftHanded: false,
         age: 32,
         addr: new Bytes("68656c6c6f20776f726c6421")
       })).verify()
@@ -78,7 +78,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
 
       result = person.main(new Struct({
         name: new Bytes("7361746f736869206e616b616d6f746e"),
-        isMale: false,
+        leftHanded: false,
         age: 33,
         addr: new Bytes("68656c6c6f20776f726c6421")
       })).verify()
@@ -90,7 +90,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
 
       result = person.main(new Struct({
         name: new Bytes("7361746f736869206e616b616d6f746f"),
-        isMale: false,
+        leftHande1d: false,
         age: 33,
         addr: new Bytes("68656c6c6f20776f726c6420")
       })).verify()

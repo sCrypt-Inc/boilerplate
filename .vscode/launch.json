@@ -138,7 +138,7 @@
           "name": "b'7361746f736869206e616b616d6f746f'",
           "addr": "b'68656c6c6f20776f726c6421'",
           "age": 33,
-          "isMale": false
+          "leftHanded": false
         }
       ],
       "entryMethod": "main",
@@ -147,7 +147,7 @@
           "name": "b'7361746f736869206e616b616d6f746f'",
           "addr": "b'68656c6c6f20776f726c6421'",
           "age": 33,
-          "isMale": false
+          "leftHanded": false
         }
       ]
     },
