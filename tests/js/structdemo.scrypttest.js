@@ -36,7 +36,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
     expect(() => {
       person = new StructDemo(new Struct({
         name:  1,
-        isMale: false,
+        leftHanded: false,
         age: 33,
         addr: new Bytes("68656c6c6f20776f726c6421")
       }));
