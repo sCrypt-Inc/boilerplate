@@ -3,8 +3,8 @@ import "util.scrypt";
 // Conway Game Of Life on a board of N * N
 contract GameOfLife {
     static int N = 10;
-    static bytes LIVE = b'00';
-    static bytes DEAD = b'01';
+    static bytes LIVE = b'01';
+    static bytes DEAD = b'00';
 
     public function play(int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
