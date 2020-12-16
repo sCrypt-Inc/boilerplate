@@ -3,7 +3,7 @@ const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, PubKey, Ri
 const { inputIndex, inputSatoshis, newTx, compileContract, DataLen, dummyTxId } = require("../../helper");
 
 // make a copy since it will be mutated
-var tx_ = newTx();
+var tx = newTx();
 
 describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
   let rps, lockingScriptCodePart;
@@ -40,8 +40,8 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
     const testFollow = (playerBpkh, action, initAmount, inputAmount, outputAmount, changeAmount) => {
       rps.setDataPart(toHex(playerAdata) + num2bin(0, PubKeyHashLen) + num2bin(actionINIT, DataLen));
 
-      tx_ = new bsv.Transaction();
-      tx_.addInput(
+      tx = new bsv.Transaction();
+      tx.addInput(
         new bsv.Transaction.Input({
           prevTxId: dummyTxId,
           outputIndex: 0,
@@ -51,7 +51,7 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
         initAmount
       );
 
-      tx_.addInput(
+      tx.addInput(
         new bsv.Transaction.Input({
           prevTxId: dummyTxId,
           outputIndex: 1,
@@ -62,22 +62,22 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
       );
 
       const newLockingScript0 = [lockingScriptCodePart, toHex(playerAdata) + toHex(playerBpkh) + num2bin(action, DataLen)].join(" ");
-      tx_.addOutput(
+      tx.addOutput(
         new bsv.Transaction.Output({
           script: bsv.Script.fromASM(newLockingScript0),
           satoshis: outputAmount,
         })
       );
 
-      tx_.addOutput(
+      tx.addOutput(
         new bsv.Transaction.Output({
           script: bsv.Script.buildPublicKeyHashOut(publicKeyB),
           satoshis: changeAmount,
         })
       );
 
-      rps.txContext = { tx: tx_, inputIndex, inputSatoshis: initAmount };
-      const preimage = getPreimage(tx_, rps.lockingScript.toASM(), initAmount, inputIndex, sighashType);
+      rps.txContext = { tx: tx, inputIndex, inputSatoshis: initAmount };
+      const preimage = getPreimage(tx, rps.lockingScript.toASM(), initAmount, inputIndex, sighashType);
 
       return rps.follow(new SigHashPreimage(toHex(preimage)), action, new Ripemd160(toHex(playerBpkh)), changeAmount);
     };
@@ -95,9 +95,9 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
     const testFinish = (privKey, playerBpkh, actionA, actionB, totalAmount, inputAmount, outputAmount, changeAmount) => {
       rps.setDataPart(toHex(playerAdata) + toHex(playerBpkh) + num2bin(actionB, DataLen));
 
-      tx_ = new bsv.Transaction();
+      tx = new bsv.Transaction();
 
-      tx_.addInput(
+      tx.addInput(
         new bsv.Transaction.Input({
           prevTxId: dummyTxId,
           outputIndex: 0,
@@ -107,7 +107,7 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
         totalAmount
       );
 
-      tx_.addInput(
+      tx.addInput(
         new bsv.Transaction.Input({
           prevTxId: dummyTxId,
           outputIndex: 1,
@@ -117,7 +117,7 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
         inputAmount
       );
 
-      tx_.addOutput(
+      tx.addOutput(
         new bsv.Transaction.Output({
           script: bsv.Script.buildPublicKeyHashOut(publicKeyA),
           satoshis: changeAmount,
@@ -125,17 +125,17 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
       );
 
       if (outputAmount > 0) {
-        tx_.addOutput(
+        tx.addOutput(
           new bsv.Transaction.Output({
             script: bsv.Script.buildPublicKeyHashOut(publicKeyB),
             satoshis: outputAmount,
           })
         );
       }
-      rps.txContext = { tx: tx_, inputIndex, inputSatoshis: totalAmount };
+      rps.txContext = { tx: tx, inputIndex, inputSatoshis: totalAmount };
 
-      const preimage = getPreimage(tx_, rps.lockingScript.toASM(), totalAmount, inputIndex, sighashType);
-      const sig = signTx(tx_, privKey, rps.lockingScript.toASM(), totalAmount, inputIndex, sighashType);
+      const preimage = getPreimage(tx, rps.lockingScript.toASM(), totalAmount, inputIndex, sighashType);
+      const sig = signTx(tx, privKey, rps.lockingScript.toASM(), totalAmount, inputIndex, sighashType);
 
       return rps.finish(new SigHashPreimage(toHex(preimage)), actionA, new Sig(toHex(sig)), new PubKey(toHex(publicKeyA)), changeAmount);
     };
