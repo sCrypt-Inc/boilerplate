@@ -2,7 +2,7 @@ import "util.scrypt";
 
 // Conway Game Of Life on a board of N * N
 contract GameOfLife {
-    static int N = 10;
+    static int N = 7;
     static bytes LIVE = b'01';
     static bytes DEAD = b'00';
 
@@ -32,10 +32,9 @@ contract GameOfLife {
 
         int i = 1;
         // N - 2
-        loop (8) {
+        loop (5) {
             int j = 1;
-            
-            loop (8) {
+            loop (5) {
                 bytes nextState = this.next(oldBoard, i, j);
                 newBoard = Util.setElemAt(newBoard, this.index(i, j), nextState);
 
@@ -57,7 +56,7 @@ contract GameOfLife {
             int j = - 1;
 
             loop (3) {
-                if (Util.getElemAt(oldBoard, this.index(row + i, col + j))) {
+                if (Util.getElemAt(oldBoard, this.index(row + i, col + j)) && !(i == 0 && j == 0)) {
                     alive = alive + 1;
                 }
                 j = j + 1;
