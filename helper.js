@@ -49,6 +49,25 @@ function reverseEndian(hexStr) {
   return buf.toString('hex').match(/.{2}/g).reverse().join('')
 }
 
+async function createPayByOthersTx(address) {
+  // step 1: fetch utxos
+  let {
+    data: utxos
+  } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
+
+  utxos = utxos.map((utxo) => ({
+    txId: utxo.tx_hash,
+    outputIndex: utxo.tx_pos,
+    satoshis: utxo.value,
+    script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
+  }))
+
+  // step 2: build the tx
+  const tx = new bsv.Transaction().from(utxos)
+
+  return tx
+}
+
 async function createLockingTx(address, amountInContract, fee) {
   // step 1: fetch utxos
   let {
@@ -189,6 +208,7 @@ module.exports = {
   inputIndex,
   inputSatoshis,
   newTx,
+  createPayByOthersTx,
   createLockingTx,
   createUnlockingTx,
   DataLen,
