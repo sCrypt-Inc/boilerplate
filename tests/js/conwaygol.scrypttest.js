@@ -29,19 +29,19 @@ describe('Test sCrypt contract Conways GOL In Javascript', () => {
     // 00000000000000
     let row1 = '00000000000000'
     let row2 = '00000000000000'
-    let row3 = '01010100000000'
-    let row4 = '00000100000000'
-    let row5 = '01010100000000'
+    let row3 = '00010101000000'
+    let row4 = '00000001000000'
+    let row5 = '00010101000000'
     let row6 = '00000000000000'
     let row7 = '00000000000000'
 
     // new board results
     //            '00000000000000'
-    let newRow2 = '00010000000000'
-    let newRow3 = '00010100000000'
-    let newRow4 = '00000001000000'
-    let newRow5 = '00010100000000'
-    let newRow6 = '00010000000000'
+    let newRow2 = '00000100000000'
+    let newRow3 = '00000101000000'
+    let newRow4 = '00000000010000'
+    let newRow5 = '00000101000000'
+    let newRow6 = '00000100000000'
     //            '00000000000000'
 
 
@@ -70,7 +70,6 @@ describe('Test sCrypt contract Conways GOL In Javascript', () => {
 
   it('should succeed when pushing right preimage & amount', () => {
     result = gol.play(outputAmount, new SigHashPreimage(toHex(preimage))).verify()
-    //console.log(preimage.scriptCode.slice(-25))
     expect(result.success, result.error).to.be.true
   });
 
