@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { buildContractClass, VerifyResult } from "scryptlib";
-import { loadDesc } from "../../helper";
+import { compileContract } from "../../helper";
 
 describe('Test sCrypt contract Demo In Typescript', () => {
   let demo: any
   let result: VerifyResult
 
   before(() => {
-    const Demo = buildContractClass(loadDesc('demo_desc.json'))
+    const Demo = buildContractClass(compileContract('demo.scrypt'))
     demo = new Demo(7, 4)
   });
 

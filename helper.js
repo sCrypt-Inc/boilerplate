@@ -5,7 +5,7 @@ const {
 } = require('fs')
 const {
   bsv,
-  compile,
+  compileContract: compileContractImpl
 } = require('scryptlib')
 const {
   getPlatformScryptc,
@@ -141,37 +141,11 @@ async function sendTx(tx) {
   return txid
 }
 
-function getCisCryptc()  {
-  let dir = existsSync('./compiler') ? "./" : "../";
-	return  path.join(__dirname, `${dir}/${getPlatformScryptc()}`);
-}
-
 function compileContract(fileName) {
-  const filePath = path.join(__dirname, 'contracts', fileName);
-  console.log(`Compiling contract ${filePath} ...`);
+  const filePath = path.join(__dirname, 'contracts', fileName)
+  const out = path.join(__dirname, 'deployments/fixture/autoGen')
 
-
-  var argv = require('minimist')(process.argv.slice(2));
-
-  let scryptc = argv.scryptc;
-  if(argv.ci) {
-    scryptc = getCisCryptc();
-  }
-
-  const result = compile(
-    { path: filePath },
-    { desc: true, outputDir: path.join(__dirname, 'deployments/fixture/autoGen'),
-		  cmdPrefix: scryptc
-    }
-  );
-
-  if (result.errors.length > 0) {
-    console.log(`Contract ${filePath} compiling failed with errors:`);
-    console.log(result.errors);
-    throw result.errors;
-  }
-
-  return result;
+  return compileContractImpl(filePath, out);
 }
 
 function loadDesc(fileName) {

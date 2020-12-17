@@ -3,7 +3,7 @@
  **/
 import { expect } from 'chai';
 import { buildContractClass, signTx, toHex, bsv, PubKey, Sig, Bytes, Sha256, Ripemd160, VerifyResult } from 'scryptlib';
-import { inputIndex, inputSatoshis, newTx, loadDesc } from '../../helper';
+import { inputIndex, inputSatoshis, newTx, compileContract } from '../../helper';
 
 // Test keys
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
@@ -23,7 +23,7 @@ describe('Test sCrypt contract HashPuzzleP2PKH In TypeScript', () => {
   let tx:any = newTx();
 
   before(() => {
-    const HashPuzzleP2PKH = buildContractClass(loadDesc('hashpuzzlep2pkh_desc.json'))
+    const HashPuzzleP2PKH = buildContractClass(compileContract('hashpuzzlep2pkh.scrypt'))
     hashPuzzleP2PKH = new HashPuzzleP2PKH(new Ripemd160(toHex(pkh)), new Sha256(toHex(sha256Data)))
     hashPuzzleP2PKH.txContext = { tx, inputIndex, inputSatoshis }
   });
