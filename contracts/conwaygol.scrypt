@@ -57,8 +57,10 @@ contract GameOfLife {
             int j = - 1;
 
             loop (3) {
-                if (Util.getElemAt(oldBoard, this.index(row + i, col + j)) && !(i == 0 && j == 0)) {
-                    alive = alive + 1;
+                if (!(i == 0 && j == 0)) {
+                    if (Util.getElemAt(oldBoard, this.index(row + i, col + j))) {
+                        alive = alive + 1;
+                    }
                 }
                 j = j + 1;
             }
