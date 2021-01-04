@@ -75,6 +75,19 @@
     {
       "type": "scrypt",
       "request": "launch",
+      "name": "Debug HashPuzzle",
+      "program": "${workspaceFolder}/contracts/hashpuzzle.scrypt",
+      "constructorParams": [
+        "Sha256(b'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad')"
+      ],
+      "entryMethod": "verify",
+      "entryMethodParams": [
+        "b'616263'"
+      ]
+    },
+    {
+      "type": "scrypt",
+      "request": "launch",
       "name": "Debug Ackermann",
       "program": "${workspaceFolder}/contracts/ackermann.scrypt",
       "constructorParams": [
