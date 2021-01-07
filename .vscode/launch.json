@@ -112,7 +112,7 @@
       ],
       "asmArgs":{
         "$Asm.equalImpl.x": "OP_5",
-        "$Asm.p2pkh.pkh": "036c8ebf2cb6d5ac229b8be7407895dda05b4509859e6de49a79640cfe979c6831",
+        "$Asm.p2pkh.pkh": "036c8ebf2cb6d5ac229b8be7407895dda05b4509859e6de49a79640cfe979c6831"
       }
     },
     {
