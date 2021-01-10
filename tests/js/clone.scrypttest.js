@@ -30,7 +30,7 @@ describe('Test sCrypt contract Clone In Javascript', () => {
 
     preimage = getPreimage(tx, clone.lockingScript.toASM(), inputSatoshis)
 
-    context = { tx: tx, inputSatoshis, inputIndex }
+    context = { tx, inputSatoshis, inputIndex }
 
     const unlockFn = clone.unlock(new SigHashPreimage(toHex(preimage)))
     result = unlockFn.verify(context)
