@@ -14,14 +14,6 @@ contract Demo {
     }
 
     public function add(int z) {
-        z -= 1;
-        z += 1;
-        z *= 1;
-        z /= 1;
-        z++;
-        auto c = z--;
-        int i = - 1;
-        true ? z++ : z--;
         require(z == this.sum(this.x, this.y));
     }
 

@@ -220,7 +220,7 @@
       "type": "scrypt",
       "request": "launch",
       "name": "Debug Conwaygol",
-      "program": "file:///c:/Users/myland/code/boilerplate/contracts/conwaygol.scrypt",
+      "program": "${workspaceFolder}/contracts/conwaygol.scrypt",
       "constructorArgs": [],
       "pubFunc": "play",
       "pubFuncArgs": [
