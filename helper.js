@@ -1,7 +1,8 @@
 const path = require('path')
 const {
   readFileSync,
-  existsSync
+  existsSync,
+  mkdirSync
 } = require('fs')
 const {
   bsv,
@@ -151,6 +152,9 @@ function compileContract(fileName) {
 function compileTestContract(fileName) {
   const filePath = path.join(__dirname, 'tests', 'testFixture', fileName)
   const out = path.join(__dirname, 'tests', 'out')
+  if (!existsSync(out)) {
+      mkdirSync(out)
+  }
   return compileContractImpl(filePath, out);
 }
 
