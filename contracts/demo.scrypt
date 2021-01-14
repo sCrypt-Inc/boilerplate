@@ -2,8 +2,6 @@ contract Demo {
     int x;
     int y;
 
-    static const int bbb = 3;
-
     constructor(int x, int y) {
         this.x = x;
         this.y = y;
