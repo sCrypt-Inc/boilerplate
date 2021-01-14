@@ -1,32 +1,36 @@
 // travelling salesman problem
 contract TSP {
+
     int threshold;
+
     // 10 * 10 adjacent matrix repressentation
     int[100] graph;
 
-    public function verify(int[10] path) {
+    static const int N = 10;
+
+    public function verify(int[N] path) {
         int sum = 0;
 
         // verify it traverses each vertex exactly once
         int i = 0;
-        loop (10) {
+        loop (N) {
             int j = 0;
 
-            loop (10) {
+            loop (N) {
                 if (j > i && path[i] == path[j])
                     exit(false);
             
-                j = j + 1;
+                j++;
             }
 
-            i = i + 1;
+            i++;
         }
 
         i = 0;
         // calculate path length
-        loop (10) {
+        loop (N) {
             sum = sum + this.dist(i, (i + 1) % 10);
-            i = i + 1;
+            i++;
         }
 
         require(sum <= this.threshold);
@@ -38,6 +42,6 @@ contract TSP {
     }
 
     static function index(int i, int j) : int {
-        return i * 10 + j;
+        return i * N + j;
     }
 }

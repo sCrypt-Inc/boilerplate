@@ -16,7 +16,7 @@ contract MerkleTree {
                 } else {
                     merkleValue = sha256(merklePath[i * 33 : i * 33 + 32] + merkleValue);
                 }
-                i = i + 1;
+                i++;
             }
         }
         return merkleValue;

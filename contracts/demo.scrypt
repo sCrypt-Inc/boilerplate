@@ -1,21 +1,32 @@
 contract Demo {
-  int x;
-  int y;
+    int x;
+    int y;
 
-  constructor(int x, int y) {
-      this.x = x;
-      this.y = y;
-  }
+    static const int bbb = 3;
 
-  function sum(int a, int b): int {
-      return a + b;
-  }
+    constructor(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
 
-  public function add(int z) {
-      require(z == this.sum(this.x, this.y));
-  }
+    function sum(int a, int b) : int {
+        return a + b;
+    }
 
-  public function sub(int z) {
-      require(z == this.x - this.y);
-  }
+    public function add(int z) {
+        z -= 1;
+        z += 1;
+        z *= 1;
+        z /= 1;
+        z++;
+        auto c = z--;
+        int i = - 1;
+        true ? z++ : z--;
+        require(z == this.sum(this.x, this.y));
+    }
+
+    public function sub(int z) {
+        require(z == this.x - this.y);
+    }
 }
+

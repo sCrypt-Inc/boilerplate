@@ -11,7 +11,7 @@ contract MerkleTree {
         } else {
           merkleValue = sha256(merklePath[i * 33 : i * 33 + 32] + merkleValue);
         }
-        i = i + 1;
+        i++;
       }
     }
     return merkleValue;
@@ -45,7 +45,7 @@ contract MerkleTree {
           oldMerkleValue = sha256(oldNeighbor + oldMerkleValue);
           newMerkleValue = sha256(newNeighbor + newMerkleValue);
         }
-        i = i + 1;
+        i++;
       }
     }
 
@@ -88,7 +88,7 @@ contract MerkleTree {
             lastLeafValue = sha256(sibling + lastLeafValue);
           }
         }
-        i = i + 1;
+        i++;
       }
     }
 

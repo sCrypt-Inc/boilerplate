@@ -3,7 +3,7 @@ contract Sudoku {
 
     bytes board;
 
-    static int N = 9;
+    static const int N = 9;
     static bytes EMPTY = b'00';
 
     constructor(bytes board) {
@@ -20,9 +20,9 @@ contract Sudoku {
         bytes newBoard = this.board;
         int i = 0;
         // N - 2
-        loop (9) {
+        loop (N) {
             int j = 0;
-            loop (9) {
+            loop (N) {
 
                 bytes value = Util.getElemAt(newBoard, this.index(i, j));
 
@@ -36,10 +36,10 @@ contract Sudoku {
                     newBoard = Util.setElemAt(newBoard, this.index(i, j), inputValue);
                 }
 
-                j = j + 1;
+                j++;
             }
 
-            i = i + 1;
+            i++;
         }
         return newBoard;
     }
@@ -58,13 +58,13 @@ contract Sudoku {
 
         int i = 0;
         
-        loop (9) {
+        loop (N) {
             int j = 0;
             int rowSum = 0;
             int colSum = 0;
             int squareSum = 0;
 
-            loop (9) {
+            loop (N) {
 
     
                 int rowElem = Util.fromLEUnsigned(Util.getElemAt(newBord, this.index(i, j)));
@@ -75,13 +75,13 @@ contract Sudoku {
                 int squareElem = Util.fromLEUnsigned(Util.getElemAt(newBord, this.indexSquare(i, j)));
                 squareSum = squareSum + squareElem;
 
-                j = j + 1;
+                j++;
             }
 
             require(rowSum == 45);
             require(colSum == 45);
             require(squareSum == 45);
-            i = i + 1;
+            i++;
         }
 
 

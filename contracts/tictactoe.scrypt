@@ -4,22 +4,22 @@ contract TicTacToe {
     PubKey alice;
     PubKey bob;
 
-    static int TURNLEN = 1;
-    static int BOARDLEN = 9;
+    static const int TURNLEN = 1;
+    static const int BOARDLEN = 9;
     static bytes EMPTY = b'00';
     static bytes ALICE = b'01';
     static bytes BOB = b'02';
 
     public function move(int n, Sig sig, int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
-        require(n >=0 && n < TicTacToe.BOARDLEN);
+        require(n >=0 && n < BOARDLEN);
 
         bytes scriptCode = Util.scriptCode(txPreimage);
 		int scriptLen = len(scriptCode);
 		
-        int boardStart = scriptLen - TicTacToe.BOARDLEN;
+        int boardStart = scriptLen - BOARDLEN;
 		// state: turn (1 byte) + board (9 bytes)
-		int turn = unpack(scriptCode[boardStart - TicTacToe.TURNLEN : boardStart]);
+		int turn = unpack(scriptCode[boardStart - TURNLEN : boardStart]);
 		bytes board = scriptCode[boardStart : ];
         
         // not filled
@@ -53,7 +53,7 @@ contract TicTacToe {
             outputs = aliceOutput + bobOutput;
         } else {
             // update state: next turn & next board
-            bytes scriptCode_ = scriptCode[: scriptLen - TicTacToe.BOARDLEN] + num2bin(1 - turn, TicTacToe.TURNLEN) + board;
+            bytes scriptCode_ = scriptCode[: scriptLen - BOARDLEN] + num2bin(1 - turn, TURNLEN) + board;
             bytes output = Util.buildOutput(scriptCode_, amount);
             outputs = output;
         }
@@ -79,7 +79,7 @@ contract TicTacToe {
         bool full = true;
         int i = 0;
 
-        loop (9) {
+        loop (BOARDLEN) {
             if (full) {
                 if (Util.getElemAt(board, i) == TicTacToe.EMPTY) {
                     full = false;

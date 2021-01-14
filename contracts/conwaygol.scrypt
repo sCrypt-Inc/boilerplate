@@ -38,10 +38,10 @@ contract GameOfLife {
                 bytes nextState = this.next(oldBoard, i, j);
                 newBoard = Util.setElemAt(newBoard, this.index(i, j), nextState);
 
-                j = j + 1;
+                j++;
             }
 
-            i = i + 1;
+            i++;
         }
 
         return newBoard;
@@ -61,10 +61,10 @@ contract GameOfLife {
                         alive = alive + 1;
                     }
                 }
-                j = j + 1;
+                j++;
             }
 
-            i = i + 1;
+            i++;
         }
 
         bytes oldState = Util.getElemAt(oldBoard, this.index(row, col));
