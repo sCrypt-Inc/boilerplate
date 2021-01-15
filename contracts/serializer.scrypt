@@ -20,29 +20,29 @@ contract Reader {
     bytes b = this.buf;
 		bytes ret = b'';
 		int header = unpack(b[this.pos : this.pos+1]);
-    this.pos = this.pos + 1;
+    this.pos++;
 
 		if (header < 0x4c) {
 			len = header;
 			ret = b[this.pos:this.pos+len];
 		} else if (header == 0x4c) {
 			len = Util.fromLEUnsigned(b[this.pos:this.pos+1]);
-      this.pos = this.pos + 1;
+      this.pos += 1;
 			ret = b[this.pos:this.pos+len];
 		} else if (header == 0x4d) {
 			len = Util.fromLEUnsigned(b[this.pos:this.pos+2]);
-      this.pos = this.pos + 2;
+      this.pos += 2;
 			ret = b[this.pos:this.pos+len];
 		} else if (header == 0x4e) {
 			len = Util.fromLEUnsigned(b[this.pos:this.pos+4]);
-      this.pos = this.pos + 4;
+      this.pos += 4;
 			ret = b[this.pos:this.pos+len];
 		} else {
       // shall not reach here
       require(false);
     }
 
-    this.pos = this.pos + len;
+    this.pos += len;
     return ret;
   }
 

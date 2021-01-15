@@ -23,9 +23,9 @@ contract TicTacToe {
 		bytes board = scriptCode[boardStart : ];
         
         // not filled
-        require(Util.getElemAt(board, n) == TicTacToe.EMPTY);
+        require(Util.getElemAt(board, n) == EMPTY);
 
-        bytes play = turn == 0 ? TicTacToe.ALICE : TicTacToe.BOB;
+        bytes play = turn == 0 ? ALICE : BOB;
         PubKey player = turn == 0 ? this.alice: this.bob;
         
         // ensure it's player's turn
@@ -81,11 +81,11 @@ contract TicTacToe {
 
         loop (BOARDLEN) {
             if (full) {
-                if (Util.getElemAt(board, i) == TicTacToe.EMPTY) {
+                if (Util.getElemAt(board, i) == EMPTY) {
                     full = false;
                 }
             }
-            i = i + 1;
+            i++;
         }
 
         return full;

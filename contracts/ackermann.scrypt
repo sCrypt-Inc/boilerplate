@@ -2,7 +2,7 @@ contract Ackermann {
     int a;  // a = 2
     int b;  // b = 1
 
-    static const int LOOPCOUNT = 14; // loop count
+    static const int LOOPCOUNT = 14;
 
     function ackermann(int m, int n): int {
         bytes stk = num2bin(m, 1);

@@ -4,9 +4,10 @@ contract TSP {
     int threshold;
 
     // 10 * 10 adjacent matrix repressentation
-    int[100] graph;
-
+    int[NSQUARE] graph;
     static const int N = 10;
+    static const int NSQUARE = 100;
+
 
     public function verify(int[N] path) {
         int sum = 0;
