@@ -2,9 +2,11 @@ import "util.scrypt";
 
 // Conway Game Of Life on a board of N * N
 contract GameOfLife {
-    static int N = 7;
+    static const int N = 7;
     static bytes LIVE = b'01';
     static bytes DEAD = b'00';
+    static const int LOOP_NEIGHBORS = 3;
+    static const int LOOP_MOVE = 5;
 
     public function play(int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
@@ -32,16 +34,16 @@ contract GameOfLife {
 
         int i = 1;
         // N - 2
-        loop (5) {
+        loop (LOOP_MOVE) {
             int j = 1;
-            loop (5) {
+            loop (LOOP_MOVE) {
                 bytes nextState = this.next(oldBoard, i, j);
                 newBoard = Util.setElemAt(newBoard, this.index(i, j), nextState);
 
-                j = j + 1;
+                j++;
             }
 
-            i = i + 1;
+            i++;
         }
 
         return newBoard;
@@ -52,19 +54,19 @@ contract GameOfLife {
         int alive = 0;
 
         int i = - 1;
-        loop (3) {
+        loop (LOOP_NEIGHBORS) {
             int j = - 1;
 
-            loop (3) {
+            loop (LOOP_NEIGHBORS) {
                 if (!(i == 0 && j == 0)) {
                     if (Util.getElemAt(oldBoard, this.index(row + i, col + j))) {
-                        alive = alive + 1;
+                        alive++;
                     }
                 }
-                j = j + 1;
+                j++;
             }
 
-            i = i + 1;
+            i++;
         }
 
         bytes oldState = Util.getElemAt(oldBoard, this.index(row, col));
@@ -73,10 +75,10 @@ contract GameOfLife {
         2. Any dead cell with three live neighbours becomes a live cell.
         3. All other live cells die in the next generation. Similarly, all other dead cells stay dead.
         */
-        return(alive == 3 || alive == 2 && oldState == GameOfLife.LIVE) ? GameOfLife.LIVE : GameOfLife.DEAD;
+        return(alive == 3 || alive == 2 && oldState == LIVE) ? LIVE : DEAD;
     }
 
     function index(int i, int j) : int {
-        return i * GameOfLife.N + j;
+        return i * N + j;
     }
 }

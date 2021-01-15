@@ -34,7 +34,7 @@ contract StructDemo {
     }
 
     function incAge(Person p1) : Person {
-        p1.age = p1.age + 1;
+        p1.age++;
         return p1;
     }
 
