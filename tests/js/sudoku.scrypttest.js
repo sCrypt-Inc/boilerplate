@@ -38,15 +38,15 @@ const board = [
 
 const validSolution2 = [
 
-  [2,1,9,4,8,6,7,5,3],
-  [7,4,5,9,1,3,2,8,6],
-  [8,3,6,7,5,2,1,4,9],
-  [5,6,3,2,7,4,9,1,8],
-  [4,8,7,1,3,9,6,2,5],
-  [9,2,1,5,6,8,3,7,4],
-  [6,7,2,3,4,5,8,9,1],
-  [3,9,4,8,2,1,5,6,7],
-  [1,5,8,6,9,7,4,3,2]
+  [5,5,5,5,5,5,5,5,5],
+  [5,5,5,5,5,5,5,5,5],
+  [5,5,5,5,5,5,5,5,5],
+  [5,5,5,5,5,5,5,5,5],
+  [5,5,5,5,5,5,5,5,5],
+  [5,5,5,5,5,5,5,5,5],
+  [5,5,5,5,5,5,5,5,5],
+  [5,5,5,5,5,5,5,5,5],
+  [5,5,5,5,5,5,5,5,5]
 ];
 
 
@@ -88,7 +88,7 @@ function boardToHex(arr) {
   let hex = '';
   for (let i = 0; i < row; i++) {
     for (let j = 0; j < col; j++) {
-      hex = hex + (num2bin(arr[i][j]) === ''   ? '00' : num2bin(arr[i][j]));
+      hex = hex +  (arr[i][j] === 0 ? '00' : num2bin(arr[i][j]));
     }
     
   }
@@ -105,21 +105,27 @@ describe('Test sCrypt contract sudoku In Javascript', () => {
 
   })
 
-  it('should success', () => {
-    result = sudoku.isValidSudoku(new Bytes(boardToHex(solution))).verify()
+  it('should succeed', () => {
+    result = sudoku.solve(new Bytes(boardToHex(solution))).verify()
     expect(result.success, result.error).to.be.true
   });
 
 
-  it('should failed', () => {
-    result = sudoku.isValidSudoku(new Bytes(boardToHex(validSolution0))).verify()
+  it('should fail', () => {
+    result = sudoku.solve(new Bytes(boardToHex(validSolution0))).verify()
     expect(result.success, result.error).to.be.false
   });
 
 
-  it('should failed', () => {
-    result = sudoku.isValidSudoku(new Bytes(boardToHex(validSolution1))).verify()
+  it('should fail', () => {
+    result = sudoku.solve(new Bytes(boardToHex(validSolution1))).verify()
     expect(result.success, result.error).to.be.false
   });
+
+  it('should fail', () => {
+    result = sudoku.solve(new Bytes(boardToHex(validSolution2))).verify()
+    expect(result.success, result.error).to.be.false
+  });
+
 
 });

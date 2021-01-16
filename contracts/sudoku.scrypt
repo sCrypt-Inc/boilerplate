@@ -1,4 +1,5 @@
 import "util.scrypt";
+import "array.scrypt";
 contract Sudoku {
 
     bytes board;
@@ -10,32 +11,21 @@ contract Sudoku {
         this.board = board;
     }
 
-    function formatCheck(bytes solution) : bool {
-        require(len(solution) == Sudoku.N * Sudoku.N);
-        return true;
-    }
-
     function merge(bytes solution) : bytes {
-
         bytes newBoard = this.board;
         int i = 0;
-        // N - 2
         loop (N) {
             int j = 0;
             loop (N) {
 
-                bytes value = Util.getElemAt(newBoard, this.index(i, j));
-
-                if (value == Sudoku.EMPTY) {
-                    bytes inputValue = Util.getElemAt(solution, this.index(i, j));
-
-                    int elem = Util.fromLEUnsigned(inputValue);
-
-                    require(elem <= 9);
-
-                    newBoard = Util.setElemAt(newBoard, this.index(i, j), inputValue);
+                int value = this.readValue(newBoard, i, j);
+                int inputValue = this.readValue(solution, i, j);
+                if (value == 0) {
+                    require(inputValue <= 9);
+                    newBoard = this.setValue(newBoard, i, j, inputValue);
+                } else {
+                    require(value == inputValue);
                 }
-
                 j++;
             }
 
@@ -44,20 +34,18 @@ contract Sudoku {
         return newBoard;
     }
 
+    public function solve(bytes solution) {
 
-
-
-
-
-
-    public function isValidSudoku(bytes solution) {
-
-        require(this.formatCheck(solution));
+        require(len(solution) == Sudoku.N * Sudoku.N);
 
         bytes newBord = this.merge(solution);
 
         int i = 0;
-        
+
+        Array rowArray = new Array();
+        Array colArray = new Array();
+        Array squareArray = new Array();
+
         loop (N) {
             int j = 0;
             int rowSum = 0;
@@ -66,50 +54,49 @@ contract Sudoku {
 
             loop (N) {
 
-    
-                int rowElem = Util.fromLEUnsigned(Util.getElemAt(newBord, this.index(i, j)));
-                rowSum = rowSum + rowElem;
-
-                int colElem = Util.fromLEUnsigned(Util.getElemAt(newBord, this.index(j, i)));
-                colSum = colSum + colElem;
-                int squareElem = Util.fromLEUnsigned(Util.getElemAt(newBord, this.indexSquare(i, j)));
-                squareSum = squareSum + squareElem;
+                int rowElem = this.readValue(newBord, i, j);
+                require(rowArray.indexOf(rowElem) == -1);
+                rowArray.push(rowElem);
+                int colElem = this.readValue(newBord, j, i);
+                require(colArray.indexOf(colElem) == -1);
+                colArray.push(colElem);
+                int squareElem = this.readSquareValue(newBord, i, j);
+                require(squareArray.indexOf(squareElem) == -1);
+                squareArray.push(squareElem);
 
                 j++;
             }
 
-            require(rowSum == 45);
-            require(colSum == 45);
-            require(squareSum == 45);
+            rowArray.clear();
+            colArray.clear();
+            squareArray.clear();
+
             i++;
         }
-
 
         require(true);
     }
 
-    function index(int row, int col) : int {
+    static function readValue(bytes board, int i, int j): int {
+        return Util.fromLEUnsigned(Util.getElemAt(board, Sudoku.index(i, j)));
+    }
+
+    static function setValue(bytes board, int i, int j, int value): bytes {
+        return Util.setElemAt(board, this.index(i, j), Util.toLEUnsigned(value, 1));
+    }
+
+    static function readSquareValue(bytes board, int i, int j): int {
+        return Util.fromLEUnsigned(Util.getElemAt(board, Sudoku.indexSquare(i, j)));
+    }
+
+
+    static function index(int row, int col) : int {
         return row * Sudoku.N + col;
     }
 
-    function indexSquare(int i, int j) : int {
+    static function indexSquare(int i, int j) : int {
         int row = i / 3 * 3 + j / 3;
         int col = i % 3 * 3 + j % 3;
-        return this.index(row, col);
+        return Sudoku.index(row, col);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
