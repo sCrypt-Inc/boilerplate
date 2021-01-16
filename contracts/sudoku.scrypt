@@ -1,5 +1,6 @@
 import "util.scrypt";
 import "array.scrypt";
+
 contract Sudoku {
 
     bytes board;
@@ -40,26 +41,28 @@ contract Sudoku {
 
         bytes newBord = this.merge(solution);
 
-        int i = 0;
-
         Array rowArray = new Array();
         Array colArray = new Array();
         Array squareArray = new Array();
 
+        int i = 0;
         loop (N) {
             int j = 0;
-            int rowSum = 0;
-            int colSum = 0;
-            int squareSum = 0;
 
             loop (N) {
+                // check for duplicate
 
+                // in a row
                 int rowElem = this.readValue(newBord, i, j);
                 require(rowArray.indexOf(rowElem) == -1);
                 rowArray.push(rowElem);
+
+                // in a column
                 int colElem = this.readValue(newBord, j, i);
                 require(colArray.indexOf(colElem) == -1);
                 colArray.push(colElem);
+
+                // in a subgrid
                 int squareElem = this.readSquareValue(newBord, i, j);
                 require(squareArray.indexOf(squareElem) == -1);
                 squareArray.push(squareElem);

@@ -46,6 +46,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── rabin.scrypt                    # <a href="https://medium.com/coinmonks/access-external-data-from-bitcoin-smart-contracts-2ecdc7448c43">Rabin signature</a> to import off-chain data into a contract via oracle
 │   ├── rps.scrypt                      # Rock Paper Scissors   
 |   ├── spvToken.scrypt                 # <a href="https://medium.com/@xiaohuiliu/peer-to-peer-tokens-6508986d9593">Peer-to-peer Tokens</a>
+|   ├── sudoku.scrypt                   # <a href="https://xiaohuiliu.medium.com/sudoku-on-bitcoin-bd78551956fb">Sudoku</a>
 │   ├── tictactoe.scrypt                # <a href="https://medium.com/@xiaohuiliu/tic-tac-toe-on-bitcoin-sv-5acdf5bd676d">TicTacToe</a> onchain p2p gaming 
 │   ├── token.scrypt                    # <a href="https://medium.com/coinmonks/layer-1-tokens-on-bitcoin-sv-e78c8abf270d">Layer-1 tokens</a> by storing token map as contract state in a single UTXO
 │   ├── tokenSale.scrypt                # Selling tokens for bitcoins using <a href="https://medium.com/@xiaohuiliu/atomic-swap-on-bitcoin-sv-abc28e836cd5">atomic swap</a>
