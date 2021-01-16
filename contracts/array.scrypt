@@ -1,0 +1,127 @@
+
+contract Array {
+    bytes data;
+    static const int DATALEN = 1;
+    static const bytes EMPTY = b'';
+    static const int MAX_SIZE = 9;
+    static const int INVALID = -9999999999;
+    constructor() {
+        this.data = EMPTY;
+    }
+
+    function push(int x) : bool {
+        this.data += num2bin(x, DATALEN);
+        return true;
+    }
+
+    function pop() : int {
+        int result = INVALID;
+        int maxIndex = this.length() - 1;
+        if (maxIndex > -1) {
+            bytes valueRaw = this.data[maxIndex * DATALEN :(maxIndex + 1) * DATALEN];
+            result = unpack(valueRaw);
+            this.data = this.data[0 : maxIndex];
+        }
+        return result;
+    }
+
+    function indexOf(int x) : int {
+        int i = 0;
+        int result = -1;
+        bool done = false;
+        int length = this.length();
+        loop (MAX_SIZE) {
+            if (i < length) {
+                if (! done) {
+                    bytes valueRaw = this.data[i * DATALEN :(i + 1) * DATALEN];
+                    int value = unpack(valueRaw);
+                    if (value == x) {
+                        result = i;
+                        done = true;
+                    }
+                    i++;
+                }
+            }
+        }
+        return result;
+    }
+
+    function at(int index) : int {
+        int result = INVALID;
+        bool done = false;
+        int length = this.length();
+        if (index >= 0 && index < length) {
+            bytes valueRaw = this.data[index * DATALEN :(index + 1) * DATALEN];
+            result = unpack(valueRaw);
+        }
+        return result;
+    }
+
+    function length(): int {
+        return len(this.data) / DATALEN;
+    }
+
+
+    function clear() : bool {
+        bool done = false;
+        int length = this.length();
+        if (length > 0) {
+            this.data = b'';
+            done = true;
+        }
+        return done;
+    }
+}
+
+contract ArrayTest {
+    public function test(int x) {
+
+        Array a = new Array();
+        a.push(33);
+        a.push(99);
+        a.push(88);
+        a.push(-1);
+        a.push(-9);
+
+        int index = a.indexOf(2);
+        require(index == -1);
+        index = a.indexOf(99);
+        require(index == 1);
+        index = a.indexOf(-1);
+        require(index == 3);
+        index = a.indexOf(-9);
+        require(index == 4);
+
+        int value = a.at(0);
+        require(value == 33);
+        value = a.at(1);
+        require(value == 99);
+        value = a.at(2);
+        require(value == 88);
+        value = a.at(3);
+        require(value == -1);
+        value = a.at(4);
+        require(value == -9);
+        value = a.at(5);
+        require(value == Array.INVALID);
+
+        int top = a.pop();
+        require(top == -9);
+        top = a.pop();
+        require(top == -1);
+        top = a.pop();
+        require(top == 88);
+        top = a.pop();
+        require(top == 99);
+        top = a.pop();
+        require(top == 33);
+        top = a.pop();
+        require(top == Array.INVALID);
+        a.push(-9);
+        a.clear();
+        require(a.length() == 0);
+    }
+}
+
+
+
