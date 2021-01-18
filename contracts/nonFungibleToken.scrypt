@@ -4,8 +4,8 @@ import "util.scrypt";
  * A non-fungible token protocol based on UTXO model
  */
 contract NonFungibleToken {
-    static bytes ISSUE = b'00';
-    static bytes TRANSFER = b'01';
+    static const bytes ISSUE = b'00';
+    static const bytes TRANSFER = b'01';
 
     public function issue(Sig issuerSig, PubKey receiver, int satoshiAmount0, int satoshiAmount1, SigHashPreimage txPreimage) {
         // this ensures the preimage is for the current tx

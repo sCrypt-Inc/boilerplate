@@ -6,7 +6,7 @@ contract Sudoku {
     bytes board;
 
     static const int N = 9;
-    static bytes EMPTY = b'00';
+    static const bytes EMPTY = b'00';
 
     constructor(bytes board) {
         this.board = board;
