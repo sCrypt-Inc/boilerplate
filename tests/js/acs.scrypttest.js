@@ -15,9 +15,12 @@ const {
   newTx,
 } = require('../../helper');
 
-// Demo values for testing
-const pkhX = 'f5af74378a5faaff242f47490fd225868586f6b2';
-const addressX = 'n3v22oq3CpnCZnVYFcXP6GUaXt7Ts2TCTj';
+const privateKeyX = new bsv.PrivateKey.fromRandom('testnet');
+console.log(`Private key generated: '${privateKeyX.toWIF()}'`);
+
+const publicKeyX = bsv.PublicKey.fromPrivateKey(privateKeyX);
+const pkhX = bsv.crypto.Hash.sha256ripemd160(publicKeyX.toBuffer());
+const addressX = privateKeyX.toAddress();
 
 const tx = newTx();
 
