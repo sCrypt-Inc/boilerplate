@@ -16,7 +16,6 @@ const {
 } = require('../../helper');
 
 const privateKeyX = new bsv.PrivateKey.fromRandom('testnet');
-console.log(`Private key generated: '${privateKeyX.toWIF()}'`);
 
 const publicKeyX = bsv.PublicKey.fromPrivateKey(privateKeyX);
 const pkhX = bsv.crypto.Hash.sha256ripemd160(publicKeyX.toBuffer());

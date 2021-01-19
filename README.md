@@ -28,6 +28,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 ├── contracts                       # sCrypt contract files
 │   ├── accumulatorMultiSig.scrypt      # <a href="https://xiaohuiliu.medium.com/accumulator-multisig-d5a5a1b5fc42">Accumulator MultiSig</a>
 │   ├── ackermann.scrypt                # <a href="https://scryptdoc.readthedocs.io/en/latest/ackermann.html">Ackermann function</a>
+│   ├── acs.scrypt                      # A contract which can be spent by anyone but only to a specific address
 │   ├── advancedCounter.scrypt          # Use external UTXOs to pay <a href="https://medium.com/@xiaohuiliu/advanced-op-push-tx-78ce84f69a66">counter</a> contract tx fees using sighash <i>ANYONECANPAY</i>
 │   ├── advancedTokenSale.scrypt        # Sambe as above, but for token sale contract
 │   ├── asm.scrypt                      # Embed Script directly into sCrypt <a href="https://medium.com/@xiaohuiliu/inline-script-inside-scrypt-27d5aa279fd3">using inline assembly</a>
