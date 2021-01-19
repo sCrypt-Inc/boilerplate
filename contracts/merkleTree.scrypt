@@ -1,4 +1,4 @@
-contract MerkleTree {
+library MerkleTree {
   static function calculateMerkleRoot(bytes leaf, bytes merklePath) : bytes {
     int i = 0;
     int merklePathLength = len(merklePath) / 33;
