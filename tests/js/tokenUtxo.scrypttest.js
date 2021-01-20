@@ -51,7 +51,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         }))
       }
 
-      token.txContext = { tx: tx, inputIndex, inputSatoshis }
+      token.txContext = { tx, inputIndex, inputSatoshis }
       
       const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
       const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)
@@ -132,7 +132,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         satoshis: outputAmount
       }))
 
-      token.txContext = { tx: tx, inputIndex, inputSatoshis }
+      token.txContext = { tx, inputIndex, inputSatoshis }
 
       token.setDataPart(inputIndex == 0 ? dataPart0 : dataPart1)
       
@@ -197,11 +197,11 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       )
     }
 
-    result = testBurn(privateKey1).verify({ tx: tx, inputIndex, inputSatoshis })
+    result = testBurn(privateKey1).verify({ tx, inputIndex, inputSatoshis })
     expect(result.success, result.error).to.be.true
     
     // unauthorized key
-    result = testBurn(privateKey2).verify({ tx: tx, inputIndex, inputSatoshis })
+    result = testBurn(privateKey2).verify({ tx, inputIndex, inputSatoshis })
     expect(result.success, result.error).to.be.false
   });
 });

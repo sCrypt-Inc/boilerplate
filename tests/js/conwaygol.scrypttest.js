@@ -62,7 +62,7 @@ describe('Test sCrypt contract Conways GOL In Javascript', () => {
 
     // set txContext for verification
     gol.txContext = {
-      tx: tx,
+      tx,
       inputIndex,
       inputSatoshis
     }

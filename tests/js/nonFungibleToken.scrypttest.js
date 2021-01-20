@@ -49,7 +49,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         satoshis: outputAmount
       }))
 
-      token.txContext = { tx: tx, inputIndex, inputSatoshis }
+      token.txContext = { tx, inputIndex, inputSatoshis }
 
       const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
       const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)
@@ -100,7 +100,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         satoshis: outputAmount
       }))
 
-      token.txContext = { tx: tx, inputIndex, inputSatoshis }
+      token.txContext = { tx, inputIndex, inputSatoshis }
 
       const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
       const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)
@@ -149,7 +149,7 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
         satoshis: outputAmount
       }))
 
-      token.txContext = { tx: tx, inputIndex, inputSatoshis }
+      token.txContext = { tx, inputIndex, inputSatoshis }
 
       const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
       const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)

@@ -33,7 +33,7 @@ describe('Test sCrypt contract P2SH In Javascript', () => {
       satoshis: inputSatoshis
     }))
 
-    context = { tx: tx, inputIndex, inputSatoshis }
+    context = { tx, inputIndex, inputSatoshis }
   });
 
   it('redeem should succeed', () => {

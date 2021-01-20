@@ -1,12 +1,14 @@
 contract AccumulatorMultiSig {
     int threshold;
-    Ripemd160[3] pubKeyHashs;
+    Ripemd160[N] pubKeyHashs;
 
-    public function main(PubKey[3] pubKeys, Sig[3] sigs, bool[3] masks) {
+    static const int N = 3; 
+
+    public function main(PubKey[N] pubKeys, Sig[N] sigs, bool[N] masks) {
         int total = 0;
         int i = 0;
 
-        loop (3) {
+        loop (N) {
             if (masks[i]) {
                 if (hash160(pubKeys[i]) == this.pubKeyHashs[i] && checkSig(sigs[i], pubKeys[i])) {
                     total = total + 1;
