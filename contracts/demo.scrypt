@@ -1,21 +1,22 @@
 contract Demo {
-  int x;
-  int y;
+    int x;
+    int y;
 
-  constructor(int x, int y) {
-      this.x = x;
-      this.y = y;
-  }
+    constructor(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
 
-  function sum(int a, int b): int {
-      return a + b;
-  }
+    function sum(int a, int b) : int {
+        return a + b;
+    }
 
-  public function add(int z) {
-      require(z == this.sum(this.x, this.y));
-  }
+    public function add(int z) {
+        require(z == this.sum(this.x, this.y));
+    }
 
-  public function sub(int z) {
-      require(z == this.x - this.y);
-  }
+    public function sub(int z) {
+        require(z == this.x - this.y);
+    }
 }
+

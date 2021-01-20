@@ -35,7 +35,7 @@ contract StateSerializer {
 		require(flag);
 
 		// serialize state
-    bytes ext = b'ffff';
+    	bytes ext = b'ffff';
 		bytes stateBuf = Writer.writeInt(counter + 1) + Writer.writeBytes(b + b'ff') + Writer.writeBool(!flag) + Writer.writeBytes(ext);
 		// serialize state size
 		bytes lenBuf = Writer.writeBytes(Util.encodeStateSize(stateBuf));

@@ -1,22 +1,24 @@
 contract MerkleTree {
+    static const int N = 33;
+    static const int LOOPCOUNT = 5;
     // TODO second preimage attack
     static function calculateMerkleRoot(bytes leaf, bytes merklePath) : bytes {
         int i = 0;
-        int merklePathLength = len(merklePath) / 33;
+        int merklePathLength = len(merklePath) / N;
         require(merklePathLength <= 5);
         bytes merkleValue = leaf;
-        loop (5) {
+        loop (LOOPCOUNT) {
             if (i < merklePathLength) {
-                int left = unpack(merklePath[i * 33 + 32 : i * 33 + 33]);
+                int left = unpack(merklePath[i * N + N - 1 : i * N + N]);
                 if (left == 2) {
                     merkleValue = sha256(merkleValue);
                 }
                 else if (left) {
-                    merkleValue = sha256(merkleValue + merklePath[i * 33 : i * 33 + 32]);
+                    merkleValue = sha256(merkleValue + merklePath[i * N : i * N + N - 1]);
                 } else {
-                    merkleValue = sha256(merklePath[i * 33 : i * 33 + 32] + merkleValue);
+                    merkleValue = sha256(merklePath[i * N : i * N + N - 1] + merkleValue);
                 }
-                i = i + 1;
+                i++;
             }
         }
         return merkleValue;
