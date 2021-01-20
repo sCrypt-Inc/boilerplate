@@ -1,0 +1,23 @@
+/**
+A Bitcoin contract which can be spent by anyone but only to a specific pubKeyHash (address)
+**/
+
+import "util.scrypt";
+
+contract AnyoneCanSpend {
+  Ripemd160 pubKeyHash;
+
+  public function unlock(SigHashPreimage txPreimage) {
+    SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
+    // this ensures the preimage is for the current tx
+    require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+
+    bytes lockingScript = Util.buildPublicKeyHashScript(this.pubKeyHash);
+    int inputAmount = Util.value(txPreimage);
+    int outputAmount = inputAmount - 546; // minFee
+    bytes output = Util.buildOutput(lockingScript, outputAmount);
+
+    Sha256 hashOutputs = hash256(output);
+    require(hashOutputs == Util.hashOutputs(txPreimage));
+  }
+}

@@ -2,7 +2,7 @@ contract AccumulatorMultiSig {
     int threshold;
     Ripemd160[N] pubKeyHashs;
 
-    static const int N = 3; 
+    static const int N = 3;  // total of keys
 
     public function main(PubKey[N] pubKeys, Sig[N] sigs, bool[N] masks) {
         int total = 0;
@@ -11,11 +11,10 @@ contract AccumulatorMultiSig {
         loop (N) {
             if (masks[i]) {
                 if (hash160(pubKeys[i]) == this.pubKeyHashs[i] && checkSig(sigs[i], pubKeys[i])) {
-                    total = total + 1;
+                    total++;
                 }
             }
-
-            i = i + 1;
+            i++;
         }
 
         require(total >= this.threshold);
