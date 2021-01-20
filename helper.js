@@ -1,7 +1,8 @@
 const path = require('path')
 const {
   readFileSync,
-  existsSync
+  existsSync,
+  mkdirSync
 } = require('fs')
 const {
   bsv,
@@ -148,6 +149,15 @@ function compileContract(fileName) {
   return compileContractImpl(filePath, out);
 }
 
+function compileTestContract(fileName) {
+  const filePath = path.join(__dirname, 'tests', 'testFixture', fileName)
+  const out = path.join(__dirname, 'tests', 'out')
+  if (!existsSync(out)) {
+      mkdirSync(out)
+  }
+  return compileContractImpl(filePath, out);
+}
+
 function loadDesc(fileName) {
   const filePath = path.join(__dirname, `deployments/fixture/autoGen/${fileName}`);
   if (!existsSync(filePath)) {
@@ -194,5 +204,6 @@ module.exports = {
   compileContract,
   loadDesc,
   sighashType2Hex,
-  showError
+  showError,
+  compileTestContract
 }

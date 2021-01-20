@@ -8,10 +8,10 @@ import "util.scrypt";
  * then player A finish it.
  */
 contract RockPaperScissors {
-  static int INIT = 0;
-  static int ROCK = 1;
-  static int PAPER = 2;
-  static int SCISSORS = 3;
+  static const int INIT = 0;
+  static const int ROCK = 1;
+  static const int PAPER = 2;
+  static const int SCISSORS = 3;
 
   public function follow(SigHashPreimage txPreimage, int action, Ripemd160 playerBpkh, int satoshiAmount) {
     SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;

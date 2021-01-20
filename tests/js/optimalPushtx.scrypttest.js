@@ -34,7 +34,7 @@ describe('Test sCrypt contract OptimalPushTx In Javascript', () => {
         
         // set txContext for verification
         test.txContext = {
-            tx: tx,
+            tx,
             inputIndex,
             inputSatoshis
         }

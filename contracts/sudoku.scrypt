@@ -1,0 +1,105 @@
+import "util.scrypt";
+import "array.scrypt";
+
+contract Sudoku {
+
+    bytes board;
+
+    static const int N = 9;
+    static const bytes EMPTY = b'00';
+
+    constructor(bytes board) {
+        this.board = board;
+    }
+
+    function merge(bytes solution) : bytes {
+        bytes newBoard = this.board;
+        int i = 0;
+        loop (N) {
+            int j = 0;
+            loop (N) {
+
+                int value = this.readValue(newBoard, i, j);
+                int inputValue = this.readValue(solution, i, j);
+                if (value == 0) {
+                    require(inputValue <= 9);
+                    newBoard = this.setValue(newBoard, i, j, inputValue);
+                } else {
+                    require(value == inputValue);
+                }
+                j++;
+            }
+
+            i++;
+        }
+        return newBoard;
+    }
+
+    public function solve(bytes solution) {
+
+        require(len(solution) == Sudoku.N * Sudoku.N);
+
+        bytes newBord = this.merge(solution);
+
+        Array rowArray = new Array();
+        Array colArray = new Array();
+        Array squareArray = new Array();
+
+        int i = 0;
+        loop (N) {
+            int j = 0;
+
+            loop (N) {
+                // check for duplicate
+
+                // in a row
+                int rowElem = this.readValue(newBord, i, j);
+                require(rowArray.indexOf(rowElem) == -1);
+                rowArray.push(rowElem);
+
+                // in a column
+                int colElem = this.readValue(newBord, j, i);
+                require(colArray.indexOf(colElem) == -1);
+                colArray.push(colElem);
+
+                // in a subgrid
+                int squareElem = this.readSquareValue(newBord, i, j);
+                require(squareArray.indexOf(squareElem) == -1);
+                squareArray.push(squareElem);
+
+                j++;
+            }
+
+            rowArray.clear();
+            colArray.clear();
+            squareArray.clear();
+
+            i++;
+        }
+
+        require(true);
+    }
+
+    static function readValue(bytes board, int i, int j): int {
+        return Util.fromLEUnsigned(Util.getElemAt(board, Sudoku.index(i, j)));
+    }
+
+    static function setValue(bytes board, int i, int j, int value): bytes {
+        return Util.setElemAt(board, this.index(i, j), Util.toLEUnsigned(value, 1));
+    }
+
+    static function readSquareValue(bytes board, int i, int j): int {
+        return Util.fromLEUnsigned(Util.getElemAt(board, Sudoku.indexSquare(i, j)));
+    }
+
+
+    static function index(int row, int col) : int {
+        return row * Sudoku.N + col;
+    }
+
+    static function indexSquare(int i, int j) : int {
+        int row = i / 3 * 3 + j / 3;
+        int col = i % 3 * 3 + j % 3;
+        return Sudoku.index(row, col);
+    }
+}

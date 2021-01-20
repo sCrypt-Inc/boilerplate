@@ -61,7 +61,7 @@ describe('Test sCrypt contract StateSerializer In Javascript', () => {
 
     // set txContext for verification
     counter.txContext = {
-      tx: tx,
+      tx,
       inputIndex,
       inputSatoshis
     }

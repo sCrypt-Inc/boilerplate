@@ -34,7 +34,7 @@ describe('Deposit', ()=>{
   
       // set txContext for verification
       faucet.txContext = {
-        tx: tx,
+        tx,
         inputIndex,
         inputSatoshis
       }
@@ -81,7 +81,7 @@ describe('Deposit', ()=>{
   
       preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis)
       faucet.txContext = {
-        tx: tx,
+        tx,
         inputIndex,
         inputSatoshis
       }
@@ -131,7 +131,7 @@ describe('Withdraw', () => {
 
     // set txContext for verification
     faucet.txContext = {
-      tx: tx,
+      tx,
       inputIndex,
       inputSatoshis
     }
@@ -156,7 +156,7 @@ describe('Withdraw', () => {
 
     // set txContext for verification
     faucet.txContext = {
-      tx: tx,
+      tx,
       inputIndex,
       inputSatoshis
     };
@@ -182,7 +182,7 @@ describe('Withdraw', () => {
 
     // set txContext for verification
     faucet.txContext = {
-      tx: tx,
+      tx,
       inputIndex,
       inputSatoshis
     };

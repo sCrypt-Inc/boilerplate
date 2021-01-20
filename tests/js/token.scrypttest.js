@@ -31,7 +31,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
       return getPreimage(tx, token.lockingScript.toASM(), inputSatoshis)
     }
 
-    token.txContext = { tx: tx, inputIndex, inputSatoshis }
+    token.txContext = { tx, inputIndex, inputSatoshis }
   });
 
   it('should succeed when publicKey1 transfers 40 tokens to publicKey2', () => {

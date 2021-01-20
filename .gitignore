@@ -3,3 +3,4 @@ out
 .vscode/settings.json
 deployments/fixture/autoGen/*.json
 compiler
+tests/out/*.json

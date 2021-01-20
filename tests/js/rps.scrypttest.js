@@ -76,7 +76,7 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
         })
       );
 
-      rps.txContext = { tx: tx, inputIndex, inputSatoshis: initAmount };
+      rps.txContext = { tx, inputIndex, inputSatoshis: initAmount };
       const preimage = getPreimage(tx, rps.lockingScript.toASM(), initAmount, inputIndex, sighashType);
 
       return rps.follow(new SigHashPreimage(toHex(preimage)), action, new Ripemd160(toHex(playerBpkh)), changeAmount);
@@ -132,7 +132,7 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
           })
         );
       }
-      rps.txContext = { tx: tx, inputIndex, inputSatoshis: totalAmount };
+      rps.txContext = { tx, inputIndex, inputSatoshis: totalAmount };
 
       const preimage = getPreimage(tx, rps.lockingScript.toASM(), totalAmount, inputIndex, sighashType);
       const sig = signTx(tx, privKey, rps.lockingScript.toASM(), totalAmount, inputIndex, sighashType);

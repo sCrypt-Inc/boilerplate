@@ -1,17 +1,17 @@
-contract Util {
+library Util {
 	// number of bytes to denote some numeric value
-    static int DataLen = 1;
+    static const int DataLen = 1;
 	// number of bytes to denote length serialized state, including varint prefix (1 byte) + length (2 bytes), change length to 4 when you need PushData4
-    static int StateLen = 3;
+    static const int StateLen = 3;
 
 	// number of bytes to denote input sequence
-	static int InputSeqLen = 4;
+	static const int InputSeqLen = 4;
 	// number of bytes to denote output value
-    static int OutputValueLen = 8;
+    static const int OutputValueLen = 8;
 	// number of bytes to denote a public key (compressed)
-    static int PubKeyLen = 33;
+    static const int PubKeyLen = 33;
 	// number of bytes to denote a public key hash
-    static int PubKeyHashLen = 20;
+    static const int PubKeyHashLen = 20;
 
     // convert signed integer `n` to unsigned integer of `l` bytes, in little endian
 	static function toLEUnsigned(int n, int l): bytes {
@@ -196,15 +196,6 @@ contract Util {
 		int l = len(preimage);
 		return SigHashType(preimage[l - 4 :]);
 	}
-
-	// used only for testing
-    public function testPreimageParsing(SigHashPreimage preimage) {
-			require(Tx.checkPreimage(preimage));
-		SigHashPreimage preimage_ = SigHashPreimage(Util.nVersion(preimage) + Util.hashPrevouts(preimage) + Util.hashSequence(preimage) +
-						  Util.outpoint(preimage) + Util.writeVarint(Util.scriptCode(preimage)) + Util.valueRaw(preimage) +
-            			  Util.nSequenceRaw(preimage) + Util.hashOutputs(preimage) + Util.nLocktimeRaw(preimage) + Util.sigHashType(preimage));
-        require(preimage == preimage_);
-    }
 
 	// Writes variable amount of data respecting minimal push rules
     static function writeVarMinimalPushdata(bytes b): bytes {

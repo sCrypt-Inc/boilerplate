@@ -79,7 +79,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
 
     const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
 
-    token.txContext = { tx: tx, inputIndex, inputSatoshis }
+    token.txContext = { tx, inputIndex, inputSatoshis }
     const result = token
       .buy(
         new SigHashPreimage(toHex(preimage)),
@@ -134,7 +134,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
 
     const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
 
-    token.txContext = { tx: tx, inputIndex, inputSatoshis }
+    token.txContext = { tx, inputIndex, inputSatoshis }
     const result = token
       .buyMore(
         new SigHashPreimage(toHex(preimage)),
@@ -188,7 +188,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
 
     const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis)
 
-    token.txContext = { tx: tx, inputIndex, inputSatoshis }
+    token.txContext = { tx, inputIndex, inputSatoshis }
 
     const sig = signTx(tx, privateKey, token.lockingScript.toASM(), inputSatoshis)
 
