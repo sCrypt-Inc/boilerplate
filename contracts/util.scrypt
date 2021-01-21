@@ -197,8 +197,6 @@ library Util {
 		return SigHashType(preimage[l - 4 :]);
 	}
 
-
-
 	// Writes variable amount of data respecting minimal push rules
     static function writeVarMinimalPushdata(bytes b): bytes {
 		int n = len(b);

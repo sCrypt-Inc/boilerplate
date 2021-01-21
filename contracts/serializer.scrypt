@@ -2,7 +2,7 @@ import "./util.scrypt";
 
 // a de/serializer for basic types
 
-contract Reader {
+library Reader {
   bytes buf;
   int pos;
 
@@ -57,7 +57,7 @@ contract Reader {
   }
 }
 
-contract Writer {
+library Writer {
   // return VarInt encoding
   static function writeBytes(bytes b) : bytes {
     int n = len(b);

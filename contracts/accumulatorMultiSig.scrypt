@@ -1,7 +1,8 @@
 contract AccumulatorMultiSig {
     int threshold;
-    Ripemd160[3] pubKeyHashs;
-    static const int N = 3; // total of keys
+    Ripemd160[N] pubKeyHashs;
+
+    static const int N = 3;  // total of keys
 
     public function main(PubKey[N] pubKeys, Sig[N] sigs, bool[N] masks) {
         int total = 0;

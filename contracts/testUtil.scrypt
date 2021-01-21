@@ -1,0 +1,12 @@
+import "./util.scrypt";
+
+// used only for testing Util
+contract TestUtil {
+    public function testPreimageParsing(SigHashPreimage preimage) {
+			require(Tx.checkPreimage(preimage));
+		SigHashPreimage preimage_ = SigHashPreimage(Util.nVersion(preimage) + Util.hashPrevouts(preimage) + Util.hashSequence(preimage) +
+						  Util.outpoint(preimage) + Util.writeVarint(Util.scriptCode(preimage)) + Util.valueRaw(preimage) +
+            			  Util.nSequenceRaw(preimage) + Util.hashOutputs(preimage) + Util.nLocktimeRaw(preimage) + Util.sigHashType(preimage));
+        require(preimage == preimage_);
+    }
+}

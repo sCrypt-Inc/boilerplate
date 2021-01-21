@@ -3,7 +3,7 @@ const { buildContractClass, getPreimage, toHex, SigHashPreimage } = require('scr
 
 const { newTx, compileTestContract, inputIndex, inputSatoshis } = require('../../helper');
 
-describe('Test sCrypt contract Util In Javascript', () => {
+describe('Test sCrypt library Util In Javascript', () => {
     let util, preimage, result, tx = newTx()
 
     before(() => {

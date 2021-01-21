@@ -2,11 +2,12 @@ import "util.scrypt";
 
 // Conway Game Of Life on a board of N * N
 contract GameOfLife {
-    static const int N = 7;
-    static const bytes LIVE = b'01';
-    static const bytes DEAD = b'00';
+    static const int N = 5;
+    // effctively we play on a grid of (N+2) * (N+2) without handling boundary cells
+    static int BOARD_SIZE = GameOfLife.N + 2;
+    static bytes LIVE = b'01';
+    static bytes DEAD = b'00';
     static const int LOOP_NEIGHBORS = 3;
-    static const int LOOP_MOVE = 5;
 
     public function play(int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
@@ -14,7 +15,7 @@ contract GameOfLife {
         bytes scriptCode = Util.scriptCode(txPreimage);
         int scriptLen = len(scriptCode);
 
-        int BOARDLEN = GameOfLife.N * GameOfLife.N;
+        int BOARDLEN = GameOfLife.BOARD_SIZE * GameOfLife.BOARD_SIZE;
         int boardStart = scriptLen - BOARDLEN;
         bytes oldBoard = scriptCode[boardStart : ];
 
@@ -33,10 +34,9 @@ contract GameOfLife {
         bytes newBoard = oldBoard;
 
         int i = 1;
-        // N - 2
-        loop (LOOP_MOVE) {
+        loop (GameOfLife.N) {
             int j = 1;
-            loop (LOOP_MOVE) {
+            loop (GameOfLife.N) {
                 bytes nextState = this.next(oldBoard, i, j);
                 newBoard = Util.setElemAt(newBoard, this.index(i, j), nextState);
 
@@ -79,6 +79,6 @@ contract GameOfLife {
     }
 
     function index(int i, int j) : int {
-        return i * N + j;
+        return i * GameOfLife.BOARD_SIZE + j;
     }
 }

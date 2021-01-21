@@ -1,5 +1,5 @@
 
-contract Array {
+library Array {
     bytes data;
     static const int DATALEN = 1;
     static const bytes EMPTY = b'';
