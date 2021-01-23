@@ -5,7 +5,7 @@ const { compileContract } = require('../../helper');
 
 
 
-describe('Test sCrypt contract Demo In Javascript', () => {
+describe('Test sCrypt contract StructDemo In Javascript', () => {
   let StructDemo, person, result
 
   before(() => {

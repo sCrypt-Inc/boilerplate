@@ -3,7 +3,7 @@ const { buildContractClass, Ripemd160, Sig } = require('scryptlib');
 const { compileContract } = require('../../helper');
 
 
-describe('Test sCrypt contract Demo In Javascript', () => {
+describe('Test sCrypt contract ArrayDemo In Javascript', () => {
     let arraydemo, result
 
     before(() => {
