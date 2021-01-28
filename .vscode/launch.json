@@ -154,6 +154,26 @@
     {
       "type": "scrypt",
       "request": "launch",
+      "name": "Debug RPuzzle",
+      "program": "${workspaceFolder}/contracts/rpuzzle.scrypt",
+      "constructorArgs": [
+        "Ripemd160(b'14fb7e00b72f146814c0e54183ea94649b800d05')"
+      ],
+      "pubFunc": "unlock",
+      "pubFuncArgs": [
+        "Sig(b'304402207b6ce0aaae3a379721a364ab11414abd658a9940c10d48cd0bc6b273e81d058902206f6c0671066aef4c0de58ab8c349fde38ef3ea996b9f2e79241ebad96049299541')",
+        "PubKey(b'036cfa9a0b0abf4fa56e583b99f8d1ba4a2608096283cdea68ecf1d4f5bdefeb1f')",
+        "Sig(b'3045022100ac2a87fa9b2b6f6a3ea758b0994d65c054114b7b38722eb4ad63bde0b8a1314a022024f823d1174e636c564ffdaedde30c5868f4ac1c9b59e992fcce55d7ce36894941')"
+      ],
+      "txContext": {
+        "hex": "01000000015884e5db9de218238671572340b207ee85b628074e7e467096c267266baf77a40000000000ffffffff0000000000",
+        "inputIndex": 0,
+        "inputSatoshis": 100000
+      }
+    },
+    {
+      "type": "scrypt",
+      "request": "launch",
       "name": "Debug tokenUtxo",
       "program": "${workspaceFolder}/contracts/tokenUtxo.scrypt",
       "constructorArgs": [],
