@@ -1,16 +1,18 @@
 const { expect } = require('chai');
 const { interfaces } = require('mocha');
-const { buildContractClass, Struct, Bytes, Int } = require('scryptlib');
+const { buildContractClass, buildStructsClass, Bytes } = require('scryptlib');
 const { compileContract } = require('../../helper');
 
+let contract = compileContract('structdemo.scrypt');
+let StructDemo = buildContractClass(contract);
+let {Person} = buildStructsClass(contract);
 
 
-describe('Test sCrypt contract Demo In Javascript', () => {
-  let StructDemo, person, result
+describe('Test sCrypt contract StructDemo In Javascript', () => {
+  let structDemo, result
 
   before(() => {
-    StructDemo = buildContractClass(compileContract('structdemo.scrypt'));
-    person = new StructDemo(new Struct({
+    structDemo = new StructDemo(new Person({
       name: new Bytes("7361746f736869206e616b616d6f746f"),
       leftHanded: false,
       age: 33,
@@ -21,7 +23,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
 
 
   it('should success', () => {
-    result = person.main(new Struct({
+    result = structDemo.main(new Person({
       name: new Bytes("7361746f736869206e616b616d6f746f"),
       leftHanded: false,
       age: 33,
@@ -34,7 +36,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
   it('should throw', () => {
 
     expect(() => {
-      person = new StructDemo(new Struct({
+      structDemo = new StructDemo(new Person({
         name:  1,
         leftHanded: false,
         age: 33,
@@ -44,7 +46,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
 
 
     expect(() => {
-      person.main(new Struct({
+      structDemo.main(new Person({
         leftHanded: false,
         age: 33,
         addr: new Bytes("68656c6c6f20776f726c6421")
@@ -52,7 +54,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
     }).to.throws(/argument of type struct Person missing member name/);
 
     expect(() => {
-      person.main(new Struct({
+      structDemo.main(new Person({
         id: 01,
         name: new Bytes("7361746f736869206e616b616d6f746f"),
         leftHanded: false,
@@ -64,7 +66,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
 
     it('should verify failed', () => {
 
-      result = person.main(new Struct({
+      result = structDemo.main(new Person({
         name: new Bytes("7361746f736869206e616b616d6f746f"),
         leftHanded: false,
         age: 32,
@@ -76,7 +78,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
 
     it('should verify failed', () => {
 
-      result = person.main(new Struct({
+      result = structDemo.main(new Person({
         name: new Bytes("7361746f736869206e616b616d6f746e"),
         leftHanded: false,
         age: 33,
@@ -88,7 +90,7 @@ describe('Test sCrypt contract Demo In Javascript', () => {
 
     it('should verify failed', () => {
 
-      result = person.main(new Struct({
+      result = structDemo.main(new Person({
         name: new Bytes("7361746f736869206e616b616d6f746f"),
         leftHande1d: false,
         age: 33,
