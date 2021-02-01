@@ -46,7 +46,8 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── p2sh.scrypt                     # <a href="https://medium.com/@xiaohuiliu/sun-rising-p2sh-7ebfca9283aa">p2sh after Genesis</a>
 │   ├── rabin.scrypt                    # <a href="https://medium.com/coinmonks/access-external-data-from-bitcoin-smart-contracts-2ecdc7448c43">Rabin signature</a> to import off-chain data into a contract via oracle
 |   ├── rpuzzle.scrypt                  # <a href="https://wiki.bitcoinsv.io/index.php/R-Puzzles">R-Puzzle</a>
-│   ├── rps.scrypt                      # Rock Paper Scissors   
+│   ├── rps.scrypt                      # Rock Paper Scissors
+│   ├── simpleBVM.scrypt                # <a href="https://github.com/sCrypt-Inc/boilerplate/pull/57">A simple Bitcoin Script interpreter: a Bitcoin VM inside a BVM </a>
 |   ├── spvToken.scrypt                 # <a href="https://medium.com/@xiaohuiliu/peer-to-peer-tokens-6508986d9593">Peer-to-peer Tokens</a>
 |   ├── sudoku.scrypt                   # <a href="https://xiaohuiliu.medium.com/sudoku-on-bitcoin-bd78551956fb">Sudoku</a>
 │   ├── tictactoe.scrypt                # <a href="https://medium.com/@xiaohuiliu/tic-tac-toe-on-bitcoin-sv-5acdf5bd676d">TicTacToe</a> onchain p2p gaming 
