@@ -185,43 +185,43 @@ contract SimpleBVM {
     }
 
     function process_opcode(bytes b) : int {
-        if ( b == b'00' ) {
+        if ( b == OpCode.OP_0 ) {
             this.op_0();
-        } else if ( b == b'51' ) {
+        } else if ( b == OpCode.OP_1 ) {
             this.op_1();
-        } else if ( b == b'52' ) {
+        } else if ( b == OpCode.OP_2 ) {
             this.op_2();
-        } else if ( b == b'53' ) {
+        } else if ( b == OpCode.OP_3 ) {
             this.op_3();
-        } else if ( b == b'54' ) {
+        } else if ( b == OpCode.OP_4 ) {
             this.op_4();
-        } else if ( b == b'55' ) {
+        } else if ( b == OpCode.OP_5 ) {
             this.op_5();
-        } else if ( b == b'56' ) {
+        } else if ( b == OpCode.OP_6 ) {
             this.op_6();
-        } else if ( b == b'57' ) {
+        } else if ( b == OpCode.OP_7 ) {
             this.op_7();
-        } else if ( b == b'58' ) {
+        } else if ( b == OpCode.OP_8 ) {
             this.op_8();
-        } else if ( b == b'59' ) {
+        } else if ( b == OpCode.OP_9 ) {
             this.op_9();
-        } else if ( b == b'5a' ) {
+        } else if ( b == OpCode.OP_10 ) {
             this.op_10();
-        } else if ( b == b'5b' ) {
+        } else if ( b == OpCode.OP_11 ) {
             this.op_11();
-        } else if ( b == b'5c' ) {
+        } else if ( b == OpCode.OP_12 ) {
             this.op_12();
-        } else if ( b == b'5d' ) {
+        } else if ( b == OpCode.OP_13 ) {
             this.op_13();
-        } else if ( b == b'5e' ) {
+        } else if ( b == OpCode.OP_14 ) {
             this.op_14();
-        } else if ( b == b'5f' ) {
+        } else if ( b == OpCode.OP_15 ) {
             this.op_15();
-        } else if ( b == b'60' ) {
+        } else if ( b == OpCode.OP_16 ) {
             this.op_16();
-        } else if ( b == b'93' ) {
+        } else if ( b == OpCode.OP_ADD ) {
             this.op_add();
-        } else if ( b == b'94' ) {
+        } else if ( b == OpCode.OP_SUB ) {
             this.op_sub();
         }
 
