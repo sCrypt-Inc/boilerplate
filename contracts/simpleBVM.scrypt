@@ -1,0 +1,268 @@
+contract SimpleBVM {
+    int x;
+
+    constructor(int x) {
+        this.x = x;
+    }
+
+    function op_0() : int {
+        asm {
+            OP_0
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_1() : int {
+        asm {
+            OP_1
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_2() : int {
+        asm {
+            OP_2
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_3() : int {
+        asm {
+            OP_3
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_4() : int {
+        asm {
+            OP_4
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_5() : int {
+        asm {
+            OP_5
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_6() : int {
+        asm {
+            OP_6
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_7() : int {
+        asm {
+            OP_7
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_8() : int {
+        asm {
+            OP_8
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_9() : int {
+        asm {
+            OP_9
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_10() : int {
+        asm {
+            OP_10
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_11() : int {
+        asm {
+            OP_11
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_12() : int {
+        asm {
+            OP_12
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_13() : int {
+        asm {
+            OP_13
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_14() : int {
+        asm {
+            OP_14
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_15() : int {
+        asm {
+            OP_15
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_16() : int {
+        asm {
+            OP_16
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_add() : int {
+        asm { 
+            OP_FROMALTSTACK
+            OP_FROMALTSTACK
+            OP_ADD
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_sub() : int {
+        asm { 
+            OP_FROMALTSTACK
+            OP_FROMALTSTACK
+            OP_SWAP
+            OP_SUB
+            OP_TOALTSTACK
+            OP_0
+        }
+    }
+
+    function op_fromaltstack() : int {
+        asm { 
+            OP_FROMALTSTACK
+            OP_0
+        }
+    }
+
+    function op_numequal() : int {
+        asm { 
+            OP_NUMEQUAL
+            OP_0
+        }
+    }
+
+    function op_verify() : int {
+        asm { 
+            OP_VERIFY
+            OP_0
+            OP_0
+        }
+    }
+
+    function process_opcode(bytes b) : int {
+        if ( b == b'00' ) {
+            this.op_0();
+        } else if ( b == b'51' ) {
+            this.op_1();
+        } else if ( b == b'52' ) {
+            this.op_2();
+        } else if ( b == b'53' ) {
+            this.op_3();
+        } else if ( b == b'54' ) {
+            this.op_4();
+        } else if ( b == b'55' ) {
+            this.op_5();
+        } else if ( b == b'56' ) {
+            this.op_6();
+        } else if ( b == b'57' ) {
+            this.op_7();
+        } else if ( b == b'58' ) {
+            this.op_8();
+        } else if ( b == b'59' ) {
+            this.op_9();
+        } else if ( b == b'5a' ) {
+            this.op_10();
+        } else if ( b == b'5b' ) {
+            this.op_11();
+        } else if ( b == b'5c' ) {
+            this.op_12();
+        } else if ( b == b'5d' ) {
+            this.op_13();
+        } else if ( b == b'5e' ) {
+            this.op_14();
+        } else if ( b == b'5f' ) {
+            this.op_15();
+        } else if ( b == b'60' ) {
+            this.op_16();
+        } else if ( b == b'93' ) {
+            this.op_add();
+        } else if ( b == b'94' ) {
+            this.op_sub();
+        }
+
+        return 0;
+    }
+
+    function parse(bytes input) : int {
+        int len = len(input);
+        int i = 0;      
+        bool done = false;
+
+        loop (18) {
+            if (!done) {
+                if (i >= len) {
+                    done = true;
+                } else {
+                    bytes b = input[i:i+1];
+                    this.process_opcode(b);
+                    i = i + 1;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    function compareResult() : int {
+        int x = this.x;
+        this.op_fromaltstack();
+
+        this.op_numequal();
+        this.op_verify();
+
+        return 0;
+    }
+
+    public function unlock(bytes input) {
+        this.parse(input);
+
+        this.compareResult();
+
+        require(true);
+    }
+}
