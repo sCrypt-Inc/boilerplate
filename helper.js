@@ -156,8 +156,8 @@ function compileContract(fileName) {
 }
 
 function compileTestContract(fileName) {
-  const filePath = path.join(__dirname, 'tests', 'testFixture', fileName)
-  const out = path.join(__dirname, 'tests', 'out')
+  const filePath = path.join(__dirname, 'testFixture', fileName)
+  const out = path.join(__dirname,  'out')
   if (!existsSync(out)) {
       mkdirSync(out)
   }
