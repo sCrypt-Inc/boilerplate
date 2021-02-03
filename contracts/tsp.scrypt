@@ -30,7 +30,7 @@ contract TSP {
         i = 0;
         // calculate path length
         loop (N) {
-            sum = sum + this.dist(i, (i + 1) % 10);
+            sum = sum + this.dist(i, (i + 1) % N);
             i++;
         }
 
