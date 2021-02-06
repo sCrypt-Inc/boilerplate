@@ -9,9 +9,8 @@ contract xorPuzzle {
       this.dataXORPubKey = dataXORPubKey;
     }
 
-    public function unlock(Sig sig, PubKey pubKey, bytes data) {
+    public function unlock(Sig sig, bytes data) {
       bytes pk = data ^ this.dataXORPubKey;
-      require(pk == pubKey);
-      require(checkSig(sig, pubKey));
+      require(checkSig(sig, PubKey(pk)));
     }
 }

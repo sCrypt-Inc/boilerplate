@@ -25,8 +25,6 @@ const dataBuf = Buffer.from(data);
 const dataBufHash = bsv.crypto.Hash.sha256(dataBuf);
 const dataBufHashHex = toHex(dataBufHash).padStart(66, '0');
 const dataBufHashBI = BigInt('0x' + dataBufHashHex);
-console.log(dataBufHashBI);
-console.log(dataBufHashHex);
 
 const data_false = '9998';
 const dataBuf_false = Buffer.from(data_false);
@@ -39,13 +37,9 @@ console.log(`Private key generated: '${privateKeyA.toWIF()}'`);
 const publicKeyA = privateKeyA.publicKey;
 const publicKeyAHex = toHex(publicKeyA);
 const publicKeyABI = BigInt('0x' + publicKeyAHex);
-console.log(publicKeyABI);
-console.log(publicKeyAHex);
 
 const xorResult = dataBufHashBI ^ publicKeyABI;
 let xorResultHex = xorResult.toString(16).padStart(66, '0');
-console.log(xorResult);
-console.log(xorResultHex);
 
 const privateKeyB = new bsv.PrivateKey.fromRandom('testnet');
 console.log(`Private key generated: '${privateKeyB.toWIF()}'`);
@@ -66,15 +60,12 @@ describe('Test sCrypt contract HashPuzzle In Javascript', () => {
       xorPuzzle.lockingScript.toASM(),
       inputSatoshis
     );
-    console.log(toHex(sig));
-    console.log(tx.toString());
   });
 
   it('check should succeed when correct data provided', () => {
     result = xorPuzzle
       .unlock(
         new Sig(toHex(sig)),
-        new PubKey(toHex(publicKeyA)),
         new Bytes(dataBufHashHex)
       )
       .verify();
@@ -85,7 +76,6 @@ describe('Test sCrypt contract HashPuzzle In Javascript', () => {
     result = xorPuzzle
       .unlock(
         new Sig(toHex(sig)),
-        new PubKey(toHex(publicKeyA)),
         new Bytes(dataBufHashHex_false)
       )
       .verify();

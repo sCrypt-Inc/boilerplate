@@ -1,5 +1,5 @@
 /**
- * Testnet test for HashPuzzle contract in JavaScript
+ * Testnet test xorPuzzle contract in JavaScript
  **/
 const {
   bsv,
@@ -25,8 +25,6 @@ const dataBuf = Buffer.from(data);
 const dataBufHash = bsv.crypto.Hash.sha256(dataBuf);
 const dataBufHashHex = toHex(dataBufHash).padStart(66, '0');
 const dataBufHashBI = BigInt('0x' + dataBufHashHex);
-console.log(dataBufHashBI);
-console.log(dataBufHashHex);
 
 // for output of locking transaction
 const privateKeyA = new bsv.PrivateKey.fromRandom('testnet');
@@ -34,13 +32,9 @@ console.log(`Private key generated: '${privateKeyA.toWIF()}'`);
 const publicKeyA = privateKeyA.publicKey;
 const publicKeyAHex = toHex(publicKeyA);
 const publicKeyABI = BigInt('0x' + publicKeyAHex);
-console.log(publicKeyABI);
-console.log(publicKeyAHex);
 
 const xorResult = dataBufHashBI ^ publicKeyABI;
 let xorResultHex = xorResult.toString(16).padStart(66, '0');
-console.log(xorResult);
-console.log(xorResultHex);
 
 const privateKeyB = new bsv.PrivateKey.fromRandom('testnet');
 console.log(`Private key generated: '${privateKeyB.toWIF()}'`);
@@ -77,13 +71,11 @@ const addressB = privateKeyB.toAddress();
     const unlockingScript = xorPuzzle
       .unlock(
         new Sig(toHex(sig)),
-        new PubKey(toHex(publicKeyA)),
         new Bytes(dataBufHashHex)
       )
       .toScript();
 
     unlockingTx.inputs[0].setScript(unlockingScript);
-    console.log(unlockingTx.toString());
     const unlockingTxid = await sendTx(unlockingTx);
     console.log('unlocking txid:   ', unlockingTxid);
 
