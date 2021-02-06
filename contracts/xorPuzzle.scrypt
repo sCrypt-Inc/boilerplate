@@ -1,0 +1,16 @@
+/**
+A Bitcoin contract which is instantiated with a shasum of known data xor'ed with a pubKey
+**/
+
+contract xorPuzzle {
+    bytes dataXORPubKey;
+
+    constructor(bytes dataXORPubKey) {
+      this.dataXORPubKey = dataXORPubKey;
+    }
+
+    public function unlock(Sig sig, bytes data) {
+      bytes pk = data ^ this.dataXORPubKey;
+      require(checkSig(sig, PubKey(pk)));
+    }
+}

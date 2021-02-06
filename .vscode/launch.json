@@ -7,6 +7,23 @@
     {
       "type": "scrypt",
       "request": "launch",
+      "name": "Debug xorPuzzle",
+      "program": "${workspaceFolder}/contracts/xorPuzzle.scrypt",
+      "constructorArgs": ["b'039c7a1cedd91786bdd56717ff05453657287abc9020daef376744e612186750a1'"],
+      "pubFunc": "unlock",
+      "pubFuncArgs": [
+        "Sig(b'304402206e68278a2ac6ba2c1bdba99ebccd7b1b3c002e7374bc42f68e9eb72bf89756fa02207fbae6414cf7bf6006a23c87e34f89167ea1992e75561fc830cbf9099633383941')",
+        "b'00888df25ae35772424a560c7152a1de794440e0ea5cfee62828333a456a506e05'"
+      ],
+      "txContext": {
+        "hex": "01000000015884e5db9de218238671572340b207ee85b628074e7e467096c267266baf77a40000000000ffffffff0000000000",
+        "inputIndex": 0,
+        "inputSatoshis": 100000
+      }
+    },
+    {
+      "type": "scrypt",
+      "request": "launch",
       "name": "Debug Demo",
       "program": "${workspaceFolder}/contracts/demo.scrypt",
       "constructorArgs": [
