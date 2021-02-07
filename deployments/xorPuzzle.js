@@ -23,7 +23,7 @@ const { privateKey } = require('../privateKey');
 const data = '9999';
 const dataBuf = Buffer.from(data);
 const dataBufHash = bsv.crypto.Hash.sha256(dataBuf);
-const dataBufHashHex = toHex(dataBufHash).padStart(66, '0');
+const dataBufHashHex = toHex(dataBufHash);
 const dataBufHashBI = BigInt('0x' + dataBufHashHex);
 
 // for output of locking transaction
@@ -31,10 +31,17 @@ const privateKeyA = new bsv.PrivateKey.fromRandom('testnet');
 console.log(`Private key generated: '${privateKeyA.toWIF()}'`);
 const publicKeyA = privateKeyA.publicKey;
 const publicKeyAHex = toHex(publicKeyA);
-const publicKeyABI = BigInt('0x' + publicKeyAHex);
 
-const xorResult = dataBufHashBI ^ publicKeyABI;
-let xorResultHex = xorResult.toString(16).padStart(66, '0');
+const publicKeyData = publicKeyAHex + dataBufHashHex;
+
+const dataBuffer = Buffer.from(publicKeyData, 'hex');
+const publicKeyDataHash = bsv.crypto.Hash.sha256(dataBuffer);
+const publicKeyDataHashHex = toHex(publicKeyDataHash);
+
+const publicKeyDataHashBI = BigInt('0x' + publicKeyDataHashHex);
+
+const xorResult = dataBufHashBI ^ publicKeyDataHashBI;
+let xorResultHex = xorResult.toString(16);
 
 const privateKeyB = new bsv.PrivateKey.fromRandom('testnet');
 console.log(`Private key generated: '${privateKeyB.toWIF()}'`);
@@ -71,6 +78,7 @@ const addressB = privateKeyB.toAddress();
     const unlockingScript = xorPuzzle
       .unlock(
         new Sig(toHex(sig)),
+        new PubKey(toHex(publicKeyA)),
         new Bytes(dataBufHashHex)
       )
       .toScript();
