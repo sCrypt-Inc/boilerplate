@@ -42,7 +42,7 @@ describe('Test sCrypt contract StructDemo In Javascript', () => {
         age: 33,
         addr: new Bytes("68656c6c6f20776f726c6421")
       }));
-    }).to.throws(/wrong argument type, expected bytes but got int/);
+    }).to.throws(/wrong argument type, expected Name but got int/);
 
 
     expect(() => {
