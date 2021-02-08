@@ -1,10 +1,17 @@
-struct Person {
-    bytes name;
-    bytes addr;
-    bool leftHanded;
-    int age;
+type Integer = int;
+type Name = bytes;
+type Age = Integer;
+type Address = bytes;
 
+struct Person {
+    Name name;
+    Address addr;
+    bool leftHanded;
+    Age age;
 }
+
+type FeMale = Person;
+type Male = Person;
 
 struct Block {
     bytes hash;
@@ -15,11 +22,11 @@ struct Block {
 contract StructDemo {
     Person person;
 
-    constructor(Person some) {
-        this.person = some;
+    constructor(Person male) {
+        this.person = male;
     }
 
-    public function main(Person person1) {
+    public function main(FeMale person1) {
 
         require(person1.leftHanded == this.person.leftHanded);
         require(person1.addr == this.person.addr);
@@ -33,12 +40,12 @@ contract StructDemo {
         require(block.hash == b'000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f');
     }
 
-    function incAge(Person p1) : Person {
+    function incAge(FeMale p1) : Person {
         p1.age++;
         return p1;
     }
 
-    function genisBlock(Person p1) : Block {
+    function genisBlock(Male p1) : Block {
 
         Block blk = {
             b'000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f',

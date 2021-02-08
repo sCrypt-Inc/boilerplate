@@ -1,11 +1,11 @@
 const { expect } = require('chai');
 const { interfaces } = require('mocha');
-const { buildContractClass, buildStructsClass, Bytes } = require('scryptlib');
+const { buildContractClass, buildTypeClasses, Bytes } = require('scryptlib');
 const { compileContract } = require('../../helper');
 
 let contract = compileContract('structdemo.scrypt');
 let StructDemo = buildContractClass(contract);
-let {Person} = buildStructsClass(contract);
+let {Person} = buildTypeClasses(contract);
 
 
 describe('Test sCrypt contract StructDemo In Javascript', () => {
