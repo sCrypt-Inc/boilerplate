@@ -6,8 +6,8 @@ os:
   - osx
   - windows
 
-before_install:
-  - npm i -g npm@latest
+#before_install:
+#  - npm i -g npm@latest
 
 script:
   - git clone -b master https://github.com/sCrypt-Inc/compiler_dist.git compiler
