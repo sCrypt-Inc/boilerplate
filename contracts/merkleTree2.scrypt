@@ -1,4 +1,4 @@
-contract MerkleTree {
+library MerkleTree {
     static const int N = 33;
     static const int LOOPCOUNT = 5;
     // TODO second preimage attack
