@@ -1,0 +1,50 @@
+import "util.scrypt";
+ 
+contract SimpleAssetNFT {
+    static const int CODE_LEN = 1859;
+    public function transfer(Sig senderSig, PubKey unlockKey, Ripemd160 receiverAddress, SigHashPreimage txPreimage, bytes payload, Ripemd160 changeAddress, int changeSatoshis) {
+        // Allow anyone to fund this operation, commit to all the outputs.
+        // Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID;
+        require(Tx.checkPreimageOpt_(txPreimage));
+        // Get the locking script of this input.
+        bytes lockingScript = Util.scriptCode(txPreimage);
+        // bytes code = lockingScript[ : SimpleAssetNFT.CODE_LEN ];
+        // We know the static part of this contract is exactly 4463 in length (we pre-compiled and then replaced this constant).
+        // Make sure to add 2 bytes to skip the push data for the assetID (36 bytes of the outpoint in little-endian)
+        bytes dataState = lockingScript[ SimpleAssetNFT.CODE_LEN : ];
+        bytes assetId = dataState[ : 36 ]; // Note that the assetId is in little endian to make it easier to match by outpoint
+        // Validate and authorize the transaction, obtain the hash160 bytes from the locking script and compare against the hash160 of the unlockKey
+        require(hash160(unlockKey) == dataState[ 37 : 57]);
+        // require(checkSig(senderSig, unlockKey));  
+        // Was this a minting (ie: first) transfer?
+        if (assetId == num2bin(0, 36)) {
+            // Then the assetId must be equal to the outpoint that this input is spending.
+            assetId = Util.outpoint(txPreimage);
+        }
+        bytes assetOutputBytes = lockingScript[ : SimpleAssetNFT.CODE_LEN - 2] + b'6a24' + assetId + b'14' + receiverAddress;
+        // Use b`fd` for varInt because we know that the contract is greater than 255 bytes and less than 65535. Avoids using unnecessary Util.writeVarInt
+        bytes buildingOutput = num2bin(Util.value(txPreimage), Util.OutputValueLen) + Util.writeVarint(assetOutputBytes);
+        if (payload) {
+            // If a payload update is provided, then save it as a second output OP_RETURN
+            // Note that 'payload' must include the byte length provided by the spender. Avoids using unnecessary Util.writeVarInt
+            buildingOutput += Util.buildOutput(b'006a' + Util.writeVarMinimalPushdata(payload), 0);
+            // buildingOutput += Util.buildOutput(b'006a' + payload, 0);
+        }
+        buildingOutput += (num2bin(changeSatoshis, Util.OutputValueLen) + b'1976a914' + changeAddress + b'88ac');
+        require(hash256(buildingOutput) == Util.hashOutputs(txPreimage));
+    }
+ 
+    public function melt(Sig ownerSig, PubKey unlockKey, Ripemd160 receiverAddress, SigHashPreimage txPreimage, Ripemd160 changeAddress, int changeSatoshis) {
+        // Allow anyone to fund this operation, commit to all the outputs.
+        // Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID;
+        require(Tx.checkPreimageOpt(txPreimage));
+        // Validate and authorize the transaction, obtain the ripemd160 bytes from the locking script and compare against the hash160 of the unlockKey
+        require(hash160(unlockKey) == PubKey((Util.scriptCode(txPreimage)[ SimpleAssetNFT.CODE_LEN : ])[ 37 : 57]));
+        require(checkSig(ownerSig, unlockKey));  
+        require(hash256(
+            (num2bin(Util.value(txPreimage), Util.OutputValueLen) + b'1976a914' + receiverAddress + b'88ac') +
+            (num2bin(changeSatoshis, Util.OutputValueLen) + b'1976a914' + changeAddress + b'88ac'))
+            ==
+            Util.hashOutputs(txPreimage));
+    }
+}

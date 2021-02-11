@@ -31,7 +31,8 @@
     "glob": "^7.1.6",
     "minimist": "^1.2.5",
     "scryptlib": "^0.2.34",
-    "watch": "^1.0.2"
+    "watch": "^1.0.2",
+    "bsv-legacy": "npm:bsv@^1.5.4"
   },
   "devDependencies": {
     "@types/chai": "^4.2.8",

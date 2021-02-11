@@ -21,7 +21,7 @@ const Interpreter = bsv.Script.Interpreter
 const DataLen = 1
 
 const axios = require('axios')
-const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
+const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/main'
 
 const inputIndex = 0
 const inputSatoshis = 100000
@@ -41,6 +41,19 @@ function newTx() {
   return new bsv.Transaction().from(utxo);
 }
 
+async function fetchUtxoLargeThan(address, amount) {
+  let {
+    data: utxos
+  } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
+
+  utxos = utxos.filter((utxo) => { return utxo.value > amount } ).map((utxo) => ({
+    txId: utxo.tx_hash,
+    outputIndex: utxo.tx_pos,
+    satoshis: utxo.value,
+    script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
+  }))
+  return utxos[0];
+}
 
 
 // reverse hexStr byte order
@@ -133,11 +146,11 @@ function unlockP2PKHInput(privateKey, tx, inputIndex, sigtype) {
   ))
 }
 
-async function sendTx(tx) {
+async function sendTx(tx, unsafe = false) {
   const {
     data: txid
   } = await axios.post(`${API_PREFIX}/tx/raw`, {
-    txhex: tx.serialize()
+    txhex: tx.serialize(unsafe)  
   })
   return txid
 }
@@ -217,5 +230,6 @@ module.exports = {
   loadDesc,
   sighashType2Hex,
   showError,
-  compileTestContract
+  compileTestContract,
+  fetchUtxoLargeThan
 }
