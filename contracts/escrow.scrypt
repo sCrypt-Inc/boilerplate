@@ -1,0 +1,72 @@
+/**
+A simple Bitcoin escrow contract 
+An amount X is locked with a transaction.
+We have three scenarios which can unlock the script.
+A: Alice, B: Bob, E: Escrow, P: Public Key
+Scenario 1: PA + PB
+Alice and Bob have to sign. There will be two new outputs (50/50).
+Scenario 2: PA + PE + Hash 1
+Alice and Escrow have to sign and use the secret 1. Alice gets the output.
+Scenario 3: PB + PE + Hash 2
+Bob and Escrow have to sign and use the secret 2. Bob gets the output.
+**/
+
+import "util.scrypt";
+
+contract SimpleEscrow {
+    Ripemd160 pubKeyHashA;
+    Ripemd160 pubKeyHashB;
+    Ripemd160 pubKeyHashE;
+    Sha256 hash1;
+    Sha256 hash2;
+    int fee;
+
+    function split(int amount, SigHashPreimage txPreimage): bool {
+            // split amount, both new outputs get the same amount
+            bytes scriptA = Util.buildPublicKeyHashScript(this.pubKeyHashA);
+            bytes outputA = Util.buildOutput(scriptA, amount / 2 - this.fee);
+
+            bytes scriptB = Util.buildPublicKeyHashScript(this.pubKeyHashB);
+            bytes outputB = Util.buildOutput(scriptB, amount / 2 - this.fee);
+
+            bytes outputs = outputA + outputB;
+  		      
+            return (hash256(outputs) == Util.hashOutputs(txPreimage));
+    }
+
+    function spend(int amount, SigHashPreimage txPreimage, Ripemd160 pubKeyHash): bool {
+            bytes script = Util.buildPublicKeyHashScript(pubKeyHash);
+            bytes output = Util.buildOutput(script, amount - this.fee);
+  		      
+            return (hash256(output) == Util.hashOutputs(txPreimage));
+    }
+
+    public function unlock(SigHashPreimage txPreimage, PubKey pubKey1, Sig sig1, PubKey pubKey2, Sig sig2, bytes secret) {
+        bool status = false;
+        
+        require(Tx.checkPreimage(txPreimage));
+        int amount = Util.value(txPreimage);
+
+        require(checkSig(sig1, pubKey1));
+        require(checkSig(sig2, pubKey2));
+
+        if ( hash160(pubKey1) == this.pubKeyHashA ) {
+            if (hash160(pubKey2) == this.pubKeyHashB) {
+              require(this.split(amount, txPreimage));
+              status = true;
+            } else if ( hash160(pubKey2) == this.pubKeyHashE ) {
+                require(sha256(secret) == this.hash1);
+                require(this.spend(amount, txPreimage, this.pubKeyHashA));
+                status = true;
+            }
+        } else if ( hash160(pubKey1) == this.pubKeyHashB ) {
+            if ( hash160(pubKey2) == this.pubKeyHashE ) {
+              require(sha256(secret) == this.hash2);
+              require(this.spend(amount, txPreimage, this.pubKeyHashB));
+              status = true;
+            }
+        }
+
+        require(status);
+    }
+}
