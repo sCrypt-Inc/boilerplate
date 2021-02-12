@@ -28,33 +28,22 @@ const {
 const scenario = 1;
 
 const privateKeyA = new bsv.PrivateKey.fromRandom('testnet');
-console.log(`Private key generated: '${privateKeyA.toWIF()}'`);
 const publicKeyA = privateKeyA.publicKey;
-console.log(toHex(publicKeyA));
 const publicKeyHashA = bsv.crypto.Hash.sha256ripemd160(publicKeyA.toBuffer());
-//console.log(toHex(publicKeyHashA));
 
 const privateKeyB = new bsv.PrivateKey.fromRandom('testnet');
-console.log(`Private key generated: '${privateKeyB.toWIF()}'`);
 const publicKeyB = privateKeyB.publicKey;
-//console.log(toHex(publicKeyB));
 const publicKeyHashB = bsv.crypto.Hash.sha256ripemd160(publicKeyB.toBuffer());
-//console.log(toHex(publicKeyHashB));
 
 const privateKeyE = new bsv.PrivateKey.fromRandom('testnet');
-console.log(`Private key generated: '${privateKeyE.toWIF()}'`);
 const publicKeyE = privateKeyE.publicKey;
-//console.log(toHex(publicKeyE));
 const publicKeyHashE = bsv.crypto.Hash.sha256ripemd160(publicKeyE.toBuffer());
-//console.log(toHex(publicKeyHashE));
 
-const dataBuf1 = Buffer.from("abc");
-const hashData1 = bsv.crypto.Hash.sha256(dataBuf1);
-//console.log(toHex(hashData1));
+const secretBuf1 = Buffer.from("abc");
+const hashSecret1 = bsv.crypto.Hash.sha256(secretBuf1);
 
-const dataBuf2 = Buffer.from("def");
-const hashData2 = bsv.crypto.Hash.sha256(dataBuf2);
-//console.log(toHex(hashData2));
+const secretBuf2 = Buffer.from("def");
+const hashSecret2 = bsv.crypto.Hash.sha256(secretBuf2);
 
 const fee = 1000;
 
@@ -67,7 +56,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
 
   before(() => {
     const Escrow = buildContractClass(compileContract('escrow.scrypt'));
-    escrow = new Escrow(new Ripemd160(toHex(publicKeyHashA)), new Ripemd160(toHex(publicKeyHashB)), new Ripemd160(toHex(publicKeyHashE)), new Sha256(toHex(hashData1)), new Sha256(toHex(hashData2)), fee);
+    escrow = new Escrow(new Ripemd160(toHex(publicKeyHashA)), new Ripemd160(toHex(publicKeyHashB)), new Ripemd160(toHex(publicKeyHashE)), new Sha256(toHex(hashSecret1)), new Sha256(toHex(hashSecret2)), fee);
 
     switch(scenario) {
       case 1:
@@ -97,8 +86,6 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
 
         sigA = signTx(tx, privateKeyA, escrow.lockingScript.toASM(), amount);
         sigE = signTx(tx, privateKeyE, escrow.lockingScript.toASM(), amount);
-        //console.log(toHex(sigA));
-        //console.log(toHex(sigE));
 
         break;
       case 3:
@@ -120,7 +107,6 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
       escrow.lockingScript.toASM(),
       inputSatoshis
     );
-    //console.log(preimage.toString());
 
     // set txContext for verification
     escrow.txContext = {
@@ -128,7 +114,6 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
       inputIndex,
       inputSatoshis
     };
-    //console.log(tx.toString())
   });
 
   switch(scenario) {
@@ -168,7 +153,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
           new Sig(toHex(sigA)),
           new PubKey(toHex(publicKeyE)),
           new Sig(toHex(sigE)),
-          new Bytes(toHex(dataBuf1))
+          new Bytes(toHex(secretBuf1))
         )
         .verify();
         expect(result.success, result.error).to.be.true;
@@ -181,7 +166,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
           new Sig(toHex(sigA)),
           new PubKey(toHex(publicKeyE)),
           new Sig(toHex(sigE)),
-          new Bytes(toHex(dataBuf1))
+          new Bytes(toHex(secretBuf1))
         )
         .verify();
         expect(result.success, result.error).to.be.false;
@@ -195,7 +180,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
           new Sig(toHex(sigB)),
           new PubKey(toHex(publicKeyE)),
           new Sig(toHex(sigE)),
-          new Bytes(toHex(dataBuf2))
+          new Bytes(toHex(secretBuf2))
         )
         .verify();
         expect(result.success, result.error).to.be.true;
@@ -208,7 +193,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
           new Sig(toHex(sigB)),
           new PubKey(toHex(publicKeyE)),
           new Sig(toHex(sigE)),
-          new Bytes(toHex(dataBuf2))
+          new Bytes(toHex(secretBuf2))
         )
         .verify();
         expect(result.success, result.error).to.be.false;

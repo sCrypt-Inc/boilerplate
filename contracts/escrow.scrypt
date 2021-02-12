@@ -1,9 +1,14 @@
 /**
 A simple Bitcoin escrow contract 
-A: Alice, B: Bob, E: Escrow
+An amount X is locked with a transaction.
+We have three scenarios which can unlock the script.
+A: Alice, B: Bob, E: Escrow, P: Public Key
 Scenario 1: PA + PB
+Alice and Bob have to sign. There will be two new outputs (50/50).
 Scenario 2: PA + PE + Hash 1
+Alice and Escrow have to sign and use the secret 1. Alice gets the output.
 Scenario 3: PB + PE + Hash 2
+Bob and Escrow have to sign and use the secret 2. Bob gets the output.
 **/
 
 import "util.scrypt";
@@ -36,7 +41,7 @@ contract SimpleEscrow {
             return (hash256(output) == Util.hashOutputs(txPreimage));
     }
 
-    public function unlock(SigHashPreimage txPreimage, PubKey pubKey1, Sig sig1, PubKey pubKey2, Sig sig2, bytes data) {
+    public function unlock(SigHashPreimage txPreimage, PubKey pubKey1, Sig sig1, PubKey pubKey2, Sig sig2, bytes secret) {
         bool status = false;
         
         require(Tx.checkPreimage(txPreimage));
@@ -50,13 +55,13 @@ contract SimpleEscrow {
               require(this.split(amount, txPreimage));
               status = true;
             } else if ( hash160(pubKey2) == this.pubKeyHashE ) {
-                require(sha256(data) == this.hash1);
+                require(sha256(secret) == this.hash1);
                 require(this.spend(amount, txPreimage, this.pubKeyHashA));
                 status = true;
             }
         } else if ( hash160(pubKey1) == this.pubKeyHashB ) {
             if ( hash160(pubKey2) == this.pubKeyHashE ) {
-              require(sha256(data) == this.hash2);
+              require(sha256(secret) == this.hash2);
               require(this.spend(amount, txPreimage, this.pubKeyHashB));
               status = true;
             }

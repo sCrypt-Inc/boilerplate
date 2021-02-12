@@ -30,7 +30,7 @@ const { privateKey } = require('../privateKey');
   // scenario 2: PA + PE + Hash 1
   // scenario 3: PB + PE + Hash 2
 
-  const scenario = 3;
+  const scenario = 1;
 
   const privateKeyA = new bsv.PrivateKey.fromRandom('testnet');
   console.log(`Private key generated: '${privateKeyA.toWIF()}'`);
@@ -47,11 +47,11 @@ const { privateKey } = require('../privateKey');
   const publicKeyE = privateKeyE.publicKey;
   const publicKeyHashE = bsv.crypto.Hash.sha256ripemd160(publicKeyE.toBuffer());
   
-  const dataBuf1 = Buffer.from("abc");
-  const hashData1 = bsv.crypto.Hash.sha256(dataBuf1);
+  const secretBuf1 = Buffer.from("abc");
+  const hashSecret1 = bsv.crypto.Hash.sha256(secretBuf1);
 
-  const dataBuf2 = Buffer.from("def");
-  const hashData2 = bsv.crypto.Hash.sha256(dataBuf2);
+  const secretBuf2 = Buffer.from("def");
+  const hashSecret2 = bsv.crypto.Hash.sha256(secretBuf2);
 
   const fee = 1500;
 
@@ -62,7 +62,7 @@ const { privateKey } = require('../privateKey');
   try {
     // initialize contract
     const Escrow = buildContractClass(loadDesc('escrow_desc.json'));
-    const escrow = new Escrow(new Ripemd160(toHex(publicKeyHashA)), new Ripemd160(toHex(publicKeyHashB)), new Ripemd160(toHex(publicKeyHashE)), new Sha256(toHex(hashData1)), new Sha256(toHex(hashData2)), fee);
+    const escrow = new Escrow(new Ripemd160(toHex(publicKeyHashA)), new Ripemd160(toHex(publicKeyHashB)), new Ripemd160(toHex(publicKeyHashE)), new Sha256(toHex(hashSecret1)), new Sha256(toHex(hashSecret2)), fee);
 
     // deploy contract on testnet
     const lockingTx = await createLockingTx(privateKey.toAddress(), amount, fee);
@@ -156,7 +156,7 @@ const { privateKey } = require('../privateKey');
           new Sig(toHex(sigA)),
           new PubKey(toHex(publicKeyE)),
           new Sig(toHex(sigE)),
-          new Bytes(toHex(dataBuf1))
+          new Bytes(toHex(secretBuf1))
         )
         .toScript();
 
@@ -171,7 +171,7 @@ const { privateKey } = require('../privateKey');
           new Sig(toHex(sigB)),
           new PubKey(toHex(publicKeyE)),
           new Sig(toHex(sigE)),
-          new Bytes(toHex(dataBuf2))
+          new Bytes(toHex(secretBuf2))
         )
         .toScript();
 
