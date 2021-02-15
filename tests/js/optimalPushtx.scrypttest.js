@@ -27,8 +27,8 @@ describe('Test sCrypt contract OptimalPushTx In Javascript', () => {
         test = new Test();
         
         // // use this if sigHashType needs to be customized, using Tx.checkPreimageOpt_(txPreimage)
-        const asmVars = {'Tx.checkPreimageOpt_.sigHashType': sighashType2Hex(sighashType)}
-        test.replaceAsmVars(asmVars)
+        // const asmVars = {'Tx.checkPreimageOpt_.sigHashType': sighashType2Hex(sighashType)}
+        // test.replaceAsmVars(asmVars)
 
         console.log(`locking script length: ${test.lockingScript.toHex().length / 2}`)
         

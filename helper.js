@@ -20,8 +20,8 @@ const Interpreter = bsv.Script.Interpreter
 // number of bytes to denote some numeric value
 const DataLen = 1
 
-const axios = require('axios')
-const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/main'
+const axios = require('axios');
+const API_PREFIX = process.env.NETWORK === 'mainnet' ? 'https://api.whatsonchain.com/v1/bsv/main' : 'https://api.whatsonchain.com/v1/bsv/test';
 
 const inputIndex = 0
 const inputSatoshis = 100000
