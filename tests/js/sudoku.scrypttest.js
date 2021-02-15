@@ -97,7 +97,7 @@ function boardToHex(arr) {
 
 
 describe('Test sCrypt contract sudoku In Javascript', () => {
-  let sudoku, preimage, result
+  let sudoku, result
 
   before(() => {
     const Sudoku = buildContractClass(compileContract('sudoku.scrypt'))
