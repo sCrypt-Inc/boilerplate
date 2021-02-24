@@ -1,0 +1,32 @@
+import "util.scrypt";
+
+// fair coin toss
+contract CoinToss {
+    Ripemd160 alice;
+    Ripemd160 bob;
+    // commitments
+    Sha256 aliceHash;
+    Sha256 bobHash;
+
+    public function toss(bytes aliceNonce, bytes bobNonce, int amount, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
+
+        // nonce can be of any length, as long as it's resistant from brute-force attack
+        // We use 256 bits / 32 bytes as an example here
+        require(len(aliceNonce) == 32);
+        require(hash256(aliceNonce) == this.aliceHash);
+        require(len(bobNonce) == 32);
+        require(hash256(bobNonce) == this.bobHash);
+        
+        // last bit of XOR
+        bytes head = aliceNonce ^ bobNonce & b'0000000000000000000000000000000000000000000000000000000000000001';
+
+        // head -> Alice wins; tail -> Bob wins
+        Ripemd160 winner = head ? this.alice : this.bob;
+
+        // winner takes all
+        bytes winnerScript = Util.buildPublicKeyHashScript(winner);
+        bytes winnerOutput = Util.buildOutput(winnerScript, amount);
+        require(hash256(winnerOutput) == Util.hashOutputs(txPreimage));
+    }
+}
