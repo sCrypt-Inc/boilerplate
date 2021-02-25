@@ -19,7 +19,7 @@ contract CoinToss {
         require(hash256(bobNonce) == this.bobHash);
         
         // last bit of XOR
-        bytes head = aliceNonce ^ bobNonce & b'0000000000000000000000000000000000000000000000000000000000000001';
+        bytes head = (aliceNonce ^ bobNonce) & b'0000000000000000000000000000000000000000000000000000000000000001';
 
         // head -> Alice wins; tail -> Bob wins
         Ripemd160 winner = head ? this.alice : this.bob;
