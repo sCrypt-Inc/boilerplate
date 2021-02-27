@@ -138,12 +138,19 @@ contract ArrayDemo {
         require(st0.st3.y[0] == 1);
         require(st0.st3.y[1] == 2);
         require(st0.st3.y[2] == 3);
+        require(st0.st3.st1.x == false);
+        require(st0.st3.st1.y == b'68656e');
+        require(st0.st3.st1.i == 11);
+
         require(st1.x == true);
         require(st1.y == b'68656c6c6f20776f726c6420');
         require(st1.st3.x == true);
         require(st1.st3.y[0] == 4);
         require(st1.st3.y[1] == 5);
         require(st1.st3.y[2] == 6);
+        require(st1.st3.st1.x == true);
+        require(st1.st3.st1.y == b'6420');
+        require(st1.st3.st1.i == 12);
     }
 
   public function unlockST2(ST2 st2) {
