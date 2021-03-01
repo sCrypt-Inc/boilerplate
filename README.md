@@ -34,7 +34,8 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── asm.scrypt                      # Embed Script directly into sCrypt <a href="https://medium.com/@xiaohuiliu/inline-script-inside-scrypt-27d5aa279fd3">using inline assembly</a>
 │   ├── binaryOption.scrypt             # <a href="https://powping.com/posts/425fe57d0d7cc11317d0e7b7d412770a11ef18c6f159d5deade78b79725833ab">A binary option contract</a>
 │   ├── cltv.scrypt                     # <a href="https://xiaohuiliu.medium.com/op-push-tx-3d3d279174c1">CheckLockTimeVerify without OP_CLTV</a>
-│   ├── cointoss.scrypt                 # <a href="https://xiaohuiliu.medium.com/fair-bitcoin-toss-7310256e60c3">Fair BitCoin Toss</a>
+│   ├── cointoss.scrypt                 # <a href="https://xiaohuiliu.medium.com/another-fair-bitcoin-toss-742894b086cd">Fair BitCoin Toss using Blum's Protocol</a>
+│   ├── cointossxor.scrypt              # <a href="https://xiaohuiliu.medium.com/fair-bitcoin-toss-7310256e60c3">Fair BitCoin Toss using XOR</a>
 │   ├── conwaygol.scrypt                # <a href="https://xiaohuiliu.medium.com/play-conways-game-of-life-on-bitcoin-forever-47c6fb7ed682">Conway’s Game of Life</a>
 │   ├── counter.scrypt                  # Count the number of times a function has been called to showcase <a href="https://medium.com/coinmonks/stateful-smart-contracts-on-bitcoin-sv-c24f83a0f783">stateful contract</a>
 │   ├── demo.scrypt                     # "hello world" contract
