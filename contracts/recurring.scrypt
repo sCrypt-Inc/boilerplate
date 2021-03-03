@@ -1,0 +1,55 @@
+import "util.scrypt";
+
+contract Recurring {
+    Ripemd160 userPubKeyHash; //Address of the owner of the coin
+    int merchantPayment; //How much the merchant can take from the contract
+    Ripemd160 merchantPubKeyHash; //Address of the merchant
+    int frequenceOfPayment; //Merchant can take money each "frequenceOfPayment" seconds
+    
+    constructor(Ripemd160 userPubKeyHash, int merchantPayment, Ripemd160 merchantPubKeyHash, int frequenceOfPayment) {
+        this.userPubKeyHash = userPubKeyHash;
+        this.merchantPayment = merchantPayment;
+        this.merchantPubKeyHash = merchantPubKeyHash;
+        this.frequenceOfPayment = frequenceOfPayment;
+    }
+    // User can deposit more money in his recurring contract
+    public function deposit_user(SigHashPreimage preImage, int depositAmount, int changeAmount) {
+        require(Tx.checkPreimage(preImage));
+        require(depositAmount > 0);
+        int contractTotalAmount = Util.value(preImage) + depositAmount;
+        bytes output = Util.buildOutput(Util.scriptCode(preImage), contractTotalAmount);
+        bytes change_output = b'';
+        if (changeAmount > 546) { change_output = Util.buildOutput(Util.buildPublicKeyHashScript(this.userPubKeyHash), changeAmount); }
+        require(hash256(output+change_output) == Util.hashOutputs(preImage));
+    }
+    // User wants to withdraw its money. Standard P2PKH transaction
+    public function withdraw_user(Sig sig, PubKey pubKey) {
+        require(hash160(pubKey) == this.userPubKeyHash);
+        require(checkSig(sig, pubKey));
+    }
+    // Merchant wants its money
+    public function withdraw_merchant(SigHashPreimage preImage){
+        require(Tx.checkPreimage(preImage));
+        //Output for the merchant
+        bytes outputMerchant = Util.buildOutput(Util.buildPublicKeyHashScript(this.merchantPubKeyHash), this.merchantPayment);
+        //Output that'll be the next instance of the contract
+        //Check nlocktime
+        bytes scriptCode = Util.scriptCode(preImage);
+        int scriptLen = len(scriptCode);
+        bytes codePart = this.getCodePart(scriptCode, scriptLen);
+        int newMatureTime = this.getPrevMatureTime(scriptCode, scriptLen) + this.frequenceOfPayment;
+        bytes newScript = codePart + pack(newMatureTime);
+        require(Util.nLocktime(preImage) == newMatureTime);
+        //Build the output
+        int fee = 5000;
+        int contractTotalAmount = Util.value(preImage) - this.merchantPayment - fee;
+        bytes outputContract = Util.buildOutput(newScript, contractTotalAmount);
+        require(hash256(outputContract + outputMerchant) == Util.hashOutputs(preImage));
+    }
+    function getPrevMatureTime(bytes lockingScript, int scriptLen):int {
+        return unpack(lockingScript[scriptLen - 4 :]);
+    }
+    function getCodePart(bytes lockingScript, int scriptLen):bytes{
+        return lockingScript[0:scriptLen - 4];
+    }
+}
