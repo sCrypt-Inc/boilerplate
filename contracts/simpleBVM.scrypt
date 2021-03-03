@@ -165,22 +165,18 @@ contract SimpleBVM {
     function op_fromaltstack() : int {
         asm { 
             OP_FROMALTSTACK
-            OP_0
         }
     }
 
     function op_numequal() : int {
         asm { 
             OP_NUMEQUAL
-            OP_0
         }
     }
 
     function op_verify() : int {
         asm { 
             OP_VERIFY
-            OP_0
-            OP_0
         }
     }
 
@@ -250,7 +246,7 @@ contract SimpleBVM {
 
     function compareResult() : int {
         int x = this.x;
-        this.op_fromaltstack();
+        int nx = this.op_fromaltstack();  // use assignment instead of expression statement to keep the return value on stack
 
         this.op_numequal();
         this.op_verify();

@@ -45,9 +45,10 @@ contract Asm {
     }
 
     function lenFail(bytes b) : int {
-        // this is wrong since there are multiple elements on stack upon return
+        // this is wrong since the last value on stack will be considered as the return value
         asm {
             OP_SIZE
+            OP_0
         }
     }
 
