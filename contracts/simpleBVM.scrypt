@@ -248,21 +248,23 @@ contract SimpleBVM {
         return 0;
     }
 
-    function compareResult() : int {
-        int x = this.x;
-        this.op_fromaltstack();
-
-        this.op_numequal();
-        this.op_verify();
-
-        return 0;
+    function compareResult() : bool {
+        asm {
+            // duplicate here to avoid changing stack below
+            OP_DUP
+            OP_FROMALTSTACK
+            OP_NUMEQUAL
+            OP_VERIFY
+            OP_TRUE
+        }
     }
-
+    
     public function unlock(bytes input) {
         this.parse(input);
+        
+        // push x into stack
+        int x = this.x;
 
-        this.compareResult();
-
-        require(true);
+        require(this.compareResult());
     }
 }
