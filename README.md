@@ -42,6 +42,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── demo.scrypt                     # "hello world" contract
 │   ├── faucet.scrypt                   # <a href="https://blog.csdn.net/Edward_sv/article/details/109119838">rate-limited onchain faucet</a>
 │   ├── hashpuzzlep2pkh.scrypt          # combining <a href="https://scryptdoc.readthedocs.io/en/latest/multipartyhashpuzzles.html">hash puzzle</a> and p2pkh contracts
+│   ├── lottery.scrypt                  # <a href="https://xiaohuiliu.medium.com/secure-multiparty-computations-on-bitcoin-953a64843b94">lottery</a>
 │   ├── merkleToken.scrypt              # Token based on Merkle Tree
 │   ├── merkleTree.scrypt               # <a href="https://medium.com/@xiaohuiliu/scalable-state-storage-in-bsv-smart-contracts-60f9aeb3b1f">Merkle Tree</a> validation and updating
 │   ├── nonFungibleToken.scrypt         # <a href="https://medium.com/@xiaohuiliu/non-fungible-tokens-on-bitcoin-sv-4575368f46a">non-fungible token</a>
