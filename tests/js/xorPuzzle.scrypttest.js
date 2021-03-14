@@ -33,7 +33,6 @@ const dataBufHashHex_false = toHex(dataBufHash_false);
 
 // for output of locking transaction
 const privateKeyA = new bsv.PrivateKey.fromRandom('testnet');
-console.log(`Private key generated: '${privateKeyA.toWIF()}'`);
 const publicKeyA = privateKeyA.publicKey;
 const publicKeyAHex = toHex(publicKeyA);
 const publicKeyABI = BigInt('0x' + publicKeyAHex);
