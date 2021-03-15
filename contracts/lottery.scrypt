@@ -7,13 +7,11 @@ contract Lottery {
     // number of players
     static const int N = 5;
     // players identified by their addresses
-    Ripemd160[N] players;
+    PubKey[N] players;
     // commitments: the hash of their random numbers
     Sha256[N] nonceHashes;
     
-    public function reveal(int[N] nonces, int amount, SigHashPreimage txPreimage) {
-        require(Tx.checkPreimage(txPreimage));
-
+    public function reveal(int[N] nonces, Sig sig) {
         int i = 0;
         int sum = 0;
         loop (N) {
@@ -23,11 +21,8 @@ contract Lottery {
             i++;
         }
         
-        Ripemd160 winner = this.players[sum % N];
+        PubKey winner = this.players[sum % N];
 
-        // winner takes all
-        bytes winnerScript = Util.buildPublicKeyHashScript(winner);
-        bytes winnerOutput = Util.buildOutput(winnerScript, amount);
-        require(hash256(winnerOutput) == Util.hashOutputs(txPreimage));
+        require(checkSig(sig, winner));
     }
 }
