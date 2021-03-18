@@ -200,6 +200,11 @@ function showError(error) {
   }
 };
 
+function padLeadingZero(hex) {
+  if(hex.length % 2 === 0) return hex;
+  return "0" + hex;
+}
+
 module.exports = {
   inputIndex,
   inputSatoshis,
@@ -217,5 +222,6 @@ module.exports = {
   loadDesc,
   sighashType2Hex,
   showError,
-  compileTestContract
+  compileTestContract,
+  padLeadingZero
 }

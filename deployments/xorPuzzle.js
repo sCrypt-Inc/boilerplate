@@ -16,6 +16,7 @@ const {
   createLockingTx,
   sendTx,
   showError,
+  padLeadingZero
 } = require('../helper');
 const { privateKey } = require('../privateKey');
 
@@ -41,7 +42,7 @@ const publicKeyDataHashHex = toHex(publicKeyDataHash);
 const publicKeyDataHashBI = BigInt('0x' + publicKeyDataHashHex);
 
 const xorResult = dataBufHashBI ^ publicKeyDataHashBI;
-let xorResultHex = xorResult.toString(16);
+let xorResultHex = padLeadingZero(xorResult.toString(16));
 
 const privateKeyB = new bsv.PrivateKey.fromRandom('testnet');
 console.log(`Private key generated: '${privateKeyB.toWIF()}'`);

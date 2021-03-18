@@ -17,6 +17,7 @@ const {
   inputSatoshis,
   newTx,
   compileContract,
+  padLeadingZero
 } = require('../../helper');
 
 // for xor with publicKeyA
@@ -46,7 +47,8 @@ const publicKeyDataHashHex = toHex(publicKeyDataHash);
 const publicKeyDataHashBI = BigInt('0x' + publicKeyDataHashHex);
 
 const xorResult = dataBufHashBI ^ publicKeyDataHashBI;
-let xorResultHex = xorResult.toString(16);
+
+let xorResultHex = padLeadingZero(xorResult.toString(16));
 
 const tx = newTx();
 
