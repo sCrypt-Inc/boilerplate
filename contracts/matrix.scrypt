@@ -1,0 +1,51 @@
+contract Matrix {
+    static const int N = 4;
+    static const int[N][N] Identify = [[1, 0, 0, 0],
+                                       [0, 1, 0, 0],
+                                       [0, 0, 1, 0],
+                                       [0, 0, 0, 1]];
+
+    static function multiply(int[N][N] mat0, int[N][N] mat1) : int[N][N] {
+        int[N][N] mat2 = [[0, 0, 0, 0],
+                          [0, 0, 0, 0],
+                          [0, 0, 0, 0],
+                          [0, 0, 0, 0]];
+
+        loop (N) : i {
+            loop (N) : j {
+                loop (N) : k {
+                    mat2[i][j] += mat0[i][k] * mat1[k][j];
+                }
+            }
+        }
+
+        return mat2;
+    }
+
+    public function main(int[N][N] result) {
+        int[N][N] mat0 = [[1, 1, 1, 1],
+                          [2, 2, 2, 2],
+                          [3, 3, 3, 3],
+                          [4, 4, 4, 4]];
+        
+        int[N][N] mat1 = [[1, 1, 1, 1],
+                          [2, 2, 2, 2],
+                          [3, 3, 3, 3],
+                          [4, 4, 4, 4]];
+
+        // A * I = A
+        auto mat0_ = Matrix.multiply(mat0, Identify);
+        require(mat0_ == mat0);
+
+        // I * A = A
+        mat0_ = Matrix.multiply(Identify, mat0);
+        require(mat0_ == mat0);
+
+        auto product = Matrix.multiply(mat0, mat1);
+        require(product == [[10, 10, 10, 10],
+                            [20, 20, 20, 20],
+                            [30, 30, 30, 30],
+                            [40, 40, 40, 40]]);
+        require(product == result);
+    }
+}
