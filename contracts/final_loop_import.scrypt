@@ -11,6 +11,44 @@
 //And finally you need to write a bytes<->Object conversion. So 2 functions
 
 
+
+//Please modify
+struct Object {
+    int a;
+    int b;
+}
+
+//DO NOT MODIFY
+struct DoNotTouch {
+    Object computation;
+    bool recursion;
+}
+
+library Aux {
+    static const int fee = 5000;
+    static const int SizeOfObject = 2;
+    static function my_great_function(Object object): DoNotTouch {
+        bool recursion_call = true;
+        int a = object.a; int b = object.b;
+        if (b == 0) {
+            recursion_call = false;
+        } else {
+            int t = b;
+            b = a % b;
+            a = t;
+        }
+        return {{a, b}, recursion_call};
+    }
+    static function bytes_to_object(bytes b): Object {
+        return {unpack(b[0:1]), unpack(b[1:2])};
+    }
+    static function object_to_bytes(Object object): bytes {
+        return num2bin(object.a, 1) + num2bin(object.b, 1);
+    }
+}
+
+
+/*
 //Please modify
 struct Object {
     int n;
@@ -61,3 +99,4 @@ library Aux {
         return num2bin(object.n, 1);
     }
 }
+*/

@@ -5,12 +5,13 @@ import "final_loop_import.scrypt";
 contract Final {
     public function unlock_utxo(SigHashPreimage txPreImage) {
         require(Tx.checkPreimage(txPreImage));
-        Object object = Util.getState(txPreImage);
-        Object computation = Util.recursive(txPreImage, object); //This line does a loop
-        require(computation.n == 0);
+        Object object = Loop.getState(txPreImage);
+        Object computation = Loop.recursive(txPreImage, object); //This line does a loop
+        //Do what you want after
+        require(true);
     }
     //Do not touch below
-    public function to_loop_1(SigHashPreimage txPreImage) { require(Util.to_loop_1(txPreImage)); }
-    public function to_loop_2(SigHashPreimage txPreImage) { require(Util.to_loop_2(txPreImage)); }
-    public function set_state(SigHashPreimage txPreImage, Object object) { require(Util.setState(txPreImage, object)); }
+    public function to_loop_1(SigHashPreimage txPreImage) { require(Loop.to_loop_1(txPreImage)); }
+    public function to_loop_2(SigHashPreimage txPreImage) { require(Loop.to_loop_2(txPreImage)); }
+    public function set_state(SigHashPreimage txPreImage, Object object) { require(Loop.setState(txPreImage, object)); }
 }
