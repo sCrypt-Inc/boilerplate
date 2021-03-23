@@ -30,7 +30,7 @@
     "axios": "^0.21.1",
     "glob": "^7.1.6",
     "minimist": "^1.2.5",
-    "scryptlib": "0.3.2-beta6",
+    "scryptlib": "^0.3.2",
     "watch": "^1.0.2"
   },
   "devDependencies": {
