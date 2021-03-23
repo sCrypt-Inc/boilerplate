@@ -1,0 +1,34 @@
+library Array {
+    bytes data;
+    static const int DATALEN = 4;
+    static const bytes EMPTY = b'';
+    constructor(bytes array) {
+        this.data = array;
+    }
+    function clear() : bool {
+        this.data = EMPTY;
+        return true;
+    }
+    function push(int x) : bool {
+        this.data += num2bin(x, DATALEN);
+        return true;
+    }
+    function length(): int {
+        return len(this.data) / DATALEN;
+    }
+    function pop() : int {
+        int answer = unpack(this.data[this.length() - DATALEN:]);
+        this.data = this.data[:this.length() - DATALEN];
+        return answer;
+    }
+    function get(int index) : int {
+        return unpack(this.data[index*DATALEN: (index+1)*DATALEN]);
+    }
+    function write(int index, int elem) : bool {
+        this.data = this.data[:index*DATALEN] + num2bin(elem, DATALEN) + this.data[(index+1)*DATALEN:];
+        return true;
+    }
+    function data(): bytes {
+        return this.data;
+    }
+}
