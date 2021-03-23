@@ -21,6 +21,21 @@
     {
       "type": "scrypt",
       "request": "launch",
+      "name": "Debug Matrix",
+      "program": "${workspaceFolder}/contracts/matrix.scrypt",
+      "constructorArgs": [
+      ],
+      "pubFunc": "main",
+      "pubFuncArgs": [
+        [[10, 10, 10, 10],
+        [20, 20, 20, 20],
+        [30, 30, 30, 30],
+        [40, 40, 40, 40]]
+      ]
+    },
+    {
+      "type": "scrypt",
+      "request": "launch",
       "name": "Debug Demo bigint",
       "program": "${workspaceFolder}/contracts/demo.scrypt",
       "constructorArgs": [
