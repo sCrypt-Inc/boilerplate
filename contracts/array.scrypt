@@ -26,11 +26,10 @@ library Array {
     }
 
     function indexOf(int x) : int {
-        int i = 0;
         int result = -1;
         bool done = false;
         int length = this.length();
-        loop (MAX_SIZE) {
+        loop (MAX_SIZE) : i {
             if (i < length) {
                 if (! done) {
                     bytes valueRaw = this.data[i * DATALEN :(i + 1) * DATALEN];
@@ -39,7 +38,6 @@ library Array {
                         result = i;
                         done = true;
                     }
-                    i++;
                 }
             }
         }

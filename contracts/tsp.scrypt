@@ -13,25 +13,16 @@ contract TSP {
         int sum = 0;
 
         // verify it traverses each vertex exactly once
-        int i = 0;
-        loop (N) {
-            int j = 0;
-
-            loop (N) {
+        loop (N) : i {
+            loop (N) : j {
                 if (j > i && path[i] == path[j])
                     exit(false);
-            
-                j++;
             }
-
-            i++;
         }
 
-        i = 0;
         // calculate path length
-        loop (N) {
+        loop (N) : i {
             sum = sum + this.dist(i, (i + 1) % N);
-            i++;
         }
 
         require(sum <= this.threshold);

@@ -1,11 +1,11 @@
 library MerkleTree {
   static const int N = 33;
   static const int LOOPCOUNT = 20;
+  
   static function calculateMerkleRoot(bytes leaf, bytes merklePath) : bytes {
-    int i = 0;
     int merklePathLength = len(merklePath) / N;
     bytes merkleValue = leaf;
-    loop (LOOPCOUNT) {
+    loop (LOOPCOUNT) : i {
       if (i < merklePathLength) {
 
         int left = unpack(merklePath[i * N + N - 1 : i * N + N]);
@@ -14,7 +14,6 @@ library MerkleTree {
         } else {
           merkleValue = sha256(merklePath[i * N : i * N + N - 1] + merkleValue);
         }
-        i++;
       }
     }
     return merkleValue;
@@ -30,12 +29,11 @@ library MerkleTree {
     bytes merklePath,
     bytes oldMerkleRoot) : bytes {
 
-    int i = 0;
     int merklePathLength = len(merklePath) / N;
     bytes oldMerkleValue = oldLeaf;
     bytes newMerkleValue = newLeaf;
 
-    loop (LOOPCOUNT) {
+    loop (LOOPCOUNT) : i {
       if (i < merklePathLength) {
 
         int left = unpack(merklePath[i * N + N - 1 : i * N + N]);
@@ -49,7 +47,6 @@ library MerkleTree {
           oldMerkleValue = sha256(oldNeighbor + oldMerkleValue);
           newMerkleValue = sha256(newNeighbor + newMerkleValue);
         }
-        i++;
       }
     }
 
@@ -64,13 +61,12 @@ library MerkleTree {
     bytes newLeaf) : bytes {
     require(MerkleTree.verifyLeaf(lastLeaf, lastMerklePath, oldMerkleRoot));
 
-    int i = 0;
     int depth = len(lastMerklePath) / N;
     bytes merkleValue = newLeaf;
     bytes lastLeafValue = lastLeaf;
     bool joined = false;
 
-    loop (LOOPCOUNT) {
+    loop (LOOPCOUNT) : i {
       if (i < depth) {
         bytes sibling = lastMerklePath[i * N : i * N + N - 1];
         int left = unpack(lastMerklePath[ i * N + N - 1 : i * N + N]);
@@ -92,7 +88,6 @@ library MerkleTree {
             lastLeafValue = sha256(sibling + lastLeafValue);
           }
         }
-        i++;
       }
     }
 

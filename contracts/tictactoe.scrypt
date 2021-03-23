@@ -77,15 +77,13 @@ contract TicTacToe {
     // is board full?
     function full(bytes board): bool {
         bool full = true;
-        int i = 0;
 
-        loop (BOARDLEN) {
+        loop (BOARDLEN) : i {
             if (full) {
                 if (Util.getElemAt(board, i) == EMPTY) {
                     full = false;
                 }
             }
-            i++;
         }
 
         return full;

@@ -230,17 +230,15 @@ contract SimpleBVM {
 
     function parse(bytes input) : int {
         int len = len(input);
-        int i = 0;      
         bool done = false;
 
-        loop (18) {
+        loop (18) : i {
             if (!done) {
                 if (i >= len) {
                     done = true;
                 } else {
                     bytes b = input[i:i+1];
                     this.process_opcode(b);
-                    i = i + 1;
                 }
             }
         }
