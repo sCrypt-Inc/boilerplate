@@ -34,13 +34,6 @@ function condition(state) {
   return state.b > 0
 }
 
-
-
-
-
-
-
-
 function log_state(f, state) {
   console.log("function:", f, "current_state:", state.current_state.a, state.current_state.b, "amount:", this.amount, "txid:", state.txid)
 }
@@ -116,7 +109,7 @@ async function end_loop(mem_n, state) {
   log_state("end_loop", new_state)
   return new_state
 }
-async function random_computation(state) {
+async function unlock_utxo(first_state, state) {
   current_state = state.current_state; lockingTxid = state.txid; loop = state.loop; amount = state.amount;
 
   let prevLockingScript = state.loop.lockingScript.toASM()
@@ -128,7 +121,7 @@ async function random_computation(state) {
 
   const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
   const preimage = getPreimage(unlockingTx, prevLockingScript, amount)
-  const unlockingScript = loop.unlock_utxo(new SigHashPreimage(toHex(preimage))).toScript()
+  const unlockingScript = loop.unlock_utxo(new SigHashPreimage(toHex(preimage)), first_state.a, first_state.b).toScript()
   unlockingTx.inputs[0].setScript(unlockingScript)
   unlockingTxid = await sendTx(unlockingTx)
   new_state = new State(current_state, unlockingTxid, loop, newAmount)
@@ -148,11 +141,7 @@ async function random_computation(state) {
           state = await iter_loop(first_state, state)
         }
         state = await end_loop(first_state, state)
-        state = await random_computation(state)
-
-        //A user should only call highlevel_randomcomputation
-        //that parses the script, and execute the above loop...
-        //So only one function in sCrypt/deployment.js to make a loop
+        state = await unlock_utxo(first_state, state)
 
         console.log('Succeeded on testnet')
     } catch (error) {

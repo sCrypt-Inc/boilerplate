@@ -10,8 +10,6 @@
 
 //And finally you need to write a bytes<->Object conversion. So 2 functions
 
-
-
 //Please modify
 struct Object {
     int a;
@@ -19,15 +17,17 @@ struct Object {
 }
 
 //DO NOT MODIFY
-struct DoNotTouch {
+struct RecursiveReturn {
     Object computation;
     bool recursion;
 }
 
+//Please modify
 library Aux {
     static const int fee = 5000;
     static const int SizeOfObject = 2;
-    static function my_great_function(Object object): DoNotTouch {
+
+    static function my_great_function(Object object): RecursiveReturn {
         bool recursion_call = true;
         int a = object.a; int b = object.b;
         if (b == 0) {
@@ -39,64 +39,10 @@ library Aux {
         }
         return {{a, b}, recursion_call};
     }
-    static function bytes_to_object(bytes b): Object {
+    static function deserialize(bytes b): Object {
         return {unpack(b[0:1]), unpack(b[1:2])};
     }
-    static function object_to_bytes(Object object): bytes {
+    static function serialize(Object object): bytes {
         return num2bin(object.a, 1) + num2bin(object.b, 1);
     }
 }
-
-
-/*
-//Please modify
-struct Object {
-    int n;
-}
-
-//DO NOT MODIFY
-struct DoNotTouch {
-    Object computation;
-    bool recursion;
-}
-
-library Aux {
-    //Please modify
-    static const int fee = 5000;
-    //Please modify
-    static const int SizeOfObject = 1; //How many bytes your object will be in memory. Must be length(this.object_to_byte(object))
-    //Please modify
-    static function my_great_function(Object object): DoNotTouch {
-        bool recursion_call = false;
-        //Begin the modification below
-        
-        //What matters is to modify object with its new value,
-        //and set recursion_call to true if you want to do a recursion call
-
-        //---------------------------
-        //Example of a simple recursive function
-        //If n == 0 we stop here
-        if (object.n == 0) {
-            object.n = 0;
-        }
-        //Otherwise lets decrease it by one
-        else {
-            object.n -= 1;
-            //And make the recursion call
-            recursion_call = true;
-        }
-        //-----------------------
-        
-        //End of the modification
-        return {object, recursion_call};
-    }
-    //Please modify
-    static function bytes_to_object(bytes b): Object {
-        return {unpack(b)};
-    }
-    //Please modify
-    static function object_to_bytes(Object object): bytes {
-        return num2bin(object.n, 1);
-    }
-}
-*/

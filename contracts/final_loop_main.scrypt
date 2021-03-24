@@ -3,13 +3,12 @@ import "final_loop_import.scrypt";
 
 //Code of a contract that uses the library
 contract Final {
-    public function unlock_utxo(SigHashPreimage txPreImage) {
+    public function unlock_utxo(SigHashPreimage txPreImage, int a, int b) {
         require(Tx.checkPreimage(txPreImage));
-        Object object = Loop.getState(txPreImage);
-        Object computation = Loop.recursive(txPreImage, object); //This line does a loop
-        //Do what you want after
-        require(true);
+        Object result = Loop.recursive(txPreImage, {a, b}); //This line does a loop
+        require(result.a == 1);
     }
+
     //Do not touch below
     public function to_loop_1(SigHashPreimage txPreImage) { require(Loop.to_loop_1(txPreImage)); }
     public function to_loop_2(SigHashPreimage txPreImage) { require(Loop.to_loop_2(txPreImage)); }
