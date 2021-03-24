@@ -17,6 +17,7 @@ const {
   inputSatoshis,
   newTx,
   compileContract,
+  padLeadingZero
 } = require('../../helper');
 
 // for xor with publicKeyA
@@ -33,7 +34,6 @@ const dataBufHashHex_false = toHex(dataBufHash_false);
 
 // for output of locking transaction
 const privateKeyA = new bsv.PrivateKey.fromRandom('testnet');
-console.log(`Private key generated: '${privateKeyA.toWIF()}'`);
 const publicKeyA = privateKeyA.publicKey;
 const publicKeyAHex = toHex(publicKeyA);
 const publicKeyABI = BigInt('0x' + publicKeyAHex);
@@ -47,7 +47,8 @@ const publicKeyDataHashHex = toHex(publicKeyDataHash);
 const publicKeyDataHashBI = BigInt('0x' + publicKeyDataHashHex);
 
 const xorResult = dataBufHashBI ^ publicKeyDataHashBI;
-let xorResultHex = xorResult.toString(16);
+
+let xorResultHex = padLeadingZero(xorResult.toString(16));
 
 const tx = newTx();
 
