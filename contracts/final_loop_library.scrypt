@@ -1,0 +1,100 @@
+// Library
+import "Util.scrypt";
+import "final_loop_import.scrypt";
+
+library Loop {
+	///////////////////////////////////////////////////////////
+	// Interesting part below
+	///////////////////////////////////////////////////////////
+
+	static function scriptCode(SigHashPreimage preimage): bytes {
+		//Return everything util.scriptCode except the space we need in this library
+		return Util.readVarint(preimage[104:len(preimage)-Aux.SizeOfObject-1]);
+	}
+
+	static function buildOutput(SigHashPreimage preimage, bytes outputScript, int outputSatoshis): bytes {
+		//We reset in_loop, and build the output
+		bytes scriptCode = Util.scriptCode(preimage);
+		bytes next = num2bin(0, 1) + scriptCode[len(scriptCode)-Aux.SizeOfObject:];
+		return num2bin(outputSatoshis, Util.OutputValueLen) + Util.writeVarint(outputScript + next);
+	}
+
+	//Get state
+	static function getState(SigHashPreimage preimage): Object {
+        bytes scriptCode = Util.scriptCode(preimage);
+		int scriptLen = len(scriptCode);
+		return Aux.deserialize(scriptCode[scriptLen-1-2*Aux.SizeOfObject:scriptLen-1-Aux.SizeOfObject]);
+	}
+
+	static function getInLoop(SigHashPreimage preimage): int {
+        bytes scriptCode = Util.scriptCode(preimage);
+		int scriptLen = len(scriptCode);
+		return unpack(scriptCode[scriptLen-1-Aux.SizeOfObject:scriptLen-Aux.SizeOfObject]);
+	}
+
+	static function getTempState(SigHashPreimage preimage): Object {
+        bytes scriptCode = Util.scriptCode(preimage);
+		int scriptLen = len(scriptCode);
+		return Aux.deserialize(scriptCode[scriptLen-Aux.SizeOfObject:]);
+	}
+	//End get state
+
+	//Set state
+    static function setState(SigHashPreimage preimage, Object object): bool {
+        bytes scriptCode = Util.scriptCode(preimage);
+		int scriptLen = len(scriptCode);
+        bytes nextScript = scriptCode[:scriptLen-1-2*Aux.SizeOfObject] + Aux.serialize(object) + num2bin(0, 1) + scriptCode[scriptLen-Aux.SizeOfObject:];
+        int nextValue = Util.value(preimage) - Aux.fee;
+        return (hash256(Util.buildOutput(nextScript, nextValue)) == Util.hashOutputs(preimage));
+    }
+
+    static function setInLoop(SigHashPreimage preimage, int in_loop): bool {
+        bytes scriptCode = Util.scriptCode(preimage);
+		int scriptLen = len(scriptCode);
+        bytes nextScript = scriptCode[:scriptLen-1-Aux.SizeOfObject] + num2bin(in_loop, 1) + scriptCode[scriptLen-Aux.SizeOfObject:];
+        int nextValue = Util.value(preimage) - Aux.fee;
+        return (hash256(Util.buildOutput(nextScript, nextValue)) == Util.hashOutputs(preimage));
+    }
+
+    static function setTempState(SigHashPreimage preimage, Object object): bool {
+        bytes scriptCode = Util.scriptCode(preimage);
+		int scriptLen = len(scriptCode);
+        bytes nextScript = scriptCode[:scriptLen-Aux.SizeOfObject] + Aux.serialize(object);
+        int nextValue = Util.value(preimage) - Aux.fee;
+        return (hash256(Util.buildOutput(nextScript, nextValue)) == Util.hashOutputs(preimage));
+    }
+	//End set state
+
+	//Functions to loop
+    static function synchronised(SigHashPreimage preimage): bool {
+        return this.getState(preimage) == this.getTempState(preimage);
+    }
+
+    static function to_loop_1(SigHashPreimage preimage): bool {
+        bool valid = Tx.checkPreimage(preimage);
+		valid = valid && (this.getInLoop(preimage) == 0);
+        valid = valid && this.synchronised(preimage);
+        valid = valid && this.setInLoop(preimage, 1);
+        return valid;
+    }
+
+    static function to_loop_2(SigHashPreimage preimage): bool {
+        bool valid = Tx.checkPreimage(preimage);
+        valid = valid && (this.getInLoop(preimage) == 1);
+        Object object = this.getTempState(preimage);
+        RecursiveReturn computation = Aux.my_great_function(object);
+        if (computation.recursion) {
+        	valid = valid && this.setTempState(preimage, computation.computation);
+        }
+        else {
+            valid = valid && this.setInLoop(preimage, 2);
+        }
+        return valid;
+    }
+    
+    static function recursive(SigHashPreimage preimage, Object object): Object {
+		require(this.getState(preimage) == object);
+        require(this.getInLoop(preimage) == 2);
+        return this.getTempState(preimage);
+    }
+}

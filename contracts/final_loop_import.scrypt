@@ -1,0 +1,48 @@
+//Please modify everything that has the mention "please modify"
+
+//You need to modify the struct Object so that it fits your need
+//You want a for loop => you need a struct with a single int i
+//You want a double for loop => you need a struct with two int i and int j
+//You want to compute the gcd of 2 numbers => you need a struct with two int
+
+//Then you need to change my_great_function, which is basically your recursive function
+//set recursion_call to true if you want to call again the function
+
+//And finally you need to write a bytes<->Object conversion. So 2 functions
+
+//Please modify
+struct Object {
+    int a;
+    int b;
+}
+
+//DO NOT MODIFY
+struct RecursiveReturn {
+    Object computation;
+    bool recursion;
+}
+
+//Please modify
+library Aux {
+    static const int fee = 5000;
+    static const int SizeOfObject = 2;
+
+    static function my_great_function(Object object): RecursiveReturn {
+        bool recursion_call = true;
+        int a = object.a; int b = object.b;
+        if (b == 0) {
+            recursion_call = false;
+        } else {
+            int t = b;
+            b = a % b;
+            a = t;
+        }
+        return {{a, b}, recursion_call};
+    }
+    static function deserialize(bytes b): Object {
+        return {unpack(b[0:1]), unpack(b[1:2])};
+    }
+    static function serialize(Object object): bytes {
+        return num2bin(object.a, 1) + num2bin(object.b, 1);
+    }
+}
