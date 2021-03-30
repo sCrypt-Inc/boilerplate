@@ -6,10 +6,8 @@ contract Matrix {
                                        [0, 0, 0, 1]];
 
     static function multiply(int[N][N] mat0, int[N][N] mat1) : int[N][N] {
-        int[N][N] mat2 = [[0, 0, 0, 0],
-                          [0, 0, 0, 0],
-                          [0, 0, 0, 0],
-                          [0, 0, 0, 0]];
+        int[N] zeroRow = repeat(0, N);
+        int[N][N] mat2 = repeat(zeroRow, N);
 
         loop (N) : i {
             loop (N) : j {
