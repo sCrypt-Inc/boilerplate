@@ -53,7 +53,7 @@ contract TicTacToe {
             outputs = aliceOutput + bobOutput;
         } else {
             // update state: next turn & next board
-            bytes scriptCode_ = scriptCode[: scriptLen - BOARDLEN] + num2bin(1 - turn, TURNLEN) + board;
+            bytes scriptCode_ = scriptCode[: scriptLen - BOARDLEN - TURNLEN] + num2bin(1 - turn, TURNLEN) + board;
             bytes output = Util.buildOutput(scriptCode_, amount);
             outputs = output;
         }
