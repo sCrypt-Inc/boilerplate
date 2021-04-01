@@ -33,6 +33,11 @@ library Util {
 		 		pubKeyHash + OpCode.OP_EQUALVERIFY + OpCode.OP_CHECKSIG;
 	}
 
+	// build P2PKH script from public key
+	static function pubKeyToP2PKH(PubKey pubKey): bytes {
+		return this.buildPublicKeyHashScript(hash160(pubKey));
+	}
+
 	// build a tx output from its script and satoshi amount
 	static function buildOutput(bytes outputScript, int outputSatoshis): bytes {
 		return num2bin(outputSatoshis, Util.OutputValueLen) + Util.writeVarint(outputScript);

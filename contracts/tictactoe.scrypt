@@ -12,22 +12,22 @@ contract TicTacToe {
 
     public function move(int n, Sig sig, int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
-        require(n >=0 && n < BOARDLEN);
+        require(n >= 0 && n < BOARDLEN);
 
         bytes scriptCode = Util.scriptCode(txPreimage);
-		int scriptLen = len(scriptCode);
-		
+        int scriptLen = len(scriptCode);
+
         int boardStart = scriptLen - BOARDLEN;
-		// state: turn (1 byte) + board (9 bytes)
-		int turn = unpack(scriptCode[boardStart - TURNLEN : boardStart]);
-		bytes board = scriptCode[boardStart : ];
-        
+        // state: turn (1 byte) + board (9 bytes)
+        int turn = unpack(scriptCode[boardStart - TURNLEN : boardStart]);
+        bytes board = scriptCode[boardStart : ];
+
         // not filled
         require(Util.getElemAt(board, n) == EMPTY);
 
         bytes play = turn == 0 ? ALICE : BOB;
-        PubKey player = turn == 0 ? this.alice: this.bob;
-        
+        PubKey player = turn == 0 ? this.alice : this.bob;
+
         // ensure it's player's turn
         require(checkSig(sig, player));
         // make the move
@@ -36,43 +36,41 @@ contract TicTacToe {
         bytes outputs = b'';
         if (this.won(board, play)) {
             // winner takes all
-            Ripemd160 playerPKH = ripemd160(sha256(player));
-            bytes outputScript = Util.buildPublicKeyHashScript(playerPKH);
+            bytes outputScript = Util.pubKeyToP2PKH(player);
             bytes output = Util.buildOutput(outputScript, amount);
-		    outputs = output;
-        } else if (this.full(board)) {
+            outputs = output;
+        }
+        else if (this.full(board)) {
             // draw: equally split, i.e., both outputs have the same amount
-            Ripemd160 alicePKH = ripemd160(sha256(this.alice));
-            bytes aliceScript = Util.buildPublicKeyHashScript(alicePKH);
+            bytes aliceScript = Util.pubKeyToP2PKH(this.alice);
             bytes aliceOutput = Util.buildOutput(aliceScript, amount);
 
-            Ripemd160 bobPKH = ripemd160(sha256(this.bob));
-            bytes bobScript = Util.buildPublicKeyHashScript(bobPKH);
+            bytes bobScript = Util.pubKeyToP2PKH(this.bob);
             bytes bobOutput = Util.buildOutput(bobScript, amount);
 
             outputs = aliceOutput + bobOutput;
         } else {
             // update state: next turn & next board
-            bytes scriptCode_ = scriptCode[: scriptLen - BOARDLEN - TURNLEN] + num2bin(1 - turn, TURNLEN) + board;
+            bytes scriptCode_ = scriptCode[ : scriptLen - BOARDLEN - TURNLEN] + num2bin(1 - turn, TURNLEN) + board;
             bytes output = Util.buildOutput(scriptCode_, amount);
             outputs = output;
         }
 
-  		require(hash256(outputs) == Util.hashOutputs(txPreimage));
+        require(hash256(outputs) == Util.hashOutputs(txPreimage));
     }
 
     // does play win after current move?
     function won(bytes board, bytes play) : bool {
         // three in a row, a column, or a diagnoal
         int[8][3] lines = [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
-            [0, 4, 8],
-            [2, 4, 6]
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
         ];
 
         bool anyLine = false;
