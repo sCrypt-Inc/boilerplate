@@ -62,28 +62,38 @@ contract TicTacToe {
     }
 
     // does play win after current move?
-    function won(bytes board, bytes play): bool {
+    function won(bytes board, bytes play) : bool {
         // three in a row, a column, or a diagnoal
-        return Util.getElemAt(board, 0) == play && Util.getElemAt(board, 1) == play && Util.getElemAt(board, 2) == play
-            || Util.getElemAt(board, 3) == play && Util.getElemAt(board, 4) == play && Util.getElemAt(board, 5) == play
-            || Util.getElemAt(board, 6) == play && Util.getElemAt(board, 7) == play && Util.getElemAt(board, 8) == play
-            || Util.getElemAt(board, 0) == play && Util.getElemAt(board, 3) == play && Util.getElemAt(board, 6) == play
-            || Util.getElemAt(board, 1) == play && Util.getElemAt(board, 4) == play && Util.getElemAt(board, 7) == play
-            || Util.getElemAt(board, 2) == play && Util.getElemAt(board, 5) == play && Util.getElemAt(board, 8) == play
-            || Util.getElemAt(board, 0) == play && Util.getElemAt(board, 4) == play && Util.getElemAt(board, 8) == play
-            || Util.getElemAt(board, 2) == play && Util.getElemAt(board, 4) == play && Util.getElemAt(board, 6) == play;
+        int[8][3] lines = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        bool anyLine = false;
+        loop (8) : i {
+            bool line = true;
+            loop (3) : j {
+                line = line && Util.getElemAt(board, lines[i][j]) == play;
+            }
+
+            anyLine = anyLine || line;
+        }
+
+        return anyLine;
     }
 
     // is board full?
-    function full(bytes board): bool {
+    function full(bytes board) : bool {
         bool full = true;
 
         loop (BOARDLEN) : i {
-            if (full) {
-                if (Util.getElemAt(board, i) == EMPTY) {
-                    full = false;
-                }
-            }
+            full = full && Util.getElemAt(board, i) != EMPTY;
         }
 
         return full;
