@@ -94,6 +94,25 @@ async function createLockingTx(address, amountInContract, fee) {
   return tx
 }
 
+async function anyOnePayforTx(tx, address, fee) {
+  // step 1: fetch utxos
+  let {
+    data: utxos
+  } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
+
+  utxos.map(utxo => {
+    tx.addInput(new bsv.Transaction.Input({
+      prevTxId:  utxo.tx_hash,
+      outputIndex: utxo.tx_pos,
+      script: new bsv.Script(), // placeholder
+    }), bsv.Script.buildPublicKeyHashOut(address).toHex(), utxo.value)
+  })
+
+  tx.change(address).fee(fee)
+
+  return tx
+}
+
 function createUnlockingTx(prevTxId, inputAmount, inputLockingScriptASM, outputAmount, outputLockingScriptASM) {
   const tx = new bsv.Transaction()
 
@@ -205,6 +224,8 @@ function padLeadingZero(hex) {
   return "0" + hex;
 }
 
+const emptyPublicKey = '000000000000000000000000000000000000000000000000000000000000000000'
+
 module.exports = {
   inputIndex,
   inputSatoshis,
@@ -223,5 +244,7 @@ module.exports = {
   sighashType2Hex,
   showError,
   compileTestContract,
-  padLeadingZero
+  padLeadingZero,
+  anyOnePayforTx,
+  emptyPublicKey
 }

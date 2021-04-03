@@ -11,7 +11,7 @@ import "util.scrypt";
 contract AdvancedTokenSale {
     // satoshis / token
     int price;
-
+    
     constructor(int price) {
         this.price = price;
     }
@@ -36,7 +36,9 @@ contract AdvancedTokenSale {
         bytes newSalesEntry = buyer + num2bin(numTokens, Util.DataLen);
 
         // expect the latest sales entry to be appended to the previous script/state
-        bytes scriptCode_ = scriptCode + newSalesEntry;
+
+        int newStateLen = len(newSalesEntry);
+        bytes scriptCode_ = scriptCode + num2bin(newStateLen, Util.DataLen) + newSalesEntry;
 
         // output: amount + scriptlen + script
         bytes counterOutput = Util.buildOutput(scriptCode_, newBalance);
