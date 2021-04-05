@@ -2,6 +2,7 @@ import "dynamicArray.scrypt";
 
 contract ArrayDemo {
     static const int size_test = 7;
+    
     public function test(int _x) {
         Array a = new Array(b'', 1);
         loop(size_test): i {
