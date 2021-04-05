@@ -25,7 +25,7 @@ library Array {
     function get(int index) : int {
         return unpack(this.data[index*this.DATALEN: (index+1)*this.DATALEN]);
     }
-    function write(int index, int elem) : bool {
+    function set(int index, int elem) : bool {
         this.data = this.data[:index*this.DATALEN] + num2bin(elem, this.DATALEN) + this.data[(index+1)*this.DATALEN:];
         return true;
     }

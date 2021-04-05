@@ -1,12 +1,12 @@
 const { expect } = require('chai');
 const { buildContractClass } = require('scryptlib');
-const { compileContract, loadDesc } = require('../../helper');
+const { compileContract } = require('../../helper');
 
 describe('Test sCrypt contract dynamicArray In Javascript', () => {
-  let demo, result
+  let array, result
 
   before(() => {
-    const arrayTest = buildContractClass(loadDesc('dynamicArrayDemo_desc.json'));
+    const arrayTest = buildContractClass(compileContract('dynamicArrayDemo.scrypt'));
     array = new arrayTest();
   });
 
