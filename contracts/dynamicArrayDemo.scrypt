@@ -1,0 +1,34 @@
+import "dynamicArray.scrypt";
+
+contract ArrayDemo {
+    static const int size_test = 7;
+    
+    public function test(int _x) {
+        Array a = new Array(b'', 1);
+        loop(size_test): i {
+            a.push(i);
+        }
+        loop(size_test): i {
+            require(a.get(i) == i);
+        }
+        loop(size_test): i {
+            a.set(i, 17*i);
+            loop(size_test): j {
+                if (i != j) {
+                    require(a.get(j) == j);
+                }
+                else {
+                    require(a.get(j) == 17*j);
+                }
+            }
+            a.set(i, i);
+        }
+        loop(size_test): i {
+            require(a.get(i) == i);
+        }
+        loop(size_test): i {
+            require(a.pop() == size_test - 1 - i);
+        }
+        require(a.length() == 0);
+    }
+}

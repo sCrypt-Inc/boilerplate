@@ -1,0 +1,40 @@
+// a dynamic array library with fixed-size elements
+library Array {
+    static const bytes EMPTY = b'';
+    bytes data;
+    int DATALEN;
+    
+    constructor(bytes data, int DATALEN) {
+        this.data = data;
+        this.DATALEN = DATALEN;
+    }
+    
+    function clear() : bool {
+        this.data = EMPTY;
+        return true;
+    }
+    
+    function push(int x) : bool {
+        this.data += num2bin(x, this.DATALEN);
+        return true;
+    }
+    
+    function length(): int {
+        return len(this.data) / this.DATALEN;
+    }
+    
+    function pop() : int {
+        int answer = unpack(this.data[this.length() - this.DATALEN:]);
+        this.data = this.data[:this.length() - this.DATALEN];
+        return answer;
+    }
+    
+    function get(int index) : int {
+        return unpack(this.data[index*this.DATALEN: (index+1)*this.DATALEN]);
+    }
+    
+    function set(int index, int elem) : bool {
+        this.data = this.data[:index*this.DATALEN] + num2bin(elem, this.DATALEN) + this.data[(index+1)*this.DATALEN:];
+        return true;
+    }
+}
