@@ -25,7 +25,7 @@ contract Auction {
         bytes refundScript = Util.buildPublicKeyHashScript(highestBidder);
         bytes refundOutput = Util.buildOutput(refundScript, highestBid);
         
-        require(hash256(auctionScript + refundOutput) == Util.hashOutputs(txPreimage));
+        require(hash256(auctionOutput + refundOutput) == Util.hashOutputs(txPreimage));
     }
 
     // withdraw after bidding is over
