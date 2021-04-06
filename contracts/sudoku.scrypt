@@ -17,11 +17,11 @@ contract Sudoku {
         
         loop (N) : i {
             loop (N) : j {
-                int value = this.readValue(newBoard, i, j);
-                int inputValue = this.readValue(solution, i, j);
+                int value = readValue(newBoard, i, j);
+                int inputValue = readValue(solution, i, j);
                 if (value == 0) {
                     require(inputValue <= 9);
-                    newBoard = this.setValue(newBoard, i, j, inputValue);
+                    newBoard = setValue(newBoard, i, j, inputValue);
                 } else {
                     require(value == inputValue);
                 }
@@ -45,17 +45,17 @@ contract Sudoku {
                 // check for duplicate
 
                 // in a row
-                int rowElem = this.readValue(newBord, i, j);
+                int rowElem = readValue(newBord, i, j);
                 require(rowArray.indexOf(rowElem) == -1);
                 rowArray.push(rowElem);
 
                 // in a column
-                int colElem = this.readValue(newBord, j, i);
+                int colElem = readValue(newBord, j, i);
                 require(colArray.indexOf(colElem) == -1);
                 colArray.push(colElem);
 
                 // in a subgrid
-                int squareElem = this.readSquareValue(newBord, i, j);
+                int squareElem = readSquareValue(newBord, i, j);
                 require(squareArray.indexOf(squareElem) == -1);
                 squareArray.push(squareElem);
             }
@@ -73,7 +73,7 @@ contract Sudoku {
     }
 
     static function setValue(bytes board, int i, int j, int value): bytes {
-        return Util.setElemAt(board, this.index(i, j), Util.toLEUnsigned(value, 1));
+        return Util.setElemAt(board, index(i, j), Util.toLEUnsigned(value, 1));
     }
 
     static function readSquareValue(bytes board, int i, int j): int {

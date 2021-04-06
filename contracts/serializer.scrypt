@@ -90,7 +90,7 @@ library Writer {
 
   // int is little endian
   static function writeInt(int x) : bytes {
-    return this.writeBytes(pack(x));
+    return writeBytes(pack(x));
   }
 }
 
