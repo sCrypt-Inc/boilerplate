@@ -1,0 +1,91 @@
+type Matrix = int[N][N];
+
+// a contract using Singular Value Decomposition
+// One use case could be: given a low-resolution picture, a higher-resolution picture is needed to unlock it.
+// After its SVD is shown, the needed picture can be reconstructed by calculating U*Sigma*V
+// A picture is represented as a matrix
+contract SVD {
+    // lower quality approximation of the original matrix
+    Matrix A;
+
+    static const int N = 4;
+    static const Matrix Identity = [[1, 0, 0, 0],
+                                    [0, 1, 0, 0],
+                                    [0, 0, 1, 0],
+                                    [0, 0, 0, 1]];
+
+    public function main(Matrix U, Matrix Sigma, Matrix V, int k) {
+        // check SVD
+        require(validate(Sigma, k));
+        require(orthogonal(U));
+        require(orthogonal(V));
+
+        // we keep the first k values in S as is and set the subsequent singular values to 0
+        loop (N) : i {
+            if (i >= k) {
+                Sigma[i][i] = 0;
+            }
+        }
+
+        Matrix product = multiply(multiply(U, Sigma), V);
+        require(product == this.A);
+    }
+
+    // a matrix is valid if and only if all following conditions are met
+    // 1) it is diagonal: all elements are 0, except on the main diagonal
+    // 2) contain more than k sigular values, i.e., closer to the original matrix
+    // 3) sigular values are ordered non-increasingly
+    static function validate(Matrix mat, int k) : bool {
+        bool result = true;
+
+        loop (N) : i {
+            loop (N) : j {
+                if (j == i) {
+                    if (i > 1) {
+                        // sigular values are ordered in non-increasing order
+                        result = result && (mat[i][i] <= mat[i-1][i-1]);
+                    }
+                    if (i <= k) {
+                        // there are over k sigular values
+                        result = result && (mat[i][j] > 0);
+                    }
+                } else {
+                    // all elements not on the main diagonal are 0
+                    result = result && (mat[i][j] == 0);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // A * A^ = I
+    static function orthogonal(Matrix mat) : bool {
+        return multiply(mat, transpose(mat)) == Identity;
+    }
+
+    static function transpose(Matrix mat) : Matrix {
+        Matrix mat1 = repeat(repeat(0, N), N);
+
+        loop (N) : i {
+            loop (N) : j {
+                mat1[i][j] = mat[j][i];
+            }
+        }
+        return mat1;
+    }
+    
+    static function multiply(Matrix mat0, Matrix mat1) : Matrix {
+        Matrix mat2 = repeat(repeat(0, N), N);
+
+        loop (N) : i {
+            loop (N) : j {
+                loop (N) : k {
+                    mat2[i][j] += mat0[i][k] * mat1[k][j];
+                }
+            }
+        }
+
+        return mat2;
+    }
+}

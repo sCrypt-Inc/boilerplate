@@ -1,0 +1,7 @@
+contract MultiSig {
+    Ripemd160[N] pubKeyHashs;
+    static const int N = 3;  // total of keys
+    public function unlock(PubKey[N] pubKeys, Sig[N] sigs) {
+        require(checkMultiSig(sigs, pubKeys));
+    }
+}
