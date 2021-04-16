@@ -57,6 +57,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 |   ├── sudoku.scrypt                   # <a href="https://xiaohuiliu.medium.com/sudoku-on-bitcoin-bd78551956fb">Sudoku</a>
 |   ├── svd.scrypt                      # <a href="https://xiaohuiliu.medium.com/machine-learning-on-bitcoin-40f830ad1b43">Machine Learning using Singular Value Decomposition as an example</a>
 │   ├── tictactoe.scrypt                # <a href="https://medium.com/@xiaohuiliu/tic-tac-toe-on-bitcoin-sv-5acdf5bd676d">TicTacToe</a> onchain p2p gaming 
+│   ├── timedcommit.scrypt              # <a href="https://xiaohuiliu.medium.com/bitcoin-smart-contract-2-0-d1e044abed5a">Bitcoin Smart Contract 2.0</a>: Trustless contracting by combining on-chain and off-chain transactions
 │   ├── token.scrypt                    # <a href="https://medium.com/coinmonks/layer-1-tokens-on-bitcoin-sv-e78c8abf270d">Layer-1 tokens</a> by storing token map as contract state in a single UTXO
 │   ├── tokenSale.scrypt                # Selling tokens for bitcoins using <a href="https://medium.com/@xiaohuiliu/atomic-swap-on-bitcoin-sv-abc28e836cd5">atomic swap</a>
 │   ├── tokenSwap.scrypt                # Merkle tree-based token and bitcoin swap <a href="https://powping.com/posts/2ce8261d34d7b7745343678039e1578b86507acad30bc768b8edaf4629560d01">Token swap</a>
