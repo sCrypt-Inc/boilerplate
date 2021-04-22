@@ -55,6 +55,10 @@ library Reader {
   function readInt() : int {
     return unpack(this.readBytes());
   }
+
+  function remaining() : bytes {
+    return this.buf[this.pos:];
+  }
 }
 
 library Writer {

@@ -1,0 +1,239 @@
+
+import "util.scrypt";
+import "serializer.scrypt";
+
+struct St1 {
+    int m1;
+    bool m2;
+    bytes m3;
+    int[3] m4;
+
+}
+
+struct St2 {
+    bytes[3] m1;
+    St1 st1;
+    int s;
+}
+
+library St1Serializer {
+    function write(St1 st1) : bytes {
+        bytes buf = Writer.writeInt(st1.m1) + Writer.writeBool(st1.m2) + Writer.writeBytes(st1.m3);
+        loop (3) : i {
+            buf += Writer.writeInt(st1.m4[i]);
+        }
+        return buf;
+    }
+
+    function read(bytes buf) : St1 {
+        St1 st1 = {
+            0, false, b'', [0, 0, 0]
+        };
+
+        Reader r = new Reader(buf);
+
+        st1.m1 = r.readInt();
+        st1.m2 = r.readBool();
+        st1.m3 = r.readBytes();
+
+        loop (3) : i {
+            st1.m4[i] = r.readInt();
+        }
+
+        return st1;
+    }
+
+    function remaining(bytes buf) : bytes {
+        St1 st1 = {
+            0, false, b'', [0, 0, 0]
+        };
+
+        Reader r = new Reader(buf);
+
+        st1.m1 = r.readInt();
+        st1.m2 = r.readBool();
+        st1.m3 = r.readBytes();
+
+        loop (3) : i {
+            st1.m4[i] = r.readInt();
+        }
+
+        return r.remaining();
+    }
+}
+
+library St2Serializer {
+    function write(St2 st2) : bytes {
+
+        bytes buf = b'';
+        loop (3) : i {
+            buf += Writer.writeBytes(st2.m1[i]);
+        }
+        St1Serializer st1Serializer = new St1Serializer();
+        buf += st1Serializer.write(st2.st1);
+
+        buf += Writer.writeInt(st2.s);
+        return buf;
+    }
+
+    function read(bytes buf) : St2 {
+
+        St2 st2 = {[b'', b'', b''], {0, false, b'', [0, 0, 0] } , 0};
+
+        Reader r = new Reader(buf);
+
+        loop (3) : i {
+            st2.m1[i] = r.readBytes();
+        }
+
+        St1Serializer st1Serializer = new St1Serializer();
+
+        st2.st1 = st1Serializer.read(r.remaining());
+
+        bytes remaining = st1Serializer.remaining(r.remaining());
+
+        Reader s = new Reader(remaining);
+
+        st2.s = s.readInt();
+        return st2;
+    }
+
+    function remaining(bytes buf) : bytes {
+
+        St2 st2 = {
+            [b'', b'', b''], {
+                0, false, b'', [0, 0, 0]}, 0};
+
+        Reader r = new Reader(buf);
+
+        loop (3) : i {
+            st2.m1[i] = r.readBytes();
+        }
+
+        St1Serializer st1Serializer = new St1Serializer();
+
+        st2.st1 = st1Serializer.read(r.remaining());
+
+        bytes remaining = st1Serializer.remaining(r.remaining());
+
+        Reader s = new Reader(remaining);
+
+        st2.s = s.readInt();
+        return s.remaining();
+    }
+}
+
+library StArray {
+    bytes data;
+    private int _length;
+    static const bytes EMPTY = b'';
+    static const int MAX_SIZE = 2;
+    constructor() {
+        this.data = EMPTY;
+        this._length = 0;
+    }
+
+    function push(St2 st2) : bool {
+
+        St2Serializer serializer = new St2Serializer();
+        bytes buf = serializer.write(st2);
+        this.data = Writer.writeBytes(buf) + this.data;
+        this._length++;
+        return true;
+    }
+
+    function pop() : St2 {
+        require(this.data != EMPTY);
+        Reader r = new Reader(this.data);
+        bytes buf = r.readBytes();
+        St2Serializer serializer = new St2Serializer();
+        St2 st2 = serializer.read(buf);
+        this.data = r.remaining();
+        this._length--;
+        return st2;
+    }
+
+    function at(int index) : St2 {
+        require(this.data != EMPTY);
+        require(index >= 0);
+        require(index < this.length());
+
+        Reader r = new Reader(this.data);
+        St2 st2 = {
+            [b'', b'', b''], {
+                0, false, b'', [0, 0, 0]}, 0};
+        bool done = false;
+        loop(MAX_SIZE): i {
+
+            bytes buf = r.readBytes();
+            if(i == index) {
+                St2Serializer serializer = new St2Serializer();
+                st2 = serializer.read(buf);
+            }
+
+        }
+
+        return st2;
+    }
+
+    function length() : int {
+        return this._length;
+    }
+
+}
+
+contract StArrayTest {
+    public function test(St1 st1) {
+
+        St1Serializer serializer = new St1Serializer();
+        bytes buf = serializer.write(st1);
+        St1 clone = serializer.read(buf);
+        require(st1 == clone);
+    }
+
+    public function testst2(St2 st2) {
+
+        St2Serializer serializer = new St2Serializer();
+        bytes buf = serializer.write(st2);
+        St2 clone = serializer.read(buf);
+        require(st2 == clone);
+    }
+
+    public function testStArray(St2 st2) {
+
+        StArray stArray = new StArray();
+
+        loop (StArray.MAX_SIZE) {
+            stArray.push(st2);
+        }
+
+        require(stArray.length() == StArray.MAX_SIZE);
+
+        loop (StArray.MAX_SIZE): i {
+            St2 clone = stArray.at(i);
+            require(st2 == clone);
+        }
+
+        loop (StArray.MAX_SIZE) {
+            St2 clone = stArray.pop();
+            require(st2 == clone);
+        }
+
+        require(stArray.length() == 0);
+        require(true);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
