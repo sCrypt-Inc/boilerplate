@@ -1,0 +1,19 @@
+import "Util.scrypt";
+import "final_loop_library.scrypt";
+import "final_loop_import.scrypt";
+
+contract After {
+    //Morph back to before
+    public function morph_back(SigHashPreimage txPreImage, bytes originalCode, int amount) {
+        require(Tx.checkPreimage(txPreImage));
+        bytes scriptCode = Util.scriptCode(txPreImage);
+        int scriptLen = len(scriptCode);
+        bytes hashOriginalCode = scriptCode[scriptLen-32-1-Aux.SizeOfObject:scriptLen-1-Aux.SizeOfObject];
+        require(hashOriginalCode == sha256(originalCode));
+        //b'6a25' is hardcoded
+        require(hash256(Util.buildOutput(originalCode + b'6a25' + scriptCode[scriptLen-32-1-2*Aux.SizeOfObject:], amount)) == Util.hashOutputs(txPreImage));
+    }
+    //Loop
+    public function to_loop_1(SigHashPreimage txPreImage) { require(Loop.to_loop_1(txPreImage)); }
+    public function to_loop_2(SigHashPreimage txPreImage) { require(Loop.to_loop_2(txPreImage)); }
+}

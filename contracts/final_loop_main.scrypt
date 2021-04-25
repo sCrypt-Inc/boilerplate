@@ -3,6 +3,10 @@ import "final_loop_import.scrypt";
 
 //Code of a contract that uses the library
 contract Final {
+    bytes hashCodeAfter;
+    constructor(bytes hashCodeAfter) {
+        this.hashCodeAfter = hashCodeAfter;
+    }
     public function unlock_utxo(SigHashPreimage txPreImage, int a, int b) {
         require(Tx.checkPreimage(txPreImage));
         Object result = Loop.recursive(txPreImage, {a, b}); //This line does a loop
@@ -13,4 +17,16 @@ contract Final {
     public function to_loop_1(SigHashPreimage txPreImage) { require(Loop.to_loop_1(txPreImage)); }
     public function to_loop_2(SigHashPreimage txPreImage) { require(Loop.to_loop_2(txPreImage)); }
     public function set_state(SigHashPreimage txPreImage, Object object) { require(Loop.setState(txPreImage, object)); }
+    //Morph
+    public function morph(SigHashPreimage txPreImage, bytes code, bytes hashScript, int amount) {
+        require(Tx.checkPreimage(txPreImage));
+        //Ensure hashScript is the hash of this contract
+        bytes scriptCode = Util.scriptCode(txPreImage);
+        require(hashScript == sha256(scriptCode[:len(scriptCode)-32-1-2*Aux.SizeOfObject - 2])); //-2 is hardcoded
+        //Ensure that code is the code of morph_after
+        require(this.hashCodeAfter == sha256(code));
+        //Ensure that the next output is code+hashScript
+        //b'6a25' is hardcoded
+        require(hash256(Util.buildOutput(code + b'6a25' + Aux.serialize(Loop.getState(txPreImage)) + hashScript + num2bin(Loop.getInLoop(txPreImage), 1) + Aux.serialize(Loop.getTempState(txPreImage)), amount)) == Util.hashOutputs(txPreImage));
+    }
 }
