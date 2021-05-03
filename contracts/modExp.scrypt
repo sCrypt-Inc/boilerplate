@@ -1,0 +1,34 @@
+contract ModExp {
+    // max # of bits for e = ceil(log2(y))
+    static const int N = 232;
+    // modulus
+    const int M;
+
+    // x^y % M
+    function modExp(int x, int y) : int {
+        int res = 1;
+        x = x % this.M;
+
+        if (x != 0) {
+            loop (N) {
+                if (y >= 0) {
+                    // If y is odd, multiply x with result
+                    if (y % 2)
+                    res =(res * x) % this.M;
+
+                    // y >> 1
+                    y = y / 2;
+                    x =(x * x) % this.M;
+                }
+            }
+        } else {
+            res = 0;
+        }
+
+        return res;
+    }
+
+    public function main(int x, int y, int z) {
+        require(z == this.modExp(x, y));
+    }
+}
