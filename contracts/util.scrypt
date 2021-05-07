@@ -1,8 +1,6 @@
 library Util {
 	// number of bytes to denote some numeric value
     static const int DataLen = 1;
-	// number of bytes to denote length serialized state, including varint prefix (1 byte) + length (2 bytes), change length to 4 when you need PushData4
-    static const int StateLen = 3;
 
 	// number of bytes to denote input sequence
 	static const int InputSeqLen = 4;
@@ -57,11 +55,6 @@ library Util {
         bytes rBigEndian = b'00f0fc43da25095812fcddde7d7cd353990c62b078e1493dc603961af25dfc6b60';
 
         return Tx.checkPreimageAdvanced(txPreimage, privKey, pubKey, invK, r, rBigEndian, sigHashType);
-	}
-
-	// serialize state size in fixed length
-	static function encodeStateSize(bytes state): bytes {
-		return num2bin(len(state), Util.StateLen - 1 /* varint prefix byte */);
 	}
 
 	// get the byte at the given index

@@ -1,46 +1,49 @@
 import "util.scrypt";
 import "serializer.scrypt";
 
+// state as a struct
+struct State {
+	int counter;
+	bytes buf;
+	bool flag;
+}
+
 /*
- * test state serializing/deserializing
+ * test structual state serializing/deserializing
  */
 contract StateSerializer {
+	function deserialize(bytes buf): State {
+		Reader r = new Reader(buf);
+		auto counter = r.readInt();
+		auto b = r.readBytes();
+		auto flag = r.readBool();
+
+		return {counter, b, flag};
+	}
+
+	static function serialize(State s): bytes {
+		bytes sBuf = Writer.writeInt(s.counter) + Writer.writeBytes(s.buf) + Writer.writeBool(s.flag);
+		return Writer.serializeState(sBuf);
+	}
+
 	public function mutate(SigHashPreimage txPreimage, int amount) {
         require(Tx.checkPreimage(txPreimage));
-
         bytes scriptCode = Util.scriptCode(txPreimage);
-		int scriptLen = len(scriptCode);
+		
+		// read/deserialize state
+		int stateStart = Reader.getStateStart(scriptCode);
+		State state = this.deserialize(scriptCode[stateStart :]);
+		require(state == {11, b'1234', true});
 
-		// locking script: code + opreturn + data(state + state_len)
+		// mutate state
+		state.counter++;
+		state.buf += b'ffff';
+		state.flag = !state.flag;
 		
-		// read state length
-		bytes lb = scriptCode[scriptLen - Util.StateLen :];
-		Reader lr = new Reader(lb);
-		int stateLen = lr.readInt();
-		require(stateLen == 10);
+		// write/serialize state
+    	bytes stateBuf = serialize(state);
 		
-		// read state
-		int stateStart = scriptLen - stateLen - Util.StateLen;
-		bytes state = scriptCode[stateStart :];
-		Reader r = new Reader(state);
-		auto zero = r.readInt();
-		require(zero == 0);
-		auto negOne = r.readInt();
-		require(negOne == -1);
-		auto counter = r.readInt();
-		require(counter == 11);
-		auto b = r.readBytes();
-		require(b == b'1234');
-		bool flag = r.readBool();
-		require(flag);
-
-		// serialize state
-    	bytes ext = b'ffff';
-		bytes stateBuf = Writer.writeInt(counter + 1) + Writer.writeBytes(b + b'ff') + Writer.writeBool(!flag) + Writer.writeBytes(ext);
-		// serialize state size
-		bytes lenBuf = Writer.writeBytes(Util.encodeStateSize(stateBuf));
-		
-		bytes scriptCode_ = scriptCode[: stateStart] + stateBuf + lenBuf;
+		bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
 		bytes output = Util.buildOutput(scriptCode_, amount);
 		require(hash256(output) == Util.hashOutputs(txPreimage));
     }

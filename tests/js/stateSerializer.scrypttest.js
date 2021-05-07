@@ -22,35 +22,22 @@ describe('Test sCrypt contract StateSerializer In Javascript', () => {
 
   it('should succeed when pushing right preimage & amount', () => {
     // set initial state
-    let state =[ 0, -1, 11, '1234', true]
+    let state = {'counter': 11, 'buf': '1234', 'flag': true}
     counter.setDataPart(state)
-    
-    // mutate state
-    state[2] = state[2] + 1
-    state[3] = state[3] + 'ff'
-    state[4] = !state[4]
-    state[5] = 'ff'.repeat(2)
-    const newSerial = serializeState(state.slice(2))
 
-    // object literal is also allowed.
-    // let state = {'zero': 0, 'neg': -1, 'counter': 11, 'bytes': '1234', 'flag': true}
-    // counter.setDataPart(state)
-    // state.counter ++
-    // state.bytes += 'ff'
-    // state.flag = !state.flag
-    // state.ext = 'ff'.repeat(2)
-    // delete state.zero
-    // delete state.neg
-    // const newSerial = serializeState(state)
+    // mutate state
+    state.counter++
+    state.buf += 'ffff'
+    state.flag = !state.flag
+    const newSerial = serializeState(state)
 
     const newLockingScript = [counter.codePart.toASM(), newSerial].join(' ')
 
-    // deserialize Locking Script Hex
-    // const deStats = deserializeState(bsv.Script.fromASM(newLockingScript))
-    // console.log(deStats[0].toNumber())
-    // console.log(deStats[1].toBigInt())
-    // console.log(deStats[2].toBoolean())
-    // console.log(deStats[3].toHex())
+    // deserialize state from new locking script
+    const newState = deserializeState(bsv.Script.fromASM(newLockingScript), state)
+    expect(newState.counter).to.equal(12)
+    expect(newState.buf).to.equal('1234ffff')
+    expect(newState.flag).to.equal(false)
 
     tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),

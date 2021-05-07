@@ -3,6 +3,10 @@ import "./util.scrypt";
 // a de/serializer for basic types
 
 library Reader {
+  // fixed number of bytes to denote length serialized state, including varint prefix (1 byte) + length (2 bytes)
+  // change this length to 4 when you need PushData4
+  static const int StateLen = 3;
+  
   bytes buf;
   int pos;
 
@@ -55,6 +59,15 @@ library Reader {
   function readInt() : int {
     return unpack(this.readBytes());
   }
+
+  static function getStateStart(bytes scriptCode) : int {
+		// locking script: code + opreturn + data(state + state_len)
+		int scriptLen = len(scriptCode);
+		// read state length: +1 to skip varint prefix
+		bytes lb = scriptCode[scriptLen - Reader.StateLen + 1 :];
+		int stateLen = unpack(lb);
+		return scriptLen - stateLen - Reader.StateLen;
+	}
 }
 
 library Writer {
@@ -92,6 +105,12 @@ library Writer {
   static function writeInt(int x) : bytes {
     return writeBytes(pack(x));
   }
+
+  static function serializeState(bytes stateBuf) : bytes {
+		// serialize state size
+		bytes lenBuf = Writer.writeBytes(num2bin(len(stateBuf), Reader.StateLen - 1 /* varint prefix byte */));
+		return stateBuf + lenBuf;
+	}
 }
 
 contract Test {
