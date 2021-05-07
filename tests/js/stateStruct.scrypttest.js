@@ -11,11 +11,11 @@ const {
 const tx = newTx();
 const outputAmount = 222222
 
-describe('Test sCrypt contract StateSerializer In Javascript', () => {
+describe('Test sCrypt contract StateStruct In Javascript', () => {
   let counter, preimage, result
 
   before(() => {
-    const Counter = buildContractClass(compileContract('stateSerializer.scrypt'))
+    const Counter = buildContractClass(compileContract('stateStruct.scrypt'))
     counter = new Counter()
 
   });

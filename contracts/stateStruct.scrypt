@@ -11,7 +11,7 @@ struct State {
 /*
  * test structual state serializing/deserializing
  */
-contract StateSerializer {
+contract StateStruct {
 	function deserialize(bytes buf): State {
 		Reader r = new Reader(buf);
 		auto counter = r.readInt();
