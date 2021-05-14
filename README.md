@@ -49,6 +49,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── p2pkh.scrypt                    # <a href="https://scryptdoc.readthedocs.io/en/latest/p2pkh.html">p2pkh</a> contract written in sCrypt
 │   ├── p2sh.scrypt                     # <a href="https://medium.com/@xiaohuiliu/sun-rising-p2sh-7ebfca9283aa">p2sh after Genesis</a>
 │   ├── perceptron.scrypt               # <a href="https://xiaohuiliu.medium.com/ai-on-bitcoin-96bbc97a62b9">AI/perceptron</a>
+│   ├── perceptron2.scrypt              # <a href="https://xiaohuiliu.medium.com/how-to-train-ai-using-bitcoin-3a20ef620143">Outsource perceptron training</a>
 │   ├── rabin.scrypt                    # <a href="https://medium.com/coinmonks/access-external-data-from-bitcoin-smart-contracts-2ecdc7448c43">Rabin signature</a> to import off-chain data into a contract via oracle
 │   ├── recurring.scrypt                # <a href="https://xiaohuiliu.medium.com/patreon-on-bitcoin-4c3626d4ce5">Recurring Payments</a>
 |   ├── rpuzzle.scrypt                  # <a href="https://wiki.bitcoinsv.io/index.php/R-Puzzles">R-Puzzle</a>
