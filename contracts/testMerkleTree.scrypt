@@ -1,26 +1,19 @@
 import "./merkleTree.scrypt";
 
 contract MerkleTreeTest {
-  public function testCalculateMerkleRoot(bytes leaf, bytes merklePath, bytes merkleRoot) {
-    require(MerkleTree.calculateMerkleRoot(leaf, merklePath) == merkleRoot);
-  }
+    public function testCalculateMerkleRoot(bytes leaf, bytes merklePath, bytes merkleRoot) {
+        require(MerkleTree.calculateMerkleRoot(leaf, merklePath) == merkleRoot);
+    }
 
-  public function testVerifyLeaf(bytes leaf, bytes merklePath, bytes merkleRoot) {
-    require(MerkleTree.verifyLeaf(leaf, merklePath, merkleRoot));
-  }
+    public function testVerifyLeaf(bytes leaf, bytes merklePath, bytes merkleRoot) {
+        require(MerkleTree.verifyLeaf(leaf, merklePath, merkleRoot));
+    }
 
-  public function testUpdateLeaf(bytes oldLeaf,
-    bytes newLeaf,
-    bytes merklePath,
-    bytes oldMerkleRoot, bytes newMerkleRoot) {
-    require(MerkleTree.updateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot) == newMerkleRoot);
-  }
+    public function testUpdateLeaf(bytes oldLeaf, bytes newLeaf, bytes merklePath, bytes oldMerkleRoot, bytes newMerkleRoot) {
+        require(MerkleTree.updateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot) == newMerkleRoot);
+    }
 
-  public function testAddLeaf(bytes lastLeaf,
-    bytes lastMerklePath,
-    bytes oldMerkleRoot,
-    bytes newLeaf,
-    bytes newMerkleRoot) {
-    require(MerkleTree.addLeaf(lastLeaf, lastMerklePath, oldMerkleRoot, newLeaf) == newMerkleRoot);
-  }
+    public function testAddLeaf(bytes lastLeaf, bytes lastMerklePath, bytes oldMerkleRoot, bytes newLeaf, bytes newMerkleRoot) {
+        require(MerkleTree.addLeaf(lastLeaf, lastMerklePath, oldMerkleRoot, newLeaf) == newMerkleRoot);
+    }
 }

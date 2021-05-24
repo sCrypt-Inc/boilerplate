@@ -1,8 +1,8 @@
 /**
  * test contract to compare OP_PUSH_TX with and without optimization
  */
- contract OptimalPushTx {
-     public function validate(SigHashPreimage txPreimage) {
+contract OptimalPushTx {
+    public function validate(SigHashPreimage txPreimage) {
         // compare the output script size of the following two to see effect of optimization
 
         // 633 bytes

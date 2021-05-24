@@ -7,9 +7,9 @@ contract TokenSale {
     // satoshis / token
     int price;
 
-	constructor(int price) {
-		this.price = price;
-	}
+    constructor(int price) {
+        this.price = price;
+    }
 
     public function buy(PubKey buyer, int numTokens, SigHashPreimage txPreimage) {
         // this ensures the preimage is for the current tx

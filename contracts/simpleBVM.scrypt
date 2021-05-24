@@ -142,7 +142,7 @@ contract SimpleBVM {
     }
 
     function op_add() : int {
-        asm { 
+        asm {
             OP_FROMALTSTACK
             OP_FROMALTSTACK
             OP_ADD
@@ -152,7 +152,7 @@ contract SimpleBVM {
     }
 
     function op_sub() : int {
-        asm { 
+        asm {
             OP_FROMALTSTACK
             OP_FROMALTSTACK
             OP_SWAP
@@ -163,21 +163,21 @@ contract SimpleBVM {
     }
 
     function op_fromaltstack() : int {
-        asm { 
+        asm {
             OP_FROMALTSTACK
             OP_0
         }
     }
 
     function op_numequal() : int {
-        asm { 
+        asm {
             OP_NUMEQUAL
             OP_0
         }
     }
 
     function op_verify() : int {
-        asm { 
+        asm {
             OP_VERIFY
             OP_0
             OP_0
@@ -185,43 +185,61 @@ contract SimpleBVM {
     }
 
     function process_opcode(bytes b) : int {
-        if ( b == OpCode.OP_0 ) {
+        if (b == OpCode.OP_0) {
             this.op_0();
-        } else if ( b == OpCode.OP_1 ) {
+        }
+        else if (b == OpCode.OP_1) {
             this.op_1();
-        } else if ( b == OpCode.OP_2 ) {
+        }
+        else if (b == OpCode.OP_2) {
             this.op_2();
-        } else if ( b == OpCode.OP_3 ) {
+        }
+        else if (b == OpCode.OP_3) {
             this.op_3();
-        } else if ( b == OpCode.OP_4 ) {
+        }
+        else if (b == OpCode.OP_4) {
             this.op_4();
-        } else if ( b == OpCode.OP_5 ) {
+        }
+        else if (b == OpCode.OP_5) {
             this.op_5();
-        } else if ( b == OpCode.OP_6 ) {
+        }
+        else if (b == OpCode.OP_6) {
             this.op_6();
-        } else if ( b == OpCode.OP_7 ) {
+        }
+        else if (b == OpCode.OP_7) {
             this.op_7();
-        } else if ( b == OpCode.OP_8 ) {
+        }
+        else if (b == OpCode.OP_8) {
             this.op_8();
-        } else if ( b == OpCode.OP_9 ) {
+        }
+        else if (b == OpCode.OP_9) {
             this.op_9();
-        } else if ( b == OpCode.OP_10 ) {
+        }
+        else if (b == OpCode.OP_10) {
             this.op_10();
-        } else if ( b == OpCode.OP_11 ) {
+        }
+        else if (b == OpCode.OP_11) {
             this.op_11();
-        } else if ( b == OpCode.OP_12 ) {
+        }
+        else if (b == OpCode.OP_12) {
             this.op_12();
-        } else if ( b == OpCode.OP_13 ) {
+        }
+        else if (b == OpCode.OP_13) {
             this.op_13();
-        } else if ( b == OpCode.OP_14 ) {
+        }
+        else if (b == OpCode.OP_14) {
             this.op_14();
-        } else if ( b == OpCode.OP_15 ) {
+        }
+        else if (b == OpCode.OP_15) {
             this.op_15();
-        } else if ( b == OpCode.OP_16 ) {
+        }
+        else if (b == OpCode.OP_16) {
             this.op_16();
-        } else if ( b == OpCode.OP_ADD ) {
+        }
+        else if (b == OpCode.OP_ADD) {
             this.op_add();
-        } else if ( b == OpCode.OP_SUB ) {
+        }
+        else if (b == OpCode.OP_SUB) {
             this.op_sub();
         }
 
@@ -236,8 +254,9 @@ contract SimpleBVM {
             if (!done) {
                 if (i >= len) {
                     done = true;
-                } else {
-                    bytes b = input[i:i+1];
+                }
+                else {
+                    bytes b = input[i : i + 1];
                     this.process_opcode(b);
                 }
             }
@@ -256,10 +275,10 @@ contract SimpleBVM {
             OP_TRUE
         }
     }
-    
+
     public function unlock(bytes input) {
         this.parse(input);
-        
+
         // push x into stack
         int x = this.x;
 

@@ -27,22 +27,24 @@ library Aux {
     static const int fee = 5000;
     static const int SizeOfObject = 2;
 
-    static function my_great_function(Object object): RecursiveReturn {
+    static function my_great_function(Object object) : RecursiveReturn {
         bool recursion_call = true;
-        int a = object.a; int b = object.b;
+        int a = object.a;
+        int b = object.b;
         if (b == 0) {
             recursion_call = false;
-        } else {
+        }
+        else {
             int t = b;
             b = a % b;
             a = t;
         }
-        return {{a, b}, recursion_call};
+        return { { a, b }, recursion_call };
     }
-    static function deserialize(bytes b): Object {
-        return {unpack(b[0:1]), unpack(b[1:2])};
+    static function deserialize(bytes b) : Object {
+        return { unpack(b[0 : 1]), unpack(b[1 : 2]) };
     }
-    static function serialize(Object object): bytes {
+    static function serialize(Object object) : bytes {
         return num2bin(object.a, 1) + num2bin(object.b, 1);
     }
 }

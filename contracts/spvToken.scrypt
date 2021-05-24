@@ -25,32 +25,33 @@ contract SPVToken {
         int constStart = scriptLen - TokenIdLen - Util.PubKeyLen;
         bytes constPart = lockingScript[: constStart];
 
-        PubKey sender = PubKey(lockingScript[constStart + TokenIdLen : ]);
+        PubKey sender = PubKey(lockingScript[constStart + TokenIdLen :]);
         // authorize
         require(checkSig(senderSig, sender));
 
         bytes outpoint = Util.outpoint(txPreimage);
-        bytes prevTxId = outpoint[ : TokenIdLen];
+        bytes prevTxId = outpoint[: TokenIdLen];
         require(hash256(prevTx) == prevTxId);
 
         bytes tokenId = lockingScript[constStart : constStart + TokenIdLen];
         if (tokenId == NullTokenId) {
             // get prevTxId and use it to initialize token ID
             tokenId = prevTxId;
-        } else {
+        }
+        else {
             /*
-             * validate not only the parent tx (prevTx), but also its parent tx (prevPrevTx)
-             */
-            
+            * validate not only the parent tx (prevTx), but also its parent tx (prevPrevTx)
+            */
+
             // TODO: assume 1 input, to extend to multiple inputs
             bytes prevPrevTxId = prevTx[PrevTxIdIdx : PrevTxIdIdx + TxIdLen];
             require(hash256(prevPrevTx) == prevPrevTxId);
 
-            int unlockingScriptLen = Util.readVarintLen(prevPrevTx[UnlockingScriptIdx : ]);
+            int unlockingScriptLen = Util.readVarintLen(prevPrevTx[UnlockingScriptIdx :]);
 
             // TODO: only validate output 0 here, to extend to multiple outputs
             int lockingScriptIdx = UnlockingScriptIdx + unlockingScriptLen + Util.InputSeqLen + 1 /* output count length */ + Util.OutputValueLen;
-            bytes prevLockingScript = Util.readVarint(prevPrevTx[lockingScriptIdx : ]);
+            bytes prevLockingScript = Util.readVarint(prevPrevTx[lockingScriptIdx :]);
             // ensure prev tx uses the same contract code
             require(len(prevLockingScript) == len(lockingScript));
             require(prevLockingScript[: constStart] == constPart);

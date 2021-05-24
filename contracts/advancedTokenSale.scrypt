@@ -11,7 +11,7 @@ import "util.scrypt";
 contract AdvancedTokenSale {
     // satoshis / token
     int price;
-    
+
     constructor(int price) {
         this.price = price;
     }
@@ -22,7 +22,7 @@ contract AdvancedTokenSale {
         require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // we're using only one byte for the number of tokens purchased
-        require( 0 < numTokens && numTokens < 128 );
+        require(0 < numTokens && numTokens < 128);
 
         bytes scriptCode = Util.scriptCode(txPreimage);
         int scriptLen = len(scriptCode);

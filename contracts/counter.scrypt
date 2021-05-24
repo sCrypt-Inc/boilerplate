@@ -4,19 +4,19 @@ type State = int;
 type Amount = int;
 
 contract Counter {
-	public function increment(SigHashPreimage txPreimage, Amount amount) {
+    public function increment(SigHashPreimage txPreimage, Amount amount) {
         require(Tx.checkPreimage(txPreimage));
 
         bytes scriptCode = Util.scriptCode(txPreimage);
-		int scriptLen = len(scriptCode);
-		
-		// state (i.e., counter value) is at the end
-		State counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
-		// increment counter
-		bytes scriptCode_ = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
-		bytes output = Util.buildOutput(scriptCode_, amount);
-		// ensure output is expected: amount is same with specified
-		// also output script is the same with scriptCode except counter incremented
-		require(hash256(output) == Util.hashOutputs(txPreimage));
+        int scriptLen = len(scriptCode);
+
+        // state (i.e., counter value) is at the end
+        State counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
+        // increment counter
+        bytes scriptCode_ = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
+        bytes output = Util.buildOutput(scriptCode_, amount);
+        // ensure output is expected: amount is same with specified
+        // also output script is the same with scriptCode except counter incremented
+        require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 }

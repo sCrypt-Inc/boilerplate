@@ -2,7 +2,7 @@ contract ModExp {
     // max # of bits for e = ceil(log2(y))
     static const int N = 232;
     // modulus
-    const int M;
+    int M;
 
     // x^y % M
     function modExp(int x, int y) : int {
@@ -13,15 +13,15 @@ contract ModExp {
             loop (N) {
                 if (y >= 0) {
                     // If y is odd, multiply x with result
-                    if (y % 2)
-                    res =(res * x) % this.M;
+                    if (y % 2) res = (res * x) % this.M;
 
                     // y >> 1
                     y = y / 2;
-                    x =(x * x) % this.M;
+                    x = (x * x) % this.M;
                 }
             }
-        } else {
+        }
+        else {
             res = 0;
         }
 
