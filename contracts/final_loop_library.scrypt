@@ -67,34 +67,34 @@ library Loop {
 
 	//Functions to loop
     static function synchronised(SigHashPreimage preimage): bool {
-        return this.getState(preimage) == this.getTempState(preimage);
+        return getState(preimage) == getTempState(preimage);
     }
 
     static function to_loop_1(SigHashPreimage preimage): bool {
         bool valid = Tx.checkPreimage(preimage);
-		valid = valid && (this.getInLoop(preimage) == 0);
-        valid = valid && this.synchronised(preimage);
-        valid = valid && this.setInLoop(preimage, 1);
+		valid = valid && (getInLoop(preimage) == 0);
+        valid = valid && synchronised(preimage);
+        valid = valid && setInLoop(preimage, 1);
         return valid;
     }
 
     static function to_loop_2(SigHashPreimage preimage): bool {
         bool valid = Tx.checkPreimage(preimage);
-        valid = valid && (this.getInLoop(preimage) == 1);
-        Object object = this.getTempState(preimage);
+        valid = valid && (getInLoop(preimage) == 1);
+        Object object = getTempState(preimage);
         RecursiveReturn computation = Aux.my_great_function(object);
         if (computation.recursion) {
-        	valid = valid && this.setTempState(preimage, computation.computation);
+        	valid = valid && setTempState(preimage, computation.computation);
         }
         else {
-            valid = valid && this.setInLoop(preimage, 2);
+            valid = valid && setInLoop(preimage, 2);
         }
         return valid;
     }
     
     static function recursive(SigHashPreimage preimage, Object object): Object {
-		require(this.getState(preimage) == object);
-        require(this.getInLoop(preimage) == 2);
-        return this.getTempState(preimage);
+		require(getState(preimage) == object);
+        require(getInLoop(preimage) == 2);
+        return getTempState(preimage);
     }
 }
