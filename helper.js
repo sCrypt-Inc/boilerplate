@@ -10,8 +10,9 @@ const {
   compileContract: compileContractImpl
 } = require('scryptlib')
 const {
-  getPlatformScryptc,
-} = require('scryptlib/dist/compilerWrapper')
+  getCIScryptc
+} = require('scryptlib/dist/utils')
+
 const { exit } = require('process');
 const minimist = require('minimist');
 
