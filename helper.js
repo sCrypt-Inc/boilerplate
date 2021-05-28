@@ -6,12 +6,14 @@ const {
 } = require('fs')
 const {
   bsv,
+  compile,
   compileContract: compileContractImpl
 } = require('scryptlib')
 const {
   getPlatformScryptc,
 } = require('scryptlib/dist/compilerWrapper')
 const { exit } = require('process');
+const minimist = require('minimist');
 
 const Signature = bsv.crypto.Signature
 const BN = bsv.crypto.BN
@@ -174,6 +176,37 @@ function compileContract(fileName) {
   return result;
 }
 
+
+function compileContractNoDebug(fileName) {
+  const filePath = path.join(__dirname, 'contracts', fileName)
+
+  console.log(`Compiling contract ${filePath} ...`);
+
+
+  if (!existsSync(filePath)) {
+    throw (`file ${filePath} not exists!`);
+  }
+
+  const argv = minimist(process.argv.slice(2));
+
+  let scryptc = argv.scryptc;
+  if (argv.ci || !scryptc) {
+    scryptc = getCIScryptc();
+  }
+
+  const result = compile(
+    { path: filePath },
+    {
+      desc: true, debug: false, asm: true, sourceMap: true, outputDir: path.join(__dirname, './out'),
+      cmdPrefix: scryptc
+    }
+  );
+
+  return result;
+}
+
+
+
 function compileTestContract(fileName) {
   const filePath = path.join(__dirname, 'tests', 'testFixture', fileName)
   const out = path.join(__dirname, 'tests', 'out')
@@ -240,6 +273,7 @@ module.exports = {
   unlockP2PKHInput,
   sendTx,
   compileContract,
+  compileContractNoDebug,
   loadDesc,
   sighashType2Hex,
   showError,
