@@ -200,7 +200,7 @@ function compileContractNoDebug(fileName) {
     { path: filePath },
     {
       desc: true, debug: false, asm: true, sourceMap: true, outputDir: out,
-      cmdPrefix: argv.scryptc
+      cmdPrefix: scryptc
     }
   );
 
