@@ -193,6 +193,7 @@ function compileContractNoDebug(fileName) {
   let scryptc = argv.scryptc;
   if (argv.ci || !scryptc) {
     scryptc = getCIScryptc();
+    console.log('getCIScryptc', scryptc)
   }
 
   const result = compile(
