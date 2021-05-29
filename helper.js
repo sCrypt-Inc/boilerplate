@@ -180,7 +180,7 @@ function compileContract(fileName) {
 
 function compileContractNoDebug(fileName) {
   const filePath = path.join(__dirname, 'contracts', fileName)
-
+  const out = path.join(__dirname, 'deployments/fixture/autoGen')
   console.log(`Compiling contract ${filePath} ...`);
 
 
@@ -198,8 +198,8 @@ function compileContractNoDebug(fileName) {
   const result = compile(
     { path: filePath },
     {
-      desc: true, debug: false, asm: true, sourceMap: true, outputDir: path.join(__dirname, './out'),
-      cmdPrefix: scryptc
+      desc: true, debug: false, asm: true, sourceMap: true, outputDir: out,
+      cmdPrefix: argv.scryptc
     }
   );
 
