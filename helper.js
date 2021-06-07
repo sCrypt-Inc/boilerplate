@@ -168,7 +168,9 @@ function compileContract(fileName) {
   const filePath = path.join(__dirname, 'contracts', fileName)
   const out = path.join(__dirname, 'deployments/fixture/autoGen')
 
-  const result = compileContractImpl(filePath, out);
+  const result = compileContractImpl(filePath, {
+    out: out
+  });
   if (result.errors.length > 0) {
     console.log(`Compile contract ${filePath} fail: `, result.errors)
     throw result.errors;
@@ -215,7 +217,9 @@ function compileTestContract(fileName) {
   if (!existsSync(out)) {
       mkdirSync(out)
   }
-  const result = compileContractImpl(filePath, out);
+  const result = compileContractImpl(filePath, {
+    out: out
+  });
   if (result.errors.length > 0) {
     console.log(`Compile contract ${filePath} fail: `, result.errors)
     throw result.errors;
