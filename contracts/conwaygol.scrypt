@@ -17,13 +17,13 @@ contract GameOfLife {
 
         int BOARDLEN = GameOfLife.BOARD_SIZE * GameOfLife.BOARD_SIZE;
         int boardStart = scriptLen - BOARDLEN;
-        bytes oldBoard = scriptCode[boardStart : ];
+        bytes oldBoard = scriptCode[boardStart :];
 
         // make the move
         bytes newBoard = this.evolve(oldBoard);
 
         // update state: next turn & next board
-        bytes scriptCode_ = scriptCode[ : scriptLen - BOARDLEN] + newBoard;
+        bytes scriptCode_ = scriptCode[: scriptLen - BOARDLEN] + newBoard;
         bytes output = Util.buildOutput(scriptCode_, amount);
         bytes outputs = output;
 
@@ -53,9 +53,9 @@ contract GameOfLife {
         // number of neighbors alive
         int alive = 0;
 
-        int i = - 1;
+        int i = -1;
         loop (LOOP_NEIGHBORS) {
-            int j = - 1;
+            int j = -1;
 
             loop (LOOP_NEIGHBORS) {
                 if (!(i == 0 && j == 0)) {
@@ -75,7 +75,7 @@ contract GameOfLife {
         2. Any dead cell with three live neighbours becomes a live cell.
         3. All other live cells die in the next generation. Similarly, all other dead cells stay dead.
         */
-        return(alive == 3 || alive == 2 && oldState == LIVE) ? LIVE : DEAD;
+        return (alive == 3 || alive == 2 && oldState == LIVE) ? LIVE : DEAD;
     }
 
     function index(int i, int j) : int {

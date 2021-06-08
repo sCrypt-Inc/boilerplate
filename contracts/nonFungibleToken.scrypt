@@ -9,7 +9,7 @@ contract NonFungibleToken {
 
     public function issue(Sig issuerSig, PubKey receiver, int satoshiAmount0, int satoshiAmount1, SigHashPreimage txPreimage) {
         // this ensures the preimage is for the current tx
-		require(Tx.checkPreimage(txPreimage));
+        require(Tx.checkPreimage(txPreimage));
 
         // read previous locking script: codePart + OP_RETURN + currTokenId + issuer + matchAction
         bytes lockingScript = Util.scriptCode(txPreimage);
@@ -19,7 +19,7 @@ contract NonFungibleToken {
         int constStart = scriptLen - Util.DataLen - Util.PubKeyLen - 1;
         bytes constPart = lockingScript[: constStart];
 
-        bytes matchAction = lockingScript[scriptLen - 1:];
+        bytes matchAction = lockingScript[scriptLen - 1 :];
         // action must be issue
         require(matchAction == NonFungibleToken.ISSUE);
 
@@ -36,9 +36,9 @@ contract NonFungibleToken {
         // transfer previous token to another receiver
         bytes outputScript1 = constPart + num2bin(currTokenId, Util.DataLen) + receiver + NonFungibleToken.TRANSFER;
         bytes output1 = Util.buildOutput(outputScript1, satoshiAmount1);
-        
+
         // check outputs
-		Sha256 hashOutputs = hash256(output0 + output1);
+        Sha256 hashOutputs = hash256(output0 + output1);
         require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 
@@ -53,7 +53,7 @@ contract NonFungibleToken {
         int constStart = scriptLen - Util.PubKeyLen - 1;
         bytes constPart = lockingScript[: constStart];
 
-        bytes matchAction = lockingScript[scriptLen - 1:];
+        bytes matchAction = lockingScript[scriptLen - 1 :];
         // action must be transfer
         require(matchAction == NonFungibleToken.TRANSFER);
 

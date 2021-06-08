@@ -47,13 +47,8 @@ contract StructDemo {
 
     function genisBlock(Male p1) : Block {
 
-        Block blk = {
-            b'000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f',
-            1231006505,
-            p1.name
-        };
+        Block blk = { b'000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f', 1231006505, p1.name };
 
         return blk;
     }
 }
-

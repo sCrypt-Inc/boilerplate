@@ -9,10 +9,7 @@ contract SVD {
     Matrix A;
 
     static const int N = 4;
-    static const Matrix Identity = [[1, 0, 0, 0],
-                                    [0, 1, 0, 0],
-                                    [0, 0, 1, 0],
-                                    [0, 0, 0, 1]];
+    static const Matrix Identity = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
 
     public function main(Matrix U, Matrix Sigma, Matrix V, int k) {
         // check SVD
@@ -43,13 +40,14 @@ contract SVD {
                 if (j == i) {
                     if (i > 1) {
                         // sigular values are ordered in non-increasing order
-                        result = result && (mat[i][i] <= mat[i-1][i-1]);
+                        result = result && (mat[i][i] <= mat[i - 1][i - 1]);
                     }
                     if (i <= k) {
                         // there are over k sigular values
                         result = result && (mat[i][j] > 0);
                     }
-                } else {
+                }
+                else {
                     // all elements not on the main diagonal are 0
                     result = result && (mat[i][j] == 0);
                 }
@@ -74,7 +72,7 @@ contract SVD {
         }
         return mat1;
     }
-    
+
     static function multiply(Matrix mat0, Matrix mat1) : Matrix {
         Matrix mat2 = repeat(repeat(0, N), N);
 

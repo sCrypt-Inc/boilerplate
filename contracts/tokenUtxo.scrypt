@@ -4,14 +4,13 @@ import "util.scrypt";
  * A token protocol based on UTXO model
  */
 contract Token {
-    public function split(Sig senderSig, PubKey receiver0, int tokenAmount0, int satoshiAmount0, 
-                            PubKey receiver1, int tokenAmount1, int satoshiAmount1, SigHashPreimage txPreimage) {
+    public function split(Sig senderSig, PubKey receiver0, int tokenAmount0, int satoshiAmount0, PubKey receiver1, int tokenAmount1, int satoshiAmount1, SigHashPreimage txPreimage) {
         require(tokenAmount0 > 0);
         // 1 to 1 transfer when tokenAmount1 is 0
         require(tokenAmount1 >= 0);
 
         // this ensures the preimage is for the current tx
-		require(Tx.checkPreimage(txPreimage));
+        require(Tx.checkPreimage(txPreimage));
 
         // read previous locking script
         // locking script = codePart + OP_RETURN + senderPublicKey + balance0 + balance1
@@ -23,23 +22,23 @@ contract Token {
         PubKey sender = PubKey(lockingScript[amountStart - Util.PubKeyLen : amountStart]);
         // authorize
         require(checkSig(senderSig, sender));
-        
+
         int balance0 = unpack(lockingScript[amountStart : amountStart + Util.DataLen]);
         int balance1 = unpack(lockingScript[amountStart + Util.DataLen :]);
 
         // split
         require(balance0 + balance1 == tokenAmount0 + tokenAmount1);
-        
+
         // persist contract code part, including op_return itself
         bytes codePart = lockingScript[: amountStart - Util.PubKeyLen];
-        
+
         // setting first balance as 0 is just a convention, not a requirement
         bytes outputScript0 = codePart + receiver0 + num2bin(0, Util.DataLen) + num2bin(tokenAmount0, Util.DataLen);
         bytes output0 = Util.buildOutput(outputScript0, satoshiAmount0);
         bytes outputScript1 = codePart + receiver1 + num2bin(0, Util.DataLen) + num2bin(tokenAmount1, Util.DataLen);
         bytes output1 = (tokenAmount1 > 0) ? Util.buildOutput(outputScript1, satoshiAmount1) : b'';
-		Sha256 hashOutputs = hash256(output0 + output1);
-        
+        Sha256 hashOutputs = hash256(output0 + output1);
+
         require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 
@@ -47,7 +46,7 @@ contract Token {
         require(otherTokenAmount >= 0);
 
         // this ensures the preimage is for the current tx
-		require(Tx.checkPreimage(txPreimage));
+        require(Tx.checkPreimage(txPreimage));
 
         // this ensures prevouts is the preimage of hashPrevouts
         require(hash256(prevouts) == Util.hashPrevouts(txPreimage));
@@ -71,8 +70,8 @@ contract Token {
 
         // persist contract code part, including op_return itself
         bytes codePart = lockingScript[: amountStart - Util.PubKeyLen];
-        
-        bytes amountPart =(Util.outpoint(txPreimage) == prevouts[ : outpointLen]) ?
+
+        bytes amountPart = (Util.outpoint(txPreimage) == prevouts[: outpointLen]) ?
             // input 0
             num2bin(balance0 + balance1, Util.DataLen) + num2bin(otherTokenAmount, Util.DataLen) :
             // input 1
@@ -86,7 +85,7 @@ contract Token {
     // burn a token back to normal bitcoins
     public function burn(Sig senderSig, Ripemd160 receiverPkh, int satoshiAmount, SigHashPreimage txPreimage) {
         // this ensures the preimage is for the current tx
-		require(Tx.checkPreimage(txPreimage));
+        require(Tx.checkPreimage(txPreimage));
 
         // read previous locking script
         // locking script = codePart + OP_RETURN + senderPublicKey + balance0 + balance1
@@ -101,7 +100,7 @@ contract Token {
 
         // send to a P2PKH script
         bytes lockingScript_ = Util.buildPublicKeyHashScript(receiverPkh);
-		bytes output = Util.buildOutput(lockingScript_, satoshiAmount);
+        bytes output = Util.buildOutput(lockingScript_, satoshiAmount);
         Sha256 hashOutputs = hash256(output);
         require(hashOutputs == Util.hashOutputs(txPreimage));
     }

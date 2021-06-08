@@ -1,14 +1,14 @@
 contract RPuzzle {
-  Ripemd160 rhash;
+    Ripemd160 rhash;
 
     constructor(Ripemd160 rhash) {
         this.rhash = rhash;
     }
 
-    function getSigR(Sig sigr): bytes {
-        bytes lenBytes = sigr[3:4];
+    function getSigR(Sig sigr) : bytes {
+        bytes lenBytes = sigr[3 : 4];
         int len = unpack(lenBytes);
-        bytes r = sigr[4:4+len];
+        bytes r = sigr[4 : 4 + len];
         return r;
     }
 

@@ -7,11 +7,11 @@ contract BinaryOption {
     Ripemd160 pubKeyHashA;
     Ripemd160 pubKeyHashB;
 
-    function hash(bytes x): bytes {
+    function hash(bytes x) : bytes {
         // expand into 512 bit hash
         bytes hx = sha256(x);
         int idx = len(hx) / 2;
-        return sha256(hx[:idx]) + sha256(hx[idx:]);
+        return sha256(hx[: idx]) + sha256(hx[idx :]);
     }
 
     public function unlock(SigHashPreimage txPreimage, int sig, bytes msg, bytes padding, int outAmount) {
@@ -24,9 +24,9 @@ contract BinaryOption {
         require((sig * sig) % this.rabinPubKey == h % this.rabinPubKey);
 
         // first 8 bytes
-        int price = Util.fromLEUnsigned(msg[0:8]);
+        int price = Util.fromLEUnsigned(msg[0 : 8]);
         // the next 8 bytes
-        int timestamp = Util.fromLEUnsigned(msg[8:16]);
+        int timestamp = Util.fromLEUnsigned(msg[8 : 16]);
         // check the time
         require(timestamp == this.timestamp);
 

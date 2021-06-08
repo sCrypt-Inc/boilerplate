@@ -18,7 +18,7 @@ library Array {
         int result = INVALID;
         int maxIndex = this.length() - 1;
         if (maxIndex > -1) {
-            bytes valueRaw = this.data[maxIndex * DATALEN :(maxIndex + 1) * DATALEN];
+            bytes valueRaw = this.data[maxIndex * DATALEN : (maxIndex + 1) * DATALEN];
             result = unpack(valueRaw);
             this.data = this.data[0 : maxIndex];
         }
@@ -31,8 +31,8 @@ library Array {
         int length = this.length();
         loop (MAX_SIZE) : i {
             if (i < length) {
-                if (! done) {
-                    bytes valueRaw = this.data[i * DATALEN :(i + 1) * DATALEN];
+                if (!done) {
+                    bytes valueRaw = this.data[i * DATALEN : (i + 1) * DATALEN];
                     int value = unpack(valueRaw);
                     if (value == x) {
                         result = i;
@@ -49,16 +49,15 @@ library Array {
         bool done = false;
         int length = this.length();
         if (index >= 0 && index < length) {
-            bytes valueRaw = this.data[index * DATALEN :(index + 1) * DATALEN];
+            bytes valueRaw = this.data[index * DATALEN : (index + 1) * DATALEN];
             result = unpack(valueRaw);
         }
         return result;
     }
 
-    function length(): int {
+    function length() : int {
         return len(this.data) / DATALEN;
     }
-
 
     function clear() : bool {
         bool done = false;
@@ -120,6 +119,3 @@ contract ArrayTest {
         require(a.length() == 0);
     }
 }
-
-
-

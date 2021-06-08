@@ -8,8 +8,8 @@ contract Asm {
     }
 
     function equalImpl(int a) : bool {
-        // mix all
         asm {
+            // mix all
             $x
             ab12
             OP_SIZE
@@ -45,8 +45,8 @@ contract Asm {
     }
 
     function lenFail(bytes b) : int {
-        // this is wrong since the last value on stack will be considered as the return value
         asm {
+            // this is wrong since the last value on stack will be considered as the return value
             OP_SIZE
             OP_0
         }

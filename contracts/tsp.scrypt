@@ -8,15 +8,13 @@ contract TSP {
     static const int N = 10;
     static const int NSQUARE = 100;
 
-
     public function verify(int[N] path) {
         int sum = 0;
 
         // verify it traverses each vertex exactly once
         loop (N) : i {
             loop (N) : j {
-                if (j > i && path[i] == path[j])
-                    exit(false);
+                if (j > i && path[i] == path[j]) exit(false);
             }
         }
 
@@ -29,7 +27,7 @@ contract TSP {
     }
 
     // distance between vertex i & j
-    function dist(int i, int j): int {
+    function dist(int i, int j) : int {
         return this.graph[TSP.index(i, j)];
     }
 
