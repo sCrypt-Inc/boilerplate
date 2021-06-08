@@ -6,12 +6,15 @@ const {
 } = require('fs')
 const {
   bsv,
+  compile,
   compileContract: compileContractImpl
 } = require('scryptlib')
 const {
-  getPlatformScryptc,
-} = require('scryptlib/dist/compilerWrapper')
+  getCIScryptc
+} = require('scryptlib/dist/utils')
+
 const { exit } = require('process');
+const minimist = require('minimist');
 
 const Signature = bsv.crypto.Signature
 const BN = bsv.crypto.BN
@@ -161,11 +164,13 @@ async function sendTx(tx) {
   return txid
 }
 
-function compileContract(fileName) {
+function compileContract(fileName, options) {
   const filePath = path.join(__dirname, 'contracts', fileName)
   const out = path.join(__dirname, 'deployments/fixture/autoGen')
 
-  const result = compileContractImpl(filePath, out);
+  const result = compileContractImpl(filePath, options ? options : {
+    out: out
+  });
   if (result.errors.length > 0) {
     console.log(`Compile contract ${filePath} fail: `, result.errors)
     throw result.errors;
@@ -174,13 +179,19 @@ function compileContract(fileName) {
   return result;
 }
 
+
+
+
+
 function compileTestContract(fileName) {
   const filePath = path.join(__dirname, 'tests', 'testFixture', fileName)
   const out = path.join(__dirname, 'tests', 'out')
   if (!existsSync(out)) {
       mkdirSync(out)
   }
-  const result = compileContractImpl(filePath, out);
+  const result = compileContractImpl(filePath, {
+    out: out
+  });
   if (result.errors.length > 0) {
     console.log(`Compile contract ${filePath} fail: `, result.errors)
     throw result.errors;

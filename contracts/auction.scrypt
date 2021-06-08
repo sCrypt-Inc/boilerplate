@@ -6,7 +6,7 @@ contract Auction {
     int auctionDeadline;
 
     // bid with a higher offer
-    public function bid(Ripemd160 bidder, int bid, SigHashPreimage txPreimage) {
+    public function bid(Ripemd160 bidder, int bid, int changeSats, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
         int highestBid = Util.value(txPreimage);
@@ -24,8 +24,14 @@ contract Auction {
         // refund previous highest bidder
         bytes refundScript = Util.buildPublicKeyHashScript(highestBidder);
         bytes refundOutput = Util.buildOutput(refundScript, highestBid);
+
+        bytes changeScript = Util.buildPublicKeyHashScript(bidder);
+        bytes changeOutput = Util.buildOutput(changeScript, changeSats);
+
+        bytes hashThisOutputs = hash256(auctionOutput + refundOutput + changeOutput);
+        bytes hashPreimageOutput = Util.hashOutputs(txPreimage);
         
-        require(hash256(auctionOutput + refundOutput) == Util.hashOutputs(txPreimage));
+        require(hashThisOutputs == hashPreimageOutput);
     }
 
     // withdraw after bidding is over
