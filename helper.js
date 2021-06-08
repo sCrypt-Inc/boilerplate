@@ -164,11 +164,13 @@ async function sendTx(tx) {
   return txid
 }
 
-function compileContract(fileName) {
+function compileContract(fileName, options) {
   const filePath = path.join(__dirname, 'contracts', fileName)
   const out = path.join(__dirname, 'deployments/fixture/autoGen')
 
-  const result = compileContractImpl(filePath, out);
+  const result = compileContractImpl(filePath, options ? options : {
+    out: out
+  });
   if (result.errors.length > 0) {
     console.log(`Compile contract ${filePath} fail: `, result.errors)
     throw result.errors;
@@ -178,34 +180,6 @@ function compileContract(fileName) {
 }
 
 
-function compileContractNoDebug(fileName) {
-  const filePath = path.join(__dirname, 'contracts', fileName)
-  const out = path.join(__dirname, 'deployments/fixture/autoGen')
-  console.log(`Compiling contract ${filePath} ...`);
-
-
-  if (!existsSync(filePath)) {
-    throw (`file ${filePath} not exists!`);
-  }
-
-  const argv = minimist(process.argv.slice(2));
-
-  let scryptc = argv.scryptc;
-  if (argv.ci || !scryptc) {
-    scryptc = getCIScryptc();
-    console.log('getCIScryptc', scryptc)
-  }
-
-  const result = compile(
-    { path: filePath },
-    {
-      desc: true, debug: false, asm: true, sourceMap: true, outputDir: out,
-      cmdPrefix: scryptc
-    }
-  );
-
-  return result;
-}
 
 
 
@@ -215,7 +189,9 @@ function compileTestContract(fileName) {
   if (!existsSync(out)) {
       mkdirSync(out)
   }
-  const result = compileContractImpl(filePath, out);
+  const result = compileContractImpl(filePath, {
+    out: out
+  });
   if (result.errors.length > 0) {
     console.log(`Compile contract ${filePath} fail: `, result.errors)
     throw result.errors;
@@ -275,7 +251,6 @@ module.exports = {
   unlockP2PKHInput,
   sendTx,
   compileContract,
-  compileContractNoDebug,
   loadDesc,
   sighashType2Hex,
   showError,
