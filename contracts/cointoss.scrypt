@@ -14,7 +14,7 @@ contract CoinToss {
     public function toss(int aliceNonce, int bobNonce, Sig sig) {
         require(hash256(pack(aliceNonce)) == this.aliceHash);
         require(hash256(pack(bobNonce)) == this.bobHash);
-        
+
         // Bob succeeds to guess Alice's toss
         bool head = aliceNonce == bobNonce || aliceNonce == this.N - bobNonce;
 

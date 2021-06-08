@@ -1,7 +1,7 @@
 library MerkleTree {
     static const int N = 33;
     static const int LOOPCOUNT = 5;
-    
+
     // TODO second preimage attack
     static function calculateMerkleRoot(bytes leaf, bytes merklePath) : bytes {
         int merklePathLength = len(merklePath) / N;
@@ -16,7 +16,8 @@ library MerkleTree {
                 }
                 else if (left) {
                     merkleValue = sha256(merkleValue + merklePath[i * N : i * N + N - 1]);
-                } else {
+                }
+                else {
                     merkleValue = sha256(merklePath[i * N : i * N + N - 1] + merkleValue);
                 }
             }
@@ -29,17 +30,10 @@ library MerkleTree {
         return merkleValue == merkleRoot;
     }
 
-    static function verifyTwoLeafPath(
-        bytes leafA, 
-        bytes leafAMerklePath, 
-        bytes leafB, 
-        bytes leafBMerklePath, 
-        bytes mergeMerklePath, 
-        bool leafAIsLeft, 
-        bytes merkleRoot) : bool {
+    static function verifyTwoLeafPath(bytes leafA, bytes leafAMerklePath, bytes leafB, bytes leafBMerklePath, bytes mergeMerklePath, bool leafAIsLeft, bytes merkleRoot) : bool {
         bytes leafARoot = MerkleTree.calculateMerkleRoot(leafA, leafAMerklePath);
 
-        bytes leafBRoot = MerkleTree.calculateMerkleRoot(leafB, leafBMerklePath); 
+        bytes leafBRoot = MerkleTree.calculateMerkleRoot(leafB, leafBMerklePath);
 
         bytes mergeNode = b'';
         if (leafAIsLeft) {
@@ -51,13 +45,7 @@ library MerkleTree {
         return MerkleTree.verifyLeaf(mergeNode, mergeMerklePath, merkleRoot);
     }
 
-    static function calculateTwoLeafMerkleRoot(
-        bytes leafA, 
-        bytes leafAMerklePath, 
-        bytes leafB, 
-        bytes leafBMerklePath, 
-        bytes mergeMerklePath, 
-        bool leafAIsLeft): bytes {
+    static function calculateTwoLeafMerkleRoot(bytes leafA, bytes leafAMerklePath, bytes leafB, bytes leafBMerklePath, bytes mergeMerklePath, bool leafAIsLeft) : bytes {
 
         bytes leafARoot = MerkleTree.calculateMerkleRoot(leafA, leafAMerklePath);
         bytes leafBRoot = MerkleTree.calculateMerkleRoot(leafB, leafBMerklePath);
@@ -69,6 +57,6 @@ library MerkleTree {
         else {
             mergeNode = sha256(leafBRoot + leafARoot);
         }
-        return MerkleTree.calculateMerkleRoot(mergeNode, mergeMerklePath); 
+        return MerkleTree.calculateMerkleRoot(mergeNode, mergeMerklePath);
     }
 }

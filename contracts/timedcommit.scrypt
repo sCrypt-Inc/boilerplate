@@ -1,15 +1,15 @@
 contract TimedCommit {
-  bytes aliceHash;
-  PubKey alice;
-  PubKey bob;
+    bytes aliceHash;
+    PubKey alice;
+    PubKey bob;
 
-  public function open(bytes aliceNonce, Sig aliceSig) {
-    require(sha256(aliceNonce) == this.aliceHash);
-    require(checkSig(aliceSig, this.alice));
-  }
+    public function open(bytes aliceNonce, Sig aliceSig) {
+        require(sha256(aliceNonce) == this.aliceHash);
+        require(checkSig(aliceSig, this.alice));
+    }
 
-  public function forfeit(Sig aliceSig, Sig bobSig) {
-    require(checkSig(aliceSig, this.alice));
-    require(checkSig(bobSig, this.bob));
-  }
+    public function forfeit(Sig aliceSig, Sig bobSig) {
+        require(checkSig(aliceSig, this.alice));
+        require(checkSig(bobSig, this.bob));
+    }
 }

@@ -2,10 +2,10 @@ import "util.scrypt";
 import "serializer.scrypt";
 
 struct Input {
-	// in CMs
-	int height;
-	// in KGs
-	int weight;
+    // in CMs
+    int height;
+    // in KGs
+    int weight;
 }
 
 // correct classification of gender: 0 means female, 1 male
@@ -15,36 +15,36 @@ type Output = int;
  * Outsource training of a perceptron
  */
 contract Perceptron {
-	// sample size
-	static const int N = 10;
+    // sample size
+    static const int N = 10;
 
-	// training dataset
-	// inputs
-	Input[N] inputs;
-	// outputs
-	Output[N] outputs;
+    // training dataset
+    // inputs
+    Input[N] inputs;
+    // outputs
+    Output[N] outputs;
 
-	// prediction for the i-th input
-	function predict(int heightWeight, int weightWeight, int bias, int i) : int {
-		int sum = bias;
-		sum += this.inputs[i].height * heightWeight + this.inputs[i].weight * weightWeight;
-		return stepActivate(sum);
-	}
+    // prediction for the i-th input
+    function predict(int heightWeight, int weightWeight, int bias, int i) : int {
+        int sum = bias;
+        sum += this.inputs[i].height * heightWeight + this.inputs[i].weight * weightWeight;
+        return stepActivate(sum);
+    }
 
-	// whoever can find the correct weights and bias for the training dataset can take the bounty
-	public function main(int heightWeight, int weightWeight, int bias) {
-		// every dataset must match
-		loop (N) : i {
-			int prediction = this.predict(heightWeight, weightWeight, bias, i);
-			// prediction must match actual
-			require(this.outputs[i] == prediction);
-		}
+    // whoever can find the correct weights and bias for the training dataset can take the bounty
+    public function main(int heightWeight, int weightWeight, int bias) {
+        // every dataset must match
+        loop (N) : i {
+            int prediction = this.predict(heightWeight, weightWeight, bias, i);
+            // prediction must match actual
+            require(this.outputs[i] == prediction);
+        }
 
         require(true);
     }
 
-	// binary step function
-	static function stepActivate(int sum): int {
-		return (sum >= 0 ? 1 : 0);
-	}
+    // binary step function
+    static function stepActivate(int sum) : int {
+        return (sum >= 0 ? 1 : 0);
+    }
 }

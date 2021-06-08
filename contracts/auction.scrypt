@@ -15,7 +15,7 @@ contract Auction {
         // read previous highest bidder
         bytes lockingScript = Util.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
-        Ripemd160 highestBidder = Ripemd160(lockingScript[scriptLen - Util.PubKeyHashLen : ]);
+        Ripemd160 highestBidder = Ripemd160(lockingScript[scriptLen - Util.PubKeyHashLen :]);
 
         // auction continues with a higher bidder
         bytes auctionScript = lockingScript[: scriptLen - Util.PubKeyHashLen] + bidder;
@@ -36,8 +36,8 @@ contract Auction {
 
     // withdraw after bidding is over
     public function close(Sig sig, SigHashPreimage txPreimage) {
-		require(Tx.checkPreimage(txPreimage));
-		require(Util.nLocktime(txPreimage) >= this.auctionDeadline);
+        require(Tx.checkPreimage(txPreimage));
+        require(Util.nLocktime(txPreimage) >= this.auctionDeadline);
         require(checkSig(sig, this.auctioner));
-	}
+    }
 }

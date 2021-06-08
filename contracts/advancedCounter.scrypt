@@ -4,33 +4,33 @@ import "util.scrypt";
  * Demonstrates TxAdvanced, with external funding (additional input) and a change output
  */
 contract AdvancedCounter {
-	public function increment(SigHashPreimage txPreimage, int amount, Ripemd160 changePKH, int changeSats) {
+    public function increment(SigHashPreimage txPreimage, int amount, Ripemd160 changePKH, int changeSats) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         // this ensures the preimage is for the current tx
         require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
 
-		bytes scriptCode = Util.scriptCode(txPreimage);
-		int scriptLen = len(scriptCode);
+        bytes scriptCode = Util.scriptCode(txPreimage);
+        int scriptLen = len(scriptCode);
 
-		// state (i.e., counter value) is at the end
-		int counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
+        // state (i.e., counter value) is at the end
+        int counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
 
-		// Expect the counter to be incremented in the new transaction state
-		bytes scriptCode_ = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
+        // Expect the counter to be incremented in the new transaction state
+        bytes scriptCode_ = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
 
-		bytes counterOutput = Util.buildOutput(scriptCode_, amount);
+        bytes counterOutput = Util.buildOutput(scriptCode_, amount);
 
-		// Expect the additional CHANGE output
-		bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
-		bytes changeOutput = Util.buildOutput(changeScript, changeSats);
+        // Expect the additional CHANGE output
+        bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
+        bytes changeOutput = Util.buildOutput(changeScript, changeSats);
 
-		// output: amount + scriptlen + script
-		Sha256 hashOutputs = hash256(counterOutput + changeOutput);
+        // output: amount + scriptlen + script
+        Sha256 hashOutputs = hash256(counterOutput + changeOutput);
 
-		// ensure output matches what we expect:
-		//     - amount is same as specified
-		//     - output script is the same as scriptCode except the counter was incremented
-		//     - expected CHANGE output script is there
-		require(hashOutputs == Util.hashOutputs(txPreimage));
+        // ensure output matches what we expect:
+        //     - amount is same as specified
+        //     - output script is the same as scriptCode except the counter was incremented
+        //     - expected CHANGE output script is there
+        require(hashOutputs == Util.hashOutputs(txPreimage));
     }
 }

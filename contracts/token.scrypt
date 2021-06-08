@@ -4,11 +4,9 @@ import "util.scrypt";
  * A toy token example between two holders
  */
 contract Token {
-    public function transfer(PubKey sender, Sig senderSig, PubKey receiver, 
-		int value /* amount to be transferred */, SigHashPreimage txPreimage, int amount) {
-        
+    public function transfer(PubKey sender, Sig senderSig, PubKey receiver, int value /* amount to be transferred */, SigHashPreimage txPreimage, int amount) {
         // this ensures the preimage is for the current tx
-		require(Tx.checkPreimage(txPreimage));
+        require(Tx.checkPreimage(txPreimage));
 
         // authorize
         require(checkSig(senderSig, sender));
@@ -21,17 +19,18 @@ contract Token {
         PubKey pk0 = PubKey(lockingScript[pkStart : pkStart + Util.PubKeyLen]);
         int balance0 = unpack(lockingScript[pkStart + Util.PubKeyLen : pkStart + Util.PubKeyLen + Util.DataLen]);
         PubKey pk1 = PubKey(lockingScript[pkStart + Util.PubKeyLen + Util.DataLen : pkStart + 2 * Util.PubKeyLen + Util.DataLen]);
-        int balance1 = unpack(lockingScript[scriptLen - Util.DataLen : ]);
+        int balance1 = unpack(lockingScript[scriptLen - Util.DataLen :]);
 
         // only between two holders
-        require(sender == pk0 && receiver == pk1 || sender == pk1  && receiver == pk0);
+        require(sender == pk0 && receiver == pk1 || sender == pk1 && receiver == pk0);
 
         // transfer
         if (sender == pk0) {
             require(balance0 >= value);
             balance0 = balance0 - value;
             balance1 = balance1 + value;
-        } else {
+        }
+        else {
             require(balance1 >= value);
             balance1 = balance1 - value;
             balance0 = balance0 + value;

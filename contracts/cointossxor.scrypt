@@ -15,7 +15,7 @@ contract CoinToss {
         require(hash256(aliceNonce) == this.aliceHash);
         require(len(bobNonce) == 32);
         require(hash256(bobNonce) == this.bobHash);
-        
+
         // last bit of XOR
         bytes head = (aliceNonce ^ bobNonce) & b'0000000000000000000000000000000000000000000000000000000000000001';
 

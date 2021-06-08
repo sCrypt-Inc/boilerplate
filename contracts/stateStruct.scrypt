@@ -3,48 +3,48 @@ import "serializer.scrypt";
 
 // state as a struct
 struct State {
-	int counter;
-	bytes buf;
-	bool flag;
+    int counter;
+    bytes buf;
+    bool flag;
 }
 
 /*
  * test structual state serializing/deserializing
  */
 contract StateStruct {
-	function deserialize(bytes buf): State {
-		Reader r = new Reader(buf);
-		auto counter = r.readInt();
-		auto b = r.readBytes();
-		auto flag = r.readBool();
+    function deserialize(bytes buf) : State {
+        Reader r = new Reader(buf);
+        auto counter = r.readInt();
+        auto b = r.readBytes();
+        auto flag = r.readBool();
 
-		return {counter, b, flag};
-	}
+        return { counter, b, flag };
+    }
 
-	static function serialize(State s): bytes {
-		bytes sBuf = Writer.writeInt(s.counter) + Writer.writeBytes(s.buf) + Writer.writeBool(s.flag);
-		return Writer.serializeState(sBuf);
-	}
+    static function serialize(State s) : bytes {
+        bytes sBuf = Writer.writeInt(s.counter) + Writer.writeBytes(s.buf) + Writer.writeBool(s.flag);
+        return Writer.serializeState(sBuf);
+    }
 
-	public function mutate(SigHashPreimage txPreimage, int amount) {
+    public function mutate(SigHashPreimage txPreimage, int amount) {
         require(Tx.checkPreimage(txPreimage));
         bytes scriptCode = Util.scriptCode(txPreimage);
-		
-		// read/deserialize state
-		int stateStart = Reader.getStateStart(scriptCode);
-		State state = this.deserialize(scriptCode[stateStart :]);
-		require(state == {11, b'1234', true});
 
-		// mutate state
-		state.counter++;
-		state.buf += b'ffff';
-		state.flag = !state.flag;
-		
-		// write/serialize state
-    	bytes stateBuf = serialize(state);
-		
-		bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
-		bytes output = Util.buildOutput(scriptCode_, amount);
-		require(hash256(output) == Util.hashOutputs(txPreimage));
+        // read/deserialize state
+        int stateStart = Reader.getStateStart(scriptCode);
+        State state = this.deserialize(scriptCode[stateStart :]);
+        require(state == { 11, b'1234', true });
+
+        // mutate state
+        state.counter++;
+        state.buf += b'ffff';
+        state.flag = !state.flag;
+
+        // write/serialize state
+        bytes stateBuf = serialize(state);
+
+        bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
+        bytes output = Util.buildOutput(scriptCode_, amount);
+        require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 }

@@ -43,10 +43,10 @@ contract Recurring {
     }
 
     function getPrevMatureTime(bytes lockingScript, int scriptLen) : int {
-        return unpack(lockingScript[scriptLen - 4 : ]);
+        return unpack(lockingScript[scriptLen - 4 :]);
     }
 
-    function getCodePart(bytes lockingScript, int scriptLen) : bytes{
+    function getCodePart(bytes lockingScript, int scriptLen) : bytes {
         return lockingScript[0 : scriptLen - 4];
     }
 }

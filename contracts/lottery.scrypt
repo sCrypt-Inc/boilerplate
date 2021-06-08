@@ -10,7 +10,7 @@ contract Lottery {
     PubKey[N] players;
     // commitments: the hash of their random numbers
     Sha256[N] nonceHashes;
-    
+
     public function reveal(int[N] nonces, Sig sig) {
         int i = 0;
         int sum = 0;
@@ -20,7 +20,7 @@ contract Lottery {
             sum += nonces[i];
             i++;
         }
-        
+
         PubKey winner = this.players[sum % N];
 
         require(checkSig(sig, winner));

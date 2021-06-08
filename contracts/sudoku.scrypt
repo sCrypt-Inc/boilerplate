@@ -14,7 +14,7 @@ contract Sudoku {
 
     function merge(bytes solution) : bytes {
         bytes newBoard = this.board;
-        
+
         loop (N) : i {
             loop (N) : j {
                 int value = readValue(newBoard, i, j);
@@ -22,7 +22,8 @@ contract Sudoku {
                 if (value == 0) {
                     require(inputValue <= 9);
                     newBoard = setValue(newBoard, i, j, inputValue);
-                } else {
+                }
+                else {
                     require(value == inputValue);
                 }
             }
@@ -68,18 +69,17 @@ contract Sudoku {
         require(true);
     }
 
-    static function readValue(bytes board, int i, int j): int {
+    static function readValue(bytes board, int i, int j) : int {
         return Util.fromLEUnsigned(Util.getElemAt(board, Sudoku.index(i, j)));
     }
 
-    static function setValue(bytes board, int i, int j, int value): bytes {
+    static function setValue(bytes board, int i, int j, int value) : bytes {
         return Util.setElemAt(board, index(i, j), Util.toLEUnsigned(value, 1));
     }
 
-    static function readSquareValue(bytes board, int i, int j): int {
+    static function readSquareValue(bytes board, int i, int j) : int {
         return Util.fromLEUnsigned(Util.getElemAt(board, Sudoku.indexSquare(i, j)));
     }
-
 
     static function index(int row, int col) : int {
         return row * Sudoku.N + col;
