@@ -1,7 +1,7 @@
 # sCrypt Project Boilerplate
 [![Build Status](https://travis-ci.com/sCrypt-Inc/boilerplate.svg?branch=master)](https://travis-ci.com/sCrypt-Inc/boilerplate)
 ## Prerequisites
-Make sure you have the [sCrypt Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=bsv-scrypt.sCrypt) installed.
+Make sure you have the [sCrypt IDE](https://scrypt-ide.readthedocs.io/en/latest/index.html) installed. **sCrypt IDE** is a tool for developers to write, test, deploy and debug sCrypt smart contracts.
 
 ## Guide
 
@@ -9,9 +9,7 @@ Make sure you have the [sCrypt Visual Studio Extension](https://marketplace.visu
 
 1. Contract Development and Test
 
-The [sCrypt Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=bsv-scrypt.sCrypt) is a tool for developers to write, test, and debug sCrypt smart contracts.
-
-2. Contract Integration and Application Launch
+1. Contract Integration and Application Launch
 
 After developing and unit testing the smart contracts, the next step is to integrate them into your application which is written in other languages such as Javascript or Python. Integration tests should be run on Bitcoin SV [Testnet](https://test.whatsonchain.com/) or [Scaling Test Network(STN)](https://bitcoinscaling.io/) before launching the application to the public on mainnet.
 
@@ -78,7 +76,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 
 The major steps to write a sCrypt test are exemplified by `tests/demo.scrypttest.js`.
 
-1. Install and import / require [`scryptlib` libary](https://github.com/scrypt-sv/scryptlib), which is a javascript SDK for integrating sCrypt smart contract.
+1. Install and import / require [`scryptlib` libary](https://github.com/sCrypt-Inc/scryptlib), which is a javascript SDK for integrating sCrypt smart contract.
 
 ```
 npm install scryptlib
@@ -117,10 +115,10 @@ expect(result.success, result.error).to.be.true
 
 ## How to run tests locally
 
-### Run using sCrypt Extension
+### Run using **sCrypt IDE**
 Run unit tests file within the editor/explorer context menu.
 
-![Screenshot](https://raw.githubusercontent.com/wiki/scrypt-sv/boilerplate/extension_screenshots/run_test_demo.gif)
+![Screenshot](https://scrypt-ide.readthedocs.io/en/latest/_images/run_testting.gif)
 
 **Note:** The test files must be suffixed by `.scrypttest.js` or `.scrypttest.ts`, otherwise the "Run sCrypt Test" option would not appear in the menu.
 
@@ -128,11 +126,14 @@ Run unit tests file within the editor/explorer context menu.
 Tests could also be run from the console by executing `npm test`, just like regular Javascript/TypeScript tests.
 
 ## How to deploy contracts
+
+### deploy by writing javascript/typescript code
+
 1. Provide a private key with funds in `privateKey.js`
 ```javascript
 const key = '$YOUR_PRIVATE_KEY_HERE'
 ```
-2. Deploy a contract and call its function by issuing 
+1. Deploy a contract and call its function by issuing 
 ```bash
 node deployments/demo.js
 ```
@@ -148,3 +149,10 @@ It is **strongly recommended** to test your contract on testnet first, before de
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/main'
 ```
 Before deploying a contract, make sure the latest contract has been compiled to a [description json file](https://github.com/scrypt-sv/scryptlib#contract-description-file), which is what will get deployed. This could be done automatically by running a daemon process with command `npm run watch`. It will monitor a contract file's change and recompile it when necessary. All generated description files are located at `deployments/fixture/autoGen`. Make sure it's up to date with the contract before deployment.
+
+### deploy by using **sCrypt IDE** [deploy feature](https://scrypt-ide.readthedocs.io/en/latest/deploy.html)
+
+IDE provides a universal UI interface. You can deploy the contract with one click by simply filling in the relevant parameters, and you can call the public function of the contract with the click of a button without writing a line of code.
+
+
+![Screenshot](https://scrypt-ide.readthedocs.io/en/latest/_images/deploy_demo.gif)
