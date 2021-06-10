@@ -11,7 +11,7 @@ contract rule110 {
         bytes scriptCode = Util.scriptCode(txPreimage);
         int scriptLen = len(scriptCode);
 
-        bytes board = scriptCode[scriptLen - N:];
+        bytes board = scriptCode[scriptLen - N :];
         bytes newBoard = this.computeNewBoard(board);
 
         bytes newScriptCode = scriptCode[: scriptLen - N] + newBoard;
@@ -19,21 +19,23 @@ contract rule110 {
 
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
-    function computeNewBoard(bytes board): bytes {
+
+    function computeNewBoard(bytes board) : bytes {
         bytes res = b'';
         res += DEAD;
-        loop(N2): i {
-            res += this.newState(board[i:i+3]);
+        loop (N2) : i {
+            res += this.newState(board[i : i + 3]);
         }
         res += DEAD;
         return res;
     }
-    function newState (bytes arg): bytes {
+    
+    function newState(bytes arg) : bytes {
         /*Current pattern	111	110	101	100	011	010	001	000
-New state for center cell	0	1	1	0	1	1	1	0*/
-        bytes a = arg[0:1];
-        bytes b = arg[1:2];
-        bytes c = arg[2:3];
+        New state for center cell	0	1	1	0	1	1	1	0*/
+        bytes a = arg[0 : 1];
+        bytes b = arg[1 : 2];
+        bytes c = arg[2 : 3];
         bytes res = LIVE;
         if (a == LIVE && b == LIVE && c == LIVE) {
             res = DEAD;
