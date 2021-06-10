@@ -1,0 +1,51 @@
+import "util.scrypt";
+
+contract rule110 {
+    static const int N = 5; //size of board
+    static const int N2 = 3; //size of board
+    static bytes LIVE = b'01';
+    static bytes DEAD = b'00';
+
+    public function play(int amount, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
+        bytes scriptCode = Util.scriptCode(txPreimage);
+        int scriptLen = len(scriptCode);
+
+        bytes board = scriptCode[scriptLen - N :];
+        bytes newBoard = this.computeNewBoard(board);
+
+        bytes newScriptCode = scriptCode[: scriptLen - N] + newBoard;
+        bytes output = Util.buildOutput(newScriptCode, amount);
+
+        require(hash256(output) == Util.hashOutputs(txPreimage));
+    }
+
+    function computeNewBoard(bytes board) : bytes {
+        bytes res = b'';
+        res += DEAD;
+        loop (N2) : i {
+            res += this.newState(board[i : i + 3]);
+        }
+        res += DEAD;
+        return res;
+    }
+    
+    function newState(bytes arg) : bytes {
+        /*Current pattern	111	110	101	100	011	010	001	000
+        New state for center cell	0	1	1	0	1	1	1	0*/
+        bytes a = arg[0 : 1];
+        bytes b = arg[1 : 2];
+        bytes c = arg[2 : 3];
+        bytes res = LIVE;
+        if (a == LIVE && b == LIVE && c == LIVE) {
+            res = DEAD;
+        }
+        if (a == LIVE && b == DEAD && c == DEAD) {
+            res = DEAD;
+        }
+        if (a == DEAD && b == DEAD && c == DEAD) {
+            res = DEAD;
+        }
+        return res;
+    }
+}
