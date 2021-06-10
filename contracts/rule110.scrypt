@@ -31,8 +31,10 @@ contract rule110 {
     }
     
     function newState(bytes arg) : bytes {
-        /*Current pattern	111	110	101	100	011	010	001	000
-        New state for center cell	0	1	1	0	1	1	1	0*/
+        /*
+          Current pattern	        111	110	101	100	011	010	001	000
+          New state for center cell	 0	 1	 1	0	 1	 1	 1	 0
+        */
         bytes a = arg[0 : 1];
         bytes b = arg[1 : 2];
         bytes c = arg[2 : 3];
