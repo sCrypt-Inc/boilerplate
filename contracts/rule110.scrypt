@@ -1,6 +1,6 @@
 import "util.scrypt";
 
-contract rule101 {
+contract rule110 {
     static const int N = 5; //size of board
     static const int N2 = 3; //size of board
     static bytes LIVE = b'01';
