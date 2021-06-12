@@ -1,4 +1,3 @@
-
 struct ST1 {
     bool x;
     bytes y;
@@ -177,5 +176,4 @@ contract ArrayDemo {
         require(st1mdarray[1][1][1].y == b'11');
         require(st1mdarray[1][1][1].i == 8);
     }
-
 }
