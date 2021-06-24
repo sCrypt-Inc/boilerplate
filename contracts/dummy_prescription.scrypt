@@ -1,0 +1,67 @@
+/**
+Dummy Presciption is a proof of concept healthcare prescription smart contract. This is a very basic
+implementation of a prescription, where the presciption can only be filled if the smart contract
+criteria is met.
+
+The prescription will be filled if...
+  1. The prescription isn't expired.
+  2. The current pharmacy is authorized to fill the prescription.
+  3. The provided prescriber information matches who wrote the prescription.
+  4. The prescibed patient is the one receiving the prescription.
+
+The fill function also pays a reward to the patient when they fill their prescription. Patient
+adherence is a big focus in healthcare so a built in reward system makes it easy to incentivize
+patients to fill their prescriptions.
+
+It is important to note that this is called a dummy prescription because it would most likely not meet
+HIPAA privacy guidelines.
+**/
+
+import "util.scrypt";
+
+contract DummyPrescription {
+  int prescriberSig;
+  bytes prescriberPadding;
+  int drug;
+  int expirationDate;
+  bytes prescriptionID;
+  int patientReward;
+  Ripemd160 patientPubKeyHash;
+  PubKey[2] pharmacyPubKeys;
+
+  public function fill(Sig pharmacySig, int prescriberPubKey, int currBlock, SigHashPreimage txPreimage) {
+    require(Tx.checkPreimage(txPreimage));
+
+    // check if the prescription is expired 
+    require(currBlock <= this.expirationDate);
+
+    // check that this pharmacy can dispense
+    require(checkMultiSig([pharmacySig], this.pharmacyPubKeys));
+
+    // check this prescriber wrote this prescription
+    require(this.verifySig(this.prescriberSig, this.prescriptionID, this.prescriberPadding, prescriberPubKey));
+
+    // verify the prescription belongs to the patient
+    // & reward is going to the patient
+    bytes script = Util.buildPublicKeyHashScript(this.patientPubKeyHash);
+    bytes output = Util.buildOutput(script, this.patientReward);
+    require(hash256(output) == Util.hashOutputs(txPreimage));
+  }
+
+  // from rabin.scrypt
+  function verifySig(int sig, bytes msg, bytes padding, int n): bool {
+    int h = Util.fromLEUnsigned(this.hash(msg + padding));
+    return ((sig * sig) % n == h % n);
+  }
+
+  // from rabin.scrypt
+  function hash(bytes x): bytes {
+    // expand into 512 bit hash
+    bytes hx = sha256(x);
+    int idx = len(hx) / 2;
+    return sha256(hx[:idx]) + sha256(hx[idx:]);
+  }
+
+  // TODO: transfer prescription to different pharmacy
+  // TODO: terminate expired prescription
+}
