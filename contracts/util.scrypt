@@ -30,6 +30,11 @@ library Util {
         return OpCode.OP_DUP + OpCode.OP_HASH160 + pack(Util.PubKeyHashLen /* "OP_PUSHDATA0" */) + pubKeyHash + OpCode.OP_EQUALVERIFY + OpCode.OP_CHECKSIG;
     }
 
+    // build false OPRETURN script from data payload
+    static function buildOpreturnScript(bytes data) : bytes {
+        return OpCode.OP_FALSE + OpCode.OP_RETURN + data;
+    }
+
     // build P2PKH script from public key
     static function pubKeyToP2PKH(PubKey pubKey) : bytes {
         return Util.buildPublicKeyHashScript(hash160(pubKey));
