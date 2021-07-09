@@ -1,5 +1,5 @@
 // Library
-import "Util.scrypt";
+import "util.scrypt";
 import "final_loop_import.scrypt";
 
 library Loop {
