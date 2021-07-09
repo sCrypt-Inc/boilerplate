@@ -159,7 +159,7 @@ async function sendTx(tx) {
   const {
     data: txid
   } = await axios.post(`${API_PREFIX}/tx/raw`, {
-    txhex: tx.serialize()
+    txhex: tx.toString()
   })
   return txid
 }
