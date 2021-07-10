@@ -1,0 +1,21 @@
+contract Number {
+    public function equal(int a, int b) {
+      require(a==b);
+    }
+    
+    public function add(int a, int b, int c) {
+      require(a+b==c);    
+    }
+
+    public function sub(int a, int b, int c) {
+      require(a-b==c);    
+    }
+    
+    public function mul(int a, int b, int c) {
+      require(a*b==c);    
+    }
+
+    public function div(int a, int b, int c) {
+      require(a/b==c);    
+    }
+}
