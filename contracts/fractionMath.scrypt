@@ -1,0 +1,117 @@
+struct Fraction {
+  int n; // numerator
+  int d; // denominator
+}
+
+library FRMath {
+  
+  static function add(Fraction x, Fraction y) : Fraction {
+    return {
+      x.n * y.d + y.n * x.d,
+      x.d * y.d
+    };
+  }
+
+  static function sAdd(Fraction x, Fraction y) : Fraction {
+    require(x.d > 0 && y.d > 0);
+    return {
+      x.n * y.d + y.n * x.d,
+      x.d * y.d
+    };
+  }
+
+  static function sub(Fraction x, Fraction y) : Fraction {
+    return {
+      x.n * y.d - y.n * x.d,
+      x.d * y.d
+    };
+  }
+
+  static function sSub(Fraction x, Fraction y) : Fraction {
+    require(x.d > 0 && y.d > 0);
+    return {
+      x.n * y.d - y.n * x.d,
+      x.d * y.d
+    };
+  }
+
+  static function mul(Fraction x, Fraction y) : Fraction {
+    return {
+      x.n * y.n,
+      x.d * y.d
+    };
+  }
+
+  static function sMul(Fraction x, Fraction y) : Fraction {
+    require(x.d > 0 && y.d > 0);
+    return {
+      x.n * y.n,
+      x.d * y.d
+    };
+  }
+
+  static function div(Fraction x, Fraction y) : Fraction {
+    return {
+      x.n * y.d,
+      x.d * y.n
+    };
+  }
+
+  static function sDiv(Fraction x, Fraction y) : Fraction {
+    require(x.d > 0 && y.d > 0 && y.n != 0);
+    return {
+      x.n * y.d,
+      x.d * y.n
+    };
+  }
+
+  static function abs(Fraction x) : Fraction {
+    return {
+      abs(x.n),
+      x.d
+    };
+  }
+
+  static function sAbs(Fraction x) : Fraction {
+    require(x.d > 0);
+    return {
+      abs(x.n),
+      x.d
+    };
+  }
+
+  static function equal(Fraction x, Fraction y) : bool {
+    return sub(x, y).n == 0;
+  }
+
+  static function sEqual(Fraction x, Fraction y) : bool {
+    return sSub(x, y).n == 0;
+  }
+
+  static function toInt(Fraction x) : int {
+    return x.n / x.d;
+  }
+}
+
+contract Main {
+  public function unlock0(Fraction f, int v) {
+    Fraction x = {3, 5};
+    Fraction y = {4, 7};
+    require(FRMath.add(x, y) == {41, 35});
+    require(FRMath.sub(x, y) == {1, 35});
+    require(FRMath.mul(x, y) == {12, 35});
+    require(FRMath.div(x, y) == {21, 20});
+    require(FRMath.equal(FRMath.div(x, y), f));
+    require(FRMath.toInt(f) == v);
+  }
+
+  public function unlock1(Fraction x, Fraction y, Fraction z, bool strict) {
+    Fraction r = {0, 1};
+    if (strict) {
+      r = FRMath.sDiv(FRMath.sMul(x, y), FRMath.sAdd(FRMath.sSub(x, y), {100, 1}));
+    } else {
+      r = FRMath.div(FRMath.mul(x, y), FRMath.add(FRMath.sub(x, y), {100, 1}));
+    }
+    require(FRMath.equal(r, z));
+  }
+}
