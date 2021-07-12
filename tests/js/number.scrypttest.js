@@ -41,7 +41,7 @@ describe('Test sCrypt contract Asm In Javascript', () => {
     expect(result.success, result.error).to.be.true
   });
 
-  it('div 30*2==15', () => {
+  it('div 30/2==15', () => {
     result = number.div(30, 2, 15).verify()
     expect(result.success, result.error).to.be.true
   });
@@ -109,6 +109,29 @@ describe('Test sCrypt contract Asm In Javascript', () => {
     const a = BigInt(0.6*10**truncDecimals)*BigInt(10)**BigInt(decimals-truncDecimals)
     const b = BigInt(0.3*10**truncDecimals)*BigInt(10)**BigInt(decimals-truncDecimals)
     const c = BigInt(2*10**(decimals-decimals))
+    console.log(a, b, c)
+
+    result = number.div(a, b, c).verify()
+    expect(result.success, result.error).to.be.true
+  });
+
+
+  it('div 1/3==0.333333', () => {
+    const decimals = 4
+    const a = Math.trunc(1*10**decimals)
+    const b = Math.trunc(3*10**0)
+    const c = Math.trunc(1/3*10**(decimals))
+    console.log(a, b, c)
+
+    result = number.div(a, b, c).verify()
+    expect(result.success, result.error).to.be.true
+  });
+
+  it('div 22/7==3.14285714', () => {
+    const decimals = 5
+    const a = Math.trunc(22*10**decimals)
+    const b = Math.trunc(7*10**0)
+    const c = Math.trunc(22/7*10**(decimals))
     console.log(a, b, c)
 
     result = number.div(a, b, c).verify()
