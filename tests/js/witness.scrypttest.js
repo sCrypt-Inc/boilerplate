@@ -71,7 +71,7 @@ describe( 'Test Witness Service BSV Price', () => {
   } );
 
   it( 'should return true', async () => {
-    const WitnessBinaryOption = buildContractClass( compileContract( 'WitnessBinaryOption.scrypt' ) );
+    const WitnessBinaryOption = buildContractClass( compileContract( 'witnessBinaryOption.scrypt' ) );
     const res = await axios.get( `${witnessServer}/v1/price` )
     const priceData = res.data
 
