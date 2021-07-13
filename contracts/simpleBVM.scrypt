@@ -265,10 +265,8 @@ contract SimpleBVM {
         return 0;
     }
 
-    function compareResult() : bool {
+    function compareResult(int x) : bool {
         asm {
-            // duplicate here to avoid changing stack below
-            OP_DUP
             OP_FROMALTSTACK
             OP_NUMEQUAL
             OP_VERIFY
@@ -282,6 +280,6 @@ contract SimpleBVM {
         // push x into stack
         int x = this.x;
 
-        require(this.compareResult());
+        require(this.compareResult(x));
     }
 }

@@ -1,0 +1,44 @@
+/**
+* a contract calling quadratic equation contract
+*/
+import "util.scrypt";
+import "txUtil.scrypt";
+
+struct Coeff {
+    int a;
+    int b;
+    int c;
+}
+
+contract Caller {
+    static const int N = 2;
+
+    // hash of the callee contract, i.e., its locking script
+    bytes calleeContractHash;
+
+    public function call(Coeff co, bytes prevouts, bytes calleeContractTx, int calleeContractInputIndex, bytes outputScript, int amount, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
+        require(hash256(prevouts) == Util.hashPrevouts(txPreimage));
+
+        // validate the tx containing the callee contract
+        bytes prevScriptTxId = prevouts[calleeContractInputIndex * TxUtil.OUTPOINT_LEN: calleeContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN];
+        require(hash256(calleeContractTx) == prevScriptTxId);
+
+        // validate the callee contract, i.e., its locking script
+        int lockContractTxOutIndex = Util.fromLEUnsigned(prevouts[calleeContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN: (calleeContractInputIndex + 1) * TxUtil.OUTPOINT_LEN]);
+        bytes prevScriptCode = TxUtil.readOutputScript(calleeContractTx, lockContractTxOutIndex);
+        require(hash160(prevScriptCode) == this.calleeContractHash);
+
+        int l = len(outputScript);
+        int a = unpack(outputScript[l - 4 * N : l - 3 * N]);
+        int b = unpack(outputScript[l - 3 * N : l - 2 * N]);
+        int c = unpack(outputScript[l - 2 * N : l - N]);
+        require(co == {a, b, c});
+        int x = unpack(outputScript[l - N :]);
+        // ------>> x must be a root for the following quadatic equition: no need to double check
+        // require(a * x * x + b * x + c == 0);
+
+        bytes output = Util.buildOutput(outputScript, amount);
+        require(hash256(output) == Util.hashOutputs(txPreimage));
+    }
+}

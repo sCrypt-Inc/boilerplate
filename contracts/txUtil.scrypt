@@ -1,0 +1,114 @@
+// folked from https://sensiblecontract.org
+import "util.scrypt";
+
+library TxUtil {
+  static int OUTPOINT_LEN = 36; 
+  static int TX_ID_LEN = 32;
+
+  static function fromLEUnsigned(bytes b): int {
+    return unpack(b + b'00');
+  }
+
+  static function readOutputScript(bytes tx, int outputIndex): bytes {
+    // first 4 bytes version
+    // 1 byte input num, only support max 3
+    int pos = 4;
+    int ninputs = TxUtil.fromLEUnsigned(tx[pos: pos + 1]);
+    pos = pos + 1;
+    bytes res = b'';
+    // max support 3 input
+    // input
+    require(ninputs <= 3);
+    loop(3): i {
+      if (i < ninputs) {
+        // output point 36 bytes
+        pos = pos + 36;
+        // 1 byte var
+        // script code + 4 bytes sequence
+        int varLen = TxUtil.fromLEUnsigned(tx[pos: pos + 1]);
+        if (varLen < 253) {
+          int scriptLen = varLen;
+          pos = pos + 1 + scriptLen + 4;
+        } else if (varLen == 253) {
+          int scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 3]);
+          pos = pos + 3 + scriptLen + 4;
+        } else if (varLen == 254) {
+          int scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 5]);
+          pos = pos + 5 + scriptLen + 4;
+        } else {
+          int scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 9]);
+          pos = pos + 9 + scriptLen + 4;
+        }
+      }
+    }
+
+    int noutputs = TxUtil.fromLEUnsigned(tx[pos: pos + 1]);
+    pos = pos + 1;
+    require(noutputs <= 3);
+    loop(3): i {
+      if (i < noutputs) {
+        // 8 bytes value
+        pos = pos + 8;
+        // script code
+        int varLen = TxUtil.fromLEUnsigned(tx[pos: pos + 1] + b'00');
+        int scriptLen = 0;
+        if (varLen < 253) {
+          scriptLen = varLen;
+          pos = pos + 1 + scriptLen;
+        } else if (varLen == 253) {
+          scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 3]);
+          pos = pos + 3 + scriptLen;
+        } else if (varLen == 254) {
+          scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 5]);
+          pos = pos + 5 + scriptLen;
+        } else {
+          scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 9]);
+          pos = pos + 9 + scriptLen;
+        }
+        if (i == outputIndex) {
+          res = tx[pos - scriptLen: pos];
+        }
+      }
+    }
+
+    // 4 bytes locktime
+    return res;
+  }
+
+  static function getScriptCodeFromOutput(bytes output): bytes {
+    return Util.readVarint(output[8:]);
+  }
+
+  static function getVarOpLen(int length): int {
+      int res = 0;
+      if (length <= 75) {
+          res = 1;
+      } else if (length <= 255) {
+          res = 2;
+      } else if (length <= 65535) {
+          res = 3;
+      } else {
+          res = 5;
+      }
+      return res;
+  }
+
+  static function getVarOpLenOpt(int length): int {
+      int res = 0;
+      if (length <= 75) {
+          res = 1;
+      } else {
+          res = 2;
+      } 
+      return res;
+  }
+
+  static function genBsvOutput(int satoshis, Ripemd160 address): bytes {
+    bytes output = b'';
+    if (satoshis > 0) {
+      bytes outputScript = Util.buildPublicKeyHashScript(address);
+      output = Util.buildOutput(outputScript, satoshis);
+    }
+    return output;
+  }
+}
