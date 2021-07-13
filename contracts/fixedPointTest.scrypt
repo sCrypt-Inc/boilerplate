@@ -1,0 +1,23 @@
+import "fixedPoint.scrypt";
+
+contract Test {
+  public function unlock(int precision, int x, int y, int op, int r) {
+    FixedPoint fp = new FixedPoint(precision);
+    FP result = fp.fromInt(0);
+    FP fpX = {x};
+    FP fpY = {y};
+    if (op == 0) {
+      result = fp.add(fpX, fpY);
+    } else if (op == 1) {
+      result = fp.sub(fpX, fpY);
+    } else if (op == 2) {
+      result = fp.mul(fpX, fpY);
+    } else if (op == 3) {
+      result = fp.div(fpX, fpY);
+    } else if (op == 4) {
+      result = fp.abs(fpX);
+    }
+    require(result == {r});
+    require(fp.toInt(result) == r / precision);
+  }
+}
