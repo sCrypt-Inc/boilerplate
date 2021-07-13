@@ -1,0 +1,60 @@
+import "fractionMath.scrypt";
+
+contract Main {
+
+  function runOp(int op, Fraction x, Fraction y) : Fraction {
+    Fraction r = {0, 1};
+    if (op == 0) {
+      r = FRMath.add(x, y);
+    } else if(op == 1) {
+      r = FRMath.sub(x, y);
+    } else if(op == 2) {
+      r = FRMath.mul(x, y);
+    } else if(op == 3) {
+      r = FRMath.div(x, y);
+    } else if(op == 4) {
+      r = FRMath.abs(x);
+    }
+    return r;
+  }
+
+  function runSafeOp(int op, Fraction x, Fraction y) : Fraction {
+    Fraction r = {0, 1};
+    if (op == 0) {
+      r = FRMath.sAdd(x, y);
+    } else if(op == 1) {
+      r = FRMath.sSub(x, y);
+    } else if(op == 2) {
+      r = FRMath.sMul(x, y);
+    } else if(op == 3) {
+      r = FRMath.sDiv(x, y);
+    } else if(op == 4) {
+      r = FRMath.sAbs(x);
+    }
+    return r;
+  }
+
+  public function unlock(Fraction x, Fraction y, Fraction z, int op, bool strict) {
+    Fraction r = {0, 1};
+    if (strict) {
+      r = this.runSafeOp(op, x, y);
+      require(FRMath.sEqual(r, z));
+    } else {
+      r = this.runOp(op, x, y);
+      require(FRMath.equal(r, z));
+    }
+    require(true);
+  }
+
+  public function unlockScaled(int s, Fraction x, Fraction y, int op, bool strict, int sr) {
+    Fraction r = {0, 1};
+    if (strict) {
+      r = this.runSafeOp(op, x, y);
+      require(FRMath.scaleUp(r, s) == sr);
+    } else {
+      r = this.runOp(op, x, y);
+      require(FRMath.scaleUp(r, s) == sr);
+    }
+    require(true);
+  }
+}

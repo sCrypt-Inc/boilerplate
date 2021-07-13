@@ -3,6 +3,7 @@ struct Fraction {
   int d; // denominator
 }
 
+// A fraction-based math library for high precision calculation.
 library FRMath {
   
   static function add(Fraction x, Fraction y) : Fraction {
@@ -12,6 +13,7 @@ library FRMath {
     };
   }
 
+  // safe add, requires both argument denominators > 0
   static function sAdd(Fraction x, Fraction y) : Fraction {
     require(x.d > 0 && y.d > 0);
     return {
@@ -27,6 +29,7 @@ library FRMath {
     };
   }
 
+  // safe sub, requires both argument denominators > 0
   static function sSub(Fraction x, Fraction y) : Fraction {
     require(x.d > 0 && y.d > 0);
     return {
@@ -42,6 +45,7 @@ library FRMath {
     };
   }
 
+  // safe mul, requires both argument denominators > 0
   static function sMul(Fraction x, Fraction y) : Fraction {
     require(x.d > 0 && y.d > 0);
     return {
@@ -57,6 +61,7 @@ library FRMath {
     };
   }
 
+  // safe div, requires both argument denominators > 0 and y != 0
   static function sDiv(Fraction x, Fraction y) : Fraction {
     require(x.d > 0 && y.d > 0 && y.n != 0);
     return {
@@ -68,10 +73,11 @@ library FRMath {
   static function abs(Fraction x) : Fraction {
     return {
       abs(x.n),
-      x.d
+      abs(x.d)
     };
   }
 
+  // safe abs, requires both argument denominators > 0
   static function sAbs(Fraction x) : Fraction {
     require(x.d > 0);
     return {
@@ -91,27 +97,12 @@ library FRMath {
   static function toInt(Fraction x) : int {
     return x.n / x.d;
   }
-}
 
-contract Main {
-  public function unlock0(Fraction f, int v) {
-    Fraction x = {3, 5};
-    Fraction y = {4, 7};
-    require(FRMath.add(x, y) == {41, 35});
-    require(FRMath.sub(x, y) == {1, 35});
-    require(FRMath.mul(x, y) == {12, 35});
-    require(FRMath.div(x, y) == {21, 20});
-    require(FRMath.equal(FRMath.div(x, y), f));
-    require(FRMath.toInt(f) == v);
+  static function fromInt(int numerator, int denominator) : Fraction {
+    return {numerator, denominator};
   }
 
-  public function unlock1(Fraction x, Fraction y, Fraction z, bool strict) {
-    Fraction r = {0, 1};
-    if (strict) {
-      r = FRMath.sDiv(FRMath.sMul(x, y), FRMath.sAdd(FRMath.sSub(x, y), {100, 1}));
-    } else {
-      r = FRMath.div(FRMath.mul(x, y), FRMath.add(FRMath.sub(x, y), {100, 1}));
-    }
-    require(FRMath.equal(r, z));
+  static function scaleUp(Fraction x, int s) : int {
+    return x.n * s / x.d;
   }
 }
