@@ -1,0 +1,37 @@
+struct FP {
+  int val; // scaled-up value depends on precison.
+}
+
+// 
+library FixedPoint {
+  int precision; // should be 10^n
+
+  function add(FP x, FP y) : FP {
+    return {x.val + y.val};
+  }
+
+  function sub(FP x, FP y) : FP {
+    return {x.val - y.val};
+  }
+
+  function mul(FP x, FP y) : FP {
+    return {x.val * y.val / this.precision};
+  }
+
+  function div(FP x, FP y) : FP {
+    return {x.val * this.precision / y.val};
+  }
+
+  function abs(FP x) : FP {
+    return {abs(x.val)};
+  }
+
+  function fromInt(int i) : FP {
+    return {i * this.precision};
+  }
+
+  function toInt(FP fp) : int {
+    return fp.val / this.precision;
+  }
+
+}
