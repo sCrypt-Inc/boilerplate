@@ -12,4 +12,18 @@ contract RabinSignature {
         int idx = len(hx) / 2;
         return sha256(hx[: idx]) + sha256(hx[idx :]);
     }
+
+    public function verifySig3072(int sig, bytes msg, bytes padding, int n) {
+        int h = Util.fromLEUnsigned(this.hash3072(msg + padding));
+        require((sig * sig) % n == h % n);
+    }
+
+    function hash3072(bytes x) : bytes {
+        // expand into 3072 bit hash
+        bytes hx = this.hash(x);
+        loop(5) {
+          hx += this.hash(hx);
+        }
+        return hx;
+    }
 }

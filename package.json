@@ -30,7 +30,7 @@
     "axios": "^0.21.1",
     "glob": "^7.1.6",
     "minimist": "^1.2.5",
-    "rabinsig": "^1.0.0",
+    "rabinsig": "^2.0.0",
     "scryptlib": "^0.4.5",
     "watch": "^1.0.2"
   },

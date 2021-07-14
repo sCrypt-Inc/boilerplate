@@ -11,7 +11,9 @@ const {
   Ripemd160,
 } = require("scryptlib");
 const { compileContract, inputIndex, newTx } = require("../../helper");
-const { generatePrivKey, privKeyToPubKey, sign } = require("rabinsig");
+const { RabinSignature } = require("rabinsig");
+
+const rabinsig = new RabinSignature()
 
 // prescription details
 const drug = 1;
@@ -23,9 +25,9 @@ const expiration = currTime + 100;
 const patientReward = 5000;
 
 // prescriber information
-const prescriberPriv = generatePrivKey();
-const prescriber_nRabin = privKeyToPubKey(prescriberPriv.p, prescriberPriv.q);
-const prescriberSig = sign(
+const prescriberPriv = rabinsig.generatePrivKey();
+const prescriber_nRabin = rabinsig.privKeyToPubKey(prescriberPriv.p, prescriberPriv.q);
+const prescriberSig = rabinsig.sign(
   prescriptionIDHex,
   prescriberPriv.p,
   prescriberPriv.q,
