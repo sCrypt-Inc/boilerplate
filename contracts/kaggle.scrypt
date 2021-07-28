@@ -1,0 +1,176 @@
+import "util.scrypt";
+import "serializer.scrypt";
+
+struct Submission {
+    int heightWeight;
+    // 1st "weight" prefix means weight in KGs
+    int weightWeight;
+    int bias;
+
+    // payout address
+    Ripemd160 addr;
+}
+
+type Gender = int;
+
+// data point in dataset
+struct DataPoint {
+    // inputs
+    // in CMs
+    int height;
+    // in KGs
+    int weight;
+
+    // outputs
+    // correct classification of gender: 0 means female, 1 male
+    Gender gender;
+}
+
+type Submissions = Submission[6];  // Submission[S]
+
+struct State {
+    // submissions
+    Submissions submissions;
+    int count;
+}
+
+/*
+ * An on-chain Kaggle competition
+ */
+contract Kaggle {
+    // size of training dataset
+    static const int N = 5;
+    // size of testing dataset
+    static const int T = 10;
+    // max number of submissions
+    static const int S = 6;
+
+    // training dataset
+    DataPoint[N] trainingDataset;
+
+    // hash of testing dataset
+    Sha256 testingDatasetHash;
+
+
+    // submit a solution
+    public function submit(SigHashPreimage txPreimage, Submission subm) {
+        require(Tx.checkPreimage(txPreimage));
+        bytes scriptCode = Util.scriptCode(txPreimage);
+
+        // read/deserialize state
+        int stateStart = Reader.getStateStart(scriptCode);
+        State state = this.deserialize(scriptCode[stateStart :]);
+
+        // append the submission to the candidates
+        if (++state.count < S) {
+            loop (S) : i {
+                if (i == state.count)
+                    state.submissions[i] = subm;
+            }
+        }
+
+        // write/serialize state
+        bytes stateBuf = serialize(state);
+
+        bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
+        bytes output = Util.buildOutput(scriptCode_, Util.value(txPreimage));
+        require(hash256(output) == Util.hashOutputs(txPreimage));
+    }
+
+    // reveal the testing dataset and pay the winner with smallest error
+    public function evaluate(SigHashPreimage txPreimage, DataPoint[T] testingDataset) {
+        require(Tx.checkPreimage(txPreimage));
+        bytes scriptCode = Util.scriptCode(txPreimage);
+
+        // read/deserialize state
+        int stateStart = Reader.getStateStart(scriptCode);
+        State state = this.deserialize(scriptCode[stateStart :]);
+
+        // validate testing dataset is what was committed
+        require(this.validateTestData(testingDataset));
+
+        // find the winner with the miminal predicted error
+        Ripemd160 winner = Ripemd160(b'');
+        int minError = 0xFFFFFFFFFFF;
+        loop (S) : i {
+            if (i < state.count) {
+                auto subm = state.submissions[i];
+                auto error = calcError(subm, testingDataset);
+                if (error < minError) {
+                    minError = error;
+                    winner = subm.addr;
+                }
+            }
+        }
+        
+        bytes output = Util.buildOutput(Util.buildPublicKeyHashScript(winner), Util.value(txPreimage));
+        require(hash256(output) == Util.hashOutputs(txPreimage));
+    }
+
+    // calculate error
+    static function calcError(Submission subm, DataPoint[T] trainingDataset) : int {
+        int sum = 0;
+
+        loop (T) : i {
+            int prediction = predict(subm, trainingDataset[i]);
+            int delta = trainingDataset[i].gender - prediction;
+            // use square error
+            sum += delta * delta;
+        }
+        return sum;
+    }
+
+    // predicted output
+    static function predict(Submission s, DataPoint dataPoint) : int {
+        int sum = s.bias;
+        sum += dataPoint.height * s.heightWeight + dataPoint.weight * s.weightWeight;
+        return stepActivate(sum);
+    }
+
+
+    // binary step function
+    static function stepActivate(int sum) : Gender {
+        return (sum >= 0 ? 1 : 0);
+    }
+
+    function validateTestData(DataPoint[T] testingDataset): bool {
+        return this.testingDatasetHash == hash256(serializeDataPoints(testingDataset));
+    }
+
+    static function serializeDataPoints(DataPoint[T] dataset) : bytes {
+        bytes sBuf = b'';
+        loop (T) : i {
+            auto dp = dataset[i];
+            sBuf += Writer.writeInt(dp.height) + Writer.writeInt(dp.weight) + Writer.writeInt(dp.gender);
+        }
+        return sBuf;
+    }
+
+    function deserialize(bytes buf) : State {
+        Submissions submissions = repeat({0, 0, 0, Ripemd160(b'')}, S);
+
+        Reader r = new Reader(buf);
+        loop (S) : i {
+            auto height = r.readInt();
+            auto weight = r.readInt();
+            auto bias = r.readInt();
+            auto addr = Ripemd160(r.readBytes());
+            submissions[i] = { height, weight, bias, addr };
+        }
+
+        auto count = r.readInt();
+
+        return {submissions, count};
+        
+    }
+
+    static function serialize(State s) : bytes {
+        bytes sBuf = b'';
+        loop (S) : i {
+            auto subm = s.submissions[i];
+            sBuf += Writer.writeInt(subm.heightWeight) + Writer.writeInt(subm.weightWeight) + Writer.writeInt(subm.bias) + Writer.writeBytes(subm.addr);
+        }
+        sBuf += Writer.writeInt(s.count);
+        return Writer.serializeState(sBuf);
+    }
+}
