@@ -65,6 +65,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── tokenSale.scrypt                # Selling tokens for bitcoins using <a href="https://medium.com/@xiaohuiliu/atomic-swap-on-bitcoin-sv-abc28e836cd5">atomic swap</a>
 │   ├── tokenSwap.scrypt                # Merkle tree-based token and bitcoin swap <a href="https://powping.com/posts/2ce8261d34d7b7745343678039e1578b86507acad30bc768b8edaf4629560d01">Token swap</a>
 │   ├── tokenUtxo.scrypt                # <a href="https://medium.com/@xiaohuiliu/utxo-based-layer-1-tokens-on-bitcoin-sv-f5e86a74c1e1">fungible token</a>
+│   ├── treeSig.scrypt                  # <a href="https://xiaohuiliu.medium.com/tree-signatures-8d03a8dd3077">Tree signatures</a>
 │   └── util.scrypt                     # utility functions and constants
 ├── deployments                     # examples to deploy contract and call its function on testnet
     └── fixture

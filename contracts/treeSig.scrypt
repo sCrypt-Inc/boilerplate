@@ -1,0 +1,51 @@
+import "util.scrypt";
+
+struct Sibling {
+    Sha256 hash;
+    // left or right sibling
+    bool left;
+}
+
+type MerklePath = Sibling[4]; // Sibling[DEPTH]
+
+// tree signatures: Merkle tree-based multisig
+contract TreeSig {
+    static const int DEPTH = 4;
+    // M out of N multisig
+    static const int M = 3;
+    
+    const Sha256 merkleRoot;
+
+    public function main(PubKey[M] pubKeys, Sig[M] sigs, MerklePath merklePath) {
+        // validate public keys are from the merkle tree
+        require(calMerkleRoot(pubKeys2Leaf(pubKeys), merklePath) == this.merkleRoot);
+
+        // check if all M signatures are valid
+        bool allMatch = true;
+        loop (M) : i {
+            allMatch = allMatch && checkSig(sigs[i], pubKeys[i]);
+        }
+        require(allMatch);
+    }
+
+    // map public keys to a leaf
+    static function pubKeys2Leaf(PubKey[M] pubKeys) : bytes {
+        bytes leaf = b'';
+
+        loop (M) : i {
+            leaf += pubKeys[i];
+        }
+        return leaf;
+    }
+
+    static function calMerkleRoot(bytes leaf, MerklePath merklePath) : Sha256 {
+        Sha256 root = sha256(leaf);
+
+        loop (DEPTH) : i {
+            Sibling s = merklePath[i];
+            root = s.left ? sha256(s.hash + root) : sha256(root + s.hash);
+        }
+
+        return root;
+    }
+}
