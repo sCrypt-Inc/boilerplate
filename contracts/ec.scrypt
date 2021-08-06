@@ -1,0 +1,65 @@
+struct Point {
+    int x;
+    int y;
+}
+
+// elliptic curve Secp256k1
+library EC {
+    static const int P = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
+    static const int N = 256;
+    static const int N1 = 255; // N - 1
+
+    static const Point ZERO = { 0, 0 };
+    static const Point G = { 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8 };
+
+    static function isSumHelper(Point p1, Point p2, int lambda, Point p) : bool {
+        // check lambda is indeed gradient
+        bool lambdaOK = (p1 == p2) ?
+            (2 * lambda * p1.y - 3 * p1.x * p1.x) % P == 0 :
+            (lambda * (p2.x - p1.x) - (p2.y - p1.y)) % P == 0;
+        // also check p = p1 + p2
+        return lambdaOK && (lambda * lambda - p1.x - p2.x - p.x) % P == 0 && 
+            (lambda * (p1.x - p.x) - p1.y - p.y) % P == 0;
+    }
+
+    // return true if lambda is the gradient of the line between p1 and p2
+    // and p = p1 + p2 
+    static function isSum(Point p1, Point p2, int lambda, Point p) : bool {
+        // special handling of point ZERO
+        bool ret = p1 == ZERO ? p2 == p : (p2 == ZERO ? p1 == p : (p1.x == p2.x && (p1.y + p2.y) % P == 0) ? p == ZERO : true);
+
+        return ret && isSumHelper(p1, p2, lambda, p);
+    }
+
+    // return true iff p * x == r
+    static function isMul(Point p, int x, Point r, Point[EC.N] pMultiples,
+        Point[EC.N] qs, int[EC.N1] lambdas1, int[EC.N1] lambdas2) : bool {
+
+        // validate pMultiples = [p, 2p, 4p, 8p, ...]
+        loop (N) : i {
+            require(i == 0 ? pMultiples[i] == p : isSum(pMultiples[i - 1], pMultiples[i - 1], lambdas1[i - 1], pMultiples[i]));
+        }
+
+        // // x * p = x0 * p + x1 *(2p) + x2 * (4p) + x3 * (8p) + ...
+        // // xi is the i-th bit of x
+        Point P0 = ZERO;
+        loop (N) : i {
+            Point P = x % 2 ? pMultiples[i] : ZERO;
+
+            // right shift by 1
+            x /= 2;
+
+            if (i == 0) {
+                P0 = P;
+            } else if (i == 1) {
+                // first
+                require(isSum(P0, P, lambdas2[i - 1], qs[i - 1]));
+            } else {
+                // rest
+                require(isSum(qs[i - 1], P, lambdas2[i - 1], i < N1 ? qs[i] : r));
+            }
+        }
+
+        return true;
+    }
+}
