@@ -54,6 +54,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── rabin.scrypt                    # <a href="https://medium.com/coinmonks/access-external-data-from-bitcoin-smart-contracts-2ecdc7448c43">Rabin signature</a> to import off-chain data into a contract via oracle
 │   ├── recurring.scrypt                # <a href="https://xiaohuiliu.medium.com/patreon-on-bitcoin-4c3626d4ce5">Recurring Payments</a>
 |   ├── rpuzzle.scrypt                  # <a href="https://wiki.bitcoinsv.io/index.php/R-Puzzles">R-Puzzle</a>
+|   ├── schnorr.scrypt                  # <a href="https://xiaohuiliu.medium.com/schnorr-signatures-on-bitcoin-397ca51d8bda">Schnorr signatures</a>
 │   ├── rps.scrypt                      # Rock Paper Scissors
 │   ├── simpleBVM.scrypt                # <a href="https://github.com/sCrypt-Inc/boilerplate/pull/57">A simple Bitcoin Script interpreter: a Bitcoin VM inside a BVM </a>
 |   ├── spvToken.scrypt                 # <a href="https://medium.com/@xiaohuiliu/peer-to-peer-tokens-6508986d9593">Peer-to-peer Tokens</a>
