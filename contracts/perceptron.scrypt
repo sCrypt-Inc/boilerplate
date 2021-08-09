@@ -73,20 +73,20 @@ contract Perceptron {
 
         // read/deserialize state
         int stateStart = Reader.getStateStart(scriptCode);
-        State state = this.deserialize(scriptCode[stateStart :]);
+        State state = Perceptron.deserialize(scriptCode[stateStart :]);
 
         // train the perceptron
         state = this.train(state);
 
         // write/serialize state
-        bytes stateBuf = serialize(state);
+        bytes stateBuf = Perceptron.serialize(state);
 
         bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
         bytes output = Util.buildOutput(scriptCode_, amount);
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 
-    function deserialize(bytes buf) : State {
+    static function deserialize(bytes buf) : State {
         Reader r = new Reader(buf);
         auto height = r.readInt();
         auto weight = r.readInt();

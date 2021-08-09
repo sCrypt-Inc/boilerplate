@@ -59,7 +59,7 @@ contract Kaggle {
 
         // read/deserialize state
         int stateStart = Reader.getStateStart(scriptCode);
-        State state = this.deserialize(scriptCode[stateStart :]);
+        State state = Kaggle.deserialize(scriptCode[stateStart :]);
 
         // append the submission to the candidates
         if (++state.count < S) {
@@ -84,7 +84,7 @@ contract Kaggle {
 
         // read/deserialize state
         int stateStart = Reader.getStateStart(scriptCode);
-        State state = this.deserialize(scriptCode[stateStart :]);
+        State state = Kaggle.deserialize(scriptCode[stateStart :]);
 
         // validate testing dataset is what was committed
         require(this.validateTestData(testingDataset));
@@ -146,7 +146,7 @@ contract Kaggle {
         return sBuf;
     }
 
-    function deserialize(bytes buf) : State {
+    static function deserialize(bytes buf) : State {
         Submissions submissions = repeat({0, 0, 0, Ripemd160(b'')}, S);
 
         Reader r = new Reader(buf);
