@@ -6,7 +6,7 @@ contract UtilTest {
 			require(Tx.checkPreimage(preimage));
 		SigHashPreimage preimage_ = SigHashPreimage(Util.nVersion(preimage) + Util.hashPrevouts(preimage) + Util.hashSequence(preimage) +
 						  Util.outpoint(preimage) + Util.writeVarint(Util.scriptCode(preimage)) + Util.valueRaw(preimage) +
-            			  Util.nSequenceRaw(preimage) + Util.hashOutputs(preimage) + Util.nLocktimeRaw(preimage) + Util.sigHashType(preimage));
+            			  Util.nSequenceRaw(preimage) + Util.hashOutputs(preimage) + Util.nLocktimeRaw(preimage) + Util.sigHashType(preimage) + b'000000');
         require(preimage_ == preimage);
     }
 }

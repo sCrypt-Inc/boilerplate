@@ -1,0 +1,86 @@
+//
+// Copyright © 2021 Tokenized Group Pty Ltd
+//
+
+import "./util.scrypt";
+
+// EnforceAgentBitcoinTransfer ensures when bitcoin is included in an agent request containing an 
+// atomic swap of bitcoin for tokens that it is not in custody of the agent.
+// 
+// Note: This requires SIG_HASH_SINGLE when being spent by the agent, or only one output in the 
+// tx, so that the output hash in the preimage matches the hash of the specified output.
+contract EnforceAgentBitcoinTransfer {
+    Ripemd160 agentKeyHash; // Hash of public key for agent to authorize transfer.
+    Sha256 approveOutputHash; // Hash of output to approve transfer.
+    Sha256 refundOutputHash; // Hash of output to deny transfer.
+
+    Ripemd160 expirationKeyHash; // Hash of public key for expiration spend if time lock expire. 
+    int expiration; // Block height after which the expiration key can reclaim bitcoin.
+
+    /*
+    * approve approves the bitcoin transfer.
+    * preimage is the sig hash preimage for the current input and transaction.
+    * 
+    * NOTE: This must be called with SIGHASH_SINGLE so that the outputs hash in the preimage is for
+    * only the one corresponding output that is hashed in this script.
+    */
+    public function approve(Sig sig, PubKey pubKey, SigHashPreimage preimage) {
+        // Verify correct public key.
+        require(hash160(pubKey) == this.agentKeyHash);
+
+        // Verify valid signature.
+        require(checkSig(sig, pubKey));
+
+        // Verify output hash is correct for approval.
+        require(this.approveOutputHash == Util.hashOutputs(preimage));
+
+        // Verify preimage is correct.
+        require(Tx.checkPreimageOpt(preimage));
+    }
+
+    /*
+    * refund refunds the bitcoin.
+    * preimage is the sig hash preimage for the current input and transaction.
+    * 
+    * NOTE: This must be called with SIGHASH_SINGLE so that the outputs hash in the preimage is for
+    * only the one corresponding output that is hashed in this script.
+    */
+    public function refund(Sig sig, PubKey pubKey, SigHashPreimage preimage) {
+        // Verify agent key.
+        require(hash160(pubKey) == this.agentKeyHash);
+
+        // Verify valid signature.
+        require(checkSig(sig, pubKey));
+
+        // Verify output hash is correct for refund.
+        require(this.refundOutputHash == Util.hashOutputs(preimage));
+
+        // Verify preimage is correct.
+        require(Tx.checkPreimageOpt(preimage));
+    }
+
+    /*
+    * expire allows the sender to reclaim the bitcoin after expiration of the contract.
+    * preimage is the sig hash preimage for the current input and transaction.
+    */
+    public function expire(Sig sig, PubKey pubKey, SigHashPreimage preimage) {
+        // Verify expire key.
+        require(hash160(pubKey) == this.expirationKeyHash);
+
+        // Verify valid signature.
+        require(checkSig(sig, pubKey));
+
+        // Verify lock time.
+        require(this.expiration <= Util.nLocktime(preimage));
+
+        // Verify input's sequence from the preimage is not MAX to confirm the lock time is actually applied.
+        require(b'ffffffff' != Util.nSequenceRaw(preimage));
+
+        // Verify sig hash type is SIGHASH_ALL or else sequence hash will have been zeroed out
+        // in the preimage and the check above would not actually be checking anything.
+        require((SigHash.ALL | SigHash.FORKID) == Util.sigHashType(preimage));
+
+        // Verify preimage is correct.
+        require(Tx.checkPreimageOpt(preimage));
+    }
+}
