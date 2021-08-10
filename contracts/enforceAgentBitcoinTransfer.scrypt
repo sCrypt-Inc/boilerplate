@@ -61,13 +61,9 @@ contract EnforceAgentBitcoinTransfer {
 
     /*
     * expire allows the sender to reclaim the bitcoin after expiration of the contract.
-    * sequence is the 32 bit little endian sequence values that apply to the sig hash preimage.
     * preimage is the sig hash preimage for the current input and transaction.
-    *
-    * NOTE: This must be called with a SIGHASH_ALL signature so that the sequences hash in the 
-    * preimage isn't zeroed out.
     */
-    public function expire(Sig sig, PubKey pubKey, bytes sequences, SigHashPreimage preimage) {
+    public function expire(Sig sig, PubKey pubKey, SigHashPreimage preimage) {
         // Verify expire key.
         require(hash160(pubKey) == this.expirationKeyHash);
 
@@ -77,18 +73,8 @@ contract EnforceAgentBitcoinTransfer {
         // Verify lock time.
         require(this.expiration <= Util.nLocktime(preimage));
 
-        // Verify sequence hash matches preimage.
-        require(hash256(sequences) == Util.hashSequence(preimage));
-
-        // Verify at least one sequence is not MAX so the lock time is actually applied.
-        bool allMax = true;
-        const bytes max = b'ffffffff';
-        loop (5) : i {
-            if (i*4 < len(sequences) && sequences[i*4:i*4+4] != max) {
-                allMax = false;
-            }
-        }
-        require(!allMax);
+        // Verify input's sequence from the preimage is not MAX to confirm the lock time is actually applied.
+        require(b'ffffffff' != Util.nSequenceRaw(preimage));
 
         // Verify sig hash type is SIGHASH_ALL or else sequence hash will have been zeroed out
         // in the preimage and the check above would not actually be checking anything.
