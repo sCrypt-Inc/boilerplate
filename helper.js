@@ -7,7 +7,9 @@ const {
 const {
   bsv,
   compile,
-  compileContract: compileContractImpl
+  compileContract: compileContractImpl,
+  getPreimage,
+  toHex
 } = require('scryptlib')
 const {
   getCIScryptc
@@ -15,6 +17,8 @@ const {
 
 const { exit } = require('process');
 const minimist = require('minimist');
+
+const MSB_THRESHOLD = 0x7e;
 
 const Signature = bsv.crypto.Signature
 const BN = bsv.crypto.BN
@@ -235,6 +239,29 @@ function padLeadingZero(hex) {
   return "0" + hex;
 }
 
+// fixLowS increments the first input's sequence number until the sig hash is safe for low s.
+function fixLowS(tx, lockingScript, inputSatoshis, inputIndex) {
+  for (i=0;i<25;i++) {
+    const preimage = getPreimage(tx, lockingScript, inputSatoshis, inputIndex);
+    const sighash = bsv.crypto.Hash.sha256sha256(Buffer.from(toHex(preimage), 'hex'));
+    console.log("fix sighash : " + sighash.toString('hex'));
+    const msb = sighash.readUInt8();
+    if (msb < MSB_THRESHOLD) {
+      return;
+    }
+    tx.inputs[0].sequenceNumber++;
+  }
+}
+
+// checkLowS returns true if the sig hash is safe for low s.
+function checkLowS(tx, lockingScript, inputSatoshis, inputIndex) {
+  const preimage = getPreimage(tx, lockingScript, inputSatoshis, inputIndex);
+  const sighash = bsv.crypto.Hash.sha256sha256(Buffer.from(toHex(preimage), 'hex'));
+  console.log("check sighash : " + sighash.toString('hex'));
+  const msb = sighash.readUInt8();
+  return (msb < MSB_THRESHOLD);
+}
+
 const emptyPublicKey = '000000000000000000000000000000000000000000000000000000000000000000'
 
 module.exports = {
@@ -257,5 +284,7 @@ module.exports = {
   compileTestContract,
   padLeadingZero,
   anyOnePayforTx,
-  emptyPublicKey
+  emptyPublicKey,
+  fixLowS,
+  checkLowS
 }

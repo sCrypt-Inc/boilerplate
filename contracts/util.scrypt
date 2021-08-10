@@ -204,7 +204,7 @@ library Util {
 
     static function sigHashType(SigHashPreimage preimage) : SigHashType {
         int l = len(preimage);
-        return SigHashType(preimage[l - 4 :]);
+        return SigHashType(preimage[l - 4 : l - 3]);
     }
 
     // Writes variable amount of data respecting minimal push rules
