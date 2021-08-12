@@ -3,17 +3,9 @@ struct Point {
     int y;
 }
 
-// auxiliary data to verify point multiplication
-struct PointMulAux {
-    Point[EC.N] pMultiples;
-    Point[EC.N] qs;
-    int[EC.N1] lambdas1;
-    int[EC.N1] lambdas2;
-}
-
 // elliptic curve Secp256k1
 library EC {
-    static const int P = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
+    static const int P = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
     static const int N = 256;
     static const int N1 = 255; // N - 1
 
@@ -27,7 +19,7 @@ library EC {
             (lambda * (p2.x - p1.x) - (p2.y - p1.y)) % P == 0;
         // also check p = p1 + p2
         return lambdaOK && (lambda * lambda - p1.x - p2.x - p.x) % P == 0 && 
-            (lambda * (p1.x - p.x) - p1.y - p.y) % P == 0;
+                (lambda * (p1.x - p.x) - p1.y - p.y) % P == 0;
     }
 
     // return true if lambda is the gradient of the line between p1 and p2
@@ -40,32 +32,31 @@ library EC {
     }
 
     // return true iff p * x == r
-    static function isMul(Point p, int x, Point r, PointMulAux pma) : bool {
+    static function isMul(Point p, int x, Point r, Point[EC.N] pMultiples,
+        Point[EC.N] qs, int[EC.N1] lambdas1, int[EC.N1] lambdas2) : bool {
 
         // validate pMultiples = [p, 2p, 4p, 8p, ...]
         loop (N) : i {
-            require(i == 0 ? pma.pMultiples[i] == p : isSum(pma.pMultiples[i - 1], pma.pMultiples[i - 1], pma.lambdas1[i - 1], pma.pMultiples[i]));
+            require(i == 0 ? pMultiples[i] == p : isSum(pMultiples[i - 1], pMultiples[i - 1], lambdas1[i - 1], pMultiples[i]));
         }
 
         // // x * p = x0 * p + x1 *(2p) + x2 * (4p) + x3 * (8p) + ...
         // // xi is the i-th bit of x
         Point P0 = ZERO;
         loop (N) : i {
-            Point P = x % 2 ? pma.pMultiples[i] : ZERO;
+            Point P = x % 2 ? pMultiples[i] : ZERO;
 
             // right shift by 1
             x /= 2;
 
             if (i == 0) {
                 P0 = P;
-            }
-            else if (i == 1) {
+            } else if (i == 1) {
                 // first
-                require(isSum(P0, P, pma.lambdas2[i - 1], pma.qs[i - 1]));
-            }
-            else {
+                require(isSum(P0, P, lambdas2[i - 1], qs[i - 1]));
+            } else {
                 // rest
-                require(isSum(pma.qs[i - 1], P, pma.lambdas2[i - 1], i < N1 ? pma.qs[i] : r));
+                require(isSum(qs[i - 1], P, lambdas2[i - 1], i < N1 ? qs[i] : r));
             }
         }
 

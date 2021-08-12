@@ -1,0 +1,127 @@
+const { expect } = require('chai');
+
+const {
+  bsv,
+  buildContractClass,
+  buildTypeClasses,
+  Int,
+  toHex,
+} = require('scryptlib');
+
+const {
+  compileContract
+} = require('../../helper');
+
+
+const p = bsv.deps.elliptic.curves.secp256k1.curve.p;
+
+
+function modular_divide(bn_a, bn_b, bn_m) {
+  a = bn_a.mod(bn_m)
+  inv = bn_b.invm(bn_m)
+  return inv.mul(a).mod(bn_m)
+}
+
+function get_lambda(P1, P2) {
+  // lambda - gradient of the line between P1 and P2
+  // if P1 != P2:
+  //    lambda = ((P2y - P1y) / (P2x - P1x)) % p
+  // else:
+  //    lambda = ((3 * (P1x**2) + a) / (2 * P1y)) % p
+  if (P1.getX().eq(P2.getX()) && P1.getY().eq(P2.getY())) {
+    let lambda_numerator = P1.getX().sqr().muln(3)
+    let lambda_denominator = P1.getY().muln(2)
+    return modular_divide(lambda_numerator, lambda_denominator, p)
+  } else {
+    let lambda_numerator = P2.getY().sub(P1.getY())
+    let lambda_denominator = P2.getX().sub(P1.getX())
+    return modular_divide(lambda_numerator, lambda_denominator, p)
+  }
+}
+
+describe('Test EC sCrypt contract in Javascript', () => {
+  let ecAddition, Point, P1, P2;
+
+  before(() => {
+    let contract = compileContract('ecAddition.scrypt')
+    ECAddition = buildContractClass(contract);
+    typeClasses = buildTypeClasses(contract);
+    Point = typeClasses.Point
+
+    // P1 and P2
+    k1 = new bsv.PrivateKey.fromRandom('testnet')
+    k2 = new bsv.PrivateKey.fromRandom('testnet')
+    P1 = k1.publicKey.point;
+    P2 = k2.publicKey.point;
+
+    ecAddition = new ECAddition(
+      new Point({
+        x: new Int(P1.getX().toString(10)),
+        y: new Int(P1.getY().toString(10))
+      }),
+      new Point({
+        x: new Int(P2.getX().toString(10)),
+        y: new Int(P2.getY().toString(10))
+      }),
+    );
+  });
+
+  it('should succeed when pushing right point addition result', () => {
+    let lambda = get_lambda(P1, P2)
+
+    // P = P1 + P2
+    let Px = lambda.sqr().sub(P1.getX()).sub(P2.getX()).umod(p)
+    let Py = lambda.mul(P1.getX().sub(Px)).sub(P1.getY()).umod(p)
+  
+    result = ecAddition
+      .testSum(
+        new Int(lambda.toString(10)),
+        new Point({
+          x: new Int(Px.toString(10)),
+          y: new Int(Py.toString(10))
+        }),
+      )
+      .verify();
+    expect(result.success, result.error).to.be.true;
+  });
+
+
+  it('should fail when pushing wrong point addition result', () => {
+    let lambda = get_lambda(P1, P2)
+
+    // P = P1 + P2
+    let Px = lambda.sqr().sub(P1.getX()).sub(P2.getX()).addn(1).umod(p)
+    let Py = lambda.mul(P1.getX().sub(Px)).sub(P1.getY()).umod(p)
+  
+    result = ecAddition
+      .testSum(
+        new Int(lambda.toString(10)),
+        new Point({
+          x: new Int(Px.toString(10)),
+          y: new Int(Py.toString(10))
+        }),
+      )
+      .verify();
+    expect(result.success, result.error).to.be.false;
+  });
+
+  it('should fail when using wrong lambda', () => {
+    let lambda = get_lambda(P1, P2).addn(1)
+
+    // P = P1 + P2
+    let Px = lambda.sqr().sub(P1.getX()).sub(P2.getX()).umod(p)
+    let Py = lambda.mul(P1.getX().sub(Px)).sub(P1.getY()).umod(p)
+  
+    result = ecAddition
+      .testSum(
+        new Int(lambda.toString(10)),
+        new Point({
+          x: new Int(Px.toString(10)),
+          y: new Int(Py.toString(10))
+        }),
+      )
+      .verify();
+    expect(result.success, result.error).to.be.false;
+  });
+  
+});

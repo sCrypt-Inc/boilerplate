@@ -1,0 +1,12 @@
+import "ec.scrypt";
+
+contract ECAddition {
+    Point p1;
+    Point p2;
+
+    // p must be equal to p1 + p2
+    // lambda must be the gradient of the line between p1 and p2
+    public function testSum(int lambda, Point p) {
+        require(EC.isSum(this.p1, this.p2, lambda, p));
+    }
+}
