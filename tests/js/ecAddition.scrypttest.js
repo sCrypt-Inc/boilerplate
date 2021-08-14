@@ -12,8 +12,10 @@ const {
   compileContract
 } = require('../../helper');
 
+const EC = require('elliptic').ec;
+const ec = new EC('secp256k1');
 
-const p = bsv.deps.elliptic.curves.secp256k1.curve.p;
+const p = ec.curve.p;
 
 
 function modular_divide(bn_a, bn_b, bn_m) {
@@ -85,6 +87,59 @@ describe('Test EC sCrypt contract in Javascript', () => {
     expect(result.success, result.error).to.be.true;
   });
 
+  it('should succeed when pushing right point addition result and P1 == P2', () => {
+    let lambda = get_lambda(P1, P1)
+
+    let Px = lambda.sqr().sub(P1.getX()).sub(P1.getX()).umod(p)
+    let Py = lambda.mul(P1.getX().sub(Px)).sub(P1.getY()).umod(p)
+
+    ecAdditionSamePoint = new ECAddition(
+      new Point({
+        x: new Int(P1.getX().toString(10)),
+        y: new Int(P1.getY().toString(10))
+      }),
+      new Point({
+        x: new Int(P1.getX().toString(10)),
+        y: new Int(P1.getY().toString(10))
+      }),
+    );
+  
+    result = ecAdditionSamePoint
+      .testSum(
+        new Int(lambda.toString(10)),
+        new Point({
+          x: new Int(Px.toString(10)),
+          y: new Int(Py.toString(10))
+        }),
+      )
+      .verify();
+    expect(result.success, result.error).to.be.true;
+  });
+
+  it('should succeed when pushing right point addition result and P2 == ZERO', () => {
+    ecAdditionSamePoint = new ECAddition(
+      new Point({
+        x: new Int(P1.getX().toString(10)),
+        y: new Int(P1.getY().toString(10))
+      }),
+      new Point({
+        x: new Int(0),
+        y: new Int(0)
+      }),
+    );
+  
+    result = ecAdditionSamePoint
+      .testSum(
+        new Int(0),  // Lamda doesn't matter here and can be whatever value
+        new Point({
+          x: new Int(P1.getX().toString(10)),
+          y: new Int(P1.getY().toString(10))
+        }),
+      )
+      .verify();
+    expect(result.success, result.error).to.be.true;
+  });
+
 
   it('should fail when pushing wrong point addition result', () => {
     let lambda = get_lambda(P1, P2)
@@ -114,7 +169,7 @@ describe('Test EC sCrypt contract in Javascript', () => {
   
     result = ecAddition
       .testSum(
-        new Int(lambda.toString(10)),
+        new Int(p.toString(10)),
         new Point({
           x: new Int(Px.toString(10)),
           y: new Int(Py.toString(10))
