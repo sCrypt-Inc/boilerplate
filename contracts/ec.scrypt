@@ -13,7 +13,10 @@ struct PointMulAux {
 
 // elliptic curve Secp256k1
 library EC {
+    // prime modulus
     static const int P = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
+    // group order
+    static const int n = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
     static const int N = 256;
     static const int N1 = 255; // N - 1
 
