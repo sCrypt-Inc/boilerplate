@@ -14,7 +14,7 @@ struct PointMulAux {
 // elliptic curve Secp256k1
 library EC {
     // prime modulus
-    static const int P = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
+    static const int P = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
     // group order
     static const int n = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
     static const int N = 256;
@@ -37,9 +37,8 @@ library EC {
     // and p = p1 + p2 
     static function isSum(Point p1, Point p2, int lambda, Point p) : bool {
         // special handling of point ZERO
-        bool ret = p1 == ZERO ? p2 == p : (p2 == ZERO ? p1 == p : (p1.x == p2.x && (p1.y + p2.y) % P == 0) ? p == ZERO : true);
-
-        return ret && isSumHelper(p1, p2, lambda, p);
+        // if no point equals to ZERO, call isSumHelper()
+        return p1 == ZERO ? p2 == p : (p2 == ZERO ? p1 == p : (p1.x == p2.x && (p1.y + p2.y) % P == 0) ? p == ZERO : isSumHelper(p1, p2, lambda, p));
     }
 
     // return true iff p * x == r
