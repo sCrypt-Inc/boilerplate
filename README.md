@@ -38,7 +38,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── conwaygol.scrypt                # <a href="https://xiaohuiliu.medium.com/play-conways-game-of-life-on-bitcoin-forever-47c6fb7ed682">Conway’s Game of Life</a>
 │   ├── counter.scrypt                  # Count the number of times a function has been called to showcase <a href="https://medium.com/coinmonks/stateful-smart-contracts-on-bitcoin-sv-c24f83a0f783">stateful contract</a>
 │   ├── ec.scrypt                       # <a href="https://xiaohuiliu.medium.com/efficient-elliptic-curve-point-addition-and-multiplication-in-scrypt-script-f7e143a752e2">Elliptic curve point add/multipliy</a>
-│   ├── ecdsa.scrypt                    # <a href="https://xiaohuiliu.medium.com/ecdsa-signature-verification-in-script-d1e8dda5f893">EECDSA Signature Verification</a>
+│   ├── ecdsa.scrypt                    # <a href="https://xiaohuiliu.medium.com/ecdsa-signature-verification-in-script-d1e8dda5f893">ECDSA Signature Verification</a>
 │   ├── demo.scrypt                     # "hello world" contract
 │   ├── faucet.scrypt                   # <a href="https://blog.csdn.net/Edward_sv/article/details/109119838">rate-limited onchain faucet</a>
 │   ├── hashpuzzlep2pkh.scrypt          # combining <a href="https://scryptdoc.readthedocs.io/en/latest/multipartyhashpuzzles.html">hash puzzle</a> and p2pkh contracts
