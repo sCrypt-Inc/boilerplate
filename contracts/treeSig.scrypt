@@ -6,7 +6,7 @@ struct Sibling {
     bool left;
 }
 
-type MerklePath = Sibling[4]; // Sibling[DEPTH]
+type MerklePath = Sibling[TreeSig.DEPTH];
 
 // tree signatures: Merkle tree-based multisig
 contract TreeSig {

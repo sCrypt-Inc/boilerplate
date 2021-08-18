@@ -6,7 +6,7 @@ struct Sibling {
     bool left;
 }
 
-type MerklePath = Sibling[4]; // Sibling[DEPTH]
+type MerklePath = Sibling[MAST.DEPTH];
 
 // Merklized Abstract Syntax Trees/Merklized Alternative Script Trees
 contract MAST {
