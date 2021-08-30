@@ -176,7 +176,7 @@ function compileContract(fileName, options) {
     out: out
   });
   if (result.errors.length > 0) {
-    console.log(`Compile contract ${filePath} fail: `, result.errors)
+    console.log(`Compile contract ${filePath} failed: `, result.errors)
     throw result.errors;
   }
 
