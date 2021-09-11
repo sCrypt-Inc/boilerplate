@@ -31,7 +31,7 @@ describe('Test sCrypt contract DemoP2PKH In Javascript', () => {
       console.log(toHex(pkh))
       console.log(toHex(sig))
       console.log(toHex(publicKey))
-      console.log(tx.toString())
+      console.log(toHex(tx))
     */
   });
 
