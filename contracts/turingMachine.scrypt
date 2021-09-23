@@ -51,6 +51,7 @@ contract TuringMachine {
     static const bool LEFT = true;
     static const bool RIGHT = false;
 
+    // number of rules in the transition function
     static const int N = 8;
     // transition function table
     static const TransitionFuncEntry[N] transitionFuncTable = [
