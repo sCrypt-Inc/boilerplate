@@ -73,7 +73,7 @@ contract TuringMachine {
         bytes scriptCode = Util.scriptCode(txPreimage);
         int stateStart = Reader.getStateStart(scriptCode);
         StateStruct s = deserialize(scriptCode[stateStart :]);
-        
+        bool accepted = false;
         // transition
         Symbol head = Util.getElemAt(s.tape, s.headPos);
         // look up in transition table
@@ -101,7 +101,8 @@ contract TuringMachine {
 
                     if (s.curState == STATE_ACCEPT) {
                         // accept
-                        exit(true);
+                        //exit(true);
+                        accepted = true;
                     }
 
                     found = true;
@@ -111,13 +112,20 @@ contract TuringMachine {
         // reject if no transition rule found
         require(found);
 
-        // otherwise machine goes to the next step
+        if(!accepted) {
+            // otherwise machine goes to the next step
 
-        // write/serialize contract state
-        bytes stateBuf = serialize(s);
-        bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
-        bytes output = Util.buildOutput(scriptCode_, amount);
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+            // write/serialize contract state
+            bytes stateBuf = serialize(s);
+            bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
+            bytes output = Util.buildOutput(scriptCode_, amount);
+            require(hash256(output) == Util.hashOutputs(txPreimage));
+        } else {
+            require(accepted);
+        }
+        
+        require(true);
+
     }
 
     

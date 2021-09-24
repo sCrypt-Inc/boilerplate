@@ -1,12 +1,6 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, serializeState } = require('scryptlib');
 const { loadDesc, createUnlockingTx, createLockingTx, sendTx, showError  } = require('../helper');
 const { privateKey } = require('../privateKey');
-const axios = require('axios');
-
-//Convert the "state", to a sequence of bytes
-function write(state) {
-  return '0' + state[0] + state[1] + state[2]
-}
 
 const STATE_A = '00';
 const STATE_B = '01';
@@ -93,12 +87,12 @@ function newState(state) {
   //newHead
   newHead = idx
   newHead += newCurState[2] ? -1 : 1
-  // if (newHead < 0) {
-  //   newTape = BLANK + newTape
-  //   newHead = 0
-  // } else if (2*newHead >= newTape.length) {
-  //   newTape = newTape + BLANK;
-  // }
+  if (newHead < 0) {
+    newTape = BLANK + newTape
+    newHead = 0
+  } else if (2*newHead >= newTape.length) {
+    newTape = newTape + BLANK;
+  }
   // return [newHead, newTape, newCurState[0]]
   return {'headPos': newHead, 'tape': newTape, 'curState': newCurState[0]}
 }
@@ -112,19 +106,13 @@ function newState(state) {
 
     // set initial state
     state = {'headPos': 0, 'tape': '01010202', 'curState': '00'}
-
-    // for (ii = 0; ii < 10; ii++) {
-    //   state = newState(state)
-    //   console.log(`${ii}: `, state)
-    // }
-
     // return
     contract.setDataPart(state)
 
     //This is the amount the utxo will hold
-    let amount = 120000
+    let amount = 200000
     //Each time you spend the utxo, 4000sats will be paid as fees
-    const FEE = 10000
+    const FEE = 5000
 
     // Create the funding tx
     const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, FEE)
@@ -133,14 +121,7 @@ function newState(state) {
     let lockingTxid = await sendTx(lockingTx, FEE)
     console.log('Funding txid:   ', lockingTxid)
 
-/*
-    for (ii = 0; ii < 10; ii++) {
-      state = newState(state);
-      console.log(state);
-    }
-*/
-
-    for (ii = 0; ii < 3; ii++) {
+    for (step = 1; step < 19; step++) {
       console.log("")
       console.log("New iteration of the turing machine")
 
@@ -149,10 +130,11 @@ function newState(state) {
       const new_state = newState(state);
       contract.setDataPart(serializeState(new_state));
       state = new_state;
-      console.log("New state: ", state)
+      console.log("step =" + step + " New state: ", state)
 
       //Building the new transaction
-      const newLockingScript = contract.lockingScript.toASM();
+      const newLockingScript = new_state.curState === '03'  ?  bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()).toASM() : contract.lockingScript.toASM();
+      
       const newAmount = amount - FEE
       const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
       const preimage = getPreimage(unlockingTx, prevLockingScript, amount)
@@ -163,22 +145,7 @@ function newState(state) {
       //Let's send it
       console.log("Sending a new transaction...")
       lockingTxid = await sendTx(unlockingTx)
-      console.log('Tx #' + ii + ' sent. Txid: ', lockingTxid)
-
-      //The transaction is now known by miners. We can ask them what it was
-      //This is what we do here, ask them what's our transaction is, and we take the part after OP_RETURN to see what's the state of the rule101 thing
-      //Of course it's "state", but just to show that I'm not lying it's on the blockchain in the script program
-      //And script itself enforce that the next utxo will have the correct state, hence turing completness
-      console.log("Asking api.whatsonchain.com for the transaction...")
-      // const {data:outputHex} = await axios.get('https://api.whatsonchain.com/v1/bsv/test/tx/'+lockingTxid+'/hex')
-      // const size = outputHex.length
-      // const data = outputHex.substring(size - 2*N - 8, size - 8)
-      // console.log("Here is the latest state : ", data)
-      //Here is what to do if you want to check the state on the web version of whatsonchain
-      //Go to https://test.whatsonchain.com (test is for testnet)
-      //Copy/Paste a transaction id, for instance 3203e127e62388dae149d80119376186bbd3d50faa3c2fdf986d7d931e166199
-      //These transactions have 1input 1output. Display them in script by clicking on "Script"
-      //Scroll down, at the end you'll see : OP_RETURN 0101000100 --> This is our state !!
+      console.log('Tx #' + step + ' sent. Txid: ', lockingTxid)
     }
     console.log("End of the experimentation. Bitcoin is turing complete...")
   } catch (error) {
