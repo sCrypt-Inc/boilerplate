@@ -17,8 +17,11 @@ library EC {
     static const int P = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
     // group order
     static const int n = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
-    static const int N = 256;
-    static const int N1 = 255; // N - 1
+
+    // in product , should use N = 256, N1 = 255
+    // Here we use a smaller number to provide compilation speed
+    static const int N = 16;
+    static const int N1 = 15; // N - 1
 
     static const Point ZERO = { 0, 0 };
     static const Point G = { 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8 };
