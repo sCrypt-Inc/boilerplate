@@ -108,7 +108,7 @@ library Writer {
 
     // int is little endian
     static function writeInt(int x) : bytes {
-        return writeBytes(pack(x));
+        return writeBytes(x == 0 ? b'00' : pack(x));
     }
 
     static function serializeState(bytes stateBuf) : bytes {
