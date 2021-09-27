@@ -105,7 +105,7 @@ function newState(state) {
     const contract = new TuringMachine()
 
     // set initial state
-    state = {'headPos': 0, 'tape': '01010202', 'curState': '00'}
+    state = {'headPos': 0, 'tape': '0101020201020102', 'curState': '00'}
     // return
     contract.setDataPart(state)
 
@@ -121,7 +121,7 @@ function newState(state) {
     let lockingTxid = await sendTx(lockingTx, FEE)
     console.log('Funding txid:   ', lockingTxid)
 
-    for (step = 1; step < 19; step++) {
+    for (step = 1; ; step++) {
       console.log("")
       console.log("New iteration of the turing machine")
 
@@ -134,7 +134,7 @@ function newState(state) {
 
       //Building the new transaction
       const newLockingScript = new_state.curState === '03'  ?  bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()).toASM() : contract.lockingScript.toASM();
-      
+
       const newAmount = amount - FEE
       const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
       const preimage = getPreimage(unlockingTx, prevLockingScript, amount)
@@ -146,6 +146,11 @@ function newState(state) {
       console.log("Sending a new transaction...")
       lockingTxid = await sendTx(unlockingTx)
       console.log('Tx #' + step + ' sent. Txid: ', lockingTxid)
+
+      if(new_state.curState === '03') {
+        console.log('tuirng machine enter accepted')
+        break;
+      }
     }
     console.log("End of the experimentation. Bitcoin is turing complete...")
   } catch (error) {
