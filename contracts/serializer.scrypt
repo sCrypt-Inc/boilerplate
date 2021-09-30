@@ -57,7 +57,7 @@ library Reader {
     function readBool() : bool {
         bytes b = this.buf[this.pos : this.pos + 1];
         this.pos++;
-        return OpCode.OP_0 != b;
+        return b'00' != b;
     }
 
     function readInt() : int {
@@ -103,7 +103,7 @@ library Writer {
 
     // uses fixed 1 byte to represent a boolean, plus length
     static function writeBool(bool x) : bytes {
-        return x ? OpCode.OP_1 : OpCode.OP_0;
+        return x ? b'01' : b'00';
     }
 
     // int is little endian
