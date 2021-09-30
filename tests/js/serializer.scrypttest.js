@@ -11,7 +11,7 @@ describe( 'Test sCrypt contract Serializer In Javascript', () => {
   let demo, result
 
   before( () => {
-    const Demo = buildContractClass( compileContract( 'serializer.scrypt' ) );
+    const Demo = buildContractClass( compileContract( 'serializerTest.scrypt' ) );
     demo = new Demo();
   } );
 
