@@ -1,0 +1,23 @@
+import "util.scrypt";
+contract StateExample {
+
+    @state
+    int counter;
+
+    @state
+    bytes state_bytes;
+
+    @state
+    bool state_bool;
+
+    public function unlock(SigHashPreimage txPreimage, int amount) {
+        require(Tx.checkPreimage(txPreimage));
+        // increment counter
+        this.counter++;
+        this.state_bytes = this.state_bytes + b'01';
+        this.state_bool = !this.state_bool;
+        bytes outputScript = this.getStateScript();
+        bytes output = Util.buildOutput(outputScript, amount);
+        require(hash256(output) == Util.hashOutputs(txPreimage));
+    }
+}
