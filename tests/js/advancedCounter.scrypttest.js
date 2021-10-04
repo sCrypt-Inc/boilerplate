@@ -44,7 +44,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
       satoshis: changeAmount
     }))
 
-    preimage = getPreimage(tx, counter.lockingScript.toASM(), inputSatoshis, 0, sighashType)
+    preimage = getPreimage(tx, counter.lockingScript, inputSatoshis, 0, sighashType)
   });
 
   it('should succeed when pushing right preimage & amount', () => {

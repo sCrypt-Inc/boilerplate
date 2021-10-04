@@ -9,7 +9,7 @@ describe('Test sCrypt library Util In Javascript', () => {
     before(() => {
         const UtilTest = buildContractClass(compileTestContract('utiltest.scrypt'));
         util = new UtilTest();
-        preimage = getPreimage(tx, util.lockingScript.toASM(), inputSatoshis)
+        preimage = getPreimage(tx, util.lockingScript, inputSatoshis)
     });
 
     it('should return true', () => {

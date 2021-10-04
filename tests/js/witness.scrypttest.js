@@ -29,7 +29,7 @@ describe( 'Test Witness Service Timestamp', () => {
 
     const cltv = new WitnessCLTV( new Ripemd160( toHex( pkh ) ), new Int( BigInt( witness.pubkey ) ), new Int( matureTime ) );
 
-    sig = signTx( tx, privateKey, cltv.lockingScript.toASM(), inputSatoshis )
+    sig = signTx( tx, privateKey, cltv.lockingScript, inputSatoshis )
     const context = { tx, inputIndex, inputSatoshis }
 
     result = cltv.unlock( new Sig( toHex( sig ) ), new PubKey( toHex( publicKey ) ), new Int( now.timestamp ), new Int( BigInt( now.signature ) ), new Bytes( now.padding ) ).verify( context )
@@ -52,7 +52,7 @@ describe( 'Test Witness Service Timestamp', () => {
 
     const cltv = new WitnessCLTV( new Ripemd160( toHex( pkh ) ), new Int( BigInt( witness.pubkey ) ), new Int( matureTime ) );
 
-    sig = signTx( tx, privateKey, cltv.lockingScript.toASM(), inputSatoshis )
+    sig = signTx( tx, privateKey, cltv.lockingScript, inputSatoshis )
     const context = { tx, inputIndex, inputSatoshis }
 
     result = cltv.unlock( new Sig( toHex( sig ) ), new PubKey( toHex( publicKey ) ), new Int( now.timestamp ), new Int( BigInt( now.signature ) ), new Bytes( now.padding ) ).verify( context )
@@ -74,7 +74,6 @@ describe( 'Test Witness Service BSV Price', () => {
     const WitnessBinaryOption = buildContractClass( compileContract( 'witnessBinaryOption.scrypt' ) );
     const res = await axios.get( `${witnessServer}/v1/price` )
     const priceData = res.data
-
     const symbol = 'BSV_USDT'
     const decimal = 4
     const onedayAgo = new Date()
@@ -125,7 +124,7 @@ describe( 'Test Witness Service BSV Price', () => {
     // const msg = toHex( Buffer.from( symbol, 'utf-8' )) + num2bin(price, 32) + num2bin(decimal, 1) + num2bin(priceData.timestamp, 4);
     // console.log(msg)
 
-    const preimage = getPreimage( tx, binaryOption.lockingScript.toASM(), inputSatoshis )
+    const preimage = getPreimage( tx, binaryOption.lockingScript, inputSatoshis )
     const context = { tx, inputIndex, inputSatoshis }
     result = binaryOption.unlock(
       new SigHashPreimage( toHex( preimage ) ),

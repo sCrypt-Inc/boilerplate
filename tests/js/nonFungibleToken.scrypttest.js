@@ -51,8 +51,8 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
 
       token.txContext = { tx, inputIndex, inputSatoshis }
 
-      const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
-      const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)
+      const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex)
+      const sig = signTx(tx, privKey, token.lockingScript, inputSatoshis)
       return token.issue(
         new Sig(toHex(sig)),
         new PubKey(toHex(receiver)),
@@ -102,8 +102,8 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
 
       token.txContext = { tx, inputIndex, inputSatoshis }
 
-      const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
-      const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)
+      const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex)
+      const sig = signTx(tx, privKey, token.lockingScript, inputSatoshis)
       return token.transfer(
         new Sig(toHex(sig)),
         new PubKey(toHex(receiver)),
@@ -151,8 +151,8 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
 
       token.txContext = { tx, inputIndex, inputSatoshis }
 
-      const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
-      const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)
+      const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex)
+      const sig = signTx(tx, privKey, token.lockingScript, inputSatoshis)
       return token.issue(
         new Sig(toHex(sig)),
         new PubKey(toHex(receiver)),

@@ -29,7 +29,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
       satoshis: outputAmount
     }))
 
-    preimage = getPreimage(tx, counter.lockingScript.toASM(), inputSatoshis)
+    preimage = getPreimage(tx, counter.lockingScript, inputSatoshis)
 
     // set txContext for verification
     counter.txContext = {

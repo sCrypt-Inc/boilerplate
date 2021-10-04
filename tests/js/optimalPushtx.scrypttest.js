@@ -44,7 +44,7 @@ describe('Test sCrypt contract OptimalPushTx In Javascript', () => {
         for (i = 0; ; i++) {
             // malleate tx and thus sighash to satisfy constraint
             tx.nLockTime = i
-            const preimage_ = getPreimage(tx, test.lockingScript.toASM(), inputSatoshis, inputIndex, sighashType)
+            const preimage_ = getPreimage(tx, test.lockingScript, inputSatoshis, inputIndex, sighashType)
             preimage = toHex(preimage_)
             const h = Hash.sha256sha256(Buffer.from(preimage, 'hex'))
             const msb = h.readUInt8()

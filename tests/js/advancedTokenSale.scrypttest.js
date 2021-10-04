@@ -45,7 +45,6 @@ describe('Test sCrypt contract Counter In Javascript', () => {
 
   function testBuy(numBought, pkh, publicKey) {
     const tx = newTx();
-    const prevLockingScript = saler.lockingScript.toASM()
     const newState = [saler.dataPart.toASM(),  toHex(publicKey) + num2bin(numBought, DataLen)].join(' ');
 
     const newLockingScript = [saler.codePart.toASM(), newState].join(' ')
@@ -65,7 +64,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
       satoshis: changeAmount
     }))
 
-    preimage = getPreimage(tx, prevLockingScript, inputSatoshis, 0, sighashType)
+    preimage = getPreimage(tx, saler.lockingScript, inputSatoshis, 0, sighashType)
 
 
     const context = { tx, inputIndex, inputSatoshis }

@@ -88,7 +88,7 @@ describe('Test sCrypt contract RPuzzle in Javascript', () => {
 
     // build a second signature to prevent Signature Forgeability
     // https://wiki.bitcoinsv.io/index.php/R-Puzzles
-    sig = signTx(tx, privateKeyR, rpuzzle.lockingScript.toASM(), inputSatoshis);
+    sig = signTx(tx, privateKeyR, rpuzzle.lockingScript, inputSatoshis);
 
     const ecdsa_false = new ECDSA({
       hashbuf: hashbuf,

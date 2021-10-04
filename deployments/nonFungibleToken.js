@@ -75,10 +75,10 @@ const {
         satoshis: outputSatoshis
       }))
 
-      const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis)
-      const sig1 = signTx(tx, privateKeyIssuer, token.lockingScript.toASM(), inputSatoshis)
+      const preimage = getPreimage(tx, token.lockingScript, inputSatoshis)
+      const sig1 = signTx(tx, privateKeyIssuer, token.lockingScript, inputSatoshis)
       const unlockingScript = token.issue(
-        new Sig(toHex(sig1)),
+        sig1,
         new PubKey(toHex(publicKeyReceiver1)),
         outputSatoshis, outputSatoshis,
         new SigHashPreimage(toHex(preimage))
@@ -110,7 +110,7 @@ const {
       const preimage = getPreimage(tx, lockingScript1, inputSatoshis, 0)
       const sig2 = signTx(tx, privateKeyReceiver1, lockingScript1, inputSatoshis, 0)
       const unlockingScript = token.transfer(
-        new Sig(toHex(sig2)), new PubKey(toHex(publicKeyReceiver2)), outputSatoshis, new SigHashPreimage(toHex(preimage))
+        sig2, new PubKey(toHex(publicKeyReceiver2)), outputSatoshis, preimage
       ).toScript()
       tx.inputs[0].setScript(unlockingScript);
       const transferTxid = await sendTx(tx);

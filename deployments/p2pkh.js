@@ -30,8 +30,8 @@ async function main() {
     // call contract method on testnet
     const spendAmount = amountInContract / 10
     const methodCallTx = createUnlockingTx(deployTxId, amountInContract, p2pkh.lockingScript.toASM(), spendAmount)
-    const sig = signTx(methodCallTx, privateKey, p2pkh.lockingScript.toASM(), amountInContract)
-    const unlockingScript = p2pkh.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).toScript()
+    const sig = signTx(methodCallTx, privateKey, p2pkh.lockingScript, amountInContract)
+    const unlockingScript = p2pkh.unlock(sig, new PubKey(toHex(publicKey))).toScript()
     methodCallTx.inputs[0].setScript(unlockingScript)
     const methodCallTxId = await sendTx(methodCallTx)
     console.log('Contract Method Called Successfully! TxId: ', methodCallTxId)

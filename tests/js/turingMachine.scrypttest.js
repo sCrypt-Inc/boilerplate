@@ -36,7 +36,7 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
     }))
 
     
-    preimage = getPreimage(tx, turingMachine.lockingScript.toASM(), inputSatoshis)
+    preimage = getPreimage(tx, turingMachine.lockingScript, inputSatoshis)
 
     // set txContext for verification
     turingMachine.txContext = {

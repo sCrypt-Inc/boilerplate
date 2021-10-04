@@ -26,18 +26,18 @@ describe('Test sCrypt contract MultiSig In Javascript', () => {
   });
 
   it('should return true', () => {
-    const sig1 = signTx(tx, privateKey1, multiSig.lockingScript.toASM(), inputSatoshis)
-    const sig2 = signTx(tx, privateKey2, multiSig.lockingScript.toASM(), inputSatoshis)
-    const sig3 = signTx(tx, privateKey3, multiSig.lockingScript.toASM(), inputSatoshis)
+    const sig1 = signTx(tx, privateKey1, multiSig.lockingScript, inputSatoshis)
+    const sig2 = signTx(tx, privateKey2, multiSig.lockingScript, inputSatoshis)
+    const sig3 = signTx(tx, privateKey3, multiSig.lockingScript, inputSatoshis)
     result = multiSig.unlock([new PubKey(toHex(publicKey1)), new PubKey(toHex(publicKey2)), new PubKey(toHex(publicKey3))], 
       [new Sig(toHex(sig1)), new Sig(toHex(sig2)),new Sig(toHex(sig3))] ).verify(context)
     expect(result.success, result.error).to.be.true
   });
 
   it('signature check should fail when wrong private key signs', () => {
-    const sig1 = signTx(tx, privateKey1, multiSig.lockingScript.toASM(), inputSatoshis)
-    const sig2 = signTx(tx, privateKey1, multiSig.lockingScript.toASM(), inputSatoshis)
-    const sig3 = signTx(tx, privateKey1, multiSig.lockingScript.toASM(), inputSatoshis)
+    const sig1 = signTx(tx, privateKey1, multiSig.lockingScript, inputSatoshis)
+    const sig2 = signTx(tx, privateKey1, multiSig.lockingScript, inputSatoshis)
+    const sig3 = signTx(tx, privateKey1, multiSig.lockingScript, inputSatoshis)
     result = multiSig.unlock([new PubKey(toHex(publicKey1)), new PubKey(toHex(publicKey2)), new PubKey(toHex(publicKey3))], 
       [new Sig(toHex(sig1)), new Sig(toHex(sig2)),new Sig(toHex(sig3))] ).verify(context)
     expect(result.success, result.error).to.be.false

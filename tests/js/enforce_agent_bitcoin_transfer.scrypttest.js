@@ -27,15 +27,14 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
     refundOutputsHash = new Sha256(toHex(bsv.crypto.Hash.sha256sha256(Buffer.from(refundOutputBytes, 'hex'))));
     expireKeyHash = new Ripemd160(toHex(bsv.crypto.Hash.sha256ripemd160(expireKey.publicKey.toBuffer())));
     contract = new EnforceAgentBitcoinTransfer(agentKeyHash, approveOutputsHash, refundOutputsHash, expireKeyHash, expiration);
-    console.log("contract script (" + (contract.lockingScript.toHex().length / 2) + ") : " + contract.lockingScript.toHex());
   });
 
   it('Call approve', () => {
     const tx = createTx(approveOutputScript, outputAmount);
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, agentKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, agentKey, contract.lockingScript, inputSatoshis, inputIndex);
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
@@ -46,10 +45,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
   it('Call approve wrong key', () => {
     const tx = createTx(approveOutputScript, outputAmount);
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, wrongKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, wrongKey, contract.lockingScript, inputSatoshis, inputIndex);
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
@@ -60,10 +59,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
   it('Call approve wrong sig', () => {
     const tx = createTx(approveOutputScript, outputAmount);
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, wrongKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, wrongKey, contract.lockingScript, inputSatoshis, inputIndex);
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
@@ -74,10 +73,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
   it('Call approve with wrong output', () => {
     const tx = createTx(wrongLockScript, outputAmount);
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, agentKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, agentKey, contract.lockingScript, inputSatoshis, inputIndex);
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
@@ -88,10 +87,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
   it('Call refund', () => {
     const tx = createTx(refundOutputScript, outputAmount);
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, agentKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, agentKey, contract.lockingScript, inputSatoshis, inputIndex);
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
@@ -102,10 +101,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
   it('Call refund with wrong key', () => {
     const tx = createTx(wrongLockScript, outputAmount);
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
   
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, wrongKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, wrongKey, contract.lockingScript, inputSatoshis, inputIndex);
   
     contract.txContext = { tx, inputIndex, inputSatoshis };
   
@@ -116,10 +115,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
   it('Call refund with wrong sig', () => {
     const tx = createTx(wrongLockScript, outputAmount);
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
   
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, wrongKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, wrongKey, contract.lockingScript, inputSatoshis, inputIndex);
   
     contract.txContext = { tx, inputIndex, inputSatoshis };
   
@@ -130,10 +129,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
   it('Call refund with wrong output', () => {
     const tx = createTx(wrongLockScript, outputAmount);
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
   
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, agentKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, agentKey, contract.lockingScript, inputSatoshis, inputIndex);
   
     contract.txContext = { tx, inputIndex, inputSatoshis };
   
@@ -145,10 +144,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
   it('Call expire', () => {
     const tx = createTx(refundOutputScript, outputAmount);
     tx.nLockTime = expiration;
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, expireKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, expireKey, contract.lockingScript, inputSatoshis, inputIndex);
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
@@ -160,10 +159,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
   it('Call expire earlier lock time', () => {
     const tx = createTx(refundOutputScript, outputAmount);
     tx.nLockTime = expiration-1;
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, expireKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, expireKey, contract.lockingScript, inputSatoshis, inputIndex);
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
@@ -183,15 +182,13 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
         const maxSequenceAgentKey = new bsv.PrivateKey.fromRandom('testnet');
         const maxSequenceAgentKeyHash = new Ripemd160(toHex(bsv.crypto.Hash.sha256ripemd160(maxSequenceAgentKey.publicKey.toBuffer())));
         maxSequenceContract = new EnforceAgentBitcoinTransfer(maxSequenceAgentKeyHash, approveOutputsHash, refundOutputsHash, expireKeyHash, expiration);
-        console.log("max sequence contract script (" + (maxSequenceContract.lockingScript.toHex().length / 2) + ") : " + maxSequenceContract.lockingScript.toHex());
-
-        if (checkLowS(tx, maxSequenceContract.lockingScript.toASM(), inputSatoshis, inputIndex)) {
+        if (checkLowS(tx, maxSequenceContract.lockingScript, inputSatoshis, inputIndex)) {
             break;
         }
     }
 
-    const preimage = getPreimage(tx, maxSequenceContract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, expireKey, maxSequenceContract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, maxSequenceContract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, expireKey, maxSequenceContract.lockingScript, inputSatoshis, inputIndex);
 
     maxSequenceContract.txContext = { tx, inputIndex, inputSatoshis };
 
@@ -203,10 +200,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
   it('Call expire with wrong key', () => {
     const tx = createTx(refundOutputScript, outputAmount);
     tx.nLockTime = expiration;
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, wrongKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, wrongKey, contract.lockingScript, inputSatoshis, inputIndex);
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
@@ -218,10 +215,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
   it('Call expire with wrong signature', () => {
     const tx = createTx(refundOutputScript, outputAmount);
     tx.nLockTime = expiration;
-    fixLowS(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
-    const preimage = getPreimage(tx, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
-    const sig = signTx(tx, wrongKey, contract.lockingScript.toASM(), inputSatoshis, inputIndex);
+    const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
+    const sig = signTx(tx, wrongKey, contract.lockingScript, inputSatoshis, inputIndex);
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 

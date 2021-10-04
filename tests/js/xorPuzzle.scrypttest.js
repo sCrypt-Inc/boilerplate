@@ -62,7 +62,7 @@ describe('Test sCrypt contract HashPuzzle In Javascript', () => {
     sig = signTx(
       tx,
       privateKeyA,
-      xorPuzzle.lockingScript.toASM(),
+      xorPuzzle.lockingScript,
       inputSatoshis
     );
   });

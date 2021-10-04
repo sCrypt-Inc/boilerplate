@@ -28,7 +28,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
         satoshis: outputAmount
       }))
 
-      return getPreimage(tx, token.lockingScript.toASM(), inputSatoshis)
+      return getPreimage(tx, token.lockingScript, inputSatoshis)
     }
 
     token.txContext = { tx, inputIndex, inputSatoshis }
@@ -37,7 +37,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
   it('should succeed when publicKey1 transfers 40 tokens to publicKey2', () => {
     // after transfer 40 tokens: publicKey1 has 60, publicKey2 40
     const preimage = getPreimageAfterTransfer(60, 40)
-    const sig1 = signTx(tx, privateKey1, token.lockingScript.toASM(), inputSatoshis)
+    const sig1 = signTx(tx, privateKey1, token.lockingScript, inputSatoshis)
     result = token.transfer(
         new PubKey(toHex(publicKey1)),
         new Sig(toHex(sig1)),
@@ -52,7 +52,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
   it('should fail due to wrong balances', () => {
     // after transfer 40 tokens: publicKey1 has 60, publicKey2 40
     const preimage = getPreimageAfterTransfer(60, 30)
-    const sig1 = signTx(tx, privateKey1, token.lockingScript.toASM(), inputSatoshis)
+    const sig1 = signTx(tx, privateKey1, token.lockingScript, inputSatoshis)
     result = token.transfer(
           new PubKey(toHex(publicKey1)),
           new Sig(toHex(sig1)),
@@ -66,7 +66,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
 
   it('should fail when publicKey2 transfers 40 tokens to publicKey1 due to insufficient balance', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
-    const sig2 = signTx(tx, privateKey2, token.lockingScript.toASM(), inputSatoshis)
+    const sig2 = signTx(tx, privateKey2, token.lockingScript, inputSatoshis)
     result = token.transfer(
           new PubKey(toHex(publicKey2)),
           new Sig(toHex(sig2)),
@@ -80,7 +80,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
 
   it('should fail when publicKey1 transfers 40 tokens to publicKey2 due to wrong signature', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
-    const sig2 = signTx(tx, privateKey2, token.lockingScript.toASM(), inputSatoshis)
+    const sig2 = signTx(tx, privateKey2, token.lockingScript, inputSatoshis)
     result = token.transfer(
           new PubKey(toHex(publicKey1)),
           new Sig(toHex(sig2)),

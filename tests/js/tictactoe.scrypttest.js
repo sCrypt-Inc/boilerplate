@@ -25,8 +25,6 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
 
   it('n = 0', () => {
 
-    prevLockingScript = game.lockingScript.toASM();
-
     let newState = new Bytes('01010000000000000000').toASM();
 
     const tx = newTx();
@@ -38,9 +36,9 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
       satoshis: 10000
     }))
 
-    preimage = getPreimage(tx, prevLockingScript, inputSatoshis);
+    preimage = getPreimage(tx, game.lockingScript, inputSatoshis);
 
-    sig = signTx(tx, privateKey1, prevLockingScript, inputSatoshis)
+    sig = signTx(tx, privateKey1, game.lockingScript, inputSatoshis)
 
     const context = { tx, inputIndex, inputSatoshis }
 
@@ -53,7 +51,7 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
 
 
   it('n = 4', () => {
-    prevLockingScript = game.lockingScript.toASM();
+
     let newState = new Bytes('00010000000200000000').toASM();
     const tx = newTx();
     const newLockingScript = [game.codePart.toASM(), newState].join(' ');
@@ -64,9 +62,9 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
       satoshis: 10000
     }))
 
-    preimage = getPreimage(tx, prevLockingScript, inputSatoshis);
+    preimage = getPreimage(tx, game.lockingScript, inputSatoshis);
 
-    sig = signTx(tx, privateKey2, prevLockingScript, inputSatoshis)
+    sig = signTx(tx, privateKey2, game.lockingScript, inputSatoshis)
 
     const context = { tx, inputIndex, inputSatoshis }
 
@@ -79,7 +77,7 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
 
 
   it('n = 1', () => {
-    prevLockingScript = game.lockingScript.toASM();
+
     let newState = new Bytes('01010100000200000000').toASM();
     const tx = newTx();
     const newLockingScript = [game.codePart.toASM(), newState].join(' ');
@@ -90,9 +88,9 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
       satoshis: 10000
     }))
 
-    preimage = getPreimage(tx, prevLockingScript, inputSatoshis);
+    preimage = getPreimage(tx, game.lockingScript, inputSatoshis);
 
-    sig = signTx(tx, privateKey1, prevLockingScript, inputSatoshis)
+    sig = signTx(tx, privateKey1, game.lockingScript, inputSatoshis)
 
     const context = { tx, inputIndex, inputSatoshis }
 
@@ -105,7 +103,7 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
 
 
   it('n = 8', () => {
-    prevLockingScript = game.lockingScript.toASM();
+
     let newState = new Bytes('00010100000200000002').toASM();
     const tx = newTx();
     const newLockingScript = [game.codePart.toASM(), newState].join(' ');
@@ -116,9 +114,9 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
       satoshis: 10000
     }))
 
-    preimage = getPreimage(tx, prevLockingScript, inputSatoshis);
+    preimage = getPreimage(tx, game.lockingScript, inputSatoshis);
 
-    sig = signTx(tx, privateKey2, prevLockingScript, inputSatoshis)
+    sig = signTx(tx, privateKey2, game.lockingScript, inputSatoshis)
 
     const context = { tx, inputIndex, inputSatoshis }
 
@@ -131,7 +129,6 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
 
 
   it('n = 2', () => {
-    prevLockingScript = game.lockingScript.toASM();
 
     const tx = newTx();
 
@@ -140,9 +137,9 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
       satoshis: 10000
     }))
 
-    preimage = getPreimage(tx, prevLockingScript, inputSatoshis);
+    preimage = getPreimage(tx, game.lockingScript, inputSatoshis);
 
-    sig = signTx(tx, privateKey1, prevLockingScript, inputSatoshis)
+    sig = signTx(tx, privateKey1, game.lockingScript, inputSatoshis)
 
     const context = { tx, inputIndex, inputSatoshis }
 
