@@ -72,8 +72,8 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
 
         tx.fee(fee * 2);
 
-        sigA = signTx(tx, privateKeyA, escrow.lockingScript.toASM(), amount);
-        sigB = signTx(tx, privateKeyB, escrow.lockingScript.toASM(), amount);
+        sigA = signTx(tx, privateKeyA, escrow.lockingScript, amount);
+        sigB = signTx(tx, privateKeyB, escrow.lockingScript, amount);
 
         break;
       case 2:
@@ -84,8 +84,8 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
 
         tx.fee(fee);
 
-        sigA = signTx(tx, privateKeyA, escrow.lockingScript.toASM(), amount);
-        sigE = signTx(tx, privateKeyE, escrow.lockingScript.toASM(), amount);
+        sigA = signTx(tx, privateKeyA, escrow.lockingScript, amount);
+        sigE = signTx(tx, privateKeyE, escrow.lockingScript, amount);
 
         break;
       case 3:
@@ -96,15 +96,15 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
 
         tx.fee(fee);
 
-        sigB = signTx(tx, privateKeyB, escrow.lockingScript.toASM(), amount);
-        sigE = signTx(tx, privateKeyE, escrow.lockingScript.toASM(), amount);
+        sigB = signTx(tx, privateKeyB, escrow.lockingScript, amount);
+        sigE = signTx(tx, privateKeyE, escrow.lockingScript, amount);
 
         break;
     }
     
     preimage = getPreimage(
       tx,
-      escrow.lockingScript.toASM(),
+      escrow.lockingScript,
       inputSatoshis
     );
 

@@ -12,26 +12,25 @@ const tx = newTx();
 const outputAmount = 222222
 
 describe('Test sCrypt contract StateStruct In Javascript', () => {
-  let counter, preimage, result
+  let stateStruct, preimage, result
 
   before(() => {
-    const Counter = buildContractClass(compileContract('stateStruct.scrypt'))
-    counter = new Counter()
+    const StateStruct = buildContractClass(compileContract('stateStruct.scrypt'))
+    stateStruct = new StateStruct()
 
   });
 
   it('should succeed when pushing right preimage & amount', () => {
     // set initial state
     let state = {'counter': 11, 'buf': '1234', 'flag': true}
-    counter.setDataPart(state)
+    stateStruct.setDataPart(state)
 
     // mutate state
     state.counter++
     state.buf += 'ffff'
     state.flag = !state.flag
     const newSerial = serializeState(state)
-
-    const newLockingScript = [counter.codePart.toASM(), newSerial].join(' ')
+    const newLockingScript = [stateStruct.codePart.toASM(), newSerial].join(' ')
 
     // deserialize state from new locking script
     const newState = deserializeState(bsv.Script.fromASM(newLockingScript), state)
@@ -44,16 +43,16 @@ describe('Test sCrypt contract StateStruct In Javascript', () => {
       satoshis: outputAmount
     }))
 
-    preimage = getPreimage(tx, counter.lockingScript.toASM(), inputSatoshis)
+    preimage = getPreimage(tx, stateStruct.lockingScript, inputSatoshis)
 
     // set txContext for verification
-    counter.txContext = {
+    stateStruct.txContext = {
       tx,
       inputIndex,
       inputSatoshis
     }
 
-    result = counter.mutate(new SigHashPreimage(toHex(preimage)), outputAmount).verify()
+    result = stateStruct.mutate(new SigHashPreimage(toHex(preimage)), outputAmount).verify()
     expect(result.success, result.error).to.be.true
   });
 });

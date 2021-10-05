@@ -26,7 +26,7 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
         satoshis: inputSatoshis + numTokens * tokenPriceInSatoshis
       }))
 
-      return getPreimage(tx, tokenSale.lockingScript.toASM(), inputSatoshis)
+      return getPreimage(tx, tokenSale.lockingScript, inputSatoshis)
     }
   });
 

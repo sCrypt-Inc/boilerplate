@@ -94,14 +94,14 @@ describe("Dummy Prescription", () => {
     pharmacySig1 = signTx(
       tx,
       privateKeyPharmacy1,
-      dummyPrescription.lockingScript.toASM(),
+      dummyPrescription.lockingScript,
       inputSatoshis
     );
 
     // generate tx preImage
     preimage = getPreimage(
       tx,
-      dummyPrescription.lockingScript.toASM(),
+      dummyPrescription.lockingScript,
       inputSatoshis
     );
 
@@ -123,7 +123,7 @@ describe("Dummy Prescription", () => {
     const pharmacyImposterSig = signTx(
       tx,
       pharmacyImposterPrivKey,
-      dummyPrescription.lockingScript.toASM(),
+      dummyPrescription.lockingScript,
       inputSatoshis
     );
     result = dummyPrescription
@@ -165,13 +165,13 @@ describe("Dummy Prescription", () => {
     pharmacySig1 = signTx(
       tx,
       privateKeyPharmacy1,
-      dummyPrescription.lockingScript.toASM(),
+      dummyPrescription.lockingScript,
       inputSatoshis
     );
     // generate tx preImage
     preimage = getPreimage(
       tx,
-      dummyPrescription.lockingScript.toASM(),
+      dummyPrescription.lockingScript,
       inputSatoshis
     );
     result = dummyPrescription

@@ -48,7 +48,7 @@ describe('Test sCrypt contract AnyoneCanSpend in Javascript', () => {
 
     preimage = getPreimage(
       tx,
-      acs.lockingScript.toASM(),
+      acs.lockingScript,
       inputSatoshis,
       0,
       sighashType

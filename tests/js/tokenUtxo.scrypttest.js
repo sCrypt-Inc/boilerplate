@@ -53,8 +53,8 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
 
       token.txContext = { tx, inputIndex, inputSatoshis }
       
-      const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
-      const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)
+      const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex)
+      const sig = signTx(tx, privKey, token.lockingScript, inputSatoshis)
       return token.split(
         new Sig(toHex(sig)),
         new PubKey(toHex(publicKey2)),
@@ -136,8 +136,8 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
 
       token.setDataPart(inputIndex == 0 ? dataPart0 : dataPart1)
       
-      const preimage = getPreimage(tx, inputIndex == 0 ? lockingScript0 : lockingScript1, inputSatoshis, inputIndex)
-      const sig = signTx(tx, inputIndex == 0 ? privateKey1 : privateKey2, inputIndex == 0 ? lockingScript0 : lockingScript1, inputSatoshis, inputIndex)
+      const preimage = getPreimage(tx, inputIndex == 0 ? bsv.Script.fromASM(lockingScript0) : bsv.Script.fromASM(lockingScript1), inputSatoshis, inputIndex)
+      const sig = signTx(tx, inputIndex == 0 ? privateKey1 : privateKey2, inputIndex == 0 ? bsv.Script.fromASM(lockingScript0) : bsv.Script.fromASM(lockingScript1), inputSatoshis, inputIndex)
       return token.merge(
         new Sig(toHex(sig)),
         new PubKey(toHex(publicKey3)),
@@ -187,8 +187,8 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
         satoshis: outputAmount
       }))
       
-      const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis, inputIndex)
-      const sig = signTx(tx, privKey, token.lockingScript.toASM(), inputSatoshis)
+      const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex)
+      const sig = signTx(tx, privKey, token.lockingScript, inputSatoshis)
       return token.burn(
         new Sig(toHex(sig)),
         new Ripemd160(toHex(pkh1)),

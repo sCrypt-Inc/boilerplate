@@ -37,7 +37,7 @@ describe('Test sCrypt contract P2SH In Javascript', () => {
   });
 
   it('redeem should succeed', () => {
-    preimage = getPreimage(tx, p2sh.lockingScript.toASM(), inputSatoshis, 0)
+    preimage = getPreimage(tx, p2sh.lockingScript, inputSatoshis, 0)
     // expect(toHex( p2sh.lockingScript.toBuffer())).is.eql(preimage.scriptCode)
 
     const codeScript = demoContract.codePart.toBuffer()

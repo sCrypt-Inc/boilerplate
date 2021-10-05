@@ -23,7 +23,7 @@ describe('Test sCrypt contract DemoP2PKH In Javascript', () => {
   });
 
   it('signature check should succeed when right private key signs', () => {
-    sig = signTx(tx, privateKey, demo.lockingScript.toASM(), inputSatoshis)
+    sig = signTx(tx, privateKey, demo.lockingScript, inputSatoshis)
     result = demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify(context)
     expect(result.success, result.error).to.be.true
     /*
@@ -36,7 +36,7 @@ describe('Test sCrypt contract DemoP2PKH In Javascript', () => {
   });
 
   it('signature check should fail when wrong private key signs', () => {
-    sig = signTx(tx, privateKey2, demo.lockingScript.toASM(), inputSatoshis)
+    sig = signTx(tx, privateKey2, demo.lockingScript, inputSatoshis)
     result = demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify(context)
     expect(result.success, result.error).to.be.false
   });

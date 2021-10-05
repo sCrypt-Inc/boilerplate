@@ -73,7 +73,7 @@ const { privateKey } = require('../privateKey');
     console.log('funding txid:      ', lockingTxid);
 
     // call contract method on testnet
-    let prevLockingScript = escrow.lockingScript.toASM();
+    let prevLockingScript = escrow.lockingScript;
 
     let unlockingTx, sigA, sigB, sigE, unlockingScript;
 
@@ -132,8 +132,8 @@ const { privateKey } = require('../privateKey');
 
     switch(scenario) {
       case 1:
-        sigA = signTx(unlockingTx, privateKeyA, escrow.lockingScript.toASM(), amount);
-        sigB = signTx(unlockingTx, privateKeyB, escrow.lockingScript.toASM(), amount);
+        sigA = signTx(unlockingTx, privateKeyA, escrow.lockingScript, amount);
+        sigB = signTx(unlockingTx, privateKeyB, escrow.lockingScript, amount);
 
         unlockingScript = escrow.unlock(
           new SigHashPreimage(toHex(preimage)),
@@ -147,8 +147,8 @@ const { privateKey } = require('../privateKey');
 
         break;
       case 2:
-        sigA = signTx(unlockingTx, privateKeyA, escrow.lockingScript.toASM(), amount);
-        sigE = signTx(unlockingTx, privateKeyE, escrow.lockingScript.toASM(), amount);
+        sigA = signTx(unlockingTx, privateKeyA, escrow.lockingScript, amount);
+        sigE = signTx(unlockingTx, privateKeyE, escrow.lockingScript, amount);
     
         unlockingScript = escrow.unlock(
           new SigHashPreimage(toHex(preimage)),
@@ -162,8 +162,8 @@ const { privateKey } = require('../privateKey');
 
         break;
       case 3:
-        sigB = signTx(unlockingTx, privateKeyB, escrow.lockingScript.toASM(), amount);
-        sigE = signTx(unlockingTx, privateKeyE, escrow.lockingScript.toASM(), amount);
+        sigB = signTx(unlockingTx, privateKeyB, escrow.lockingScript, amount);
+        sigE = signTx(unlockingTx, privateKeyE, escrow.lockingScript, amount);
     
         unlockingScript = escrow.unlock(
           new SigHashPreimage(toHex(preimage)),

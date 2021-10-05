@@ -30,7 +30,7 @@ describe('Deposit', ()=>{
         satoshis: outputAmount
       }))
   
-      preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis);
+      preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis);
   
       // set txContext for verification
       faucet.txContext = {
@@ -79,7 +79,7 @@ describe('Deposit', ()=>{
         satoshis: changeAmount
       }));
   
-      preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis)
+      preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis)
       faucet.txContext = {
         tx,
         inputIndex,
@@ -127,7 +127,7 @@ describe('Withdraw', () => {
     tx.inputs[0].sequenceNumber = 0xFFFFFFFE;
     tx.nLockTime = matureTime + 300;
 
-    preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis);
+    preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis);
 
     // set txContext for verification
     faucet.txContext = {
@@ -152,7 +152,7 @@ describe('Withdraw', () => {
     tx.inputs[0].sequenceNumber = 0xFFFFFFFE;
     tx.nLockTime = matureTime + 299;
 
-    preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis);
+    preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis);
 
     // set txContext for verification
     faucet.txContext = {
@@ -178,7 +178,7 @@ describe('Withdraw', () => {
     tx.inputs[0].sequenceNumber = 0xFFFFFFFE;
     tx.nLockTime = matureTime + 300;
 
-    preimage = getPreimage(tx, faucet.lockingScript.toASM(), inputSatoshis);
+    preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis);
 
     // set txContext for verification
     faucet.txContext = {

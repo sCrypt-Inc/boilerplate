@@ -244,7 +244,6 @@ function fixLowS(tx, lockingScript, inputSatoshis, inputIndex) {
   for (i=0;i<25;i++) {
     const preimage = getPreimage(tx, lockingScript, inputSatoshis, inputIndex);
     const sighash = bsv.crypto.Hash.sha256sha256(Buffer.from(toHex(preimage), 'hex'));
-    console.log("fix sighash : " + sighash.toString('hex'));
     const msb = sighash.readUInt8();
     if (msb < MSB_THRESHOLD) {
       return;
@@ -257,7 +256,6 @@ function fixLowS(tx, lockingScript, inputSatoshis, inputIndex) {
 function checkLowS(tx, lockingScript, inputSatoshis, inputIndex) {
   const preimage = getPreimage(tx, lockingScript, inputSatoshis, inputIndex);
   const sighash = bsv.crypto.Hash.sha256sha256(Buffer.from(toHex(preimage), 'hex'));
-  console.log("check sighash : " + sighash.toString('hex'));
   const msb = sighash.readUInt8();
   return (msb < MSB_THRESHOLD);
 }

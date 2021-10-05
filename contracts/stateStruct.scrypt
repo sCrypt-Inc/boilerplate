@@ -32,16 +32,16 @@ contract StateStruct {
 
         // read/deserialize state
         int stateStart = Reader.getStateStart(scriptCode);
-        State state = StateStruct.deserialize(scriptCode[stateStart :]);
-        require(state == { 11, b'1234', true });
+        State states = StateStruct.deserialize(scriptCode[stateStart :]);
+        require(states == { 11, b'1234', true });
 
         // mutate state
-        state.counter++;
-        state.buf += b'ffff';
-        state.flag = !state.flag;
+        states.counter++;
+        states.buf += b'ffff';
+        states.flag = !states.flag;
 
         // write/serialize state
-        bytes stateBuf = StateStruct.serialize(state);
+        bytes stateBuf = StateStruct.serialize(states);
 
         bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
         bytes output = Util.buildOutput(scriptCode_, amount);

@@ -32,23 +32,22 @@ for (k = 0; k < privateKeys.length; k++) {
 
 
 describe('Test sCrypt contract Counter In Javascript', () => {
-  let saler, preimage, result
+  let seller, preimage, result
 
   before(() => {
     const AdvancedTokenSale = buildContractClass(compileContract('advancedTokenSale.scrypt'))
-    saler = new AdvancedTokenSale(SATS_PER_TOKEN);
+    seller = new AdvancedTokenSale(SATS_PER_TOKEN);
 
     // append state as passive data
-    saler.setDataPart(emptyPublicKey + "00");
+    seller.setDataPart(emptyPublicKey + "00");
     
   });
 
   function testBuy(numBought, pkh, publicKey) {
     const tx = newTx();
-    const prevLockingScript = saler.lockingScript.toASM()
-    const newState = [saler.dataPart.toASM(),  toHex(publicKey) + num2bin(numBought, DataLen)].join(' ');
+    const newState = [seller.dataPart.toASM(),  toHex(publicKey) + num2bin(numBought, DataLen)].join(' ');
 
-    const newLockingScript = [saler.codePart.toASM(), newState].join(' ')
+    const newLockingScript = [seller.codePart.toASM(), newState].join(' ')
   
     const changeAmount = inputSatoshis - numBought * SATS_PER_TOKEN
     const outputAmount = inputSatoshis + numBought * SATS_PER_TOKEN
@@ -65,11 +64,11 @@ describe('Test sCrypt contract Counter In Javascript', () => {
       satoshis: changeAmount
     }))
 
-    preimage = getPreimage(tx, prevLockingScript, inputSatoshis, 0, sighashType)
+    preimage = getPreimage(tx, seller.lockingScript, inputSatoshis, 0, sighashType)
 
 
     const context = { tx, inputIndex, inputSatoshis }
-    result = saler.buy(new SigHashPreimage(toHex(preimage)), new Ripemd160(toHex(pkh)), changeAmount, new Bytes(toHex(publicKey)), numBought).verify(context)
+    result = seller.buy(new SigHashPreimage(toHex(preimage)), new Ripemd160(toHex(pkh)), changeAmount, new Bytes(toHex(publicKey)), numBought).verify(context)
     expect(result.success, result.error).to.be.true;
     return newState;
   }
@@ -81,12 +80,12 @@ describe('Test sCrypt contract Counter In Javascript', () => {
 
     let newState = testBuy(1, pkhs[0], publicKeys[0]);
 
-    saler.setDataPart(newState);
+    seller.setDataPart(newState);
     newState  = testBuy(3, pkhs[1], publicKeys[1])
-    saler.setDataPart(newState);
+    seller.setDataPart(newState);
     newState  = testBuy(10, pkhs[2], publicKeys[2])
 
-    saler.setDataPart(newState);
+    seller.setDataPart(newState);
     newState  = testBuy(2, pkhs[3], publicKeys[3])
   });
 
