@@ -96,7 +96,7 @@ describe( 'Test Witness Service BSV Price', () => {
       }
     const symbol = 'BSV_USDT'
     const decimal = 4
-    const onedayAgo = new Date()
+    const onedayAgo = new Date("2009-01-03")
     onedayAgo.setDate( onedayAgo.getDate() - 1 );
     const matureTime = Math.round( onedayAgo.valueOf() / 1000 );
 
