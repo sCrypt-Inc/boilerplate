@@ -39,20 +39,22 @@ describe('state_test', () => {
 
     it('should call success', () => {
         const stateExample = new StateExample(1000, new Bytes('0101'), true);
-        // update state
-        stateExample.counter = 1001
-        stateExample.state_bytes = new Bytes('010101');
-        stateExample.state_bool = false;
 
-        expect(stateExample.dataPart.toHex()).to.be.equal('02e90303010101000800000000');
+        expect(stateExample.dataPart.toHex()).to.be.equal('02e803020101010700000000');
 
+
+        let newLockingScript = stateExample.getStateScript({
+            counter: 1001,
+            state_bytes:  new Bytes('010101'),
+            state_bool: false
+        })
         const tx1 = newTx(inputSatoshis);
         tx1.addOutput(new bsv.Transaction.Output({
-            script: bsv.Script.fromHex(stateExample.lockingScript.toHex()),
+            script: newLockingScript,
             satoshis: outputAmount
         }))
 
-        const preimage1 = getPreimage(tx1, stateExample.prevLockingScript, inputSatoshis)
+        const preimage1 = getPreimage(tx1, stateExample.lockingScript, inputSatoshis)
 
         stateExample.txContext = {
             tx: tx1,
@@ -63,22 +65,26 @@ describe('state_test', () => {
         const result1 = stateExample.unlock(new SigHashPreimage(toHex(preimage1)), outputAmount).verify()
         expect(result1.success, result1.error).to.be.true
 
-        //should call commitState to update counter.prevLockingScript
-        stateExample.commitState();
+        // save state
+        stateExample.counter = 1001
+        stateExample.state_bytes = new Bytes('010101');
+        stateExample.state_bool = false;
 
 
-        stateExample.counter = 1002
-        stateExample.state_bytes = new Bytes('01010101');
-        stateExample.state_bool = true;
+        newLockingScript = stateExample.getStateScript({
+            counter: 1002,
+            state_bytes:  new Bytes('01010101'),
+            state_bool: true
+        })
 
 
         const tx2 = newTx(inputSatoshis);
         tx2.addOutput(new bsv.Transaction.Output({
-            script: bsv.Script.fromHex(stateExample.lockingScript.toHex()),
+            script: newLockingScript,
             satoshis: outputAmount
         }))
 
-        const preimage2 = getPreimage(tx2, stateExample.prevLockingScript, inputSatoshis)
+        const preimage2 = getPreimage(tx2, stateExample.lockingScript, inputSatoshis)
 
         stateExample.txContext = {
             tx: tx2,

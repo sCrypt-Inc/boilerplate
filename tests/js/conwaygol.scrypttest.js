@@ -58,7 +58,7 @@ describe('Test sCrypt contract Conways GOL In Javascript', () => {
       satoshis: outputAmount
     }))
 
-    preimage = getPreimage(tx, gol.prevLockingScript, inputSatoshis)
+    preimage = getPreimage(tx, gol.lockingScript, inputSatoshis)
 
     // set txContext for verification
     gol.txContext = {
