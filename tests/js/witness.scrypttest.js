@@ -26,7 +26,7 @@ describe( 'Test Witness Service Timestamp', () => {
     const pkh = bsv.crypto.Hash.sha256ripemd160( publicKey.toBuffer() )
     const tx = newTx();
 
-    const onedayAgo = new Date()
+    const onedayAgo = new Date("2009-01-03")
     onedayAgo.setDate( onedayAgo.getDate() - 1 );
     const matureTime = Math.round( onedayAgo.valueOf() / 1000 )
 
@@ -58,7 +58,7 @@ describe( 'Test Witness Service Timestamp', () => {
     const pkh = bsv.crypto.Hash.sha256ripemd160( publicKey.toBuffer() )
     const tx = newTx();
 
-    const nextday = new Date()
+    const nextday = new Date("2009-01-03")
     nextday.setDate( nextday.getDate() + 1 );
     const matureTime = Math.round( nextday.valueOf() / 1000 )
 
