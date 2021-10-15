@@ -4,21 +4,17 @@ import "util.scrypt";
  * Demonstrates TxAdvanced, with external funding (additional input) and a change output
  */
 contract AdvancedCounter {
+    @state
+    int counter;
+
     public function increment(SigHashPreimage txPreimage, int amount, Ripemd160 changePKH, int changeSats) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         // this ensures the preimage is for the current tx
         require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
 
-        bytes scriptCode = Util.scriptCode(txPreimage);
-        int scriptLen = len(scriptCode);
-
-        // state (i.e., counter value) is at the end
-        int counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
-
-        // Expect the counter to be incremented in the new transaction state
-        bytes scriptCode_ = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
-
-        bytes counterOutput = Util.buildOutput(scriptCode_, amount);
+        this.counter++;
+        bytes outputScript = this.getStateScript();
+        bytes counterOutput = Util.buildOutput(outputScript, amount);
 
         // Expect the additional CHANGE output
         bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
