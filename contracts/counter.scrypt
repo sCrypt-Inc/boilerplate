@@ -1,21 +1,24 @@
 import "util.scrypt";
 
 contract Counter {
-    @state
-    int counter;
-
     public function increment(SigHashPreimage txPreimage, int amount) {
         require(Tx.checkPreimage(txPreimage));
 
-        // mutate state
-        this.counter++;
+        // deserialize state (i.e., counter value)
+        bytes scriptCode = Util.scriptCode(txPreimage);
+        int scriptLen = len(scriptCode);
+        // counter is at the end
+        int counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
 
-        // get the locking script containing the latest stateful properties
-        bytes outputScript = this.getStateScript();
+        // increment counter
+        counter++;
 
-        // construct an output from its locking script and satoshi amount
+        // serialize state
+        bytes outputScript = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter, Util.DataLen);
+        
         bytes output = Util.buildOutput(outputScript, amount);
-        // only 1 input here
+        // ensure output is expected: amount is same with specified
+        // also output script is the same with scriptCode except counter incremented
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 }
