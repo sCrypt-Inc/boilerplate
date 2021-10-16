@@ -9,7 +9,7 @@
       "request": "launch",
       "internalConsoleOptions": "openOnSessionStart",
       "name": "Debug StateCounter",
-      "program": "file:///c:/Users/myland/code/boilerplate/contracts/statecounter.scrypt",
+      "program": "${workspaceFolder}/contracts/statecounter.scrypt",
       "constructorArgs": [
         0
       ],
