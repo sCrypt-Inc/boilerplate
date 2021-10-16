@@ -36,6 +36,9 @@ struct TransitionFuncEntry {
  * A Turing Machine checking balanced parentheses
  */
 contract TuringMachine {
+
+    @state
+    StateStruct states;
     // states
     static const State STATE_A = b'00';     // initial state
     static const State STATE_B = b'01';
@@ -71,35 +74,33 @@ contract TuringMachine {
         // read/deserialize contract state
         require(Tx.checkPreimage(txPreimage));
         bytes scriptCode = Util.scriptCode(txPreimage);
-        int stateStart = Reader.getStateStart(scriptCode);
-        StateStruct s = deserialize(scriptCode[stateStart :]);
         bool accepted = false;
         // transition
-        Symbol head = Util.getElemAt(s.tape, s.headPos);
+        Symbol head = Util.getElemAt(this.states.tape, this.states.headPos);
         // look up in transition table
         bool found = false;
         loop (N) : i {
             if (!found) {
                 auto entry = transitionFuncTable[i];
-                if (entry.input == {s.curState, head}) {
+                if (entry.input == {this.states.curState, head}) {
                     auto output = entry.output;
                     // update state
-                    s.curState = output.newState;
+                    this.states.curState = output.newState;
                     // write tape head
-                    s.tape = Util.setElemAt(s.tape, s.headPos, output.write);
+                    this.states.tape = Util.setElemAt(this.states.tape, this.states.headPos, output.write);
                     // move head
-                    s.headPos += output.moveLeft ? -1 : 1;
+                    this.states.headPos += output.moveLeft ? -1 : 1;
                     // extend tape if out of bound
-                    if (s.headPos < 0) {
+                    if (this.states.headPos < 0) {
                         // add 1 blank cell to the left
-                        s.tape = BLANK + s.tape;
-                        s.headPos = 0;
-                    } else if (s.headPos >= len(s.tape))  {
+                        this.states.tape = BLANK + this.states.tape;
+                        this.states.headPos = 0;
+                    } else if (this.states.headPos >= len(this.states.tape))  {
                         // add 1 blank cell to the right
-                        s.tape = s.tape + BLANK;
+                        this.states.tape = this.states.tape + BLANK;
                     }
 
-                    if (s.curState == STATE_ACCEPT) {
+                    if (this.states.curState == STATE_ACCEPT) {
                         // accept
                         //exit(true);
                         accepted = true;
@@ -115,10 +116,8 @@ contract TuringMachine {
         if(!accepted) {
             // otherwise machine goes to the next step
 
-            // write/serialize contract state
-            bytes stateBuf = serialize(s);
-            bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
-            bytes output = Util.buildOutput(scriptCode_, amount);
+            bytes stateScript = this.getStateScript();
+            bytes output = Util.buildOutput(stateScript, amount);
             require(hash256(output) == Util.hashOutputs(txPreimage));
         } else {
             require(accepted);
@@ -126,22 +125,5 @@ contract TuringMachine {
         
         require(true);
 
-    }
-
-    
-    // helper functions to de/serialize contract state, not machine state
-
-    static function deserialize(bytes buf) : StateStruct {
-        Reader r = new Reader(buf);
-        auto headPos = r.readInt();
-        auto tape = r.readBytes();
-        auto curState = r.readBytes();
-
-        return { headPos, tape, curState };
-    }
-
-    static function serialize(StateStruct s) : bytes {
-        bytes sBuf = Writer.writeInt(s.headPos) + Writer.writeBytes(s.tape) + Writer.writeBytes(s.curState);
-        return Writer.serializeState(sBuf);
     }
 }

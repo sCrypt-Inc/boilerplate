@@ -1,7 +1,5 @@
 const { expect } = require('chai');
 const { buildContractClass, Bytes, signTx, bsv, Sig, SigHashPreimage, PubKey, toHex, getPreimage, Ripemd160 } = require('scryptlib');
-const path = require('path');
-const { existsSync, mkdirSync } = require('fs');
 const { inputIndex, inputSatoshis, newTx, compileContract, DataLen } = require('../../helper');
 
 
@@ -13,118 +11,70 @@ const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
 
 const Tictactoe = buildContractClass(compileContract('tictactoe.scrypt'));
 
-game = new Tictactoe(new PubKey(toHex(publicKey1)), new PubKey(toHex(publicKey2)));
+const game = new Tictactoe(new PubKey(toHex(publicKey1)), new PubKey(toHex(publicKey2)), true, new Bytes('000000000000000000'));
 
-let state = new Bytes('00000000000000000000').toASM();
-game.setDataPart(state)
 
 describe('Test sCrypt contract Tictactoe In Javascript', () => {
   let result, preimage, sig, prevLockingScript
 
 
-
-  it('n = 0', () => {
-
-    let newState = new Bytes('01010000000000000000').toASM();
-
+  function run(n, newState) {
+    
     const tx = newTx();
-    const newLockingScript = [game.codePart.toASM(), newState].join(' ');
+    const newLockingScript = game.getStateScript(newState);
 
 
     tx.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM(newLockingScript),
+      script: newLockingScript,
       satoshis: 10000
     }))
 
     preimage = getPreimage(tx, game.lockingScript, inputSatoshis);
 
-    sig = signTx(tx, privateKey1, game.lockingScript, inputSatoshis)
+    sig = signTx(tx, !newState.is_alice_turn ? privateKey1 : privateKey2, game.lockingScript, inputSatoshis)
 
     const context = { tx, inputIndex, inputSatoshis }
 
-    result = game.move(0, new Sig(toHex(sig)), 10000, preimage).verify(context)
+    result = game.move(n, new Sig(toHex(sig)), 10000, preimage).verify(context)
     expect(result.success, result.error).to.be.true;
 
-    game.setDataPart(newState)
+    //update state
+    game.is_alice_turn = newState.is_alice_turn;
+    game.board = newState.board;
 
+  }
+
+  it('n = 0', () => {
+    run(0, {
+      is_alice_turn: false,
+      board: new Bytes('010000000000000000')
+    });
   });
 
 
   it('n = 4', () => {
-
-    let newState = new Bytes('00010000000200000000').toASM();
-    const tx = newTx();
-    const newLockingScript = [game.codePart.toASM(), newState].join(' ');
-
-
-    tx.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM(newLockingScript),
-      satoshis: 10000
-    }))
-
-    preimage = getPreimage(tx, game.lockingScript, inputSatoshis);
-
-    sig = signTx(tx, privateKey2, game.lockingScript, inputSatoshis)
-
-    const context = { tx, inputIndex, inputSatoshis }
-
-    result = game.move(4, new Sig(toHex(sig)), 10000, preimage).verify(context)
-    expect(result.success, result.error).to.be.true;
-
-    game.setDataPart(newState)
-
+    run(4, {
+      is_alice_turn: true,
+      board: new Bytes('010000000200000000')
+    });
   });
 
 
   it('n = 1', () => {
 
-    let newState = new Bytes('01010100000200000000').toASM();
-    const tx = newTx();
-    const newLockingScript = [game.codePart.toASM(), newState].join(' ');
-
-
-    tx.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM(newLockingScript),
-      satoshis: 10000
-    }))
-
-    preimage = getPreimage(tx, game.lockingScript, inputSatoshis);
-
-    sig = signTx(tx, privateKey1, game.lockingScript, inputSatoshis)
-
-    const context = { tx, inputIndex, inputSatoshis }
-
-    result = game.move(1, new Sig(toHex(sig)), 10000, preimage).verify(context)
-    expect(result.success, result.error).to.be.true;
-
-    game.setDataPart(newState)
+    run(1, {
+      is_alice_turn: false,
+      board: new Bytes('010100000200000000')
+    });
 
   });
 
 
   it('n = 8', () => {
-
-    let newState = new Bytes('00010100000200000002').toASM();
-    const tx = newTx();
-    const newLockingScript = [game.codePart.toASM(), newState].join(' ');
-
-
-    tx.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM(newLockingScript),
-      satoshis: 10000
-    }))
-
-    preimage = getPreimage(tx, game.lockingScript, inputSatoshis);
-
-    sig = signTx(tx, privateKey2, game.lockingScript, inputSatoshis)
-
-    const context = { tx, inputIndex, inputSatoshis }
-
-    result = game.move(8, new Sig(toHex(sig)), 10000, preimage).verify(context)
-    expect(result.success, result.error).to.be.true;
-
-    game.setDataPart(newState)
-
+    run(8, {
+      is_alice_turn: true,
+      board: new Bytes('010100000200000002')
+    });
   });
 
 

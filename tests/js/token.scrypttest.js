@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, Sig, PubKey, SigHashPreimage } = require('scryptlib');
+const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, Sig, PubKey, SigHashPreimage, buildTypeClasses } = require('scryptlib');
 const { inputIndex, inputSatoshis, newTx, compileContract, DataLen } = require('../../helper');
 
 const tx = newTx();
@@ -15,16 +15,30 @@ describe('Test sCrypt contract Token In Javascript', () => {
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
   
   before(() => {
-    const Token = buildContractClass(compileContract('token.scrypt'))
-    token = new Token()
+    const desc = compileContract('token.scrypt');
+    const Token = buildContractClass(desc);
+    const {Account} = buildTypeClasses(desc)
+    token = new Token([new Account({
+      pubKey: new PubKey(toHex(publicKey1)),
+      balance: 100
+    }), new Account({
+      pubKey: new PubKey(toHex(publicKey2)),
+      balance: 0
+    })])
 
-    // initial supply 100 tokens: publicKey1 has 100, publicKey2 0
-    token.setDataPart(toHex(publicKey1) + num2bin(100, DataLen) + toHex(publicKey2) + num2bin(0, DataLen))
     
     getPreimageAfterTransfer = (balance1, balance2) => {
-      const newLockingScript = [token.codePart.toASM(), toHex(publicKey1) + num2bin(balance1, DataLen) + toHex(publicKey2) + num2bin(balance2, DataLen)].join(' ')
+      const newLockingScript = token.getStateScript({
+        accounts: [new Account({
+          pubKey: new PubKey(toHex(publicKey1)),
+          balance: balance1
+        }), new Account({
+          pubKey: new PubKey(toHex(publicKey2)),
+          balance: balance2
+        })]
+      })
       tx.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.fromASM(newLockingScript),
+        script: newLockingScript,
         satoshis: outputAmount
       }))
 

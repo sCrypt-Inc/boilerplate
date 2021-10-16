@@ -3,7 +3,16 @@ import "util.scrypt";
 /**
  * A toy token example between two holders
  */
+
+ struct Account {
+     PubKey pubKey;
+     int balance;
+ }
 contract Token {
+
+    @state
+    Account[2] accounts;
+
     public function transfer(PubKey sender, Sig senderSig, PubKey receiver, int value /* amount to be transferred */, SigHashPreimage txPreimage, int amount) {
         // this ensures the preimage is for the current tx
         require(Tx.checkPreimage(txPreimage));
@@ -11,34 +20,24 @@ contract Token {
         // authorize
         require(checkSig(senderSig, sender));
 
-        // read previous locking script
-        bytes lockingScript = Util.scriptCode(txPreimage);
-        int scriptLen = len(lockingScript);
-
-        int pkStart = scriptLen - (Util.PubKeyLen + Util.DataLen) * 2;
-        PubKey pk0 = PubKey(lockingScript[pkStart : pkStart + Util.PubKeyLen]);
-        int balance0 = unpack(lockingScript[pkStart + Util.PubKeyLen : pkStart + Util.PubKeyLen + Util.DataLen]);
-        PubKey pk1 = PubKey(lockingScript[pkStart + Util.PubKeyLen + Util.DataLen : pkStart + 2 * Util.PubKeyLen + Util.DataLen]);
-        int balance1 = unpack(lockingScript[scriptLen - Util.DataLen :]);
-
         // only between two holders
-        require(sender == pk0 && receiver == pk1 || sender == pk1 && receiver == pk0);
+        require(sender == this.accounts[0].pubKey && receiver == this.accounts[1].pubKey || sender == this.accounts[1].pubKey && receiver == this.accounts[0].pubKey);
 
         // transfer
-        if (sender == pk0) {
-            require(balance0 >= value);
-            balance0 = balance0 - value;
-            balance1 = balance1 + value;
+        if (sender == this.accounts[0].pubKey) {
+            require(this.accounts[0].balance >= value);
+            this.accounts[0].balance -= value;
+            this.accounts[1].balance += value;
         }
         else {
-            require(balance1 >= value);
-            balance1 = balance1 - value;
-            balance0 = balance0 + value;
+            require(this.accounts[1].balance >= value);
+            this.accounts[1].balance -= value;
+            this.accounts[0].balance += value;
         }
 
         // write new locking script
-        bytes lockingScript_ = lockingScript[: pkStart] + pk0 + num2bin(balance0, Util.DataLen) + pk1 + num2bin(balance1, Util.DataLen);
-        bytes output = Util.buildOutput(lockingScript_, amount);
+        bytes stateScript = this.getStateScript();
+        bytes output = Util.buildOutput(stateScript, amount);
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 }

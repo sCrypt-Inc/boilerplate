@@ -32,8 +32,7 @@ contract WitnessBinaryOption {
     }
 
     // check the output is the right winner
-    bytes outputHash = hash256(Util.buildOutput(outputScript, outAmount));
-    bytes outputHash2 = Util.hashOutputs(txPreimage);
-    require(outputHash == outputHash2);
+    bytes output = Util.buildOutput(outputScript, outAmount);
+    require(hash256(output) == Util.hashOutputs(txPreimage));
   }
 }

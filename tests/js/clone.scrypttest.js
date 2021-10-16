@@ -28,7 +28,7 @@ describe('Test sCrypt contract Clone In Javascript', () => {
       satoshis: inputSatoshis
     }))
 
-    preimage = getPreimage(tx, clone.prevLockingScript, inputSatoshis)
+    preimage = getPreimage(tx, clone.lockingScript, inputSatoshis)
 
     context = { tx, inputSatoshis, inputIndex }
 

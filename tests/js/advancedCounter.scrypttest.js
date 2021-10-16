@@ -25,16 +25,14 @@ describe('Test sCrypt contract Counter In Javascript', () => {
   let counter, preimage, result
 
   before(() => {
-    const Counter = buildContractClass(compileContract('advancedCounter.scrypt'))
-    counter = new Counter()
+    const AdvancedCounter = buildContractClass(compileContract('advancedCounter.scrypt'))
+    counter = new AdvancedCounter(0)
 
-    // append state as passive data
-    counter.setDataPart(num2bin(0, DataLen))
 
-    const newLockingScript = [counter.codePart.toASM(), num2bin(1, DataLen)].join(' ')
+    const newLockingScript = counter.getStateScript({counter: 1})
     // counter output
     tx.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM(newLockingScript),
+      script: newLockingScript,
       satoshis: outputAmount
     }))
 

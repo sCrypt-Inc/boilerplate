@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, getPreimage, toHex, serializeState, deserializeState, SigHashPreimage } = require('scryptlib');
+const { bsv, buildContractClass, getPreimage, toHex, serializeState, deserializeState, SigHashPreimage, buildTypeClasses, Bytes } = require('scryptlib');
 
 const {
   inputIndex,
@@ -13,29 +13,152 @@ const outputAmount = 222222
 describe('Test sCrypt contract TuringMachine In Javascript', () => {
   let turingMachine, preimage, result
 
+  let allStates;
+
   before(() => {
-    const TuringMachine = buildContractClass(compileContract('turingMachine.scrypt'))
-    turingMachine = new TuringMachine()
+    const result = compileContract('turingMachine.scrypt');
+    const TuringMachine = buildContractClass(result);
+
+    const { StateStruct } = buildTypeClasses(result);
+
+    allStates = [
+
+      new StateStruct({
+        'headPos': 0,
+        'tape': new Bytes('01010202'),
+        'curState': new Bytes('00')
+      }),
+
+      new StateStruct({
+        'headPos': 1,
+        'tape': new Bytes('01010202'),
+        'curState': new Bytes('00')
+      }),
+
+      new StateStruct({
+        'headPos': 2,
+        'tape': new Bytes('01010202'),
+        'curState': new Bytes('00')
+      }),
+
+      new StateStruct({
+        'headPos': 1,
+        'tape': new Bytes('01010302'),
+        'curState': new Bytes('01')
+      }),
+
+      new StateStruct({
+        'headPos': 2,
+        'tape': new Bytes('01030302'),
+        'curState': new Bytes('00')
+      }),
+
+      new StateStruct({
+        'headPos': 3,
+        'tape': new Bytes('01030302'),
+        'curState': new Bytes('00')
+      }),
+
+      new StateStruct({
+        'headPos': 2,
+        'tape': new Bytes('01030303'),
+        'curState': new Bytes('01')
+      }),
+
+      new StateStruct({
+        'headPos': 1,
+        'tape': new Bytes('01030303'),
+        'curState': new Bytes('01')
+      }),
+
+      new StateStruct({
+        'headPos': 0,
+        'tape': new Bytes('01030303'),
+        'curState': new Bytes('01')
+      }),
+
+      new StateStruct({
+        'headPos': 1,
+        'tape': new Bytes('03030303'),
+        'curState': new Bytes('00')
+      }),
+
+      new StateStruct({
+        'headPos': 2,
+        'tape': new Bytes('03030303'),
+        'curState': new Bytes('00')
+      }),
+
+      new StateStruct({
+        'headPos': 3,
+        'tape': new Bytes('03030303'),
+        'curState': new Bytes('00')
+      }),
+
+      new StateStruct({
+        'headPos': 4,
+        'tape': new Bytes('0303030300'),
+        'curState': new Bytes('00')
+      }),
+
+      new StateStruct({
+        'headPos': 3,
+        'tape': new Bytes('0303030300'),
+        'curState': new Bytes('02')
+      }),
+
+      new StateStruct({
+        'headPos': 2,
+        'tape': new Bytes('0303030300'),
+        'curState': new Bytes('02')
+      }),
+
+      new StateStruct({
+        'headPos': 1,
+        'tape': new Bytes('0303030300'),
+        'curState': new Bytes('02')
+      }),
+
+      new StateStruct({
+        'headPos': 0,
+        'tape': new Bytes('0303030300'),
+        'curState': new Bytes('02')
+      }),
+
+      new StateStruct({
+        'headPos': 0,
+        'tape': new Bytes('000303030300'),
+        'curState': new Bytes('02')
+      }),
+
+      new StateStruct({
+        'headPos': 0,
+        'tape': new Bytes('000303030300'),
+        'curState': new Bytes('03')
+      }),
+
+    ]
+
+    turingMachine = new TuringMachine(allStates[0])
 
   });
 
 
   function run(curState, newState) {
     const tx = newTx();
-    const oldSerial = serializeState(curState)
 
-    turingMachine.setDataPart(oldSerial)
+    turingMachine.states = curState;
 
-    const newSerial = serializeState(newState)
-
-    const newLockingScript = [turingMachine.codePart.toASM(), newSerial].join(' ');
+    const newLockingScript = turingMachine.getStateScript({
+      states: newState
+    });
 
     tx.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM(newLockingScript),
+      script: newLockingScript,
       satoshis: outputAmount
     }))
 
-    
+
     preimage = getPreimage(tx, turingMachine.lockingScript, inputSatoshis)
 
     // set txContext for verification
@@ -49,127 +172,12 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
     expect(result.success, result.error).to.be.true
 
   }
-  it('run step 1', () => {
-    // set initial state
-    let state = {'headPos': 0, 'tape': '01010202', 'curState': '00'};
-    let newState = {'headPos': 1, 'tape': '01010202', 'curState': '00'}
-    run(state, newState);
+  it('run', () => {
+
+    for (let step = 0; step < 18; step++) {
+      run(allStates[step], allStates[step + 1]);
+      console.log(`run step ${step}, curState: ${JSON.stringify(allStates[step])}, newState: ${JSON.stringify(allStates[step + 1])}`)
+    }
   });
 
-  it('run step 2', () => {
-
-    let state = {'headPos': 1, 'tape': '01010202', 'curState': '00'}
-    let newState = {'headPos': 2, 'tape': '01010202', 'curState': '00'};
-    run(state, newState);
-  });
-
-
-  it('run step 3', () => {
-
-    let state = {'headPos': 2, 'tape': '01010202', 'curState': '00'};
-    let newState = {'headPos': 1, 'tape': '01010302', 'curState': '01'}
-    run(state, newState);
-  });
-
-  it('run step 4', () => {
-    
-    let state = {'headPos': 1, 'tape': '01010302', 'curState': '01'}
-    let newState = {'headPos': 2, 'tape': '01030302', 'curState': '00'};
-    run(state, newState);
-  });
-
-  it('run step 5', () => {
-    
-    let state = {'headPos': 2, 'tape': '01030302', 'curState': '00'};
-    let newState = {'headPos': 3, 'tape': '01030302', 'curState': '00'};
-    run(state, newState);
-  });
-
-
-  it('run step 6', () => {
-  
-    let state = {'headPos': 3, 'tape': '01030302', 'curState': '00'};
-    let newState = {'headPos': 2, 'tape': '01030303', 'curState': '01'};
-    run(state, newState);
-  });
-
-  it('run step 7', () => {
-  
-    let state = {'headPos': 2, 'tape': '01030303', 'curState': '01'};
-    let newState = {'headPos': 1, 'tape': '01030303', 'curState': '01'};
-    run(state, newState);
-  });
-
-  it('run step 8', () => {
-  
-    let state = {'headPos': 1, 'tape': '01030303', 'curState': '01'};
-    let newState = {'headPos': 0, 'tape': '01030303', 'curState': '01'};
-    run(state, newState);
-  });
-
-  it('run step 9', () => {
-  
-    let state = {'headPos': 0, 'tape': '01030303', 'curState': '01'};
-    let newState = {'headPos': 1, 'tape': '03030303', 'curState': '00'};
-    run(state, newState);
-  });
-
-  it('run step 10', () => {
-  
-
-    let state = {'headPos': 1, 'tape': '03030303', 'curState': '00'};
-    let newState = {'headPos': 2, 'tape': '03030303', 'curState': '00'};
-    run(state, newState);
-  });
-
-  it('run step 11', () => {
-  
-    let state = {'headPos': 2, 'tape': '03030303', 'curState': '00'};
-    let newState = {'headPos': 3, 'tape': '03030303', 'curState': '00'};
-    run(state, newState);
-  });
-
-  it('run step 12', () => {
-
-    let state = {'headPos': 3, 'tape': '03030303', 'curState': '00'};
-    let newState = {'headPos': 4, 'tape': '0303030300', 'curState': '00'};
-    run(state, newState);
-  });
-
-  it('run step 13', () => {
-
-    let state = {'headPos': 4, 'tape': '0303030300', 'curState': '00'};
-    let newState = {'headPos': 3, 'tape': '0303030300', 'curState': '02'};
-    run(state, newState);
-  });
-
-  it('run step 14', () => {
-    let state = {'headPos': 3, 'tape': '0303030300', 'curState': '02'};
-    let newState = {'headPos': 2, 'tape': '0303030300', 'curState': '02'};
-    run(state, newState);
-  });
-
-  it('run step 15', () => {
-    let state = {'headPos': 2, 'tape': '0303030300', 'curState': '02'};
-    let newState = {'headPos': 1, 'tape': '0303030300', 'curState': '02'};
-    run(state, newState);
-  });
-
-  it('run step 16', () => {
-    let state = {'headPos': 1, 'tape': '0303030300', 'curState': '02'};
-    let newState = {'headPos': 0, 'tape': '0303030300', 'curState': '02'};
-    run(state, newState);
-  });
-
-  it('run step 17', () => {
-    let state = {'headPos': 0, 'tape': '0303030300', 'curState': '02'};
-    let newState = {'headPos': 0, 'tape': '000303030300', 'curState': '02'};
-    run(state, newState);
-  });
-
-  it('run step 18', () => {
-    let state = {'headPos': 0, 'tape': '000303030300', 'curState': '02'};
-    let newState = {};
-    run(state, newState);
-  });
 });
