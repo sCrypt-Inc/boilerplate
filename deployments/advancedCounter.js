@@ -32,18 +32,16 @@ function sleep(ms) {
 
 (async () => {
   try {
-    const AdvancedCounter = buildContractClass(loadDesc('advancedCounter_desc.json'))
-    const advCounter = new AdvancedCounter()
+    const AdvancedCounter = buildContractClass(loadDesc('advancedCounter_debug_desc.json'))
+    const advCounter = new AdvancedCounter(0)
 
-    // append state as passive data
-    advCounter.setDataPart(num2bin(0, DataLen))
 
     // initial contract funding
-    let amount = 10000
-    const FEE = 1000
+    let amount = 30000
+    const FEE = 3000
 
     // lock funds to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount)
+    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, FEE)
     lockingTx.outputs[0].setScript(advCounter.lockingScript)
     lockingTx.sign(privateKey)
     let lockingTxid = await sendTx(lockingTx)
@@ -53,34 +51,32 @@ function sleep(ms) {
     for (i = 0; i < 5; i++) {
       // avoid mempool conflicts
       // sleep to allow previous tx to "sink-into" the network
-      await sleep(9000);
+      await sleep(3000);
       console.log('==============================')
       console.log('DONE SLEEPING before iteration ', i)
 
-      const prevLockingScript = advCounter.lockingScript
-
-      // Set the state for the next transaction
-      advCounter.setDataPart(num2bin(i + 1, DataLen))
 
       // keep the contract funding constant
       const newAmount = amount
 
       const unlockingTx = await createLockingTx(privateKey.toAddress(), newAmount, FEE)
 
-      unlockingTx.outputs[0].setScript(advCounter.lockingScript)
+      const newLockingScript = advCounter.getStateScript({counter: i +1})
+
+      unlockingTx.outputs[0].setScript(newLockingScript)
 
       // add input of prevTx contract outpoint
       unlockingTx.addInput(new bsv.Transaction.Input({
         prevTxId: lockingTxid,
         outputIndex: 0,
         script: new bsv.Script(), // placeholder
-      }), prevLockingScript, amount)
+      }), advCounter.lockingScript, amount)
 
       const curInputIndex = unlockingTx.inputs.length - 1
 
       const changeAmount = unlockingTx.inputAmount - FEE - newAmount
 
-      const preimage = getPreimage(unlockingTx, prevLockingScript.toASM(), amount, curInputIndex, sighashType)
+      const preimage = getPreimage(unlockingTx, advCounter.lockingScript, amount, curInputIndex, sighashType)
 
       const unlockingScript = advCounter.increment(
         new SigHashPreimage(toHex(preimage)),
@@ -101,6 +97,9 @@ function sleep(ms) {
       console.log('iteration #' + i + ' txid: ', lockingTxid)
 
       amount = newAmount
+
+      // update state
+      advCounter.counter = i + 1;
     }
 
     console.log('Succeeded on testnet')
