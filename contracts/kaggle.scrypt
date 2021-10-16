@@ -28,7 +28,7 @@ struct DataPoint {
 
 type Submissions = Submission[Kaggle.S];
 
-struct State {
+struct States {
     // submissions
     Submissions submissions;
     int count;
@@ -38,6 +38,10 @@ struct State {
  * An on-chain Kaggle competition
  */
 contract Kaggle {
+
+    @state
+    States states;
+
     // size of training dataset
     static const int N = 5;
     // size of testing dataset
@@ -55,36 +59,23 @@ contract Kaggle {
     // submit a solution
     public function submit(SigHashPreimage txPreimage, Submission subm) {
         require(Tx.checkPreimage(txPreimage));
-        bytes scriptCode = Util.scriptCode(txPreimage);
-
-        // read/deserialize state
-        int stateStart = Reader.getStateStart(scriptCode);
-        State state = Kaggle.deserialize(scriptCode[stateStart :]);
-
         // append the submission to the candidates
-        if (++state.count < S) {
+        if (++this.states.count < S) {
             loop (S) : i {
-                if (i == state.count)
-                    state.submissions[i] = subm;
+                if (i == this.states.count)
+                    this.states.submissions[i] = subm;
             }
         }
 
-        // write/serialize state
-        bytes stateBuf = serialize(state);
+        bytes outputScript = this.getStateScript();
 
-        bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
-        bytes output = Util.buildOutput(scriptCode_, Util.value(txPreimage));
+        bytes output = Util.buildOutput(outputScript, Util.value(txPreimage));
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 
     // reveal the testing dataset and pay the winner with smallest error
     public function evaluate(SigHashPreimage txPreimage, DataPoint[T] testingDataset) {
         require(Tx.checkPreimage(txPreimage));
-        bytes scriptCode = Util.scriptCode(txPreimage);
-
-        // read/deserialize state
-        int stateStart = Reader.getStateStart(scriptCode);
-        State state = Kaggle.deserialize(scriptCode[stateStart :]);
 
         // validate testing dataset is what was committed
         require(this.validateTestData(testingDataset));
@@ -93,8 +84,8 @@ contract Kaggle {
         Ripemd160 winner = Ripemd160(b'');
         int minError = 0xFFFFFFFFFFF;
         loop (S) : i {
-            if (i < state.count) {
-                auto subm = state.submissions[i];
+            if (i < this.states.count) {
+                auto subm = this.states.submissions[i];
                 auto error = calcError(subm, testingDataset);
                 if (error < minError) {
                     minError = error;
@@ -146,31 +137,4 @@ contract Kaggle {
         return sBuf;
     }
 
-    static function deserialize(bytes buf) : State {
-        Submissions submissions = repeat({0, 0, 0, Ripemd160(b'')}, S);
-
-        Reader r = new Reader(buf);
-        loop (S) : i {
-            auto height = r.readInt();
-            auto weight = r.readInt();
-            auto bias = r.readInt();
-            auto addr = Ripemd160(r.readBytes());
-            submissions[i] = { height, weight, bias, addr };
-        }
-
-        auto count = r.readInt();
-
-        return {submissions, count};
-        
-    }
-
-    static function serialize(State s) : bytes {
-        bytes sBuf = b'';
-        loop (S) : i {
-            auto subm = s.submissions[i];
-            sBuf += Writer.writeInt(subm.heightWeight) + Writer.writeInt(subm.weightWeight) + Writer.writeInt(subm.bias) + Writer.writeBytes(subm.addr);
-        }
-        sBuf += Writer.writeInt(s.count);
-        return Writer.serializeState(sBuf);
-    }
 }

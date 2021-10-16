@@ -2,7 +2,7 @@ import "util.scrypt";
 import "serializer.scrypt";
 
 // Perceptron's internal state includes 2 inputs: height & weight
-struct State {
+struct States {
     int heightWeight;
     // 1st weight means weight in KGs
     int weightWeight;
@@ -23,6 +23,9 @@ type Output = int;
  * A simple perceptron classifying gender based on height & weight
  */
 contract Perceptron {
+
+    @state
+    States states;
     // sample size
     static const int N = 10;
     // learning rate
@@ -35,7 +38,7 @@ contract Perceptron {
     Output[N] outputs;
 
     // train the perceptron
-    function train(State s) : State {
+    function train(States s) : States {
         loop (N) : i {
             int prediction = this.predict(s, i);
             int delta = this.outputs[i] - prediction;
@@ -45,14 +48,14 @@ contract Perceptron {
     }
 
     // prediction for the i-th input
-    function predict(State s, int i) : int {
+    function predict(States s, int i) : int {
         int sum = s.bias;
         sum += this.inputs[i].height * s.heightWeight + this.inputs[i].weight * s.weightWeight;
         return stepActivate(sum);
     }
 
     // learn internal state
-    function adjust(State s, int delta) : State {
+    function adjust(States s, int delta) : States {
         int scaledDelta = delta * LR;
         loop (N) : i {
             s.heightWeight += this.inputs[i].height * scaledDelta;
@@ -71,32 +74,13 @@ contract Perceptron {
         require(Tx.checkPreimage(txPreimage));
         bytes scriptCode = Util.scriptCode(txPreimage);
 
-        // read/deserialize state
-        int stateStart = Reader.getStateStart(scriptCode);
-        State state = Perceptron.deserialize(scriptCode[stateStart :]);
-
         // train the perceptron
-        state = this.train(state);
+        this.states = this.train(this.states);
 
         // write/serialize state
-        bytes stateBuf = Perceptron.serialize(state);
-
-        bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
-        bytes output = Util.buildOutput(scriptCode_, amount);
+        bytes outputScript = this.getStateScript();
+        bytes output = Util.buildOutput(outputScript, amount);
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 
-    static function deserialize(bytes buf) : State {
-        Reader r = new Reader(buf);
-        auto height = r.readInt();
-        auto weight = r.readInt();
-        auto bias = r.readInt();
-
-        return { height, weight, bias };
-    }
-
-    static function serialize(State s) : bytes {
-        bytes sBuf = Writer.writeInt(s.heightWeight) + Writer.writeInt(s.weightWeight) + Writer.writeInt(s.bias);
-        return Writer.serializeState(sBuf);
-    }
 }

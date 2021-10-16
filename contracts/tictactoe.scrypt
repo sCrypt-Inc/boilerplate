@@ -1,8 +1,18 @@
 import "util.scrypt";
 
 contract TicTacToe {
+
+
+
     PubKey alice;
     PubKey bob;
+
+    @state
+    bool is_alice_turn;
+
+    @state
+    bytes board;
+
 
     static const int TURNLEN = 1;
     static const int BOARDLEN = 9;
@@ -14,33 +24,24 @@ contract TicTacToe {
         require(Tx.checkPreimage(txPreimage));
         require(n >= 0 && n < BOARDLEN);
 
-        bytes scriptCode = Util.scriptCode(txPreimage);
-        int scriptLen = len(scriptCode);
-
-        int boardStart = scriptLen - BOARDLEN;
-        // state: turn (1 byte) + board (9 bytes)
-        int turn = unpack(scriptCode[boardStart - TURNLEN : boardStart]);
-        bytes board = scriptCode[boardStart :];
-
-        // not filled
-        require(Util.getElemAt(board, n) == EMPTY);
-
-        bytes play = turn == 0 ? ALICE : BOB;
-        PubKey player = turn == 0 ? this.alice : this.bob;
+        bytes play = this.is_alice_turn ? ALICE : BOB;
+        PubKey player = this.is_alice_turn ? this.alice : this.bob;
 
         // ensure it's player's turn
         require(checkSig(sig, player));
         // make the move
-        board = Util.setElemAt(board, n, play);
+        this.board = Util.setElemAt(this.board, n, play);
+        this.is_alice_turn = !this.is_alice_turn;
+
 
         bytes outputs = b'';
-        if (this.won(board, play)) {
+        if (this.won(this.board, play)) {
             // winner takes all
             bytes outputScript = Util.pubKeyToP2PKH(player);
             bytes output = Util.buildOutput(outputScript, amount);
             outputs = output;
         }
-        else if (this.full(board)) {
+        else if (this.full(this.board)) {
             // draw: equally split, i.e., both outputs have the same amount
             bytes aliceScript = Util.pubKeyToP2PKH(this.alice);
             bytes aliceOutput = Util.buildOutput(aliceScript, amount);
@@ -51,8 +52,8 @@ contract TicTacToe {
             outputs = aliceOutput + bobOutput;
         }
         else {
-            // update state: next turn & next board
-            bytes scriptCode_ = scriptCode[: scriptLen - BOARDLEN - TURNLEN] + num2bin(1 - turn, TURNLEN) + board;
+            // update state
+            bytes scriptCode_ = this.getStateScript();
             bytes output = Util.buildOutput(scriptCode_, amount);
             outputs = output;
         }
