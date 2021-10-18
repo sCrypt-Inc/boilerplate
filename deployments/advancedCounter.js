@@ -11,6 +11,8 @@ const {
   loadDesc,
   showError,
   createLockingTx,
+  createUnlockingTx,
+  anyOnePayforTx,
   sendTx,
   DataLen,
   unlockP2PKHInput
@@ -20,7 +22,7 @@ const {
 } = require('../privateKey');
 
 const Signature = bsv.crypto.Signature
-const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
+const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_SINGLE | Signature.SIGHASH_FORKID
 
 const publicKey = privateKey.publicKey
 // PKH for receiving change from each transaction (20 bytes - 40 hexadecimal characters)
@@ -37,13 +39,12 @@ function sleep(ms) {
 
 
     // initial contract funding
-    let amount = 30000
-    const FEE = 3000
+    let amount = 1000
 
     // lock funds to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, FEE)
-    lockingTx.outputs[0].setScript(advCounter.lockingScript)
+    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, advCounter.lockingScript);
     lockingTx.sign(privateKey)
+  
     let lockingTxid = await sendTx(lockingTx)
     console.log('funding txid:      ', lockingTxid)
 
@@ -51,52 +52,38 @@ function sleep(ms) {
     for (i = 0; i < 5; i++) {
       // avoid mempool conflicts
       // sleep to allow previous tx to "sink-into" the network
-      await sleep(3000);
+      await sleep(5000);
       console.log('==============================')
       console.log('DONE SLEEPING before iteration ', i)
 
 
       // keep the contract funding constant
-      const newAmount = amount
-
-      const unlockingTx = await createLockingTx(privateKey.toAddress(), newAmount, FEE)
 
       const newLockingScript = advCounter.getStateScript({counter: i +1})
 
-      unlockingTx.outputs[0].setScript(newLockingScript)
+      const unlockingTx = await createUnlockingTx(lockingTxid, amount, advCounter.lockingScript, amount, newLockingScript)
 
-      // add input of prevTx contract outpoint
-      unlockingTx.addInput(new bsv.Transaction.Input({
-        prevTxId: lockingTxid,
-        outputIndex: 0,
-        script: new bsv.Script(), // placeholder
-      }), advCounter.lockingScript, amount)
-
-      const curInputIndex = unlockingTx.inputs.length - 1
-
-      const changeAmount = unlockingTx.inputAmount - FEE - newAmount
+      const curInputIndex = unlockingTx.inputs.length - 1;
 
       const preimage = getPreimage(unlockingTx, advCounter.lockingScript, amount, curInputIndex, sighashType)
 
       const unlockingScript = advCounter.increment(
-        new SigHashPreimage(toHex(preimage)),
-        amount,
-        new Ripemd160(toHex(pkh)),
-        changeAmount
+        new SigHashPreimage(toHex(preimage))
       ).toScript()
-
-      // unlock other p2pkh inputs
-      for (let i = 0; i < curInputIndex; i++) {
-        unlockP2PKHInput(privateKey, unlockingTx, i, sighashType)
-      }
 
       // unlock contract input
       unlockingTx.inputs[curInputIndex].setScript(unlockingScript)
+      
+      // add input to pay tx fee
+      await anyOnePayforTx(unlockingTx, privateKey.toAddress())
+
+      // unlock other p2pkh inputs
+      for (let i = 1; i < unlockingTx.inputs.length; i++) {
+        unlockP2PKHInput(privateKey, unlockingTx, i, sighashType)
+      }
 
       lockingTxid = await sendTx(unlockingTx)
       console.log('iteration #' + i + ' txid: ', lockingTxid)
-
-      amount = newAmount
 
       // update state
       advCounter.counter = i + 1;
