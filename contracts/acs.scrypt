@@ -14,7 +14,7 @@ contract AnyoneCanSpend {
 
         bytes lockingScript = Util.buildPublicKeyHashScript(this.pubKeyHash);
         int inputAmount = Util.value(txPreimage);
-        int outputAmount = inputAmount - 546; // minFee
+        int outputAmount = inputAmount - 1000; // minFee
         bytes output = Util.buildOutput(lockingScript, outputAmount);
 
         Sha256 hashOutputs = hash256(output);

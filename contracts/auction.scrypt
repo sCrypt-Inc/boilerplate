@@ -2,6 +2,9 @@ import "util.scrypt";
 
 // Auction: highest bid before deadline wins
 contract Auction {
+    @state
+    Ripemd160 bidder;
+
     PubKey auctioner;
     int auctionDeadline;
 
@@ -12,14 +15,12 @@ contract Auction {
         int highestBid = Util.value(txPreimage);
         require(bid > highestBid);
 
-        // read previous highest bidder
-        bytes lockingScript = Util.scriptCode(txPreimage);
-        int scriptLen = len(lockingScript);
-        Ripemd160 highestBidder = Ripemd160(lockingScript[scriptLen - Util.PubKeyHashLen :]);
+        Ripemd160 highestBidder = this.bidder;
+        this.bidder = bidder;
 
         // auction continues with a higher bidder
-        bytes auctionScript = lockingScript[: scriptLen - Util.PubKeyHashLen] + bidder;
-        bytes auctionOutput = Util.buildOutput(auctionScript, bid);
+        bytes stateScript = this.getStateScript();
+        bytes auctionOutput = Util.buildOutput(stateScript, bid);
 
         // refund previous highest bidder
         bytes refundScript = Util.buildPublicKeyHashScript(highestBidder);
@@ -28,10 +29,9 @@ contract Auction {
         bytes changeScript = Util.buildPublicKeyHashScript(bidder);
         bytes changeOutput = Util.buildOutput(changeScript, changeSats);
 
-        bytes hashThisOutputs = hash256(auctionOutput + refundOutput + changeOutput);
-        bytes hashPreimageOutput = Util.hashOutputs(txPreimage);
-        
-        require(hashThisOutputs == hashPreimageOutput);
+        bytes output = auctionOutput + refundOutput + changeOutput;
+
+        require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 
     // withdraw after bidding is over

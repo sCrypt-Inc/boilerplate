@@ -38,44 +38,43 @@ const { privateKey } = require('../privateKey');
 
   try {
     // initialize contract
-    const AnyoneCanSpend = buildContractClass(loadDesc('acs_desc.json'));
+    const AnyoneCanSpend = buildContractClass(loadDesc('acs_debug_desc.json'));
     const acs = new AnyoneCanSpend(new Ripemd160(toHex(publicKeyHashX)));
 
     // deploy contract on testnet
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount);
-    lockingTx.outputs[0].setScript(acs.lockingScript);
+    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, acs.lockingScript);
     lockingTx.sign(privateKey);
     let lockingTxid = await sendTx(lockingTx);
     console.log('funding txid:      ', lockingTxid);
 
     // call contract method on testnet
-    let prevLockingScript = acs.lockingScript.toASM();
 
-    const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressX).toASM();
+    const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressX);
 
-    const newAmount = amount - 546; //minFee;
+    const newAmount = amount - 1000; //minFee;
 
     const unlockingTx = await createUnlockingTx(
       lockingTxid,
       amount,
-      prevLockingScript,
+      acs.lockingScript,
       newAmount,
       newLockingScript
     );
 
     const preimage = getPreimage(
       unlockingTx,
-      prevLockingScript,
+      acs.lockingScript,
       amount,
       inputIndex,
       sighashType
     );
 
+
     const unlockingScript = acs
       .unlock(new SigHashPreimage(toHex(preimage)))
-      .toScript();
+      .toScript()
     unlockingTx.inputs[0].setScript(unlockingScript);
-
+    
     const unlockingTxid = await sendTx(unlockingTx);
     console.log('unlocking txid:   ', unlockingTxid);
 

@@ -20,22 +20,21 @@ const {
         let pubKeyHashA = new Ripemd160(toHex(bsv.crypto.Hash.sha256ripemd160(publicKeyA.toBuffer())))
         let pubKeyHashB = new Ripemd160(toHex(bsv.crypto.Hash.sha256ripemd160(publicKeyB.toBuffer())))
 
-        const BinaryOption = buildContractClass(loadDesc('binaryOption_desc.json'))
+        const BinaryOption = buildContractClass(loadDesc('binaryOption_debug_desc.json'))
         const binaryOption = new BinaryOption(betPrice, rabinPubKey, timestamp, pubKeyHashA, pubKeyHashB)
 
         let amount = 10000
         let fee = 5000
-        const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, fee)
+        const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, binaryOption.lockingScript)
         lockingTx.outputs[0].setScript(binaryOption.lockingScript)
         lockingTx.sign(privateKey)
-        //let lockingTxid = await sendTx(lockingTx)
-        let lockingTxid = lockingTx.id
+        let lockingTxid = await sendTx(lockingTx)
         console.log('binaryoption txid: ', lockingTxid)
 
-        let prevLockingScript = binaryOption.lockingScript.toASM();
+        let prevLockingScript = binaryOption.lockingScript;
 
         let newAmount = 6000
-        const newLockingScript = bsv.Script.buildPublicKeyHashOut(privateKey2.toAddress()).toASM()
+        const newLockingScript = bsv.Script.buildPublicKeyHashOut(privateKey2.toAddress())
         const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
 
         const preimage = getPreimage(unlockingTx, prevLockingScript, amount)

@@ -76,7 +76,7 @@ async function createPayByOthersTx(address) {
   return tx
 }
 
-async function createLockingTx(address, amountInContract, fee) {
+async function createLockingTx(address, amountInContract, lockingScript) {
   // step 1: fetch utxos
   let {
     data: utxos
@@ -92,11 +92,11 @@ async function createLockingTx(address, amountInContract, fee) {
   // step 2: build the tx
   const tx = new bsv.Transaction().from(utxos)
   tx.addOutput(new bsv.Transaction.Output({
-    script: new bsv.Script(), // place holder
+    script: lockingScript,
     satoshis: amountInContract,
   }))
-
-  tx.change(address).fee(fee || minFee)
+  tx.feePerKb(500)
+  tx.change(address)
 
   return tx
 }
@@ -108,33 +108,35 @@ async function anyOnePayforTx(tx, address, fee) {
   } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
 
   utxos.map(utxo => {
-    tx.addInput(new bsv.Transaction.Input({
+    tx.addInput(new bsv.Transaction.Input.PublicKeyHash({
       prevTxId:  utxo.tx_hash,
       outputIndex: utxo.tx_pos,
       script: new bsv.Script(), // placeholder
     }), bsv.Script.buildPublicKeyHashOut(address).toHex(), utxo.value)
   })
 
-  tx.change(address).fee(fee)
+  if(fee) {
+    tx.change(address).fee(fee)
+  } else {
+    tx.change(address)
+  }
 
   return tx
 }
 
-function createUnlockingTx(prevTxId, inputAmount, inputLockingScriptASM, outputAmount, outputLockingScriptASM) {
+function createUnlockingTx(prevTxId, inputAmount, inputLockingScript, outputAmount, outputLockingScript) {
   const tx = new bsv.Transaction()
 
   tx.addInput(new bsv.Transaction.Input({
     prevTxId,
     outputIndex: inputIndex,
     script: new bsv.Script(), // placeholder
-  }), bsv.Script.fromASM(inputLockingScriptASM), inputAmount)
+  }), inputLockingScript, inputAmount)
 
   tx.addOutput(new bsv.Transaction.Output({
-    script: bsv.Script.fromASM(outputLockingScriptASM || inputLockingScriptASM),
+    script: outputLockingScript,
     satoshis: outputAmount,
   }))
-
-  tx.fee(inputAmount - outputAmount)
 
   return tx
 }
@@ -160,17 +162,28 @@ function unlockP2PKHInput(privateKey, tx, inputIndex, sigtype) {
 }
 
 async function sendTx(tx) {
-  const {
-    data: txid
-  } = await axios.post(`${API_PREFIX}/tx/raw`, {
-    txhex: tx.toString()
-  })
-  return txid
+  const hex = tx.toString();
+
+  try {
+    const {
+      data: txid
+    } = await axios.post(`${API_PREFIX}/tx/raw`, {
+      txhex: hex
+    });
+      
+    return txid
+  } catch (error) {
+    if (error.response && error.response.data === '66: insufficient priority') {
+      throw new Error(`Transaction with fee is too low`)
+    } 
+    throw error
+  }
+
 }
 
 function compileContract(fileName, options) {
   const filePath = path.join(__dirname, 'contracts', fileName)
-  const out = path.join(__dirname, 'deployments/fixture/autoGen')
+  const out = path.join(__dirname, 'out')
 
   const result = compileContractImpl(filePath, options ? options : {
     out: out
