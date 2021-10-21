@@ -4,28 +4,27 @@ const { privateKey } = require('../privateKey');
 
 (async() => {
     try {
-        const Counter = buildContractClass(loadDesc('counter_desc.json'))
+        const Counter = buildContractClass(loadDesc('counter_debug_desc.json'))
         const counter = new Counter()
         // append state as op_return data
         counter.setDataPart(num2bin(0, DataLen))
         
-        let amount = 10000
-        const FEE = amount / 10
+        let amount = 20000
+        const FEE = 5000;
         
         // lock fund to the script
-        const lockingTx =  await createLockingTx(privateKey.toAddress(), amount)
-        lockingTx.outputs[0].setScript(counter.lockingScript)
+        const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, counter.lockingScript)
         lockingTx.sign(privateKey)
         let lockingTxid = await sendTx(lockingTx)
         console.log('funding txid:      ', lockingTxid)
 
         // unlock
-        for (i = 0; i < 9; i++) {
-            let prevLockingScript = counter.lockingScript.toASM();
+        for (i = 0; i < 3; i++) {
+            let prevLockingScript = counter.lockingScript;
             
             // update state
             counter.setDataPart(num2bin(i + 1, DataLen))
-            const newLockingScript = counter.lockingScript.toASM();
+            const newLockingScript = counter.lockingScript;
             const newAmount = amount - FEE
 
             const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)

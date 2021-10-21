@@ -53,19 +53,18 @@ const addressB = privateKeyB.toAddress();
     const amount = 1000;
     const newAmount = 546;
 
-    const XorPuzzle = buildContractClass(loadDesc('xorPuzzle_desc.json'));
+    const XorPuzzle = buildContractClass(loadDesc('xorPuzzle_debug_desc.json'));
     const xorPuzzle = new XorPuzzle(new Bytes(xorResultHex));
 
     // lock fund to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount);
-    lockingTx.outputs[0].setScript(xorPuzzle.lockingScript);
+    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, xorPuzzle.lockingScript);
     lockingTx.sign(privateKey);
     let lockingTxid = await sendTx(lockingTx);
     console.log('funding txid:      ', lockingTxid);
 
     // unlock
-    const prevLockingScript = xorPuzzle.lockingScript.toASM();
-    const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressB).toASM();
+    const prevLockingScript = xorPuzzle.lockingScript;
+    const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressB);
 
     const unlockingTx = await createUnlockingTx(
       lockingTxid,

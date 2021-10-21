@@ -40,9 +40,9 @@ const bidderPKH = new bsv.crypto.Hash.sha256ripemd160(bidderPubKey.toBuffer());/
 
 
 // initial contract funding - arbitrary amount
-let previousAmount = 20000;
+let previousAmount = 1000;
 
-const FEE = 3000;
+const FEE = 5000;
 const BID_INCREASE = 2000;
 const SLEEP_TIME = 5000;
 

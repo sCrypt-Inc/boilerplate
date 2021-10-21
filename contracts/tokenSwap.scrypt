@@ -243,9 +243,10 @@ contract TokenSwap {
         require(outputHash == outputHash2);
     }
 
-    public function swapTokenToBsv(SigHashPreimage txPreimage, PubKey sender, Sig senderSig, int senderTokenBalance, int tokenAmount, bytes senderMerklePath, int poolTokenBalance, bytes poolMerklePath, bytes mergeMerklePath, bool senderIsLeft, int fee) {
+    public function swapTokenToBsv(SigHashPreimage txPreimage, PubKey sender, Sig senderSig, int senderTokenBalance, int tokenAmount, bytes senderMerklePath, int poolTokenBalance,
+        bytes poolMerklePath, bytes mergeMerklePath, bool senderIsLeft) {
         // check preimage with sighash_single
-        SigHashType sigHashType = SigHash.ALL | SigHash.FORKID;
+        SigHashType sigHashType = SigHash.SINGLE | SigHash.FORKID;
         require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // check sender sig
@@ -285,12 +286,8 @@ contract TokenSwap {
         bytes newScriptCode = lockingScript[: dataStart] + newTokenMerkleRoot + lpMerkleRoot + lockingScript[dataStart + hashLen * 2 : dataStart + hashLen * 2 + 8];
 
         bytes newOutput = Util.buildOutput(newScriptCode, newBsvBalance + this.initBsv);
-        bytes bsvOutputScript = Util.buildPublicKeyHashScript(ripemd160(sha256(sender)));
-        require(outBsvAmount > fee);
-        bytes newOutput2 = Util.buildOutput(bsvOutputScript, outBsvAmount - fee);
-        bytes outputHash = hash256(newOutput + newOutput2);
-        bytes outputHash2 = Util.hashOutputs(txPreimage);
-        require(outputHash == outputHash2);
+
+        require(hash256(newOutput) == Util.hashOutputs(txPreimage));
     }
 
     public function swapBsvToToken(SigHashPreimage txPreimage, PubKey sender, Sig senderSig, int senderTokenBalance, bytes senderMerklePath, int poolTokenBalance, bytes poolMerklePath, bytes mergeMerklePath, bool poolIsLeft, int bsvAmount) {

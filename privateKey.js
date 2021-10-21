@@ -2,8 +2,10 @@ const { exit } = require('process')
 const { bsv } = require('scryptlib');
 
 // fill in private key on testnet in WIF here
-const key = 'cRYVTxXkkHDLkd4Va2ZF2UvxTdWnJ9qZBpDmmr2ASTJcBsVCDbDZ'
-const key2 = 'cRYVTxXkkHDLkd4Va2ZF2UvxTdWnJ9qZBpDmmr2ASTJcBsVCDbDZ'
+const key = 'cRsnshD1gkiGQMqHe5EnX1ndob33GLmNKD9QweaKvW4Fwz7YDu7h'
+const key2 = 'cRsnshD1gkiGQMqHe5EnX1ndob33GLmNKD9QweaKvW4Fwz7YDu7h'
+const key3 = 'cRsnshD1gkiGQMqHe5EnX1ndob33GLmNKD9QweaKvW4Fwz7YDu7h'
+
 if (!key) {
   genPrivKey()
 }
@@ -21,8 +23,13 @@ const privateKey = new bsv.PrivateKey.fromWIF(key)
 
 const privateKey2 = new bsv.PrivateKey.fromWIF(key2)
 
+const privateKey3 = new bsv.PrivateKey.fromWIF(key3)
+
+//console.log('' + privateKey.toAddress())
+
 module.exports = {
   privateKey,
   privateKey2,
+  privateKey3,
   genPrivKey
 }

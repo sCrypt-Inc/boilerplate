@@ -61,12 +61,11 @@ const { privateKey } = require('../privateKey');
 
   try {
     // initialize contract
-    const Escrow = buildContractClass(loadDesc('escrow_desc.json'));
+    const Escrow = buildContractClass(loadDesc('escrow_debug_desc.json'));
     const escrow = new Escrow(new Ripemd160(toHex(publicKeyHashA)), new Ripemd160(toHex(publicKeyHashB)), new Ripemd160(toHex(publicKeyHashE)), new Sha256(toHex(hashSecret1)), new Sha256(toHex(hashSecret2)), fee);
 
     // deploy contract on testnet
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, fee);
-    lockingTx.outputs[0].setScript(escrow.lockingScript);
+    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, escrow.lockingScript);
     lockingTx.sign(privateKey);
 
     let lockingTxid = await sendTx(lockingTx);

@@ -63,7 +63,7 @@ const inputSatoshis = patientReward + fee;
   try {
     // initialize contract
     const DummyPrescription = buildContractClass(
-      loadDesc("dummy_prescription_desc.json")
+      loadDesc("dummy_prescription_debug_desc.json")
     );
 
     // init prescription locking script
@@ -85,7 +85,7 @@ const inputSatoshis = patientReward + fee;
     const lockingTx = await createLockingTx(
       privateKeyPrescriberOffice.toAddress(),
       inputSatoshis,
-      fee
+      dummyPrescription.lockingScript
     );
     lockingTx.outputs[0].setScript(dummyPrescription.lockingScript);
     lockingTx.sign(privateKeyPrescriberOffice);
@@ -119,13 +119,13 @@ const inputSatoshis = patientReward + fee;
     pharmacySig1 = signTx(
       unlockingTx,
       privateKeyPharmacy1,
-      dummyPrescription.lockingScript.toASM(),
+      dummyPrescription.lockingScript,
       inputSatoshis
     );
 
     const preimage = getPreimage(
       unlockingTx,
-      dummyPrescription.lockingScript.toASM(),
+      dummyPrescription.lockingScript,
       inputSatoshis
     );
 

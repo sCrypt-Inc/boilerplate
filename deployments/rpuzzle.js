@@ -50,29 +50,27 @@ const amount = 1000;
 (async () => {
   try {
     // initialize contract
-    const RPuzzle = buildContractClass(loadDesc('rpuzzle_desc.json'));
+    const RPuzzle = buildContractClass(loadDesc('rpuzzle_debug_desc.json'));
     const rpuzzle = new RPuzzle(new Ripemd160(toHex(rhash)));
 
     // deploy contract on testnet
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount);
-    lockingTx.outputs[0].setScript(rpuzzle.lockingScript);
+    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, rpuzzle.lockingScript);
+
     lockingTx.sign(privateKey);
     let lockingTxid = await sendTx(lockingTx);
     console.log('funding txid:      ', lockingTxid);
 
     // call contract method on testnet
-    const prevLockingScript = rpuzzle.lockingScript.toASM();
-
     const newLockingScript = bsv.Script.buildPublicKeyHashOut(
       privateKeyX.toAddress()
-    ).toASM();
+    );
 
     const newAmount = amount - 400; // substract miner fee;
 
     const unlockingTx = await createUnlockingTx(
       lockingTxid,
       amount,
-      prevLockingScript,
+      rpuzzle.lockingScript,
       newAmount,
       newLockingScript
     );
@@ -116,7 +114,7 @@ const amount = 1000;
     sig = signTx(
       unlockingTx,
       privateKeyR,
-      rpuzzle.lockingScript.toASM(),
+      rpuzzle.lockingScript,
       amount
     );
 

@@ -31,26 +31,25 @@ const {
   const publicKey3 = bsv.PublicKey.fromPrivateKey(privateKey3)
 
   try {
-    const Token = buildContractClass(loadDesc('tokenUtxo_desc.json'))
+    const Token = buildContractClass(loadDesc('tokenUtxo_debug_desc.json'))
     const token = new Token()
 
     // append state as passive data part
     // initial token supply 100: publicKey1 has 100, publicKey2 0
     token.setDataPart(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
 
-    let inputSatoshis = 10000
-    const FEE = inputSatoshis / 4
+    let inputSatoshis = 16000
+    const FEE = 3500
     let outputAmount = Math.floor((inputSatoshis - FEE) / 2)
 
     // lock fund to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), inputSatoshis, FEE)
-    lockingTx.outputs[0].setScript(token.lockingScript)
+    const lockingTx = await createLockingTx(privateKey.toAddress(), inputSatoshis, token.lockingScript)
     lockingTx.sign(privateKey)
     let lockingTxid = await sendTx(lockingTx)
     console.log('funding txid:      ', lockingTxid)
 
     // split one UTXO of 100 tokens into one with 70 tokens and one with 30
-    let splitTxid, lockingScript0, lockingScript1 
+    let splitTxid, lockingScript0, lockingScript1 ;
     {
       const tx = new bsv.Transaction()
       tx.addInput(new bsv.Transaction.Input({
@@ -70,8 +69,8 @@ const {
         satoshis: outputAmount
       }))
 
-      const preimage = getPreimage(tx, token.lockingScript.toASM(), inputSatoshis)
-      const sig1 = signTx(tx, privateKey1, token.lockingScript.toASM(), inputSatoshis)
+      const preimage = getPreimage(tx, token.lockingScript, inputSatoshis)
+      const sig1 = signTx(tx, privateKey1, token.lockingScript, inputSatoshis)
       const unlockingScript = token.split(
         new Sig(toHex(sig1)),
         new PubKey(toHex(publicKey2)),
@@ -116,8 +115,8 @@ const {
 
       // input 0
       {
-        const preimage = getPreimage(tx, lockingScript0, inputSatoshis, 0)
-        const sig2 = signTx(tx, privateKey2, lockingScript0, inputSatoshis, 0)
+        const preimage = getPreimage(tx, bsv.Script.fromASM(lockingScript0), inputSatoshis, 0)
+        const sig2 = signTx(tx, privateKey2, bsv.Script.fromASM(lockingScript0), inputSatoshis, 0)
         const unlockingScript = token.merge(
           new Sig(toHex(sig2)),
           new PubKey(toHex(publicKey1)),
@@ -129,8 +128,8 @@ const {
 
       // input 1
       {
-        const preimage = getPreimage(tx, lockingScript1, inputSatoshis, 1)
-        const sig3 = signTx(tx, privateKey3, lockingScript1, inputSatoshis, 1)
+        const preimage = getPreimage(tx, bsv.Script.fromASM(lockingScript1), inputSatoshis, 1)
+        const sig3 = signTx(tx, privateKey3, bsv.Script.fromASM(lockingScript1), inputSatoshis, 1)
         const unlockingScript = token.merge(
           new Sig(toHex(sig3)),
           new PubKey(toHex(publicKey1)),

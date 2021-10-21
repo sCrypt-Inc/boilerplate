@@ -75,7 +75,6 @@ async function createPayByOthersTx(address) {
 
   return tx
 }
-
 async function createLockingTx(address, amountInContract, lockingScript) {
   // step 1: fetch utxos
   let {
@@ -99,6 +98,11 @@ async function createLockingTx(address, amountInContract, lockingScript) {
   tx.change(address)
 
   return tx
+}
+
+async function fetchUtxoLargeThan(address, amount) {
+
+  
 }
 
 async function anyOnePayforTx(tx, address, fee) {
@@ -164,6 +168,14 @@ function unlockP2PKHInput(privateKey, tx, inputIndex, sigtype) {
 async function sendTx(tx) {
   const hex = tx.toString();
 
+  const fee = tx.getFee();
+
+  const expectedFee = hex.length / 2 * 0.5;
+
+  if(fee < expectedFee) {
+    throw new Error(`Transaction with fee is too low: expected Fee is ${expectedFee}, but got ${fee}`)
+  }
+
   try {
     const {
       data: txid
@@ -174,7 +186,7 @@ async function sendTx(tx) {
     return txid
   } catch (error) {
     if (error.response && error.response.data === '66: insufficient priority') {
-      throw new Error(`Transaction with fee is too low`)
+      throw new Error(`Rejected by miner. Transaction with fee is too low: expected Fee is ${expectedFee}, but got ${fee}, hex: ${hex}`)
     } 
     throw error
   }
@@ -273,11 +285,22 @@ function checkLowS(tx, lockingScript, inputSatoshis, inputIndex) {
   return (msb < MSB_THRESHOLD);
 }
 
+
+const sleep = async(seconds) => {
+  return new Promise((resolve) => {
+     setTimeout(() => {
+        resolve();
+     }, seconds * 1000);
+  })
+}
+
+
 const emptyPublicKey = '000000000000000000000000000000000000000000000000000000000000000000'
 
 module.exports = {
   inputIndex,
   inputSatoshis,
+  sleep,
   newTx,
   createPayByOthersTx,
   createLockingTx,

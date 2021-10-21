@@ -39,12 +39,12 @@ function log_state(f, state) {
 }
 
 async function create_contract(state, amount) {
-  const Loop = buildContractClass(loadDesc('final_loop_main_desc.json'))
+  const Loop = buildContractClass(loadDesc('final_loop_main_debug_desc.json'))
   loop = new Loop()
   loop.setDataPart(tobin(state) + num2bin(0, DataLen) + tobin(state))
   // lock fund to the script
-  const lockingTx = await createLockingTx(privateKey.toAddress(), amount, fee)
-  lockingTx.outputs[0].setScript(loop.lockingScript)
+  const lockingTx = await createLockingTx(privateKey.toAddress(), amount, loop.lockingScript)
+
   lockingTx.sign(privateKey)
   const lockingTxid = await sendTx(lockingTx)
   new_state = new State(state, lockingTxid, loop, amount)
@@ -53,11 +53,11 @@ async function create_contract(state, amount) {
 }
 async function begin_loop(state) {
   current_state = state.current_state; lockingTxid = state.txid; loop = state.loop; amount = state.amount;
-  let prevLockingScript = state.loop.lockingScript.toASM()
+  let prevLockingScript = state.loop.lockingScript
 
   // update state
   loop.setDataPart(tobin(current_state) + num2bin(1, DataLen) + tobin(current_state))
-  const newLockingScript = loop.lockingScript.toASM();
+  const newLockingScript = loop.lockingScript;
   newAmount = amount - fee
 
   const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
@@ -74,11 +74,11 @@ async function iter_loop(mem_n, state) {
 
   current_state = recursive_function(current_state)
 
-  let prevLockingScript = state.loop.lockingScript.toASM()
+  let prevLockingScript = state.loop.lockingScript
 
   // update state
   loop.setDataPart(tobin(mem_n) + num2bin(1, DataLen) + tobin(current_state))
-  const newLockingScript = loop.lockingScript.toASM();
+  const newLockingScript = loop.lockingScript;
   newAmount = amount - fee
 
   const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
@@ -93,11 +93,11 @@ async function iter_loop(mem_n, state) {
 async function end_loop(mem_n, state) {
   current_state= state.current_state; lockingTxid = state.txid; loop = state.loop; amount = state.amount;
 
-  let prevLockingScript = state.loop.lockingScript.toASM()
+  let prevLockingScript = state.loop.lockingScript;
 
   // update state
   loop.setDataPart(tobin(mem_n) + num2bin(2, DataLen) + tobin(current_state))
-  const newLockingScript = loop.lockingScript.toASM();
+  const newLockingScript = loop.lockingScript;
   newAmount = amount - fee
 
   const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
@@ -112,11 +112,11 @@ async function end_loop(mem_n, state) {
 async function unlock_utxo(first_state, state) {
   current_state = state.current_state; lockingTxid = state.txid; loop = state.loop; amount = state.amount;
 
-  let prevLockingScript = state.loop.lockingScript.toASM()
+  let prevLockingScript = state.loop.lockingScript;
 
   // update state
   loop.setDataPart(num2bin(0, DataLen)); //Whatever this is the end of the computation anyway
-  const newLockingScript = loop.lockingScript.toASM();
+  const newLockingScript = loop.lockingScript;
   newAmount = amount - fee
 
   const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
