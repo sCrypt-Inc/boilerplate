@@ -176,7 +176,6 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
 
     for (let step = 0; step < 18; step++) {
       run(allStates[step], allStates[step + 1]);
-      console.log(`run step ${step}, curState: ${JSON.stringify(allStates[step])}, newState: ${JSON.stringify(allStates[step + 1])}`)
     }
   });
 
