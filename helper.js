@@ -11,12 +11,6 @@ const {
   getPreimage,
   toHex
 } = require('scryptlib')
-const {
-  getCIScryptc
-} = require('scryptlib/dist/utils')
-
-const { exit } = require('process');
-const minimist = require('minimist');
 
 const MSB_THRESHOLD = 0x7e;
 

@@ -11,8 +11,6 @@ os:
 #  - npm i -g npm@latest
 
 script:
-  - git clone -b master https://github.com/sCrypt-Inc/compiler_dist.git compiler
-  - cd compiler && npm run dl
-  - cd -
-  - npm install
+
+  - npx scryptlib download
   - npm test -- --ci=true
