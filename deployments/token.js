@@ -59,7 +59,7 @@ const {
       // update data state
   
 
-      const newLockingScript = token.getStateScript({
+      const newLockingScript = token.getNewStateScript({
         accounts: [new Account({
           pubKey: new PubKey(toHex(publicKey1)),
           balance: 60
@@ -109,7 +109,7 @@ const {
 
       // update data state
       
-      const newLockingScript = token.getStateScript({
+      const newLockingScript = token.getNewStateScript({
         accounts: [new Account({
           pubKey: new PubKey(toHex(publicKey1)),
           balance: 70

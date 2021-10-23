@@ -28,7 +28,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
     counter = new AdvancedCounter(0)
 
 
-    const newLockingScript = counter.getStateScript({counter: 1})
+    const newLockingScript = counter.getNewStateScript({counter: 1})
     // counter output
     tx.addOutput(new bsv.Transaction.Output({
       script: newLockingScript,

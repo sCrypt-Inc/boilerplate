@@ -59,7 +59,7 @@ function sleep(ms) {
 
       // keep the contract funding constant
 
-      const newLockingScript = advCounter.getStateScript({counter: i +1})
+      const newLockingScript = advCounter.getNewStateScript({counter: i +1})
 
       const unlockingTx = await createUnlockingTx(lockingTxid, amount, advCounter.lockingScript, amount, newLockingScript)
 

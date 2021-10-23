@@ -162,7 +162,7 @@ const { privateKey } = require('../privateKey');
         console.log("step =" + step + " New state: ", new_state.toJSON())
 
         //Building the new transaction
-        const newLockingScript = new_state.toJSON().curState === "b'03'" ? bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()) : contract.getStateScript({
+        const newLockingScript = new_state.toJSON().curState === "b'03'" ? bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()) : contract.getNewStateScript({
           states: new_state
         });
 

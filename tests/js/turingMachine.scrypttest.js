@@ -154,7 +154,7 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
 
     turingMachine.states = curState;
 
-    const newLockingScript = turingMachine.getStateScript({
+    const newLockingScript = turingMachine.getNewStateScript({
       states: newState
     });
 

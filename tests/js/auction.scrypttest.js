@@ -41,7 +41,7 @@ describe('auction', () => {
     it('should call success', () => {
 
 
-        let newLockingScript = auction.getStateScript({
+        let newLockingScript = auction.getNewStateScript({
             bidder: new Ripemd160(toHex(publicKeyHashNewBid))
         })
 

@@ -21,7 +21,7 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
   function run(n, newState) {
     
     const tx = newTx();
-    const newLockingScript = game.getStateScript(newState);
+    const newLockingScript = game.getNewStateScript(newState);
 
 
     tx.addOutput(new bsv.Transaction.Output({

@@ -83,7 +83,7 @@ async function runBid(prevTxid, auction, amountInContract, refundPubKey) {
         console.log('input 1: ' + utxo.value);
       })
 
-      let newLockingScript = auction.getStateScript({
+      let newLockingScript = auction.getNewStateScript({
         bidder: new Ripemd160(toHex(bidderPKH))
       })
 

@@ -19,7 +19,7 @@ describe('state_statecounter', () => {
     it('should call success', () => {
         const stateCounter = new StateCounter(0);
 
-        let newLockingScript = stateCounter.getStateScript({
+        let newLockingScript = stateCounter.getNewStateScript({
             counter: 1
         })
         const tx1 = newTx(inputSatoshis);
@@ -42,7 +42,7 @@ describe('state_statecounter', () => {
         // save state
         stateCounter.counter = 1
 
-        newLockingScript = stateCounter.getStateScript({
+        newLockingScript = stateCounter.getNewStateScript({
             counter: 2
         })
 
