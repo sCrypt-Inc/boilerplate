@@ -24,24 +24,24 @@ const addressA = privateKeyA.toAddress();
     const fee = 5000;
     const newAmount = 9000;
 
-    const SimpleBVM = buildContractClass(loadDesc('simpleBVM_desc.json'));
+    const SimpleBVM = buildContractClass(loadDesc('simpleBVM_debug_desc.json'));
     const simpleBVM = new SimpleBVM(3); // result = 3
 
     // lock fund to the script
     const lockingTx = await createLockingTx(
       privateKey.toAddress(),
       amount,
-      fee
+      simpleBVM.lockingScript
     );
-    lockingTx.outputs[0].setScript(simpleBVM.lockingScript);
+
     lockingTx.sign(privateKey);
 
     let lockingTxid = await sendTx(lockingTx);
     console.log('funding txid:      ', lockingTxid);
 
     // unlock
-    let prevLockingScript = simpleBVM.lockingScript.toASM();
-    const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressA).toASM();
+    let prevLockingScript = simpleBVM.lockingScript;
+    const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressA);
 
     const unlockingTx = await createUnlockingTx(
       lockingTxid,

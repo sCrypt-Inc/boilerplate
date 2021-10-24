@@ -31,7 +31,7 @@ const {
   const actionTransfer = '01'
 
   try {
-    const NonFungibleToken = buildContractClass(loadDesc('nonFungibleToken_desc.json'))
+    const NonFungibleToken = buildContractClass(loadDesc('nonFungibleToken_debug_desc.json'))
     const token = new NonFungibleToken()
 
     // set token id start
@@ -45,14 +45,14 @@ const {
     let outputSatoshis = Math.floor((inputSatoshis - FEE) / 2)
 
     // lock fund to the script & issue the first token
-    const lockingTx = await createLockingTx(privateKey.toAddress(), inputSatoshis, FEE)
-    lockingTx.outputs[0].setScript(token.lockingScript)
+    const lockingTx = await createLockingTx(privateKey.toAddress(), inputSatoshis, token.lockingScript)
+
     lockingTx.sign(privateKey)
     let lockingTxid = await sendTx(lockingTx)
     console.log('funding txid:      ', lockingTxid)
 
     // increment token ID and issue another new token
-    let issueTxid, lockingScript0, lockingScript1 
+    let issueTxid, lockingScript0, lockingScript1 ;
     {
       const tx = new bsv.Transaction()
       tx.addInput(new bsv.Transaction.Input({
@@ -107,8 +107,8 @@ const {
         satoshis: outputSatoshis
       }))
 
-      const preimage = getPreimage(tx, lockingScript1, inputSatoshis, 0)
-      const sig2 = signTx(tx, privateKeyReceiver1, lockingScript1, inputSatoshis, 0)
+      const preimage = getPreimage(tx, bsv.Script.fromASM(lockingScript1), inputSatoshis, 0)
+      const sig2 = signTx(tx, privateKeyReceiver1, bsv.Script.fromASM(lockingScript1), inputSatoshis, 0)
       const unlockingScript = token.transfer(
         sig2, new PubKey(toHex(publicKeyReceiver2)), outputSatoshis, preimage
       ).toScript()

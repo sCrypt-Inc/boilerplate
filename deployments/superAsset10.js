@@ -29,17 +29,12 @@ const {
   createLockingTx,
   sendTx,
   fetchUtxoLargeThan,
-  unlockP2PKHInput
+  unlockP2PKHInput,
+  sleep
 } = require('../helper');
 const Signature = bsv.crypto.Signature;
+const { privateKey, privateKey2 } = require('../privateKey');
 
-const sleeper = async(seconds) => {
-  return new Promise((resolve) => {
-     setTimeout(() => {
-        resolve();
-     }, seconds * 1000);
-  })
-}
 
 (async () => {
 
@@ -48,11 +43,9 @@ const sleeper = async(seconds) => {
 
 // Generate your own private keys (Ex: https://console.matterpool.io/tools)
 // And fund the addresses for them.
-const privateKey1= new bsv.PrivateKey('yourwifkey1');
-const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
-console.log('privateKey1', privateKey1, publicKey1, publicKey1.toAddress().toString());
+const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
 
-const privateKey2 = new bsv.PrivateKey('yourwifkey2')
+
 const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
 console.log('privateKey2', privateKey2, publicKey2, publicKey2.toAddress().toString());
 
@@ -63,7 +56,7 @@ console.log('privateKey2', privateKey2, publicKey2, publicKey2.toAddress().toStr
 try {
   const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID;
   // Instantiate a SuperAsset10 NFT asset from the compiled constract
-  const Token = buildContractClass(loadDesc('SuperAsset10_desc.json'))
+  const Token = buildContractClass(loadDesc('SuperAsset10_debug_desc.json'))
   const token = new Token();
   // Todo: Replace with optimized checkPreimage (will not affect functionality)
   // const asmVars = {'Tx.checkPreimageOpt_.sigHashType': sighashType.toString() } // '41'} // FORKID | ALL
@@ -74,11 +67,11 @@ try {
   let assetId = null;
   const nftSatoshiValue = 2650;
   const FEE = 3000;
-  const lockingTx = await createLockingTx(privateKey1.toAddress(), nftSatoshiValue, FEE)
-  const initialState =  ' OP_RETURN ' + '000000000000000000000000000000000000000000000000000000000000000000000000 ' + toHex(publicKey1);
-  const initialLockingScript = bsv.Script.fromASM(token.lockingScript.toASM() + initialState);
-  lockingTx.outputs[0].setScript(initialLockingScript);
-  lockingTx.sign(privateKey1)
+  const initialState = '000000000000000000000000000000000000000000000000000000000000000000000000 ' + toHex(publicKey);
+  token.setDataPart(initialState)
+  const lockingTx = await createLockingTx(privateKey.toAddress(), nftSatoshiValue, token.lockingScript)
+
+  lockingTx.sign(privateKey)
   const lockingTxid = await sendTx(lockingTx)
   console.log('Step 1 complete. Deployment Tx: ', lockingTxid)
   console.log('assetId: ', assetId);
@@ -87,11 +80,11 @@ try {
   let newLockingScript = null;
   let transferTx = null;
   {
-    const prevLockingScript = initialLockingScript;
+    const prevLockingScript = token.lockingScript;
     console.log('Preparing first transfer update...');
     assetId = Buffer.from(lockingTxid, 'hex').reverse().toString('hex') + '00000000'; // 0th output. Use full outpoint for identifier
     const pushDataPayload = Buffer.from(`{ "hello": "world" }`, 'utf8').toString('hex');
-    const newState = ' ' + assetId + ' ' + toHex(publicKey1) + ' ' + pushDataPayload;
+    const newState = ' ' + assetId + ' ' + toHex(publicKey) + ' ' + pushDataPayload;
     newLockingScript = bsv.Script.fromASM(token.codePart.toASM() + newState);
     const tx = new bsv.Transaction()
     const utxo = await fetchUtxoLargeThan(privateKey2.toAddress(), 20000);
@@ -119,15 +112,15 @@ try {
       script: changeOutputScript,
       satoshis: changeSatoshis
     }))
-    const preimage = getPreimage(tx, prevLockingScript.toASM(), nftSatoshiValue, 0, sighashType)
-    const sig = signTx(tx, privateKey1, prevLockingScript.toASM(), nftSatoshiValue, 0, sighashType)
+    const preimage = getPreimage(tx, prevLockingScript, nftSatoshiValue, 0, sighashType)
+    const sig = signTx(tx, privateKey, prevLockingScript, nftSatoshiValue, 0, sighashType)
     // Use for debugging, with launch.json
     // console.log('preimagehex', preimage.toJSON(), 'preimagejson', preimage.toString(), 'signature', toHex(sig));
     const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey2.toBuffer())
     const changeAddress = toHex(pkh) // Needs to be unprefixed address
     const unlockingScript = token.transfer(
       new Sig(toHex(sig)),
-      new PubKey(toHex(publicKey1)),
+      new PubKey(toHex(publicKey)),
       preimage,
       new Ripemd160(changeAddress),
       changeSatoshis,
@@ -144,7 +137,7 @@ try {
   // -----------------------------------------------------
   // Step 3: Melt NFT'
   {
-    await sleeper(10);
+    await sleep(10);
     console.log('Preparing melt...');
     const tx = new bsv.Transaction()
     const utxo = await fetchUtxoLargeThan(privateKey2.toAddress(), 20000);
@@ -174,7 +167,7 @@ try {
       satoshis: changeSatoshis
     }))
     const preimage = getPreimage(tx, newLockingScript.toASM(), nftSatoshiValue, 0, sighashType)
-    const sig = signTx(tx, privateKey1, newLockingScript.toASM(), nftSatoshiValue, 0, sighashType)
+    const sig = signTx(tx, privateKey, newLockingScript.toASM(), nftSatoshiValue, 0, sighashType)
     // console.log('preimagehex', preimage.toJSON(), 'preimagejson', preimage.toString(), 'signature', toHex(sig));
     const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey2.toBuffer())
     const changeAddress = toHex(pkh) // Needs to be unprefixed address

@@ -3,13 +3,17 @@ const { basename, join } = require('path');
 const { unlinkSync, existsSync } = require('fs');
 const { compileContract } = require('./helper');
 const { glob } = require('glob');
-
+const { renameSync } = require('fs');
 function compile_for(file) {
   const fileName = basename(file);
   if(fileName.endsWith('.scrypt')) {
     try {
       clean_description_file(fileName)
       compileContract(fileName);
+
+      const descFile = join(__dirname, 'out', fileName.replace('.scrypt', '_desc.json'));
+      const target = join(__dirname, 'out', fileName.replace('.scrypt', '_debug_desc.json'));
+      renameSync(descFile, target);
     } catch (error) {
       console.log(error)
     }
@@ -19,7 +23,7 @@ function compile_for(file) {
 function clean_description_file(fileName) {
   if(fileName.endsWith('.scrypt')) {
     try {
-      const descFile = join(__dirname, 'deployments/fixture/autoGen', fileName.replace('.scrypt', '_desc.json'));
+      const descFile = join(__dirname, 'out', fileName.replace('.scrypt', '_debug_desc.json'));
       if (existsSync(descFile)) {
         unlinkSync(descFile)
       }

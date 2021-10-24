@@ -8,7 +8,12 @@ const {
   compileContract
 } = require('../../helper');
 
-const outputAmount = 222222
+const outputAmount = inputSatoshis
+
+const Signature = bsv.crypto.Signature
+// Note: ANYONECANPAY
+const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_SINGLE | Signature.SIGHASH_FORKID
+
 
 describe('Test sCrypt contract TuringMachine In Javascript', () => {
   let turingMachine, preimage, result
@@ -149,7 +154,7 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
 
     turingMachine.states = curState;
 
-    const newLockingScript = turingMachine.getStateScript({
+    const newLockingScript = turingMachine.getNewStateScript({
       states: newState
     });
 
@@ -159,7 +164,7 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
     }))
 
 
-    preimage = getPreimage(tx, turingMachine.lockingScript, inputSatoshis)
+    preimage = getPreimage(tx, turingMachine.lockingScript, inputSatoshis, 0, sighashType)
 
     // set txContext for verification
     turingMachine.txContext = {
@@ -168,7 +173,7 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
       inputSatoshis
     }
 
-    result = turingMachine.transit(new SigHashPreimage(toHex(preimage)), outputAmount).verify()
+    result = turingMachine.transit(new SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.true
 
   }

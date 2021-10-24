@@ -28,7 +28,7 @@ describe('Test sCrypt contract Token In Javascript', () => {
 
     
     getPreimageAfterTransfer = (balance1, balance2) => {
-      const newLockingScript = token.getStateScript({
+      const newLockingScript = token.getNewStateScript({
         accounts: [new Account({
           pubKey: new PubKey(toHex(publicKey1)),
           balance: balance1

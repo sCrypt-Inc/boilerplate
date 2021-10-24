@@ -50,12 +50,11 @@ class Parser{
 
 //Deploy contract
 async function deploy(deploySatoshis){
-    const Contract = buildContractClass(loadDesc('recurring_desc.json'));
+    const Contract = buildContractClass(loadDesc('recurring_debug_desc.json'));
     const contract = new Contract(userPubKeyHash, merchantPayment, merchantPubKeyHash, frequenceOfPayment);
     const initMatureTimestamp = parseInt(new Date().getTime() / 1000) - 7200;
     contract.setDataPart(num2bin(initMatureTimestamp, 4));
-    const lockingTx = await createLockingTx(privateKey.toAddress(), deploySatoshis, fee);
-    lockingTx.outputs[0].setScript(contract.lockingScript);
+    const lockingTx = await createLockingTx(privateKey.toAddress(), deploySatoshis, contract.lockingScript);
     lockingTx.sign(privateKey);
     const lockingTxid = await sendTx(lockingTx);
     return lockingTxid;
@@ -86,15 +85,15 @@ class RecurringDepositUser{
     }
 
     _buildContract(){
-        const Contract = buildContractClass(loadDesc('recurring_desc.json'));
+        const Contract = buildContractClass(loadDesc('recurring_debug_desc.json'));
         this._contract = new Contract(userPubKeyHash, merchantPayment, merchantPubKeyHash, frequenceOfPayment);
         this._contract.setDataPart(num2bin(this._contractMatureTimestamp, 4));
     }
 
     async _composeTx(){
         const newContractSatoshis = this._oldContractSatoshis + this._depositSatoshis;
-        const tx =  await createLockingTx(privateKey.toAddress(), newContractSatoshis, fee);
-        tx.outputs[0].setScript(this._contract.lockingScript);
+        const tx =  await createLockingTx(privateKey.toAddress(), newContractSatoshis, this._contract.lockingScript);
+
         tx.addInput(new bsv.Transaction.Input({
             prevTxId: this._txid,
             outputIndex: 0,
@@ -104,7 +103,7 @@ class RecurringDepositUser{
     }
 
     _unlockContractInput(tx){
-        const preimage = getPreimage(tx, this._contract.lockingScript.toASM(), this._oldContractSatoshis, tx.inputs.length - 1);
+        const preimage = getPreimage(tx, this._contract.lockingScript, this._oldContractSatoshis, tx.inputs.length - 1);
         const pkh = this._prvKeyToHexPKH();
         const unlockingScript = this._contract.deposit_user(
             new SigHashPreimage(toHex(preimage)),
@@ -141,7 +140,7 @@ class RecurringWithdrawMerchant{
     }
 
     _buildContract(){
-        const Contract = buildContractClass(loadDesc('recurring_desc.json'));
+        const Contract = buildContractClass(loadDesc('recurring_debug_desc.json'));
         this._contract = new Contract(userPubKeyHash, merchantPayment, merchantPubKeyHash, frequenceOfPayment);
         this._contract.setDataPart(num2bin(this._lastMatureTimestamp, 4));
     }
@@ -159,9 +158,9 @@ class RecurringWithdrawMerchant{
     }
 
     async _composeTx(){
-        const newLockingScript = this._contract.codePart.toASM() + ' ' + num2bin(this._calcNewMatureTimestamp(), 4);
+        const newLockingScript = bsv.Script.fromASM(this._contract.codePart.toASM() + ' ' + num2bin(this._calcNewMatureTimestamp(), 4));
         const newContractSatoshis = this._oldContractSatoshis - fee - merchantPayment;
-        const tx = await createUnlockingTx(this._txid, this._oldContractSatoshis, this._contract.lockingScript.toASM(), newContractSatoshis, newLockingScript);
+        const tx = await createUnlockingTx(this._txid, this._oldContractSatoshis, this._contract.lockingScript, newContractSatoshis, newLockingScript);
         tx.addOutput(new bsv.Transaction.Output({
             script: bsv.Script.buildPublicKeyHashOut(merchantAddress),
             satoshis: merchantPayment
@@ -173,7 +172,7 @@ class RecurringWithdrawMerchant{
     }
 
     async _unlockContractInput(tx){
-        const preimage = getPreimage(tx, this._contract.lockingScript.toASM(), this._oldContractSatoshis);
+        const preimage = getPreimage(tx, this._contract.lockingScript, this._oldContractSatoshis);
         const unlockingScript = this._contract.withdraw_merchant(new SigHashPreimage(toHex(preimage))).toScript();
         tx.inputs[0].setScript(unlockingScript);
     }

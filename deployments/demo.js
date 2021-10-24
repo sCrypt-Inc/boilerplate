@@ -4,23 +4,22 @@ const { privateKey } = require('../privateKey');
 
 (async() => {
     try {
-        const amount = 2000
+        const amount = 1000
         const newAmount = 546
 
         // get locking script
-        const Demo = buildContractClass(loadDesc('demo_desc.json'));
+        const Demo = buildContractClass(loadDesc('demo_debug_desc.json'));
         demo = new Demo(4, 7);
         
         // lock fund to the script
-        const lockingTx =  await createLockingTx(privateKey.toAddress(), amount)
-        lockingTx.outputs[0].setScript(demo.lockingScript)
+        const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, demo.lockingScript)
         lockingTx.sign(privateKey)
         const lockingTxid = await sendTx(lockingTx)
         console.log('locking txid:     ', lockingTxid)
         
         // unlock
         const unlockingScript = demo.add(11).toScript()
-        const unlockingTx = await createUnlockingTx(lockingTxid, amount, demo.lockingScript.toASM(), newAmount)
+        const unlockingTx = await createUnlockingTx(lockingTxid, amount, demo.lockingScript, newAmount,  bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()))
         unlockingTx.inputs[0].setScript(unlockingScript)
         const unlockingTxid = await sendTx(unlockingTx)
         console.log('unlocking txid:   ', unlockingTxid)

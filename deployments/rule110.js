@@ -49,7 +49,7 @@ function newState(state) {
     console.log("Make sure to check the index.js file ! Enjoy :)")
     console.log("")
     //Getting the code of the contract from the file. You can also compile a .scrypt file
-    const Rule101 = buildContractClass(loadDesc('rule110_desc.json'))
+    const Rule101 = buildContractClass(loadDesc('rule110_debug_desc.json'))
     const contract = new Rule101()
 
     //Parameters. Here playing rule101 with N=5, and the begin state 11010
@@ -65,8 +65,7 @@ function newState(state) {
     const FEE = 4000
 
     //Create the transaction "OP_...... OP_RETURN 0101000100"
-    const lockingTx =  await createLockingTx(privateKey.toAddress(), amount)
-    lockingTx.outputs[0].setScript(contract.lockingScript)
+    const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, contract.lockingScript)
     lockingTx.sign(privateKey)
     let lockingTxid = await sendTx(lockingTx)
     console.log('Funding txid:   ', lockingTxid)
@@ -80,7 +79,7 @@ function newState(state) {
       console.log("")
 
       //First we store transaction. We need lot of infos to build the next transaction
-      let prevLockingScript = contract.lockingScript.toASM();
+      let prevLockingScript = contract.lockingScript;
 
       //Computing the new state for rule101, and updating the OP_RETURN part
       //Note that if you try to uncomment this modification, then next utxo will be "OP_...... OP_RETURN oldstate"
@@ -90,7 +89,7 @@ function newState(state) {
       state = new_state;
 
       //Building the new transaction
-      const newLockingScript = contract.lockingScript.toASM();
+      const newLockingScript = contract.lockingScript;
       const newAmount = amount - FEE
       const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
       const preimage = getPreimage(unlockingTx, prevLockingScript, amount)

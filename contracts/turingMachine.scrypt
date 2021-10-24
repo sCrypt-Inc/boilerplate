@@ -70,10 +70,10 @@ contract TuringMachine {
         {{STATE_C, BLANK},  {STATE_ACCEPT, BLANK, RIGHT}}
     ];
 
-    public function transit(SigHashPreimage txPreimage, int amount) {
+    public function transit(SigHashPreimage txPreimage) {
         // read/deserialize contract state
-        require(Tx.checkPreimage(txPreimage));
-        bytes scriptCode = Util.scriptCode(txPreimage);
+        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
+        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
         bool accepted = false;
         // transition
         Symbol head = Util.getElemAt(this.states.tape, this.states.headPos);
@@ -115,9 +115,8 @@ contract TuringMachine {
 
         if(!accepted) {
             // otherwise machine goes to the next step
-
             bytes stateScript = this.getStateScript();
-            bytes output = Util.buildOutput(stateScript, amount);
+            bytes output = Util.buildOutput(stateScript, Util.value(txPreimage));
             require(hash256(output) == Util.hashOutputs(txPreimage));
         } else {
             require(accepted);

@@ -55,7 +55,7 @@ function sleep(ms) {
     }
 
     // get locking script
-    const AdvancedTokenSale = buildContractClass(loadDesc('advancedTokenSale_desc.json'))
+    const AdvancedTokenSale = buildContractClass(loadDesc('advancedTokenSale_debug_desc.json'))
     const advTokenSale = new AdvancedTokenSale(satsPerToken)
 
     // append state as passive data
@@ -63,11 +63,11 @@ function sleep(ms) {
 
     // initial contract funding - arbitrary amount
     let amount = 1000
-    const FEE = 2000
+    const FEE = 2200
 
 
     //lock funds to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, FEE)
+    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, advTokenSale.lockingScript)
 
     lockingTx.outputs[0].setScript(advTokenSale.lockingScript)
     lockingTx.sign(privateKey)
@@ -96,15 +96,15 @@ function sleep(ms) {
       // The contract expects/enforces this
       const newAmount = amount + spendAmount
 
-      let unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript.toASM(), newAmount, advTokenSale.lockingScript.toASM())
+      let unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, advTokenSale.lockingScript)
 
 
       unlockingTx = await anyOnePayforTx(unlockingTx, privateKey.toAddress(), FEE)
 
 
-      const changeAmount = unlockingTx.inputAmount - FEE - newAmount
+      const changeAmount = unlockingTx.outputs[unlockingTx.outputs.length -1].satoshis
 
-      const preimage = getPreimage(unlockingTx, prevLockingScript.toASM(), amount, 0, sighashType)
+      const preimage = getPreimage(unlockingTx, prevLockingScript, amount, 0, sighashType)
 
       const unlockingScript = advTokenSale.buy(
         new SigHashPreimage(toHex(preimage)), // sighashPreimage

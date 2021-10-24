@@ -7,26 +7,20 @@ contract AdvancedCounter {
     @state
     int counter;
 
-    public function increment(SigHashPreimage txPreimage, int amount, Ripemd160 changePKH, int changeSats) {
-        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
+    public function increment(SigHashPreimage txPreimage) {
+        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
         // this ensures the preimage is for the current tx
         require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
-
         this.counter++;
+        
         bytes outputScript = this.getStateScript();
+        int amount = Util.value(txPreimage);
+
         bytes counterOutput = Util.buildOutput(outputScript, amount);
 
-        // Expect the additional CHANGE output
-        bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
-        bytes changeOutput = Util.buildOutput(changeScript, changeSats);
-
-        // output: amount + scriptlen + script
-        Sha256 hashOutputs = hash256(counterOutput + changeOutput);
-
         // ensure output matches what we expect:
-        //     - amount is same as specified
-        //     - output script is the same as scriptCode except the counter was incremented
-        //     - expected CHANGE output script is there
-        require(hashOutputs == Util.hashOutputs(txPreimage));
+        // - amount is same as specified
+        // - output script is the same as scriptCode except the counter was incremented
+        require(hash256(counterOutput) == Util.hashOutputs(txPreimage));
     }
 }

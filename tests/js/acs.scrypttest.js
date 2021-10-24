@@ -30,7 +30,7 @@ const sighashType =
   Signature.SIGHASH_ALL |
   Signature.SIGHASH_FORKID;
 
-const outputAmount = inputSatoshis - 546; // minFee
+const outputAmount = inputSatoshis - 1000; // minFee
 
 describe('Test sCrypt contract AnyoneCanSpend in Javascript', () => {
   let acs, preimage, result;

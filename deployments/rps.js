@@ -8,7 +8,7 @@ const { privateKey } = require("../privateKey");
   const publicKeyA = bsv.PublicKey.fromPrivateKey(privateKeyA);
   const playerApkh = bsv.crypto.Hash.sha256ripemd160(publicKeyA.toBuffer());
 
-  const privateKeyB = new bsv.PrivateKey.fromRandom("testnet");
+  const privateKeyB = privateKey
   // const privateKeyB = new bsv.PrivateKey.fromWIF("");
   const publicKeyB = bsv.PublicKey.fromPrivateKey(privateKeyB);
   const playerBpkh = bsv.crypto.Hash.sha256ripemd160(publicKeyB.toBuffer());
@@ -29,26 +29,25 @@ const { privateKey } = require("../privateKey");
   const PubKeyHashLen = 20
 
   try {
-    const RockPaperScissors = buildContractClass(loadDesc("rps_desc.json"));
+    const RockPaperScissors = buildContractClass(loadDesc("rps_debug_desc.json"));
     const rps = new RockPaperScissors();
 
     rps.setDataPart(toHex(playerAdata) + num2bin(0, PubKeyHashLen) + num2bin(actionINIT, DataLen));
 
-    let initSatoshis = 100000;
-    let followSatoshis = 50000;
-    const FEE = 10000;
+    let initSatoshis = 10000;
+    let followSatoshis = 5000;
+    const FEE = 5000;
     let finishSatoshis = 50000;
 
     // lock fund to the script & player A start the game
-    const lockingTx = await createLockingTx(privateKey.toAddress(), initSatoshis, FEE);
-    lockingTx.outputs[0].setScript(rps.lockingScript);
+    const lockingTx = await createLockingTx(privateKey.toAddress(), initSatoshis, rps.lockingScript);
+
     lockingTx.sign(privateKey);
 
     let lockingTxid = await sendTx(lockingTx);
     // let lockingTxid = lockingTx.id;
     let lockingTxHex = lockingTx.serialize();
     console.log("funding txid:      ", lockingTxid);
-    console.log("funding txhex:     ", lockingTxHex);
 
     // player B follow the game
     const txFollow = await createPayByOthersTx(privateKeyB.toAddress());
@@ -76,7 +75,7 @@ const { privateKey } = require("../privateKey");
 
       const changeAmount = txFollow.inputAmount - FEE - initSatoshis - followSatoshis;
 
-      const preimage = getPreimage(txFollow, rps.lockingScript.toASM(), initSatoshis, curInputIndex, sighashType);
+      const preimage = getPreimage(txFollow, rps.lockingScript, initSatoshis, curInputIndex, sighashType);
 
       const unlockingScript = rps.follow(new SigHashPreimage(toHex(preimage)), actionB, new Ripemd160(toHex(playerBpkh)), changeAmount).toScript();
 
@@ -126,8 +125,8 @@ const { privateKey } = require("../privateKey");
         })
       );
 
-      const preimage = getPreimage(txFinish, rps.lockingScript.toASM(), initSatoshis + followSatoshis, curInputIndex, sighashType);
-      const sig = signTx(txFinish, privateKeyA, rps.lockingScript.toASM(), initSatoshis + followSatoshis, curInputIndex, sighashType);
+      const preimage = getPreimage(txFinish, rps.lockingScript, initSatoshis + followSatoshis, curInputIndex, sighashType);
+      const sig = signTx(txFinish, privateKeyA, rps.lockingScript, initSatoshis + followSatoshis, curInputIndex, sighashType);
       const unlockingScript = rps.finish(new SigHashPreimage(toHex(preimage)), actionA,
           new Sig(toHex(sig)),
           new PubKey(toHex(publicKeyA)), amountPlayerA).toScript();
@@ -141,7 +140,6 @@ const { privateKey } = require("../privateKey");
       // let finishTxid = txFinish.id;
       let finishTxHex = txFinish.serialize();
       console.log("finish txid:       ", finishTxid);
-      console.log("finish txhex:       ", finishTxHex);
     }
 
     console.log("Succeeded on testnet");

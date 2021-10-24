@@ -8,22 +8,21 @@ const { privateKey } = require('../privateKey');
         const newAmount = 546
 
         // get locking script
-        const CLTV = buildContractClass(loadDesc('cltv_desc.json'));
+        const CLTV = buildContractClass(loadDesc('cltv_debug_desc.json'));
         cltv = new CLTV(1422674);
         
         // lock fund to the script
-        const lockingTx =  await createLockingTx(privateKey.toAddress(), amount)
-        lockingTx.outputs[0].setScript(cltv.lockingScript)
+        const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, cltv.lockingScript)
         lockingTx.sign(privateKey)
         const lockingTxid = await sendTx(lockingTx)
         console.log('locking txid:     ', lockingTxid)
         
         // unlock
-        const unlockingTx = await createUnlockingTx(lockingTxid, amount, cltv.lockingScript.toASM(), newAmount)
+        const unlockingTx = await createUnlockingTx(lockingTxid, amount, cltv.lockingScript, newAmount, cltv.lockingScript)
         unlockingTx.nLockTime = 1422674 + 1
 
-        let prevLockingScript = cltv.lockingScript.toASM();
-        const preimage = getPreimage(unlockingTx, prevLockingScript, amount)
+ 
+        const preimage = getPreimage(unlockingTx, cltv.lockingScript, amount)
         const unlockingScript = cltv.spend(new SigHashPreimage(toHex(preimage))).toScript()
         unlockingTx.inputs[0].setScript(unlockingScript)
   

@@ -29,18 +29,17 @@ const sha256Data = bsv.crypto.Hash.sha256(dataBuffer);
     const amount = 1000
     const newAmount = 546
 
-    const HashPuzzle = buildContractClass(loadDesc('hashpuzzle_desc.json'));
+    const HashPuzzle = buildContractClass(loadDesc('hashpuzzle_debug_desc.json'));
     const hashPuzzle = new HashPuzzle(new Sha256(toHex(sha256Data)))
 
     // lock fund to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount)
-    lockingTx.outputs[0].setScript(hashPuzzle.lockingScript)
+    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, hashPuzzle.lockingScript)
     lockingTx.sign(privateKey)
     let lockingTxid = await sendTx(lockingTx)
     console.log('funding txid:      ', lockingTxid)
 
     // unlock
-    const unlockingTx = await createUnlockingTx(lockingTxid, amount, hashPuzzle.lockingScript.toASM(), newAmount)
+    const unlockingTx = await createUnlockingTx(lockingTxid, amount, hashPuzzle.lockingScript, newAmount, bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()))
     const unlockingScript = hashPuzzle.verify(new Bytes(toHex(data))).toScript()
     unlockingTx.inputs[0].setScript(unlockingScript)
     const unlockingTxid = await sendTx(unlockingTx)

@@ -32,8 +32,8 @@ contract FaucetWithdraw {
         //nLockTime is valid when nSequence < 0xFFFFFFFF https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
         require(Util.nSequence(preImage) < 0xffffffff);
 
-        int withdrawAmount = 2000000;
-        int fee = 3000;
+        int withdrawAmount = 10000;
+        int fee = 4000;
         bytes output0 = this.composeOutput0(preImage, withdrawAmount, fee);
         bytes output1 = this.composeOutput1(receiverPKH, withdrawAmount);
         Sha256 hashOutputs = hash256(output0 + output1);

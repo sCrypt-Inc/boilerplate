@@ -2,13 +2,16 @@
 
 const { expect } = require('chai');
 const { compileContract, newTx} = require('../../helper');
-const {  buildContractClass, Bool, Bytes, Int, SigHashPreimage, bsv, toHex, getPreimage } = require('scryptlib');
+const {  buildContractClass, Bool, Bytes, Int, SigHashPreimage, bsv, toHex, getPreimage, buildTypeClasses } = require('scryptlib');
 const inputIndex = 0;
 const inputSatoshis = 100000;
 
 const outputAmount = 222222
 
-const StateCounter = buildContractClass(compileContract('statecounter.scrypt'));
+const result = compileContract('statecounter.scrypt');
+const StateCounter = buildContractClass(result);
+
+const {ST} = buildTypeClasses(result);
 
 
 describe('state_statecounter', () => {
@@ -16,7 +19,7 @@ describe('state_statecounter', () => {
     it('should call success', () => {
         const stateCounter = new StateCounter(0);
 
-        let newLockingScript = stateCounter.getStateScript({
+        let newLockingScript = stateCounter.getNewStateScript({
             counter: 1
         })
         const tx1 = newTx(inputSatoshis);
@@ -39,7 +42,7 @@ describe('state_statecounter', () => {
         // save state
         stateCounter.counter = 1
 
-        newLockingScript = stateCounter.getStateScript({
+        newLockingScript = stateCounter.getNewStateScript({
             counter: 2
         })
 
