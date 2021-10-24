@@ -63,7 +63,7 @@ function sleep(ms) {
 
     // initial contract funding - arbitrary amount
     let amount = 1000
-    const FEE = 2000
+    const FEE = 2200
 
 
     //lock funds to the script

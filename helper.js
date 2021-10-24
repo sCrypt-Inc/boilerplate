@@ -6,7 +6,6 @@ const {
 } = require('fs')
 const {
   bsv,
-  compile,
   compileContract: compileContractImpl,
   getPreimage,
   toHex
@@ -162,7 +161,7 @@ function unlockP2PKHInput(privateKey, tx, inputIndex, sigtype) {
 async function sendTx(tx) {
   const hex = tx.toString();
 
-  const fee = tx.getFee();
+  const fee = tx.inputAmount - tx.outputAmount;
 
   const expectedFee = hex.length / 2 * 0.5;
 

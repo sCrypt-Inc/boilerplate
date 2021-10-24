@@ -1,6 +1,6 @@
 const { resolve } = require('path');
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, bin2num, SigHashPreimage, Ripemd160 } = require('scryptlib');
-const { DataLen, loadDesc, createUnlockingTx, createLockingTx, sendTx, showError, unlockP2PKHInput } = require('../helper');
+const { DataLen, loadDesc, createUnlockingTx, createLockingTx, sendTx, showError, unlockP2PKHInput, sleep, anyOnePayforTx } = require('../helper');
 const { privateKey } = require('../privateKey');
 const axios = require('axios')
 
@@ -81,18 +81,14 @@ class FaucetDeposit {
 
     async _composeTx() {
         const newContractSatoshis = this._oldContractSatoshis + this._depositSatoshis;
-        const tx = await createLockingTx(privateKey.toAddress(), newContractSatoshis, this._contract.lockingScript);
-
-        tx.addInput(new bsv.Transaction.Input({
-            prevTxId: this._txid,
-            outputIndex: 0,
-            script: new bsv.Script(), // placeholder
-        }), this._contract.lockingScript, this._oldContractSatoshis);
+        const tx = await createUnlockingTx(this._txid, this._oldContractSatoshis, this._contract.lockingScript,
+            newContractSatoshis, this._contract.lockingScript);
+        await anyOnePayforTx(tx, privateKey.toAddress(), this._fee);
         return tx;
     }
 
     _unlockContractInput(tx) {
-        const preimage = getPreimage(tx, this._contract.lockingScript, this._oldContractSatoshis, tx.inputs.length - 1);
+        const preimage = getPreimage(tx, this._contract.lockingScript, this._oldContractSatoshis, 0);
         const pkh = this._prvKeyToHexPKH();
         const unlockingScript = this._contract.deposit(
             new SigHashPreimage(toHex(preimage)),
@@ -100,13 +96,13 @@ class FaucetDeposit {
             new Ripemd160(pkh),
             tx.outputs[1].satoshis
         ).toScript();
-        tx.inputs[tx.inputs.length - 1].setScript(unlockingScript);
+        tx.inputs[0].setScript(unlockingScript);
     }
 
     _unlockInputsExceptContract(tx) {
         const Signature = bsv.crypto.Signature
         const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
-        for (let i = 0; i < tx.inputs.length - 1; i++) {
+        for (let i = 1; i < tx.inputs.length; i++) {
             unlockP2PKHInput(privateKey, tx, i, sighashType);
         }
     }
@@ -121,7 +117,7 @@ class FaucetWithdraw {
     constructor(contractUtxoTxid, receiverAddress) {
         this._txid = contractUtxoTxid;
         this._receiverAddress = bsv.Address.fromString(receiverAddress);
-        this._withdrawSatothis = 20000;
+        this._withdrawSatothis = 10000;
         this._fee = 4000;
     }
 
@@ -166,6 +162,7 @@ class FaucetWithdraw {
 
     async _unlockContractInput(tx) {
         const preimage = getPreimage(tx, this._contract.lockingScript, this._oldContractSatoshis);
+
         const unlockingScript = this._contract.withdraw(new SigHashPreimage(toHex(preimage)), new Ripemd160(this._receiverAddress.toHex().substring(2))).toScript();
         tx.inputs[0].setScript(unlockingScript);
     }
@@ -174,12 +171,13 @@ class FaucetWithdraw {
 
 (async () => {
     try {
-        const deploy = new FaucetDeploy(546, 6000);
+        const FEE = 4000;
+        const deploy = new FaucetDeploy(5000);
         const deployTxid = await deploy.deploy();
         console.log(`deploy ${deployTxid}`);
         await wait(6);
 
-        const deposit = new FaucetDeposit(deployTxid, 203000, 3000);
+        const deposit = new FaucetDeposit(deployTxid, 10000, FEE);
         const depositTxid = await deposit.deposit();
         console.log(`deposit ${depositTxid}`);
         await wait(6);

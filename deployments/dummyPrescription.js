@@ -12,7 +12,7 @@ const {
 
 const { loadDesc, createLockingTx, sendTx, showError } = require("../helper");
 const { generatePrivKey, privKeyToPubKey, sign } = require("rabinsig");
-
+const { privateKey } = require('../privateKey');
 // prescription details
 const drug = 1;
 const prescriptionIDHex = Buffer.from("some prescription unique id").toString(
@@ -48,15 +48,14 @@ const privateKeyPharmacy2 = new bsv.PrivateKey.fromWIF(
 const publicKeyPharmacy2 = privateKeyPharmacy2.publicKey;
 
 // patient
-const privateKeyPatient = new bsv.PrivateKey.fromWIF(
-  "cRKzzKwrYX7HNAfSkWA3PyrqoYdFpi8wmcHRPDmfPtmTJ8MJPmKm"
-);
+const privateKeyPatient = privateKey;
+
 const publicKeyPatient = privateKeyPatient.publicKey;
 const publicKeyHashPatient = bsv.crypto.Hash.sha256ripemd160(
   publicKeyPatient.toBuffer()
 );
 
-const fee = 500;
+const fee = 1000;
 const inputSatoshis = patientReward + fee;
 
 (async () => {

@@ -4,7 +4,7 @@ const { privateKey } = require('../privateKey');
 
 (async() => {
     try {
-        const amount = 2000
+        const amount = 1000
         const newAmount = 546
 
         // get locking script

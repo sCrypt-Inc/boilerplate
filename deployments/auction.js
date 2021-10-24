@@ -56,8 +56,6 @@ async function runBid(prevTxid, auction, amountInContract, refundPubKey) {
   return new Promise(async (resolve, reject) => {
 
     try {
-      console.log('prevTxid', prevTxid)
-
 
       const unlockingTx = new bsv.Transaction()
 
@@ -80,7 +78,6 @@ async function runBid(prevTxid, auction, amountInContract, refundPubKey) {
           outputIndex: utxo.tx_pos,
           script: new bsv.Script(), // placeholder
         }), bsv.Script.buildPublicKeyHashOut(bidderPrivKey.toAddress()).toHex(), utxo.value)
-        console.log('input 1: ' + utxo.value);
       })
 
       let newLockingScript = auction.getNewStateScript({
@@ -177,7 +174,7 @@ async function runBid(prevTxid, auction, amountInContract, refundPubKey) {
 
     let prevTxid = lockingTxid;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       await sleep(SLEEP_TIME)
       const txid = await runBid(prevTxid, auction, previousAmount + (BID_INCREASE * i), i == 0 ? auctionerPubKey : bidderPubKey);
 

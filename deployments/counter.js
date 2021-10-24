@@ -9,8 +9,8 @@ const { privateKey } = require('../privateKey');
         // append state as op_return data
         counter.setDataPart(num2bin(0, DataLen))
         
-        let amount = 20000
-        const FEE = 5000;
+        let amount = 6000
+        const FEE = 1500;
         
         // lock fund to the script
         const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, counter.lockingScript)

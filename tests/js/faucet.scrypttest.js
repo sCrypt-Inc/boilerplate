@@ -101,8 +101,8 @@ describe('Deposit', ()=>{
 
 describe('Withdraw', () => {
   let faucet, preimage, result, tx;
-  const withdrawAmount = 2000000;
-  const fee = 3000;
+  const withdrawAmount = 10000;
+  const fee = 4000;
   const inputSatoshis = 10000000;
   const outputAmount = inputSatoshis - withdrawAmount - fee;
   const matureTime = 1602553516;
