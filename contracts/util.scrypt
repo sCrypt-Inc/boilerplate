@@ -145,7 +145,7 @@ library Util {
     }
 
     /*
-    * util functions to parse every filed of a sighash preimage
+    * util functions to parse every field of a sighash preimage
     * Note: only to be used after preimage is validated
     * spec is at https://github.com/bitcoin-sv/bitcoin-sv/blob/master/doc/abc/replay-protected-sighash.md
     */
