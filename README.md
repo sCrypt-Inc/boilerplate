@@ -41,6 +41,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── ecdsa.scrypt                    # <a href="https://xiaohuiliu.medium.com/ecdsa-signature-verification-in-script-d1e8dda5f893">ECDSA Signature Verification</a>
 │   ├── demo.scrypt                     # "hello world" contract
 │   ├── faucet.scrypt                   # <a href="https://blog.csdn.net/Edward_sv/article/details/109119838">rate-limited onchain faucet</a>
+│   ├── forward.scrypt                  # <a href="https://xiaohuiliu.medium.com/p2p-bitcoin-settled-derivatives-forward-contracts-94d48b909b94">P2P Bitcoin-Settled Derivatives: Forward Contracts</a>
 │   ├── hashpuzzlep2pkh.scrypt          # combining <a href="https://scryptdoc.readthedocs.io/en/latest/multipartyhashpuzzles.html">hash puzzle</a> and p2pkh contracts
 │   ├── kaggle.scrypt                   # <a href="https://xiaohuiliu.medium.com/machine-learning-marketplace-on-bitcoin-d8eb577be812">Kaggle Competitions on Bitcoin</a>
 │   ├── lottery.scrypt                  # <a href="https://xiaohuiliu.medium.com/secure-multiparty-computations-on-bitcoin-953a64843b94">lottery</a>
