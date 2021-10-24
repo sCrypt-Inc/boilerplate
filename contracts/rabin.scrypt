@@ -24,9 +24,3 @@ library RabinSignature {
         return sha256(hx[: idx]) + sha256(hx[idx :]);
     }
 }
-
-contract TestRabinSignature {
-    public function main(bytes msg, RabinSig sig, RabinPubKey n) {
-        require(RabinSignature.checkSig(msg, sig, n));
-    }
-}

@@ -8,7 +8,8 @@ describe('Test sCrypt contract RabinSignature In Javascript', () => {
   const msg = '00112233445566778899aabbccddeeff'
   
   before(() => {
-    RabinSignature = buildContractClass(compileContract('rabin.scrypt'));
+    RabinSignature = buildContractClass(compileContract('rabinTest.scrypt'));
+
     rabin = new RabinSignature();
   });
 
@@ -44,52 +45,59 @@ describe('Test sCrypt contract RabinSignature In Javascript', () => {
 
 
   
-  // it('should throw error with wrong padding', () => {
+  it('should throw error with wrong padding', () => {
+    const { RabinSig, RabinPubKey } = buildTypeClasses(RabinSignature);
+    let key = generatePrivKey();
 
-  //   let key = generatePrivKey();
+    let nRabin = privKeyToPubKey(key.p, key.q);
 
-  //   let nRabin = privKeyToPubKey(key.p, key.q);
-
-  //   let result = sign(msg, key.p, key.q, nRabin);
+    let result = sign(msg, key.p, key.q, nRabin);
 
 
-  //   let paddingBytes = '';
+    let paddingBytes = '';
 
-  //   for(let i = 0; i < result.paddingByteCount + 1; i++) {
-  //     paddingBytes += '00';
-  //   }
+    for(let i = 0; i < result.paddingByteCount + 1; i++) {
+      paddingBytes += '00';
+    }
 
+    const sig = new RabinSig({
+      s: result.signature,
+      padding: new Bytes(paddingBytes + '00'),
+    })
     
-  //   result = rabin.verifySig(
-  //     result.signature, 
-  //     new Bytes(msg),
-  //     new Bytes(paddingBytes),
-  //     nRabin
-  //   ).verify()
-  // expect(result.success, result.error).to.be.false
-  // });
+    result = rabin.main(
+      new Bytes(msg),
+      sig,
+      new RabinPubKey(nRabin)
+    ).verify()
+  expect(result.success, result.error).to.be.false
+  });
 
-  // it('should throw error with wrong signature', () => {
-  //   let key = generatePrivKey();
+  it('should throw error with wrong signature', () => {
+    const { RabinSig, RabinPubKey } = buildTypeClasses(RabinSignature);
+    let key = generatePrivKey();
 
-  //   let nRabin = privKeyToPubKey(key.p, key.q);
+    let nRabin = privKeyToPubKey(key.p, key.q);
 
-  //   let result = sign(msg, key.p, key.q, nRabin);
+    let result = sign(msg, key.p, key.q, nRabin);
 
 
-  //   let paddingBytes = '';
+    let paddingBytes = '';
 
-  //   for(let i = 0; i < result.paddingByteCount; i++) {
-  //     paddingBytes += '00';
-  //   }
+    for(let i = 0; i < result.paddingByteCount; i++) {
+      paddingBytes += '00';
+    }
 
-  //   result = rabin.verifySig(
-  //       result.signature + 1n, 
-  //       new Bytes(msg),
-  //       new Bytes(paddingBytes),
-  //       nRabin
-  //     ).verify()
-  //   expect(result.success, result.error).to.be.false
-  // });
+    const sig = new RabinSig({
+      s: result.signature  + 1n,
+      padding: new Bytes(paddingBytes),
+    })
+    result = rabin.main(
+      new Bytes(msg),
+      sig,
+      new RabinPubKey(nRabin)
+    ).verify()
+    expect(result.success, result.error).to.be.false
+  });
 
 });

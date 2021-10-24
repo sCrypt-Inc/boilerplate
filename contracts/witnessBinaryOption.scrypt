@@ -6,11 +6,11 @@ contract WitnessBinaryOption {
   int decimal;
   int betPrice;
   int matureTime;
-  int witnessPubKey;
+  RabinPubKey witnessPubKey;
   Ripemd160 pubKeyHashA;
   Ripemd160 pubKeyHashB;
 
-  public function unlock(SigHashPreimage txPreimage, int price, int unlockTime, int witnessSig, bytes witnessPadding, int outAmount) {
+  public function unlock(SigHashPreimage txPreimage, int price, int unlockTime, int outAmount, RabinSig rabinSig) {
 
     // check preimage
     require(Tx.checkPreimage(txPreimage));
@@ -18,10 +18,10 @@ contract WitnessBinaryOption {
     require(unlockTime >= this.matureTime);
     // require(unlockTime <= this.matureTime + 3600);
 
-    RabinSignature rabin = new RabinSignature();
+
     //symbol+price(BigInt 32bytes)+decimal(UInt8)+timestamp(UInt32)
     bytes msg = this.symbol + num2bin(price, 32) + num2bin(this.decimal, 1) + num2bin(unlockTime, 4);
-    rabin.verifySig(witnessSig, msg, witnessPadding, this.witnessPubKey);
+    require(RabinSignature.checkSig(msg, rabinSig, this.witnessPubKey));
 
     // check price
     bytes outputScript = b'';
