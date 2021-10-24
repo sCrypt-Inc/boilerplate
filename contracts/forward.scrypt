@@ -1,0 +1,61 @@
+import "rabin.scrypt";
+
+// price info published by oracle
+struct OraclePrice {
+    // spot/market price
+    int price;
+    int time;
+}
+
+// a USD forward contract settled in bitcoin, as denominated
+contract Forward {
+    Ripemd160 alice;
+    Ripemd160 bob;
+
+    // how much bitcoin Alice plans to sell to Bob, in dollars
+    int dollars;
+
+    // predetermined delivery price, in satoshis / dollar
+    int deliveryPrice;
+    // contract mature time
+    int matureTime;
+
+    RabinPubKey oraclePubKey;
+
+    public function settle(OraclePrice op, RabinSig sig, SigHashPreimage txPreimage) {
+        Tx.checkPreimage(txPreimage);
+
+        // oracle signs serialized price data
+        bytes msg = serializePrice(op);
+        // verify price info
+        require(RabinSignature.checkSig(msg, sig, this.oraclePubKey));
+
+        // verify price is for the agreed-on matrue time
+        require(op.time == this.matureTime);
+
+        // total collateral amount, in satoshis
+        int totalSats = Util.value(txPreimage);
+
+        // Bob pays Alice the difference; could be nagative
+        int payoff = this.dollars * (op.price - this.deliveryPrice);
+        int aliceAmount = totalSats / 2 + payoff;
+        if (aliceAmount < 0) aliceAmount = 0;   //bounded
+        int bobAmount = totalSats - aliceAmount;
+        if (bobAmount < 0) bobAmount = 0;       //bounded
+
+        // split according to the price when the contract is mature
+
+        bytes aliceScript = Util.buildPublicKeyHashScript(this.alice);
+        bytes aliceOutput = Util.buildOutput(aliceScript, aliceAmount);
+
+        bytes bobScript = Util.buildPublicKeyHashScript(this.bob);
+        bytes bobOutput = Util.buildOutput(bobScript, bobAmount);
+
+        require(hash256(aliceOutput + bobOutput) == Util.hashOutputs(txPreimage));
+    }
+
+    // serialized price data. It is what oracle signs
+    static function serializePrice(OraclePrice op) : bytes {
+        return num2bin(op.price, 4) + num2bin(op.time, 4);
+    }
+}
