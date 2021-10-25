@@ -1,5 +1,4 @@
 import "util.scrypt";
-import "serializer.scrypt";
 
 struct Input {
     // in CMs

@@ -1,4 +1,4 @@
-const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage } = require('scryptlib');
+const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Bytes } = require('scryptlib');
 const { loadDesc, createUnlockingTx, createLockingTx, sendTx, showError  } = require('../helper');
 const { privateKey } = require('../privateKey');
 const axios = require('axios');
@@ -50,14 +50,14 @@ function newState(state) {
     console.log("")
     //Getting the code of the contract from the file. You can also compile a .scrypt file
     const Rule101 = buildContractClass(loadDesc('rule110_debug_desc.json'))
-    const contract = new Rule101()
+
 
     //Parameters. Here playing rule101 with N=5, and the begin state 11010
     N = 5
     state = [true, true, false, true, false]
     //State is kept as raw bytes after OP_RETURN. So the transaction is somthing like "OP_...... OP_RETURN 0101000100", where 01 is true, and 00 is false
     //We could compress, but here one booleans take one byte
-    contract.setDataPart(write(state));
+    const contract = new Rule101(new Bytes(write(state)));
 
     //This is the amount the utxo will hold
     let amount = 30000
@@ -76,26 +76,26 @@ function newState(state) {
     //This game, just like the game of life, is turing complete so it's ok
     //(You can find the game of life here : https://github.com/sCrypt-Inc/boilerplate/blob/master/contracts/conwaygol.scrypt)
     for (ii = 0; ii < 5; ii++) {
-      console.log("")
-
-      //First we store transaction. We need lot of infos to build the next transaction
-      let prevLockingScript = contract.lockingScript;
 
       //Computing the new state for rule101, and updating the OP_RETURN part
       //Note that if you try to uncomment this modification, then next utxo will be "OP_...... OP_RETURN oldstate"
       //And it won't be accepted by miners, because the verification that you sent the new state is written in script
       const new_state = newState(state);
-      contract.setDataPart(write(new_state));
-      state = new_state;
 
-      //Building the new transaction
-      const newLockingScript = contract.lockingScript;
+            //Building the new transaction
+      const newLockingScript = contract.getNewStateScript({
+        board: new Bytes(write(new_state))
+      });
+      
+      state = new_state;
       const newAmount = amount - FEE
-      const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
-      const preimage = getPreimage(unlockingTx, prevLockingScript, amount)
+      const unlockingTx = await createUnlockingTx(lockingTxid, amount, contract.lockingScript, newAmount, newLockingScript)
+      const preimage = getPreimage(unlockingTx, contract.lockingScript, amount)
       const unlockingScript = contract.play(newAmount, new SigHashPreimage(toHex(preimage))).toScript()
       unlockingTx.inputs[0].setScript(unlockingScript)
       amount = newAmount
+
+      contract.board = new Bytes(write(new_state));
 
       //Let's send it
       console.log("Sending a new transaction...")

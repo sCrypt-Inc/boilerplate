@@ -6,15 +6,16 @@ contract rule110 {
     static bytes LIVE = b'01';
     static bytes DEAD = b'00';
 
+    @state
+    bytes board;
     public function play(int amount, SigHashPreimage txPreimage) {
-        require(Tx.checkPreimage(txPreimage));
-        bytes scriptCode = Util.scriptCode(txPreimage);
-        int scriptLen = len(scriptCode);
+        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
+        // this ensures the preimage is for the current tx
+        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
 
-        bytes board = scriptCode[scriptLen - N :];
-        bytes newBoard = this.computeNewBoard(board);
+        this.board = this.computeNewBoard(this.board);
 
-        bytes newScriptCode = scriptCode[: scriptLen - N] + newBoard;
+        bytes newScriptCode = this.getStateScript();
         bytes output = Util.buildOutput(newScriptCode, amount);
 
         require(hash256(output) == Util.hashOutputs(txPreimage));

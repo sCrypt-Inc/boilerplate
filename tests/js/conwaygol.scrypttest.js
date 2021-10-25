@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage } = require('scryptlib');
+const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Bytes } = require('scryptlib');
 
 const {
   inputIndex,
@@ -17,7 +17,6 @@ describe('Test sCrypt contract Conways GOL In Javascript', () => {
 
   before(() => {
     const GameOfLife = buildContractClass(compileContract('conwaygol.scrypt'))
-    gol = new GameOfLife()
 
     // set initial gol value
     // 00000000000000
@@ -47,14 +46,16 @@ describe('Test sCrypt contract Conways GOL In Javascript', () => {
 
     // TODO: This is a dumb way to do it but easier to visualize
     // original board
-    let board = row1+row2+row3+row4+row5+row6+row7
+    let board = row1+row2+row3+row4+row5+row6+row7;
+    gol = new GameOfLife(new Bytes(board))
     // new board
     let newBoard = row1+newRow2+newRow3+newRow4+newRow5+newRow6+row1
-    gol.setDataPart(board)
-    const newLockingScript = [gol.codePart.toASM(), newBoard].join(' ')
+    const newLockingScript = gol.getNewStateScript({
+      board: new Bytes(newBoard)
+    })
 
     tx.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM(newLockingScript),
+      script: newLockingScript,
       satoshis: outputAmount
     }))
 
