@@ -1,7 +1,7 @@
 # sCrypt Project Boilerplate
 [![Build Status](https://travis-ci.com/sCrypt-Inc/boilerplate.svg?branch=master)](https://travis-ci.com/sCrypt-Inc/boilerplate)
 ## Prerequisites
-Make sure you have the [sCrypt IDE](https://scrypt-ide.readthedocs.io/en/latest/index.html) installed. **sCrypt IDE** is a tool for developers to write, test, deploy and debug sCrypt smart contracts.
+Make sure you have the [sCrypt IDE](https://scrypt-ide.readthedocs.io/en/latest/index.html) installed. **sCrypt IDE** is a tool for developers to write, test, deploy, call, and debug sCrypt smart contracts.
 
 ## Guide
 
@@ -20,7 +20,7 @@ npm test
 ```
 
 ## Directory layout
-For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is at `tests/js/x.scrypttest.js`, and a deployment file is at `deployments/x.js`.
+For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is at `tests/js/x.scrypttest.js`, and a deployment file is at `testnet/x.js`.
 <pre>
 .
 ├── contracts                       # sCrypt contract files
@@ -72,7 +72,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── tokenUtxo.scrypt                # <a href="https://medium.com/@xiaohuiliu/utxo-based-layer-1-tokens-on-bitcoin-sv-f5e86a74c1e1">fungible token</a>
 │   ├── treeSig.scrypt                  # <a href="https://xiaohuiliu.medium.com/tree-signatures-8d03a8dd3077">Tree signatures</a>
 │   └── util.scrypt                     # utility functions and constants
-├── deployments                     # examples to deploy contract and call its function on testnet
+├── testnet                         # examples to deploy contract and call its function on testnet
     └── fixture
         └── autoGen                     # contract description json files
 └── tests                           # contract test files
@@ -133,9 +133,9 @@ Run unit tests file within the editor/explorer context menu.
 ### Run from console
 Tests could also be run from the console by executing `npm test`, just like regular Javascript/TypeScript tests.
 
-## How to deploy contracts
+## How to deploy a contract and interacte with it
 
-### deploy by writing javascript/typescript code
+### Deploy by writing javascript/typescript code
 
 1. Provide a private key with funds in `privateKey.js`
 ```javascript
@@ -143,7 +143,7 @@ const key = '$YOUR_PRIVATE_KEY_HERE'
 ```
 2. Deploy a contract and call its function by issuing
 ```bash
-node deployments/demo.js
+node testnet/demo.js
 ```
 Output like the following will appear in the console. And you have successfully deployed a contract and called its function on Bitcoin. Sweet!
 
@@ -152,17 +152,17 @@ locking txid:      8d58ff9067f5fa893b5c695179559e108ebf850d0ce4fd1e42bc872417ffd
 unlocking txid:    c60b57e93551a6c52282801130649c6a97edcca5d2b28b8b4ae2afe0ee59bf79
 Succeeded on testnet
 ```
-It is **strongly recommended** to test your contract on testnet first, before deploying it on mainnet. Default deployment is on testnet. To switch to mainnet, simply modify `API_PREFIX` in `helper.js`.
+It is **strongly recommended** to test your contract on testnet first, before deploying it on mainnet. By default, deployment is on testnet. To switch to mainnet, simply modify `API_PREFIX` in `helper.js`.
 ```javascript
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/main'
 // const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test' for Testnet
 // const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/stn' for Scaling Test Net
 ```
-Before deploying a contract, make sure the latest contract has been compiled to a [description json file](https://github.com/scrypt-sv/scryptlib#contract-description-file), which is what will get deployed. This could be done automatically by running a daemon process with command `npm run watch`. It will monitor a contract file's change and recompile it when necessary. All generated description files are located at `deployments/fixture/autoGen`. Make sure it's up to date with the contract before deployment.
+Before deploying a contract, make sure the latest contract has been compiled to a [description json file](https://github.com/scrypt-sv/scryptlib#contract-description-file), which is what will get deployed. This could be done automatically by running a daemon process with command `npm run watch`. It will monitor a contract file's change and recompile it when necessary. All generated description files are located at `testnet/fixture/autoGen`. Make sure it's up to date with the contract before deployment.
 
-### deploy by using **sCrypt IDE** [deploy feature](https://scrypt-ide.readthedocs.io/en/latest/deploy.html)
+### Deploy by using **sCrypt IDE** [deploy feature](https://scrypt-ide.readthedocs.io/en/latest/deploy.html)
 
-IDE provides a universal UI interface. You can deploy the contract with one click by simply filling in the relevant parameters, and you can call the public function of the contract with the click of a button without writing a line of code.
+IDE provides a universal UI interface. You can deploy the contract with one click by simply filling in the relevant parameters. You can call the public function of the contract with the click of a button without writing a line of code.
 
 
 ![Screenshot](https://scrypt-ide.readthedocs.io/en/latest/_images/deploy_demo.gif)
