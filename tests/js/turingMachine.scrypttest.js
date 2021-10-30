@@ -24,7 +24,7 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
     const result = compileContract('turingMachine.scrypt');
     const TuringMachine = buildContractClass(result);
 
-    const { StateStruct } = buildTypeClasses(result);
+    const { StateStruct } = buildTypeClasses(TuringMachine);
 
     allStates = [
 

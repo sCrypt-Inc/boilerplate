@@ -4,11 +4,11 @@ const { buildContractClass, Bytes } = require("scryptlib")
 const { compileContract } = require("../../helper")
 
 describe("Test sCrypt contract MerkleTree In Javascript", () => {
-  let result, testMerkleTree
+  let result, merkleTreeTest
 
   before(() => {
-    const TestMerkleTree = buildContractClass(compileContract("testMerkleTree.scrypt"))
-    testMerkleTree = new TestMerkleTree()
+    const MerkleTreeTest = buildContractClass(compileContract("merkleTreeTest.scrypt"))
+    merkleTreeTest = new MerkleTreeTest()
   })
 
   it("should calculate the merkle root", () => {
@@ -25,7 +25,7 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
       ].join("")
     )
 
-    result = testMerkleTree.testCalculateMerkleRoot(leaf, merklePath, merkleRoot).verify()
+    result = merkleTreeTest.testCalculateMerkleRoot(leaf, merklePath, merkleRoot).verify()
     expect(result.success, result.error).to.be.true
 
     leaf = new Bytes("4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a")
@@ -38,7 +38,7 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
       ].join("")
     )
 
-    result = testMerkleTree.testCalculateMerkleRoot(leaf, merklePath, merkleRoot).verify()
+    result = merkleTreeTest.testCalculateMerkleRoot(leaf, merklePath, merkleRoot).verify()
     expect(result.success, result.error).to.be.true
   })
 
@@ -56,7 +56,7 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
       ].join("")
     )
 
-    result = testMerkleTree.testCalculateMerkleRoot(leaf, merklePath, merkleRoot).verify()
+    result = merkleTreeTest.testCalculateMerkleRoot(leaf, merklePath, merkleRoot).verify()
     expect(result.success, result.error).to.be.true
   })
 
@@ -74,7 +74,7 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
       ].join("")
     )
 
-    result = testMerkleTree.testVerifyLeaf(leaf, merklePath, merkleRoot).verify()
+    result = merkleTreeTest.testVerifyLeaf(leaf, merklePath, merkleRoot).verify()
     expect(result.success, result.error).to.be.true
   })
 
@@ -94,7 +94,7 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
     newLeaf = new Bytes("ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d")
     newMerkleRoot = new Bytes("b0e44f9adb044dffb32aa1e455456f9cc6ed27d11fb7d6196b4065a1a54ea1bd")
 
-    result = testMerkleTree.testUpdateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot, newMerkleRoot).verify()
+    result = merkleTreeTest.testUpdateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot, newMerkleRoot).verify()
     expect(result.success, result.error).to.be.true
 
     // Test single leaf
@@ -104,7 +104,7 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
     newLeaf = new Bytes("07cf2a3098945e378f269c572556e8963dfb02e87a923f243922e68126d75484")
     newMerkleRoot = new Bytes("7a5e911a33379d003d436db3eee3699381416aadfc30367f81ab71877263647d")
 
-    result = testMerkleTree.testUpdateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot, newMerkleRoot).verify()
+    result = merkleTreeTest.testUpdateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot, newMerkleRoot).verify()
     expect(result.success, result.error).to.be.true
 
     // Test single branch
@@ -123,7 +123,7 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
     newLeaf = new Bytes("4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a")
     newMerkleRoot = new Bytes("6cce63479bef0c755231553faad0928b6de6c2a701a02ef47bc53b098b718244")
 
-    result = testMerkleTree.testUpdateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot, newMerkleRoot).verify()
+    result = merkleTreeTest.testUpdateLeaf(oldLeaf, newLeaf, merklePath, oldMerkleRoot, newMerkleRoot).verify()
     expect(result.success, result.error).to.be.true
   })
 
@@ -143,7 +143,7 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
     newLeaf = new Bytes("4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a")
     newMerkleRoot = new Bytes("cd53a2ce68e6476c29512ea53c395c7f5d8fbcb4614d89298db14e2a5bdb5456")
 
-    result = testMerkleTree.testAddLeaf(lastLeaf, lastMerklePath, oldMerkleRoot, newLeaf, newMerkleRoot).verify()
+    result = merkleTreeTest.testAddLeaf(lastLeaf, lastMerklePath, oldMerkleRoot, newLeaf, newMerkleRoot).verify()
     expect(result.success, result.error).to.be.true
 
     oldMerkleRoot = new Bytes("cd53a2ce68e6476c29512ea53c395c7f5d8fbcb4614d89298db14e2a5bdb5456")
@@ -159,7 +159,7 @@ describe("Test sCrypt contract MerkleTree In Javascript", () => {
     newLeaf = new Bytes("ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d")
     newMerkleRoot = new Bytes("0abb51d233d9b6172ff6fcb56b4ef172f550da4cb15aa328ebf43751288b8011")
 
-    result = testMerkleTree.testAddLeaf(lastLeaf, lastMerklePath, oldMerkleRoot, newLeaf, newMerkleRoot).verify()
+    result = merkleTreeTest.testAddLeaf(lastLeaf, lastMerklePath, oldMerkleRoot, newLeaf, newMerkleRoot).verify()
     expect(result.success, result.error).to.be.true
   })
 })

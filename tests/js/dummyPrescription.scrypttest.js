@@ -9,6 +9,7 @@ const {
   toHex,
   Sig,
   Ripemd160,
+  buildTypeClasses,
 } = require("scryptlib");
 const { compileContract, inputIndex, newTx } = require("../../helper");
 const { generatePrivKey, privKeyToPubKey, sign } = require("rabinsig");
@@ -66,10 +67,10 @@ describe("Dummy Prescription", () => {
       compileContract("dummy_prescription.scrypt")
     );
 
+    const {RabinSig, RabinPubKey} = buildTypeClasses(DummyPrescription);
+
     // init prescription aka locking script
     dummyPrescription = new DummyPrescription(
-      prescriberSig.signature,
-      paddingBytes(prescriberSig.paddingByteCount),
       drug,
       expiration,
       new Bytes(prescriptionIDHex),
@@ -78,7 +79,11 @@ describe("Dummy Prescription", () => {
       [
         new PubKey(toHex(publicKeyPharmacy1)),
         new PubKey(toHex(publicKeyPharmacy2)),
-      ]
+      ],
+      new RabinSig({
+        s: prescriberSig.signature,
+        padding: paddingBytes(prescriberSig.paddingByteCount),
+      })
     );
 
     // add reward payout to user
