@@ -20,9 +20,7 @@ const { privateKey } = require('../privateKey');
 
         // unlock
         for (i = 0; i < 3; i++) {
-            let prevLockingScript = counter.lockingScript;
             
-            // update state
             const newState = num2bin(i + 1, DataLen);
 
             const newLockingScript = bsv.Script.fromASM([counter.codePart.toASM(), newState].join(' '))
@@ -44,6 +42,7 @@ const { privateKey } = require('../privateKey');
             console.log('iteration #' + i + ' txid: ', unlockingTx.id)
 
             amount = newAmount
+            // update state
             counter.setDataPart(newState);
             prevTx = unlockingTx;
         }
