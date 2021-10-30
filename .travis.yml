@@ -13,4 +13,4 @@ os:
 script:
 
   - npx scryptlib download
-  - npm test -- --ci=true
+  - npm t

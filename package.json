@@ -7,7 +7,7 @@
     "node": ">=12.0.0"
   },
   "scripts": {
-    "test": "mocha -r ts-node/register tests/**/*scrypttest.*  --reporter spec --timeout 600000",
+    "test": "mocha -r ts-node/register 'tests/**/*scrypttest.*'  --reporter spec --timeout 600000",
     "single-test": "mocha -r ts-node/register --reporter spec --timeout 120000",
     "testnet": "node ./testnet.js",
     "watch": "node watcher.js",
@@ -31,7 +31,7 @@
     "glob": "^7.1.6",
     "minimist": "^1.2.5",
     "rabinsig": "^1.0.0",
-    "scryptlib": "0.7.0-beta2",
+    "scryptlib": "^0.7.0",
     "watch": "^1.0.2"
   },
   "devDependencies": {
