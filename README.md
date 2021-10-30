@@ -155,6 +155,8 @@ Succeeded on testnet
 It is **strongly recommended** to test your contract on testnet first, before deploying it on mainnet. Default deployment is on testnet. To switch to mainnet, simply modify `API_PREFIX` in `helper.js`.
 ```javascript
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/main'
+// const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test' for Testnet
+// const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/stn' for Scaling Test Net
 ```
 Before deploying a contract, make sure the latest contract has been compiled to a [description json file](https://github.com/scrypt-sv/scryptlib#contract-description-file), which is what will get deployed. This could be done automatically by running a daemon process with command `npm run watch`. It will monitor a contract file's change and recompile it when necessary. All generated description files are located at `deployments/fixture/autoGen`. Make sure it's up to date with the contract before deployment.
 
