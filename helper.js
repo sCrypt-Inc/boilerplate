@@ -10,7 +10,7 @@ const {
   getPreimage,
   toHex
 } = require('scryptlib')
-
+const { privateKey } = require('./privateKey');
 const MSB_THRESHOLD = 0x7e;
 
 const Signature = bsv.crypto.Signature
@@ -287,6 +287,40 @@ const sleep = async(seconds) => {
   })
 }
 
+async function deployContract(contract, amountInContract) {
+  // step 1: fetch utxos
+  const address = privateKey.toAddress()
+  let {
+    data: utxos
+  } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
+
+  utxos = utxos.map((utxo) => ({
+    txId: utxo.tx_hash,
+    outputIndex: utxo.tx_pos,
+    satoshis: utxo.value,
+    script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
+  }))
+
+  // step 2: build the tx
+  const tx = new bsv.Transaction().from(utxos)
+  tx.addOutput(new bsv.Transaction.Output({
+    script: contract.lockingScript,
+    satoshis: amountInContract,
+  }))
+  .change(address)
+  .sign(privateKey)
+  await sendTx(tx);
+  return tx;
+}
+
+function createInputFromTx(tx, outputIndex) {
+  return new bsv.Transaction.Input({
+    prevTxId: tx.id,
+    outputIndex: outputIndex || 0,
+    script: new bsv.Script(), // placeholder
+    output: tx.outputs[ outputIndex || 0]
+  })
+}
 
 const emptyPublicKey = '000000000000000000000000000000000000000000000000000000000000000000'
 
@@ -313,5 +347,7 @@ module.exports = {
   anyOnePayforTx,
   emptyPublicKey,
   fixLowS,
-  checkLowS
+  checkLowS,
+  deployContract,
+  createInputFromTx
 }

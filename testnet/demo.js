@@ -1,5 +1,5 @@
 const { buildContractClass, bsv } = require('scryptlib');
-const { loadDesc, showError, createLockingTx, sendTx, createUnlockingTx } = require('../helper');
+const { loadDesc, showError, deployContract, sendTx, createInputFromTx } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 (async() => {
@@ -12,17 +12,20 @@ const { privateKey } = require('../privateKey');
         demo = new Demo(4, 7);
         
         // lock fund to the script
-        const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, demo.lockingScript)
-        lockingTx.sign(privateKey)
-        const lockingTxid = await sendTx(lockingTx)
-        console.log('locking txid:     ', lockingTxid)
+        const tx =  await deployContract(demo, amount);
+        console.log('locking txid:     ', tx.id)
+
+        const unlockingTx = new bsv.Transaction();
+        unlockingTx.addInput(createInputFromTx(tx)) 
+        .change(privateKey.toAddress())
+        .setInputScript(0, (self, output) => {
+            return demo.add(11).toScript();
+        });
         
         // unlock
-        const unlockingScript = demo.add(11).toScript()
-        const unlockingTx = await createUnlockingTx(lockingTxid, amount, demo.lockingScript, newAmount,  bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()))
-        unlockingTx.inputs[0].setScript(unlockingScript)
-        const unlockingTxid = await sendTx(unlockingTx)
-        console.log('unlocking txid:   ', unlockingTxid)
+        await sendTx(unlockingTx)
+
+        console.log('unlocking txid:   ', unlockingTx.id)
 
         console.log('Succeeded on testnet')
     } catch (error) {
