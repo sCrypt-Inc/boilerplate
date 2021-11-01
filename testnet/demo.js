@@ -1,5 +1,5 @@
 const { buildContractClass, bsv } = require('scryptlib');
-const { loadDesc, showError, deployContract, sendTx, createInputFromTx } = require('../helper');
+const { loadDesc, showError, deployContract, sendTx, createInputFromPrevTx } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 (async() => {
@@ -16,9 +16,9 @@ const { privateKey } = require('../privateKey');
         console.log('locking txid:     ', tx.id)
 
         const unlockingTx = new bsv.Transaction();
-        unlockingTx.addInput(createInputFromTx(tx)) 
+        unlockingTx.addInput(createInputFromPrevTx(tx))
         .change(privateKey.toAddress())
-        .setInputScript(0, (self, output) => {
+        .setInputScript(0, (tx, output) => {
             return demo.add(11).toScript();
         });
         

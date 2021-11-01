@@ -33,8 +33,8 @@ const { privateKey } = require('../privateKey');
                 script: newLockingScript,
                 satoshis: newAmount,
               }))
-            .setInputScript(0, (self, output) => {
-                const preimage = getPreimage(self, output.script, output.satoshis)
+            .setInputScript(0, (tx, output) => {
+                const preimage = getPreimage(tx, output.script, output.satoshis)
                 return counter.increment(new SigHashPreimage(toHex(preimage)), newAmount).toScript()
             });
 

@@ -287,25 +287,15 @@ const sleep = async(seconds) => {
   })
 }
 
-async function deployContract(contract, amountInContract) {
+async function deployContract(contract, amount) {
   // step 1: fetch utxos
-  const address = privateKey.toAddress()
-  let {
-    data: utxos
-  } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
-
-  utxos = utxos.map((utxo) => ({
-    txId: utxo.tx_hash,
-    outputIndex: utxo.tx_pos,
-    satoshis: utxo.value,
-    script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
-  }))
-
+  const address = privateKey.toAddress();
+  const utxos = await fetchUtxos(address);
   // step 2: build the tx
   const tx = new bsv.Transaction().from(utxos)
   tx.addOutput(new bsv.Transaction.Output({
     script: contract.lockingScript,
-    satoshis: amountInContract,
+    satoshis: amount,
   }))
   .change(address)
   .sign(privateKey)
@@ -313,13 +303,30 @@ async function deployContract(contract, amountInContract) {
   return tx;
 }
 
-function createInputFromTx(tx, outputIndex) {
+//create an input spending from prevTx's output, with empty script
+function createInputFromPrevTx(tx, outputIndex) {
+  const outputIdx = outputIndex || 0
   return new bsv.Transaction.Input({
     prevTxId: tx.id,
-    outputIndex: outputIndex || 0,
+    outputIndex: outputIdx,
     script: new bsv.Script(), // placeholder
-    output: tx.outputs[ outputIndex || 0]
+    output: tx.outputs[outputIdx]
   })
+}
+
+
+async function fetchUtxos(address) {
+  // step 1: fetch utxos
+  let {
+    data: utxos
+  } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
+
+  return utxos.map((utxo) => ({
+    txId: utxo.tx_hash,
+    outputIndex: utxo.tx_pos,
+    satoshis: utxo.value,
+    script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
+  }))
 }
 
 const emptyPublicKey = '000000000000000000000000000000000000000000000000000000000000000000'
@@ -349,5 +356,6 @@ module.exports = {
   fixLowS,
   checkLowS,
   deployContract,
-  createInputFromTx
+  createInputFromPrevTx,
+  fetchUtxos
 }
