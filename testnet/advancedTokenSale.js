@@ -102,28 +102,8 @@ function sleep(ms) {
           satoshis: newAmount,
         }))
         .change(privateKey.toAddress())
-        .setInputScript(0, (tx, _) => {
+        .setInputScript(0, (tx, output) => {
           let preimage = getPreimage(
-            tx,
-            advTokenSale.lockingScript,
-            amount,
-            0,
-            sighashType
-          );
-          
-          let changeAmount = tx.getChangeAmount();
-
-          const unlockScript =  advTokenSale.buy(
-            new SigHashPreimage(toHex(preimage)), // sighashPreimage
-            new Ripemd160(toHex(pkh)), // changePKH
-            changeAmount, // changeSats
-            new Bytes(toHex(publicKeys[i])), // buyer's public key
-            numBought // number of tokens purchased
-          ).toScript();
-
-          changeAmount = tx.updateChangeAmount(0, unlockScript).getChangeAmount();
-
-          preimage = getPreimage(
             tx,
             advTokenSale.lockingScript,
             amount,
@@ -134,7 +114,7 @@ function sleep(ms) {
           return advTokenSale.buy(
             new SigHashPreimage(toHex(preimage)), // sighashPreimage
             new Ripemd160(toHex(pkh)), // changePKH
-            changeAmount, // changeSats
+            tx.getChangeAmount(), // changeSats
             new Bytes(toHex(publicKeys[i])), // buyer's public key
             numBought // number of tokens purchased
           ).toScript();
