@@ -102,7 +102,7 @@ function sleep(ms) {
           satoshis: newAmount,
         }))
         .change(privateKey.toAddress())
-        .setInputScript(0, (tx, output) => {
+        .setInputScript(0, (tx, _) => {
           let preimage = getPreimage(
             tx,
             advTokenSale.lockingScript,
@@ -120,6 +120,7 @@ function sleep(ms) {
           ).toScript();
 
         })
+        .seal()
         .sign(privateKey);
 
 

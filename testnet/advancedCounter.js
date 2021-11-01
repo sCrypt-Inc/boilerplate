@@ -10,19 +10,18 @@ const {
 const {
   loadDesc,
   showError,
-  createLockingTx,
+  fetchUtxos,
   createUnlockingTx,
-  anyOnePayforTx,
+  createInputFromPrevTx,
   sendTx,
   DataLen,
-  unlockP2PKHInput
+  deployContract 
 } = require('../helper');
 const {
   privateKey
 } = require('../privateKey');
 
 const Signature = bsv.crypto.Signature
-const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_SINGLE | Signature.SIGHASH_FORKID
 
 const publicKey = privateKey.publicKey
 // PKH for receiving change from each transaction (20 bytes - 40 hexadecimal characters)
@@ -42,12 +41,10 @@ function sleep(ms) {
     let amount = 1000
 
     // lock funds to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, advCounter.lockingScript);
-    lockingTx.sign(privateKey)
-  
-    let lockingTxid = await sendTx(lockingTx)
-    console.log('funding txid:      ', lockingTxid)
+    const lockingTx = await deployContract(advCounter, amount);
+    console.log('funding txid:      ', lockingTx.id);
 
+    let prevTx = lockingTx;
     // Run five transactions /iterations
     for (i = 0; i < 5; i++) {
       // avoid mempool conflicts
@@ -59,34 +56,41 @@ function sleep(ms) {
 
       // keep the contract funding constant
 
-      const newLockingScript = advCounter.getNewStateScript({counter: i +1})
+      const newLockingScript = advCounter.getNewStateScript({ counter: i + 1 })
 
-      const unlockingTx = await createUnlockingTx(lockingTxid, amount, advCounter.lockingScript, amount, newLockingScript)
+      const unlockingTx = new bsv.Transaction();
 
-      const curInputIndex = unlockingTx.inputs.length - 1;
+      unlockingTx.addInput(createInputFromPrevTx(prevTx))
+        .from(await fetchUtxos(privateKey.toAddress()))
+        .addOutput(new bsv.Transaction.Output({
+          script: newLockingScript,
+          satoshis: amount,
+        }))
+        .change(privateKey.toAddress())
+        .setInputScript(0, (tx, _) => {
+          const preimage = getPreimage(
+            tx,
+            advCounter.lockingScript,
+            amount,
+            0,
+            Signature.SIGHASH_ANYONECANPAY |
+            Signature.SIGHASH_SINGLE |
+            Signature.SIGHASH_FORKID
+          );
+          return advCounter
+            .increment(new SigHashPreimage(toHex(preimage)))
+            .toScript();
+        })
+        .sign(privateKey);
 
-      const preimage = getPreimage(unlockingTx, advCounter.lockingScript, amount, curInputIndex, sighashType)
-
-      const unlockingScript = advCounter.increment(
-        new SigHashPreimage(toHex(preimage))
-      ).toScript()
-
-      // unlock contract input
-      unlockingTx.inputs[curInputIndex].setScript(unlockingScript)
-      
-      // add input to pay tx fee
-      await anyOnePayforTx(unlockingTx, privateKey.toAddress())
-
-      // unlock other p2pkh inputs
-      for (let i = 1; i < unlockingTx.inputs.length; i++) {
-        unlockP2PKHInput(privateKey, unlockingTx, i, sighashType)
-      }
 
       lockingTxid = await sendTx(unlockingTx)
       console.log('iteration #' + i + ' txid: ', lockingTxid)
 
       // update state
       advCounter.counter = i + 1;
+
+      prevTx = unlockingTx;
     }
 
     console.log('Succeeded on testnet')

@@ -11,21 +11,15 @@ const {
 } = require('scryptlib');
 const {
   loadDesc,
-  createUnlockingTx,
-  createLockingTx,
+  createInputFromPrevTx,
   sendTx,
   showError,
+  deployContract
 } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 (async () => {
   const Signature = bsv.crypto.Signature;
-  // Note: ANYONECANPAY
-  const sighashType =
-    Signature.SIGHASH_ANYONECANPAY |
-    Signature.SIGHASH_ALL |
-    Signature.SIGHASH_FORKID;
-  const inputIndex = 0;
 
   const privateKeyX = new bsv.PrivateKey.fromRandom('testnet');
   console.log(`Private key generated: '${privateKeyX.toWIF()}'`);
@@ -42,39 +36,35 @@ const { privateKey } = require('../privateKey');
     const acs = new AnyoneCanSpend(new Ripemd160(toHex(publicKeyHashX)));
 
     // deploy contract on testnet
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, acs.lockingScript);
-    lockingTx.sign(privateKey);
-    let lockingTxid = await sendTx(lockingTx);
-    console.log('funding txid:      ', lockingTxid);
+    const lockingTx = await deployContract(acs, amount);
+    console.log('funding txid:      ', lockingTx.id);
 
     // call contract method on testnet
-
     const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressX);
 
     const newAmount = amount - 1000; //minFee;
 
-    const unlockingTx = await createUnlockingTx(
-      lockingTxid,
-      amount,
-      acs.lockingScript,
-      newAmount,
-      newLockingScript
-    );
+    const unlockingTx = new bsv.Transaction();
+    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+      .addOutput(new bsv.Transaction.Output({
+        script: newLockingScript,
+        satoshis: newAmount,
+      }))
+      .setInputScript(0, (tx, _) => {
+        const preimage = getPreimage(
+          tx,
+          acs.lockingScript,
+          amount,
+          0,
+          Signature.SIGHASH_ANYONECANPAY |
+          Signature.SIGHASH_ALL |
+          Signature.SIGHASH_FORKID
+        );
+        return acs
+          .unlock(new SigHashPreimage(toHex(preimage)))
+          .toScript();
+      });
 
-    const preimage = getPreimage(
-      unlockingTx,
-      acs.lockingScript,
-      amount,
-      inputIndex,
-      sighashType
-    );
-
-
-    const unlockingScript = acs
-      .unlock(new SigHashPreimage(toHex(preimage)))
-      .toScript()
-    unlockingTx.inputs[0].setScript(unlockingScript);
-    
     const unlockingTxid = await sendTx(unlockingTx);
     console.log('unlocking txid:   ', unlockingTxid);
 
