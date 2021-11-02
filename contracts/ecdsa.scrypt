@@ -29,7 +29,7 @@ contract ECDSA {
         // U1 = u1 * G
         require(EC.isMul(EC.G, u1, U1, u1Aux));
 
-        Point Q = pubKey2Point(pubKey);
+        Point Q = EC.pubKey2Point(pubKey);
         // U2 = u2 * Q
         require(EC.isMul(Q, u2, U2, u2Aux));
 
@@ -57,11 +57,5 @@ contract ECDSA {
         // convert big-endian to little-endian: either 32 or 33 bytes
         bytes bLE = len(b) == 32 ? reverseBytes(b, 32) : reverseBytes(b, 33);
         return unpack(bLE);
-    }
-
-    // convert public key to a point, assuming it's uncompressed
-    static function pubKey2Point(PubKey pubKey) : Point {
-        require(pubKey[: 1] == b'04');
-        return { unpack(pubKey[1 : 33]), unpack(pubKey[33 : 65]) };
     }
 }

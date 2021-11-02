@@ -17,7 +17,7 @@ contract Schnorr {
         int e = unpack(sha256(pack(r) + pubKey + msg));
 
         // E = e * P
-        Point P = pubKey2Point(pubKey);
+        Point P = EC.pubKey2Point(pubKey);
         require(EC.isMul(P, e, E, eAux));
 
         // S = s * G
@@ -25,11 +25,5 @@ contract Schnorr {
 
         // S == R + H?
         require(EC.isSum(R, E, lambda, S));
-    }
-
-    // convert public key to a point, assuming it's uncompressed
-    static function pubKey2Point(PubKey pubKey) : Point {
-        require(pubKey[: 1] == b'04');
-        return { unpack(pubKey[1 : 33]), unpack(pubKey[33 : 65]) };
     }
 }
