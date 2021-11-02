@@ -44,6 +44,11 @@ library EC {
         return p1 == ZERO ? p2 == p : (p2 == ZERO ? p1 == p : (p1.x == p2.x && (p1.y + p2.y) % P == 0) ? p == ZERO : isSumHelper(p1, p2, lambda, p));
     }
 
+    // same as isSum(), but using type PubKey
+    static function isPubKeySum(PubKey p1, PubKey p2, int lambda, PubKey p) : bool {
+        return isSum(pubKey2Point(p1), pubKey2Point(p2), lambda, pubKey2Point(p));
+    }
+    
     // return true iff p * x == r
     static function isMul(Point p, int x, Point r, PointMulAux pma) : bool {
 
