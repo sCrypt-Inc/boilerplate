@@ -63,7 +63,6 @@ function sleep(ms) {
 
     // initial contract funding - arbitrary amount
     let amount = 1000
-    const FEE = 2200
 
 
     //lock funds to the script
@@ -118,7 +117,7 @@ function sleep(ms) {
             new Bytes(toHex(publicKeys[i])), // buyer's public key
             numBought // number of tokens purchased
           ).toScript();
-
+          
         })
         .seal()
         .sign(privateKey);

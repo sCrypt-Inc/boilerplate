@@ -15,7 +15,7 @@ const {
   createInputFromPrevTx,
   sendTx,
   DataLen,
-  deployContract 
+  deployContract
 } = require('../helper');
 const {
   privateKey
@@ -60,13 +60,13 @@ function sleep(ms) {
 
       const unlockingTx = new bsv.Transaction();
 
-      unlockingTx.addInput(createInputFromPrevTx(prevTx))
-        .from(await fetchUtxos(privateKey.toAddress()))
+      unlockingTx
+        .feePerKb(1000)
+        .addInput(createInputFromPrevTx(prevTx))
         .addOutput(new bsv.Transaction.Output({
           script: newLockingScript,
           satoshis: amount,
         }))
-        .change(privateKey.toAddress())
         .setInputScript(0, (tx, _) => {
           const preimage = getPreimage(
             tx,
@@ -81,6 +81,9 @@ function sleep(ms) {
             .increment(new SigHashPreimage(toHex(preimage)))
             .toScript();
         })
+        .from(await fetchUtxos(privateKey.toAddress()))
+        .change(privateKey.toAddress())
+        .seal()
         .sign(privateKey);
 
 

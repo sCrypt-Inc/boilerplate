@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage } = require('scryptlib');
-const { DataLen, loadDesc, deployContract, sendTx, createInputFromTx, showError  } = require('../helper');
+const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showError  } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 (async() => {
@@ -10,8 +10,6 @@ const { privateKey } = require('../privateKey');
         counter.setDataPart(num2bin(0, DataLen))
         
         let amount = 6000
-        const FEE = 1500;
-        
         // lock fund to the script
         const lockingTx =  await deployContract(counter, amount)
         console.log('funding txid:      ', lockingTx.id);
@@ -24,24 +22,27 @@ const { privateKey } = require('../privateKey');
             const newState = num2bin(i + 1, DataLen);
 
             const newLockingScript = bsv.Script.fromASM([counter.codePart.toASM(), newState].join(' '))
-            const newAmount = amount - FEE
 
             const unlockingTx = new bsv.Transaction();
             
-            unlockingTx.addInput(createInputFromTx(prevTx))
-            .addOutput(new bsv.Transaction.Output({
-                script: newLockingScript,
-                satoshis: newAmount,
-              }))
+            unlockingTx.addInput(createInputFromPrevTx(prevTx))
+            .setOutput(0, (tx) => {
+                return new bsv.Transaction.Output({
+                    script: newLockingScript,
+                    satoshis: amount - tx.getEstimateFee(),
+                  })
+            })
             .setInputScript(0, (tx, output) => {
                 const preimage = getPreimage(tx, output.script, output.satoshis)
+                const newAmount = unlockingTx.outputs[0].satoshis;
                 return counter.increment(new SigHashPreimage(toHex(preimage)), newAmount).toScript()
-            });
+            })
+            .seal()
 
             await sendTx(unlockingTx)
             console.log('iteration #' + i + ' txid: ', unlockingTx.id)
 
-            amount = newAmount
+            amount = unlockingTx.outputs[0].satoshis
             // update state
             counter.setDataPart(newState);
             prevTx = unlockingTx;

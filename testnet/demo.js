@@ -5,7 +5,6 @@ const { privateKey } = require('../privateKey');
 (async() => {
     try {
         const amount = 1000
-        const newAmount = 546
 
         // get locking script
         const Demo = buildContractClass(loadDesc('demo_debug_desc.json'));
@@ -18,9 +17,10 @@ const { privateKey } = require('../privateKey');
         const unlockingTx = new bsv.Transaction();
         unlockingTx.addInput(createInputFromPrevTx(tx))
         .change(privateKey.toAddress())
-        .setInputScript(0, (tx, output) => {
+        .setInputScript(0, (_) => {
             return demo.add(11).toScript();
-        });
+        })
+        .seal()
         
         // unlock
         await sendTx(unlockingTx)
