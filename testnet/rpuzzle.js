@@ -14,8 +14,8 @@ const {
 
 const {
   loadDesc,
-  createUnlockingTx,
-  createLockingTx,
+  deployContract,
+  createInputFromPrevTx,
   sendTx,
   showError,
   inputIndex,
@@ -45,7 +45,7 @@ const rhash = bsv.crypto.Hash.sha256ripemd160(r0);
 const privateKeyX = new bsv.PrivateKey.fromRandom('testnet');
 console.log(`Private key generated: '${privateKeyX.toWIF()}'`);
 
-const amount = 1000;
+const amount = 2000;
 
 (async () => {
   try {
@@ -54,78 +54,77 @@ const amount = 1000;
     const rpuzzle = new RPuzzle(new Ripemd160(toHex(rhash)));
 
     // deploy contract on testnet
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, rpuzzle.lockingScript);
-
-    lockingTx.sign(privateKey);
-    let lockingTxid = await sendTx(lockingTx);
-    console.log('funding txid:      ', lockingTxid);
+    const lockingTx = await deployContract(rpuzzle, amount);
+    console.log('locking txid:     ', lockingTx.id)
 
     // call contract method on testnet
-    const newLockingScript = bsv.Script.buildPublicKeyHashOut(
-      privateKeyX.toAddress()
-    );
 
-    const newAmount = amount - 400; // substract miner fee;
+    const unlockingTx = new bsv.Transaction();
+    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+      .setOutput(0, (tx) => {
+        const newLockingScript = bsv.Script.buildPublicKeyHashOut(
+          privateKeyX.toAddress()
+        );
 
-    const unlockingTx = await createUnlockingTx(
-      lockingTxid,
-      amount,
-      rpuzzle.lockingScript,
-      newAmount,
-      newLockingScript
-    );
-
-    const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID;
-    const flags =
-      Script.Interpreter.SCRIPT_VERIFY_MINIMALDATA |
-      Script.Interpreter.SCRIPT_ENABLE_SIGHASH_FORKID |
-      Script.Interpreter.SCRIPT_ENABLE_MAGNETIC_OPCODES |
-      Script.Interpreter.SCRIPT_ENABLE_MONOLITH_OPCODES;
-
-    const hashbuf = Transaction.Sighash.sighash(
-      unlockingTx,
-      sighashType,
-      inputIndex,
-      rpuzzle.lockingScript,
-      new BN.fromNumber(amount),
-      flags
-    );
-
-    // ephemeral privateKey used for generating the r signature
-    const privateKeyR = new bsv.PrivateKey.fromRandom('testnet');
-    const publicKeyR = privateKeyR.publicKey;
-
-    const ecdsa = new ECDSA({
-      hashbuf: hashbuf,
-      privkey: privateKeyR,
-      endian: 'little',
-      k: BN.fromBuffer(k),
-    });
-
-    sigr = ecdsa
-      .sign()
-      .sig.set({
-        nhashtype: sighashType,
+        return new bsv.Transaction.Output({
+          script: newLockingScript,
+          satoshis: amount - tx.getEstimateFee()
+        })
       })
-      .toTxFormat();
+      .setInputScript(0, (tx, output) => {
+        const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID;
+        const flags =
+          Script.Interpreter.SCRIPT_VERIFY_MINIMALDATA |
+          Script.Interpreter.SCRIPT_ENABLE_SIGHASH_FORKID |
+          Script.Interpreter.SCRIPT_ENABLE_MAGNETIC_OPCODES |
+          Script.Interpreter.SCRIPT_ENABLE_MONOLITH_OPCODES;
 
-    // build a second signature to prevent Signature Forgeability
-    // https://wiki.bitcoinsv.io/index.php/R-Puzzles
-    sig = signTx(
-      unlockingTx,
-      privateKeyR,
-      rpuzzle.lockingScript,
-      amount
-    );
+        const hashbuf = Transaction.Sighash.sighash(
+          tx,
+          sighashType,
+          inputIndex,
+          rpuzzle.lockingScript,
+          new BN.fromNumber(amount),
+          flags
+        );
 
-    const unlockingScript = rpuzzle
-      .unlock(
-        new Sig(toHex(sig)),
-        new PubKey(toHex(publicKeyR)),
-        new Sig(toHex(sigr))
-      )
-      .toScript();
-    unlockingTx.inputs[0].setScript(unlockingScript);
+        // ephemeral privateKey used for generating the r signature
+        const privateKeyR = new bsv.PrivateKey.fromRandom('testnet');
+        const publicKeyR = privateKeyR.publicKey;
+
+        const ecdsa = new ECDSA({
+          hashbuf: hashbuf,
+          privkey: privateKeyR,
+          endian: 'little',
+          k: BN.fromBuffer(k),
+        });
+
+        sigr = ecdsa
+          .sign()
+          .sig.set({
+            nhashtype: sighashType,
+          })
+          .toTxFormat();
+
+        // build a second signature to prevent Signature Forgeability
+        // https://wiki.bitcoinsv.io/index.php/R-Puzzles
+        const sig = signTx(
+          tx,
+          privateKeyR,
+          rpuzzle.lockingScript,
+          output.satoshis
+        );
+
+        return rpuzzle
+          .unlock(
+            new Sig(toHex(sig)),
+            new PubKey(toHex(publicKeyR)),
+            new Sig(toHex(sigr))
+          )
+          .toScript();
+      })
+      .seal()
+
 
     const unlockingTxid = await sendTx(unlockingTx);
     console.log('unlocking txid:   ', unlockingTxid);
