@@ -117,10 +117,10 @@ function sleep(ms) {
             new Bytes(toHex(publicKeys[i])), // buyer's public key
             numBought // number of tokens purchased
           ).toScript();
-          
+
         })
+        .sign(privateKey)
         .seal()
-        .sign(privateKey);
 
 
       lockingTxid = await sendTx(unlockingTx)

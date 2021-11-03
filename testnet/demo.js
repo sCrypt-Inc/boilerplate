@@ -11,7 +11,7 @@ const { privateKey } = require('../privateKey');
         demo = new Demo(4, 7);
         
         // lock fund to the script
-        const tx =  await deployContract(demo, amount);
+        const tx = await deployContract(demo, amount);
         console.log('locking txid:     ', tx.id)
 
         const unlockingTx = new bsv.Transaction();

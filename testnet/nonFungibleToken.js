@@ -12,7 +12,8 @@ const {
 const {
   DataLen,
   loadDesc,
-  createLockingTx,
+  createInputFromPrevTx,
+  deployContract,
   sendTx,
   showError
 } = require('../helper');
@@ -40,82 +41,83 @@ const {
     // append state as passive data part, initial uniqTokenId
     token.setDataPart(num2bin(uniqTokenId, DataLen) + toHex(publicKeyIssuer) + actionIssue)
 
-    let inputSatoshis = 10000
-    const FEE = inputSatoshis / 4
-    let outputSatoshis = Math.floor((inputSatoshis - FEE) / 2)
+    const amount = 16000
 
-    // lock fund to the script & issue the first token
-    const lockingTx = await createLockingTx(privateKey.toAddress(), inputSatoshis, token.lockingScript)
+    // deploy contract on testnet
+    const lockingTx = await deployContract(token, amount);
+    console.log('locking txid:     ', lockingTx.id)
 
-    lockingTx.sign(privateKey)
-    let lockingTxid = await sendTx(lockingTx)
-    console.log('funding txid:      ', lockingTxid)
+    const issueTx = new bsv.Transaction()
 
-    // increment token ID and issue another new token
-    let issueTxid, lockingScript0, lockingScript1 ;
-    {
-      const tx = new bsv.Transaction()
-      tx.addInput(new bsv.Transaction.Input({
-        prevTxId: lockingTxid,
-        outputIndex: 0,
-        script: ''
-      }), token.lockingScript, inputSatoshis)
+    issueTx.addInput(createInputFromPrevTx(lockingTx))
+      .setOutput(0, (tx) => {
 
-      // issue new token
-      lockingScript0 = [token.codePart.toASM(), num2bin((uniqTokenId + 1), DataLen) + toHex(publicKeyIssuer) + actionIssue].join(' ')
-      tx.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.fromASM(lockingScript0),
-        satoshis: outputSatoshis
-      }))
+        // issue new token
+        const newLockingScript = [token.codePart.toASM(), num2bin((uniqTokenId + 1), DataLen)
+          + toHex(publicKeyIssuer) + actionIssue].join(' ')
 
-      // transfer previous token to another receiver
-      lockingScript1 = [token.codePart.toASM(), num2bin(uniqTokenId, DataLen) + toHex(publicKeyReceiver1) + actionTransfer].join(' ')
-      tx.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.fromASM(lockingScript1),
-        satoshis: outputSatoshis
-      }))
+        return new bsv.Transaction.Output({
+          script: bsv.Script.fromASM(newLockingScript),
+          satoshis: Math.floor((amount - tx.getEstimateFee()) / 2)
+        })
+      })
+      .setOutput(1, (tx) => {
 
-      const preimage = getPreimage(tx, token.lockingScript, inputSatoshis)
-      const sig1 = signTx(tx, privateKeyIssuer, token.lockingScript, inputSatoshis)
-      const unlockingScript = token.issue(
-        sig1,
-        new PubKey(toHex(publicKeyReceiver1)),
-        outputSatoshis, outputSatoshis,
-        new SigHashPreimage(toHex(preimage))
+        // transfer previous token to another receiver
+        const newLockingScript = [token.codePart.toASM(), num2bin(uniqTokenId, DataLen)
+          + toHex(publicKeyReceiver1) + actionTransfer].join(' ')
+
+        return new bsv.Transaction.Output({
+          script: bsv.Script.fromASM(newLockingScript),
+          satoshis: Math.floor((amount - tx.getEstimateFee()) / 2)
+        })
+      })
+      .setInputScript(0, (tx, output) => {
+        const preimage = getPreimage(tx, output.script, output.satoshis)
+        const sig = signTx(tx, privateKeyIssuer, output.script, output.satoshis)
+        const outputSatoshis = Math.floor((amount - tx.getEstimateFee()) / 2)
+        return token.issue(
+          sig,
+          new PubKey(toHex(publicKeyReceiver1)),
+          outputSatoshis, outputSatoshis,
+          new SigHashPreimage(toHex(preimage))
+        ).toScript()
+      })
+      .seal()
+
+
+    const issueTxid = await sendTx(issueTx);
+    console.log('issue txid: ', issueTxid)
+
+
+    const issueTxAmount = issueTx.outputs[0].satoshis;
+
+    const transferTx = new bsv.Transaction()
+
+    transferTx.addInput(createInputFromPrevTx(issueTx, 1))
+    .setOutput(0, (tx) => {
+
+      // transfer token to publicKeyReceiver2
+      const newLockingScript =  [token.codePart.toASM(), num2bin(uniqTokenId, DataLen) 
+        + toHex(publicKeyReceiver2) + actionTransfer].join(' ')
+
+      return new bsv.Transaction.Output({
+        script: bsv.Script.fromASM(newLockingScript),
+        satoshis: issueTxAmount - tx.getEstimateFee()
+      })
+    })
+    .setInputScript(0, (tx, output) => {
+      const preimage = getPreimage(tx, output.script, output.satoshis)
+      const sig = signTx(tx, privateKeyReceiver1, output.script, output.satoshis)
+      const newAmount = issueTxAmount - tx.getEstimateFee()
+      return token.transfer(
+        sig, new PubKey(toHex(publicKeyReceiver2)), newAmount, preimage
       ).toScript()
-      tx.inputs[0].setScript(unlockingScript);
-      issueTxid = await sendTx(tx);
-      console.log('issue txid:       ', issueTxid)
-    }
+    })
+    .seal()
 
-
-    inputSatoshis = outputSatoshis
-    outputSatoshis -= FEE
-    // transfer token to publicKeyReceiver2
-    {
-      const tx = new bsv.Transaction()
-      tx.addInput(new bsv.Transaction.Input({
-        prevTxId: issueTxid,
-        outputIndex: 1,
-        script: ''
-      }), bsv.Script.fromASM(lockingScript1), inputSatoshis)
-
-      const lockingScript2 = [token.codePart.toASM(), num2bin(uniqTokenId, DataLen) + toHex(publicKeyReceiver2) + actionTransfer].join(' ')
-
-      tx.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.fromASM(lockingScript2),
-        satoshis: outputSatoshis
-      }))
-
-      const preimage = getPreimage(tx, bsv.Script.fromASM(lockingScript1), inputSatoshis, 0)
-      const sig2 = signTx(tx, privateKeyReceiver1, bsv.Script.fromASM(lockingScript1), inputSatoshis, 0)
-      const unlockingScript = token.transfer(
-        sig2, new PubKey(toHex(publicKeyReceiver2)), outputSatoshis, preimage
-      ).toScript()
-      tx.inputs[0].setScript(unlockingScript);
-      const transferTxid = await sendTx(tx);
-      console.log('transfer txid:       ', transferTxid)
-    }
+    const transferTxid = await sendTx(transferTx);
+    console.log('transfer txid: ', transferTxid)
 
     console.log('Succeeded on testnet')
   } catch (error) {

@@ -10,8 +10,8 @@ const {
 } = require('scryptlib');
 const {
   loadDesc,
-  createUnlockingTx,
-  createLockingTx,
+  createInputFromPrevTx,
+  deployContract,
   sendTx,
   showError
 } = require('../helper');
@@ -27,21 +27,30 @@ const sha256Data = bsv.crypto.Hash.sha256(dataBuffer);
 (async () => {
   try {
     const amount = 1000
-    const newAmount = 546
 
     const HashPuzzle = buildContractClass(loadDesc('hashpuzzle_debug_desc.json'));
     const hashPuzzle = new HashPuzzle(new Sha256(toHex(sha256Data)))
 
-    // lock fund to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, hashPuzzle.lockingScript)
-    lockingTx.sign(privateKey)
-    let lockingTxid = await sendTx(lockingTx)
-    console.log('funding txid:      ', lockingTxid)
+    // deploy contract on testnet
+    const lockingTx = await deployContract(hashPuzzle, amount);
+    console.log('locking txid:     ', lockingTx.id)
 
     // unlock
-    const unlockingTx = await createUnlockingTx(lockingTxid, amount, hashPuzzle.lockingScript, newAmount, bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()))
-    const unlockingScript = hashPuzzle.verify(new Bytes(toHex(data))).toScript()
-    unlockingTx.inputs[0].setScript(unlockingScript)
+    const unlockingTx = new bsv.Transaction();
+            
+    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+    .setOutput(0, (tx) => {
+        const newLockingScript = bsv.Script.buildPublicKeyHashOut(privateKey.toAddress())
+        return new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: amount - tx.getEstimateFee(),
+          })
+    })
+    .setInputScript(0, (_) => {
+        return hashPuzzle.verify(new Bytes(toHex(data))).toScript()
+    })
+    .seal()
+
     const unlockingTxid = await sendTx(unlockingTx)
     console.log('unlocking txid:   ', unlockingTxid)
 

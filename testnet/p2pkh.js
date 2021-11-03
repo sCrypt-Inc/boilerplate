@@ -1,8 +1,8 @@
 const { buildContractClass, toHex, signTx, Ripemd160, Sig, PubKey, bsv } = require('scryptlib');
 
 const {
-  createLockingTx,
-  createUnlockingTx,
+  deployContract,
+  createInputFromPrevTx,
   sendTx,
   showError,
   loadDesc
@@ -19,22 +19,32 @@ async function main() {
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
     const p2pkh = new P2PKH(new Ripemd160(toHex(publicKeyHash)))
 
+    const amount = 10000
     // deploy contract on testnet
-    const amountInContract = 10000
-    const deployTx = await createLockingTx(privateKey.toAddress(), amountInContract, p2pkh.lockingScript)
+    const lockingTx = await deployContract(p2pkh, amount);
+    console.log('locking txid:     ', lockingTx.id)
 
-    deployTx.sign(privateKey)
-    const deployTxId = await sendTx(deployTx)
-    console.log('Contract Deployed Successfully! TxId: ', deployTxId)
 
     // call contract method on testnet
-    const spendAmount = amountInContract / 10
-    const methodCallTx = createUnlockingTx(deployTxId, amountInContract, p2pkh.lockingScript, spendAmount, bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()))
-    const sig = signTx(methodCallTx, privateKey, p2pkh.lockingScript, amountInContract)
-    const unlockingScript = p2pkh.unlock(sig, new PubKey(toHex(publicKey))).toScript()
-    methodCallTx.inputs[0].setScript(unlockingScript)
-    const methodCallTxId = await sendTx(methodCallTx)
-    console.log('Contract Method Called Successfully! TxId: ', methodCallTxId)
+    const unlockingTx = new bsv.Transaction();
+
+    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+      .setOutput(0, (tx) => {
+        const newLockingScript = bsv.Script.buildPublicKeyHashOut(privateKey.toAddress())
+        return new bsv.Transaction.Output({
+          script: newLockingScript,
+          satoshis: amount - tx.getEstimateFee(),
+        })
+      })
+      .setInputScript(0, (tx, output) => {
+        const sig = signTx(unlockingTx, privateKey, output.script, output.satoshis)
+        return p2pkh.unlock(sig, new PubKey(toHex(publicKey))).toScript()
+      })
+      .seal()
+
+
+    const unlockingTxid = await sendTx(unlockingTx)
+    console.log('Contract Method Called Successfully! TxId: ', unlockingTxid)
 
   } catch (error) {
     console.log('Failed on testnet')

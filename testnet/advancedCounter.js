@@ -83,8 +83,8 @@ function sleep(ms) {
         })
         .from(await fetchUtxos(privateKey.toAddress()))
         .change(privateKey.toAddress())
+        .sign(privateKey)
         .seal()
-        .sign(privateKey);
 
 
       lockingTxid = await sendTx(unlockingTx)

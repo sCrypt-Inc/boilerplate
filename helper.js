@@ -161,12 +161,8 @@ function unlockP2PKHInput(privateKey, tx, inputIndex, sigtype) {
 async function sendTx(tx) {
   const hex = tx.toString();
 
-  const fee = tx.inputAmount - tx.outputAmount;
-
-  const expectedFee = hex.length / 2 * 0.5;
-
-  if(fee < expectedFee) {
-    throw new Error(`Transaction with fee is too low: expected Fee is ${expectedFee}, but got ${fee}`)
+  if(!tx.checkFeeRate(500)) {
+    throw new Error(`checkFeeRate fail, transaction fee is too low`)
   }
 
   try {
