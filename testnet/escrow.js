@@ -10,21 +10,30 @@ const {
   Sig,
   signTx,
   toHex,
-  Sha256, 
+  Sha256,
   Bytes,
   SigHashPreimage,
 } = require('scryptlib');
 
 const {
   loadDesc,
-  createLockingTx,
+  deployContract,
+  createInputFromPrevTx,
+  fetchUtxos,
   sendTx,
   showError,
+  sleep,
 } = require('../helper');
 
 const { privateKey } = require('../privateKey');
 
+
+
 (async () => {
+
+  const Signature = bsv.crypto.Signature
+  const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
+
   // A: Alice, B: Bob, E: Escrow
   // scenario 1: PA + PB
   // scenario 2: PA + PE + Hash 1
@@ -32,152 +41,164 @@ const { privateKey } = require('../privateKey');
 
   const scenario = 1;
 
+  const publicKey = privateKey.publicKey;
+  const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer());
+
+
   const privateKeyA = new bsv.PrivateKey.fromRandom('testnet');
   console.log(`Private key generated: '${privateKeyA.toWIF()}'`);
   const publicKeyA = privateKeyA.publicKey;
   const publicKeyHashA = bsv.crypto.Hash.sha256ripemd160(publicKeyA.toBuffer());
-  
+
   const privateKeyB = new bsv.PrivateKey.fromRandom('testnet');
   console.log(`Private key generated: '${privateKeyB.toWIF()}'`);
   const publicKeyB = privateKeyB.publicKey;
   const publicKeyHashB = bsv.crypto.Hash.sha256ripemd160(publicKeyB.toBuffer());
-  
+
   const privateKeyE = new bsv.PrivateKey.fromRandom('testnet');
   console.log(`Private key generated: '${privateKeyE.toWIF()}'`);
   const publicKeyE = privateKeyE.publicKey;
   const publicKeyHashE = bsv.crypto.Hash.sha256ripemd160(publicKeyE.toBuffer());
-  
+
   const secretBuf1 = Buffer.from("abc");
   const hashSecret1 = bsv.crypto.Hash.sha256(secretBuf1);
 
   const secretBuf2 = Buffer.from("def");
   const hashSecret2 = bsv.crypto.Hash.sha256(secretBuf2);
 
-  const fee = 1500;
-
-  const amount = 10000;
-
-  const inputIndex = 0;
+  const amount = 1000;
 
   try {
     // initialize contract
     const Escrow = buildContractClass(loadDesc('escrow_debug_desc.json'));
-    const escrow = new Escrow(new Ripemd160(toHex(publicKeyHashA)), new Ripemd160(toHex(publicKeyHashB)), new Ripemd160(toHex(publicKeyHashE)), new Sha256(toHex(hashSecret1)), new Sha256(toHex(hashSecret2)), fee);
+    const escrow = new Escrow(new Ripemd160(toHex(publicKeyHashA)), new Ripemd160(toHex(publicKeyHashB)),
+      new Ripemd160(toHex(publicKeyHashE)), new Sha256(toHex(hashSecret1)), new Sha256(toHex(hashSecret2)));
 
     // deploy contract on testnet
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, escrow.lockingScript);
-    lockingTx.sign(privateKey);
+    const lockingTx = await deployContract(escrow, amount);
+    console.log('locking txid:     ', lockingTx.id)
 
-    let lockingTxid = await sendTx(lockingTx);
-    console.log('funding txid:      ', lockingTxid);
-
+    await sleep(6)
     // call contract method on testnet
-    let prevLockingScript = escrow.lockingScript;
+    const unlockingTx = new bsv.Transaction();
 
-    let unlockingTx, sigA, sigB, sigE, unlockingScript;
 
-    unlockingTx = new bsv.Transaction();
 
-    unlockingTx.addInput(
-      new bsv.Transaction.Input({
-        prevTxId: lockingTxid,
-        outputIndex: inputIndex,
-        script: new bsv.Script(), // placeholder
-      }), 
-      escrow.lockingScript, 
-      amount
-    );
-
-    switch(scenario) {
+    switch (scenario) {
       case 1:
-        unlockingTx.addOutput(new bsv.Transaction.Output({
-          script: bsv.Script.buildPublicKeyHashOut(privateKeyA.toAddress()),
-          satoshis: amount / 2 - fee,
-        }))
+        unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+          .from(await fetchUtxos(privateKey.toAddress()))
+          .addOutput(new bsv.Transaction.Output({
+            script: bsv.Script.buildPublicKeyHashOut(privateKeyA.toAddress()),
+            satoshis: amount / 2,
+          }))
+          .addOutput(new bsv.Transaction.Output({
+            script: bsv.Script.buildPublicKeyHashOut(privateKeyB.toAddress()),
+            satoshis: amount / 2,
+          }))
+          .change(privateKey.toAddress())
+          .setInputScript(0, (tx, output) => {
+            const preimage = getPreimage(
+              tx,
+              output.script,
+              output.satoshis,
+              0,
+              sighashType
+            );
 
-        unlockingTx.addOutput(new bsv.Transaction.Output({
-          script: bsv.Script.buildPublicKeyHashOut(privateKeyB.toAddress()),
-          satoshis: amount / 2 - fee,
-        }))
+            const sigA = signTx(tx, privateKeyA, escrow.lockingScript, amount);
+            const sigB = signTx(tx, privateKeyB, escrow.lockingScript, amount);
 
-        unlockingTx.fee(fee * 2);
+            return escrow.unlock(
+              new SigHashPreimage(toHex(preimage)),
+              new PubKey(toHex(publicKeyA)),
+              new Sig(toHex(sigA)),
+              new PubKey(toHex(publicKeyB)),
+              new Sig(toHex(sigB)),
+              new Bytes(toHex('')),
+              new Ripemd160(toHex(publicKeyHash)),
+              tx.getChangeAmount()
+            )
+              .toScript();
+          })
+          .seal()
+          .sign(privateKey)
 
         break;
       case 2:
-        unlockingTx.addOutput(new bsv.Transaction.Output({
-          script: bsv.Script.buildPublicKeyHashOut(privateKeyA.toAddress()),
-          satoshis: amount - fee,
-        }))
 
-        unlockingTx.fee(fee)
+        unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+          .from(await fetchUtxos(privateKey.toAddress()))
+          .addOutput(new bsv.Transaction.Output({
+            script: bsv.Script.buildPublicKeyHashOut(privateKeyA.toAddress()),
+            satoshis: amount,
+          }))
+          .change(privateKey.toAddress())
+          .setInputScript(0, (tx, output) => {
+            const preimage = getPreimage(
+              tx,
+              output.script,
+              output.satoshis,
+              0,
+              sighashType
+            );
 
-        break;
-      case 3:
-        unlockingTx.addOutput(new bsv.Transaction.Output({
-          script: bsv.Script.buildPublicKeyHashOut(privateKeyB.toAddress()),
-          satoshis: amount - fee,
-        }))
+            const sigA = signTx(unlockingTx, privateKeyA, escrow.lockingScript, amount);
+            const sigE = signTx(unlockingTx, privateKeyE, escrow.lockingScript, amount);
 
-        unlockingTx.fee(fee)
-  
-        break;
-    }
-    
-    const preimage = getPreimage(
-      unlockingTx,
-      prevLockingScript,
-      amount
-    );
-
-    switch(scenario) {
-      case 1:
-        sigA = signTx(unlockingTx, privateKeyA, escrow.lockingScript, amount);
-        sigB = signTx(unlockingTx, privateKeyB, escrow.lockingScript, amount);
-
-        unlockingScript = escrow.unlock(
-          new SigHashPreimage(toHex(preimage)),
-          new PubKey(toHex(publicKeyA)),
-          new Sig(toHex(sigA)),
-          new PubKey(toHex(publicKeyB)),
-          new Sig(toHex(sigB)),
-          new Bytes(toHex(''))
-        )
-        .toScript();
-
-        break;
-      case 2:
-        sigA = signTx(unlockingTx, privateKeyA, escrow.lockingScript, amount);
-        sigE = signTx(unlockingTx, privateKeyE, escrow.lockingScript, amount);
-    
-        unlockingScript = escrow.unlock(
-          new SigHashPreimage(toHex(preimage)),
-          new PubKey(toHex(publicKeyA)),
-          new Sig(toHex(sigA)),
-          new PubKey(toHex(publicKeyE)),
-          new Sig(toHex(sigE)),
-          new Bytes(toHex(secretBuf1))
-        )
-        .toScript();
+            return escrow.unlock(
+              new SigHashPreimage(toHex(preimage)),
+              new PubKey(toHex(publicKeyA)),
+              new Sig(toHex(sigA)),
+              new PubKey(toHex(publicKeyE)),
+              new Sig(toHex(sigE)),
+              new Bytes(toHex(secretBuf1)),
+              new Ripemd160(toHex(publicKeyHash)),
+              tx.getChangeAmount()
+            )
+              .toScript();
+          })
+          .seal()
+          .sign(privateKey)
 
         break;
       case 3:
-        sigB = signTx(unlockingTx, privateKeyB, escrow.lockingScript, amount);
-        sigE = signTx(unlockingTx, privateKeyE, escrow.lockingScript, amount);
-    
-        unlockingScript = escrow.unlock(
-          new SigHashPreimage(toHex(preimage)),
-          new PubKey(toHex(publicKeyB)),
-          new Sig(toHex(sigB)),
-          new PubKey(toHex(publicKeyE)),
-          new Sig(toHex(sigE)),
-          new Bytes(toHex(secretBuf2))
-        )
-        .toScript();
 
+        unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+          .from(await fetchUtxos(privateKey.toAddress()))
+          .addOutput(new bsv.Transaction.Output({
+            script: bsv.Script.buildPublicKeyHashOut(privateKeyB.toAddress()),
+            satoshis: amount,
+          }))
+          .change(privateKey.toAddress())
+          .setInputScript(0, (tx, output) => {
+            const preimage = getPreimage(
+              tx,
+              output.script,
+              output.satoshis,
+              0,
+              sighashType
+            );
+
+            const sigB = signTx(unlockingTx, privateKeyB, escrow.lockingScript, amount);
+            const sigE = signTx(unlockingTx, privateKeyE, escrow.lockingScript, amount);
+
+            return escrow.unlock(
+              new SigHashPreimage(toHex(preimage)),
+              new PubKey(toHex(publicKeyB)),
+              new Sig(toHex(sigB)),
+              new PubKey(toHex(publicKeyE)),
+              new Sig(toHex(sigE)),
+              new Bytes(toHex(secretBuf2)),
+              new Ripemd160(toHex(publicKeyHash)),
+              tx.getChangeAmount()
+            )
+              .toScript();
+          })
+          .seal()
+          .sign(privateKey)
         break;
     }
-
-    unlockingTx.inputs[0].setScript(unlockingScript);
 
     const unlockingTxid = await sendTx(unlockingTx);
     console.log('unlocking txid:   ', unlockingTxid);
