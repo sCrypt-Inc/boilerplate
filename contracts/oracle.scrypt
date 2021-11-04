@@ -10,6 +10,8 @@ library Oracle {
         // sha256 data
         bytes hash = sha256(data);
 
+        // We interpret hash as little endian, even though it's big endian.
+        // This does not matter as long as it is converted to a 256-bit integer. We do not change endian to save script size
         PrivKey x = PrivKey(Util.fromLEUnsigned(hash));
 
         // verify X = x * G?
