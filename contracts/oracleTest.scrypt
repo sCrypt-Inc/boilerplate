@@ -1,0 +1,13 @@
+import "oracle.scrypt";
+
+// an oracle signing any data using ECDSA
+contract OracleTest {
+    PubKey oraclePubKey;
+    
+    // verify data is signed by the oracle with given public key
+    public function unlock(bytes data, Sig sig, PubKey derivedOraclePubKey, PubKey X,
+        int lambda, SigHashPreimage txPreimage) {
+        require(Oracle.verifyData(data, sig, this.oraclePubKey,
+            derivedOraclePubKey, X, lambda, txPreimage));
+    }
+}

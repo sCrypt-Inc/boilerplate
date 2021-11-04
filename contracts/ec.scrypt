@@ -1,3 +1,4 @@
+import "util.scrypt";
 struct Point {
     int x;
     int y;
@@ -44,6 +45,11 @@ library EC {
         return p1 == ZERO ? p2 == p : (p2 == ZERO ? p1 == p : (p1.x == p2.x && (p1.y + p2.y) % P == 0) ? p == ZERO : isSumHelper(p1, p2, lambda, p));
     }
 
+    // same as isSum(), but using type PubKey
+    static function isPubKeySum(PubKey p1, PubKey p2, int lambda, PubKey p) : bool {
+        return isSum(pubKey2Point(p1), pubKey2Point(p2), lambda, pubKey2Point(p));
+    }
+    
     // return true iff p * x == r
     static function isMul(Point p, int x, Point r, PointMulAux pma) : bool {
 
@@ -75,5 +81,20 @@ library EC {
         }
 
         return true;
+    }
+
+    // convert a public key to a point, assuming it's uncompressed
+    static function pubKey2Point(PubKey pubKey) : Point {
+        require(pubKey[: 1] == b'04');
+        //convert signed little endian to unsigned big endian
+        int x = Util.fromLEUnsigned(reverseBytes(pubKey[1 : 33], 32));
+        int y = Util.fromLEUnsigned(reverseBytes(pubKey[33 : 65], 32));
+        return {x, y};
+    }
+
+    // convert a point to a uncompressed public key
+    static function point2PubKey(Point point) : PubKey {
+        //serializer point.x, point.y to unsigned big endian number
+        return PubKey(b'04' + Util.toBEUnsigned(point.x, 32) + Util.toBEUnsigned(point.y, 32));
     }
 }
