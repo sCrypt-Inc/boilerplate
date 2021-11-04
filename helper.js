@@ -177,19 +177,18 @@ const sleep = async(seconds) => {
 }
 
 async function deployContract(contract, amount) {
-  // step 1: fetch utxos
-  const address = privateKey.toAddress();
-  const utxos = await fetchUtxos(address);
-  // step 2: build the tx
-  const tx = new bsv.Transaction().from(utxos)
-  tx.addOutput(new bsv.Transaction.Output({
+
+  const address = privateKey.toAddress()
+  const tx = new bsv.Transaction()
+  tx.from(await fetchUtxos(address))
+  .addOutput(new bsv.Transaction.Output({
     script: contract.lockingScript,
     satoshis: amount,
   }))
   .change(address)
   .sign(privateKey)
-  await sendTx(tx);
-  return tx;
+  await sendTx(tx)
+  return tx
 }
 
 //create an input spending from prevTx's output, with empty script
