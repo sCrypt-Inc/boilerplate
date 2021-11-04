@@ -24,7 +24,6 @@ struct RecursiveReturn {
 
 //Please modify
 library Aux {
-    static const int fee = 5000;
     static const int SizeOfObject = 2;
 
     static function my_great_function(Object object) : RecursiveReturn {

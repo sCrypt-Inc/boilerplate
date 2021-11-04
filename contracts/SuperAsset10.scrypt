@@ -104,7 +104,10 @@ contract SimpleAsset10 {
 
         // Use the constant code size of 3228 to pass along the assetId, receiver, and payload data (following all minimal push encoding rules)    // Make change from the other inputs that must exist to fund this transaction
         // Hardcode the length of the assetId (0x24 = 36 bytes) and the public key (0x21 = 33 bytes).
-        require(hash256(Util.buildOutput(lockingScript[: 3228] + b'6a24' + assetId + b'21' + receiver + Util.writeVarMinimalPushdata(payload), Util.value(txPreimage)) + Util.buildOutput(Util.buildPublicKeyHashScript(changeAddress), changeSatoshis)) == Util.hashOutputs(txPreimage));
+        bytes output0 = Util.buildOutput(lockingScript[: 3228] + b'6a24' + assetId + b'21' + receiver + Util.writeVarMinimalPushdata(payload), Util.value(txPreimage));
+        bytes output1 = Util.buildOutput(Util.buildPublicKeyHashScript(changeAddress), changeSatoshis);
+        bytes outputs = output0 + output1;
+        require(hash256(outputs) == Util.hashOutputs(txPreimage));
     }
 
     //

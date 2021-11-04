@@ -16,7 +16,6 @@ const {
   showError,
   deployContract
 } = require('../helper');
-const { privateKey } = require('../privateKey');
 
 (async () => {
   const Signature = bsv.crypto.Signature;
@@ -42,14 +41,14 @@ const { privateKey } = require('../privateKey');
     // call contract method on testnet
     const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressX);
 
-    const newAmount = amount - 1000; //minFee;
-
     const unlockingTx = new bsv.Transaction();
     unlockingTx.addInput(createInputFromPrevTx(lockingTx))
-      .addOutput(new bsv.Transaction.Output({
-        script: newLockingScript,
-        satoshis: newAmount,
-      }))
+      .setOutput(0, (tx) => {
+        return new bsv.Transaction.Output({
+          script: newLockingScript,
+          satoshis: amount - tx.getEstimateFee(),
+        })
+      })
       .setInputScript(0, (tx, _) => {
         const preimage = getPreimage(
           tx,
@@ -60,10 +59,12 @@ const { privateKey } = require('../privateKey');
           Signature.SIGHASH_ALL |
           Signature.SIGHASH_FORKID
         );
+        const outputAmount = amount - tx.getEstimateFee();
         return acs
-          .unlock(new SigHashPreimage(toHex(preimage)))
+          .unlock(new SigHashPreimage(toHex(preimage)), outputAmount)
           .toScript();
-      });
+      })
+      .seal()
 
     const unlockingTxid = await sendTx(unlockingTx);
     console.log('unlocking txid:   ', unlockingTxid);

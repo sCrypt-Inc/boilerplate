@@ -10,13 +10,13 @@ contract Final {
     }
 
     //Do not touch below
-    public function to_loop_1(SigHashPreimage txPreImage) {
-        require(Loop.to_loop_1(txPreImage));
+    public function to_loop_1(SigHashPreimage txPreImage, int newAmount) {
+        require(Loop.to_loop_1(txPreImage, newAmount));
     }
-    public function to_loop_2(SigHashPreimage txPreImage) {
-        require(Loop.to_loop_2(txPreImage));
+    public function to_loop_2(SigHashPreimage txPreImage, int newAmount) {
+        require(Loop.to_loop_2(txPreImage, newAmount));
     }
-    public function set_state(SigHashPreimage txPreImage, Object object) {
-        require(Loop.setState(txPreImage, object));
+    public function set_state(SigHashPreimage txPreImage, Object object, int newAmount) {
+        require(Loop.setState(txPreImage, object, newAmount));
     }
 }

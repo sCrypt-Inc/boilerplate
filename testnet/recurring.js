@@ -1,9 +1,7 @@
 const { resolve } = require('path');
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, bin2num, SigHashPreimage, Ripemd160 } = require('scryptlib');
-const { isConstructorDeclaration } = require('typescript');
-const { DataLen, loadDesc, createUnlockingTx, createLockingTx, sendTx, showError, unlockP2PKHInput} = require('../helper');
+const { DataLen, loadDesc, deployContract , sleep, sendTx, showError, createInputFromPrevTx, fetchUtxos } = require('../helper');
 const { privateKey } = require('../privateKey');
-const axios = require('axios');
 
 const publicKey = privateKey.publicKey;
 const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer());
@@ -16,67 +14,50 @@ const merchantPayment = 10000;
 const merchantPubKeyHash = p2pkh;
 const frequenceOfPayment = 0;
 
-const what_we_deposit = 10000;
-const fee = 5000;
+const what_we_deposit = 8000;
 
-// Wait for tx propagatin
-async function wait(seconds){
-    return new Promise(resolve=>{
-        setTimeout(() => {
-            return resolve();
-        }, seconds * 1000);
-    });
-}
-
-class Parser{
+class Parser {
     matureTimestamp;
     satoshis;
 
-    constructor(txid){
-        this._txid = txid;
+    constructor(tx) {
+        this._tx = tx;
     }
 
-    async parse(){
-        const {data:outputHex} = await axios.get(`https://api.whatsonchain.com/v1/bsv/test/tx/${this._txid}/hex`);
-        const tx = new bsv.Transaction();
-        tx.fromString(outputHex);
-        const contractOutput = tx.outputs[0];
+    async parse() {
+        const contractOutput = this._tx.outputs[0];
         const asm = contractOutput.script.toASM();
-        const matureTimestampLE = asm.substring(asm.length-8);
+        const matureTimestampLE = asm.substring(asm.length - 8);
         this.satoshis = contractOutput.satoshis;
         this.matureTimestamp = Number(bin2num(matureTimestampLE));
     }
 }
 
 //Deploy contract
-async function deploy(deploySatoshis){
+async function deploy(deploySatoshis) {
     const Contract = buildContractClass(loadDesc('recurring_debug_desc.json'));
     const contract = new Contract(userPubKeyHash, merchantPayment, merchantPubKeyHash, frequenceOfPayment);
     const initMatureTimestamp = parseInt(new Date().getTime() / 1000) - 7200;
     contract.setDataPart(num2bin(initMatureTimestamp, 4));
-    const lockingTx = await createLockingTx(privateKey.toAddress(), deploySatoshis, contract.lockingScript);
-    lockingTx.sign(privateKey);
-    const lockingTxid = await sendTx(lockingTx);
-    return lockingTxid;
+    return await deployContract(contract, deploySatoshis);
 }
 
-class RecurringDepositUser{
-    constructor(contractUtxoTxid, depositSatoshis, p2pkh){
-        this._txid = contractUtxoTxid;
+class RecurringDepositUser {
+    constructor(tx, depositSatoshis, p2pkh) {
+        this._tx = tx;
         this._depositSatoshis = depositSatoshis;
         this._p2pkh = p2pkh;
     }
 
-    async deposit(){
+    async deposit() {
         await this._parseContract();
         const tx = await this._composeTx();
-        this._unlockContractInput(tx);
-        this._unlockInputsExceptContract(tx);
-        return await sendTx(tx)
+        await sendTx(tx)
+        return tx
     }
 
-    async _parseContract(){
-        const parser = new Parser(this._txid);
+    async _parseContract() {
+        const parser = new Parser(this._tx);
         await parser.parse();
         this._contractMatureTimestamp = parser.matureTimestamp;
         this._oldContractSatoshis = parser.satoshis;
@@ -84,118 +65,126 @@ class RecurringDepositUser{
         this._buildContract();
     }
 
-    _buildContract(){
+    _buildContract() {
         const Contract = buildContractClass(loadDesc('recurring_debug_desc.json'));
         this._contract = new Contract(userPubKeyHash, merchantPayment, merchantPubKeyHash, frequenceOfPayment);
         this._contract.setDataPart(num2bin(this._contractMatureTimestamp, 4));
     }
 
-    async _composeTx(){
+    async _composeTx() {
         const newContractSatoshis = this._oldContractSatoshis + this._depositSatoshis;
-        const tx =  await createLockingTx(privateKey.toAddress(), newContractSatoshis, this._contract.lockingScript);
 
-        tx.addInput(new bsv.Transaction.Input({
-            prevTxId: this._txid,
-            outputIndex: 0,
-            script: new bsv.Script(), // placeholder
-        }), this._contract.lockingScript, this._oldContractSatoshis);
-        return tx;
+        const unlockingTx = new bsv.Transaction();
+
+        unlockingTx.addInput(createInputFromPrevTx(this._tx))
+            .from(await fetchUtxos(privateKey.toAddress()))
+            .addOutput(new bsv.Transaction.Output({
+                script: this._contract.lockingScript,
+                satoshis: newContractSatoshis,
+            }))
+            .change(privateKey.toAddress())
+            .setInputScript(0, (tx, output) => {
+                const preimage = getPreimage(tx, output.script, output.satoshis);
+                return this._contract.deposit_user(
+                    new SigHashPreimage(toHex(preimage)),
+                    this._depositSatoshis,
+                    tx.getChangeAmount()
+                ).toScript();
+            })
+            .sign(privateKey)
+            .seal()
+
+        return unlockingTx;
     }
 
-    _unlockContractInput(tx){
-        const preimage = getPreimage(tx, this._contract.lockingScript, this._oldContractSatoshis, tx.inputs.length - 1);
-        const pkh = this._prvKeyToHexPKH();
-        const unlockingScript = this._contract.deposit_user(
-            new SigHashPreimage(toHex(preimage)),
-            this._depositSatoshis,
-            tx.outputs[1].satoshis
-        ).toScript();
-        tx.inputs[tx.inputs.length - 1].setScript(unlockingScript);
-    }
-
-    _unlockInputsExceptContract(tx){
-        const Signature = bsv.crypto.Signature
-        const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
-        for(let i = 0; i < tx.inputs.length - 1; i++){
-            unlockP2PKHInput(privateKey, tx, i, sighashType);
-        }
-    }
-
-    _prvKeyToHexPKH(){
+    _prvKeyToHexPKH() {
         const publicKey = privateKey.publicKey;
         return toHex(bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer()));
     }
 }
 
-class RecurringWithdrawMerchant{
-    constructor(contractUtxoTxid){
-        this._txid = contractUtxoTxid;
+class RecurringWithdrawMerchant {
+    constructor(tx) {
+        this._tx = tx;
     }
 
-    async withdraw(){
+    async withdraw() {
         await this._parseContract();
         const tx = await this._composeTx();
-        this._unlockContractInput(tx);
-        return await sendTx(tx);
+        await sendTx(tx);
+        return tx;
     }
 
-    _buildContract(){
+    _buildContract() {
         const Contract = buildContractClass(loadDesc('recurring_debug_desc.json'));
         this._contract = new Contract(userPubKeyHash, merchantPayment, merchantPubKeyHash, frequenceOfPayment);
         this._contract.setDataPart(num2bin(this._lastMatureTimestamp, 4));
     }
 
-    async _parseContract(){
-        const parser = new Parser(this._txid);
+    async _parseContract() {
+        const parser = new Parser(this._tx);
         await parser.parse();
         this._lastMatureTimestamp = parser.matureTimestamp;
         this._oldContractSatoshis = parser.satoshis;
         this._buildContract();
     }
 
-    _calcNewMatureTimestamp(){
+    _calcNewMatureTimestamp() {
         return this._lastMatureTimestamp + frequenceOfPayment;
     }
 
-    async _composeTx(){
-        const newLockingScript = bsv.Script.fromASM(this._contract.codePart.toASM() + ' ' + num2bin(this._calcNewMatureTimestamp(), 4));
-        const newContractSatoshis = this._oldContractSatoshis - fee - merchantPayment;
-        const tx = await createUnlockingTx(this._txid, this._oldContractSatoshis, this._contract.lockingScript, newContractSatoshis, newLockingScript);
-        tx.addOutput(new bsv.Transaction.Output({
-            script: bsv.Script.buildPublicKeyHashOut(merchantAddress),
-            satoshis: merchantPayment
-        }));
-        tx.inputs[0].sequenceNumber = 0xFFFFFFFE;
-        tx.nLockTime = this._calcNewMatureTimestamp();
-        tx.fee(fee);
-        return tx;
-    }
+    async _composeTx() {
+        const newLockingScript = bsv.Script.fromASM(this._contract.codePart.toASM()
+            + ' ' + num2bin(this._calcNewMatureTimestamp(), 4));
 
-    async _unlockContractInput(tx){
-        const preimage = getPreimage(tx, this._contract.lockingScript, this._oldContractSatoshis);
-        const unlockingScript = this._contract.withdraw_merchant(new SigHashPreimage(toHex(preimage))).toScript();
-        tx.inputs[0].setScript(unlockingScript);
+
+        const unlockingTx = new bsv.Transaction();
+
+        unlockingTx.addInput(createInputFromPrevTx(this._tx))
+            .setOutput(0, (tx) => {
+                const newAmount = this._oldContractSatoshis - merchantPayment - tx.getEstimateFee();
+                return new bsv.Transaction.Output({
+                    script: newLockingScript,
+                    satoshis: newAmount
+                })
+            })
+            .setOutput(1, (tx) => {
+                return new bsv.Transaction.Output({
+                    script: bsv.Script.buildPublicKeyHashOut(merchantAddress),
+                    satoshis: merchantPayment
+                })
+            })
+            .setInputScript(0, (tx, output) => {
+                const preimage = getPreimage(tx, output.script, output.satoshis);
+                const newAmount = this._oldContractSatoshis - merchantPayment - tx.getEstimateFee();
+                return this._contract.withdraw_merchant(new SigHashPreimage(toHex(preimage)), newAmount).toScript()
+            })
+            .setInputSequence(0, 0xFFFFFFFE)
+            .setLockTime(this._calcNewMatureTimestamp())
+            .seal()
+
+        return unlockingTx;
     }
 }
 
 
-(async() => {
+(async () => {
     try {
         //Deploy at first with 10000 sats
-        const deployTxid = await deploy(what_we_deposit);
-        console.log(`deploy ${deployTxid}`);
-        await wait(5);
+        const deployTx = await deploy(what_we_deposit);
+        console.log(`deploy ${deployTx.id}`);
+        await sleep(5);
 
         //Deposit 10000 more
-        const deposit = new RecurringDepositUser(deployTxid, what_we_deposit, p2pkh);
-        const depositTxid = await deposit.deposit();
-        console.log(`deposit ${depositTxid}`);
-        await wait(5);
+        const deposit = new RecurringDepositUser(deployTx, what_we_deposit, p2pkh);
+        const depositTx = await deposit.deposit();
+        console.log(`deposit ${depositTx.id}`);
+        await sleep(5);
 
         //Merchant withdraw some money
-        const withdraw = new RecurringWithdrawMerchant(depositTxid);
-        const withdrawTxid = await withdraw.withdraw();
-        console.log(`withdraw ${withdrawTxid}`);
+        const withdraw = new RecurringWithdrawMerchant(depositTx);
+        const withdrawTx = await withdraw.withdraw();
+        console.log(`withdraw ${withdrawTx.id}`);
 
         //User can also decide to leave and withdraw its money
         //Todo
