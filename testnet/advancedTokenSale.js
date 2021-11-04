@@ -100,11 +100,11 @@ function sleep(ms) {
           satoshis: newAmount,
         }))
         .change(privateKey.toAddress())
-        .setInputScript(0, (tx, _) => {
+        .setInputScript(0, (tx, output) => {
           let preimage = getPreimage(
             tx,
-            advTokenSale.lockingScript,
-            amount,
+            output.script,
+            output.satoshis,
             0,
             sighashType
           );

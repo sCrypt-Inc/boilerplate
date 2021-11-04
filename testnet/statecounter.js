@@ -16,14 +16,15 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
         // unlock
         for (i = 0; i < 3; i++) {
             
-            const newLockingScript = counter.getNewStateScript({
-                counter: i + 1
-            })
+           
 
             const unlockingTx = new bsv.Transaction();
             
             unlockingTx.addInput(createInputFromPrevTx(prevTx))
             .setOutput(0, (tx) => {
+                const newLockingScript = counter.getNewStateScript({
+                    counter: i + 1
+                })
                 const newAmount =  amount - tx.getEstimateFee();
                 return new bsv.Transaction.Output({
                     script: newLockingScript,
