@@ -30,6 +30,12 @@ library Util {
         return m[0 : len(m) - 1];
     }
 
+    // convert signed integer `n` to unsigned integer of `l` bytes, in big endian
+    static function toBEUnsigned(int n, static const  int l) : bytes {
+        bytes m = toLEUnsigned(n, l);
+        return reverseBytes(m,l);
+    }
+
     // convert bytes to unsigned integer, in sign-magnitude little endian
     static function fromLEUnsigned(bytes b) : int {
         // append positive sign byte. Util does not hurt even when sign bit is already positive
