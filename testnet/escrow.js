@@ -121,8 +121,9 @@ const { privateKey } = require('../privateKey');
             )
               .toScript();
           })
-          .seal()
           .sign(privateKey)
+          .seal()
+          
 
         break;
       case 2:
@@ -158,8 +159,9 @@ const { privateKey } = require('../privateKey');
             )
               .toScript();
           })
-          .seal()
           .sign(privateKey)
+          .seal()
+          
 
         break;
       case 3:
@@ -195,8 +197,9 @@ const { privateKey } = require('../privateKey');
             )
               .toScript();
           })
-          .seal()
           .sign(privateKey)
+          .seal()
+          
         break;
     }
 
