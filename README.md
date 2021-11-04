@@ -49,6 +49,7 @@ For each contract `x`, a source file is at `contracts/x.scrypt`, a test file is 
 │   ├── merkleToken.scrypt              # Token based on Merkle Tree
 │   ├── merkleTree.scrypt               # <a href="https://medium.com/@xiaohuiliu/scalable-state-storage-in-bsv-smart-contracts-60f9aeb3b1f">Merkle Tree</a> validation and updating
 │   ├── nonFungibleToken.scrypt         # <a href="https://medium.com/@xiaohuiliu/non-fungible-tokens-on-bitcoin-sv-4575368f46a">non-fungible token</a>
+│   ├── oracle.scrypt                    # <a href="https://xiaohuiliu.medium.com/ecdsa-based-oracles-on-bitcoin-e69d15afe6c5">ECDSA-based Oracles</a>
 │   ├── p2pkh.scrypt                    # <a href="https://scryptdoc.readthedocs.io/en/latest/p2pkh.html">p2pkh</a> contract written in sCrypt
 │   ├── p2sh.scrypt                     # <a href="https://medium.com/@xiaohuiliu/sun-rising-p2sh-7ebfca9283aa">p2sh after Genesis</a>
 │   ├── perceptron.scrypt               # <a href="https://xiaohuiliu.medium.com/ai-on-bitcoin-96bbc97a62b9">AI/perceptron</a>
