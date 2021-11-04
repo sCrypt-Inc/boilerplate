@@ -1,30 +1,18 @@
-const { resolve } = require('path');
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, bin2num, SigHashPreimage, Ripemd160 } = require('scryptlib');
-const { DataLen, loadDesc, createUnlockingTx, createLockingTx, sendTx, showError, unlockP2PKHInput, sleep, anyOnePayforTx } = require('../helper');
+const { loadDesc,  sendTx, showError, sleep, deployContract, createInputFromPrevTx, fetchUtxos } = require('../helper');
 const { privateKey } = require('../privateKey');
-const axios = require('axios')
 
-async function wait(seconds) {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            return resolve();
-        }, seconds * 1000);
-    });
-}
 
 class FaucetTxParser {
     matureTimestamp;
     satoshis;
 
-    constructor(txid) {
-        this._txid = txid;
+    constructor(tx) {
+        this._tx = tx;
     }
 
     async parse() {
-        const { data: outputHex } = await axios.get(`https://api.whatsonchain.com/v1/bsv/test/tx/${this._txid}/hex`);
-        const tx = new bsv.Transaction();
-        tx.fromString(outputHex);
-        const contractOutput = tx.outputs[0];
+        const contractOutput = this._tx.outputs[0];
         const asm = contractOutput.script.toASM();
         const matureTimestampLE = asm.substring(asm.length - 8);
         this.satoshis = contractOutput.satoshis;
@@ -42,30 +30,25 @@ class FaucetDeploy {
         const contract = new Contract();
         const initMatureTimestamp = parseInt(new Date().getTime() / 1000) - 7200;
         contract.setDataPart(num2bin(initMatureTimestamp, 4));
-        const lockingTx = await createLockingTx(privateKey.toAddress(), this._deploySatoshis, contract.lockingScript);
-        lockingTx.sign(privateKey);
-        const lockingTxid = await sendTx(lockingTx);
-        return lockingTxid;
+        return await deployContract(contract, this._deploySatoshis);
     }
 }
 
 class FaucetDeposit {
-    constructor(contractUtxoTxid, depositSatoshis, fee) {
-        this._fee = fee;
-        this._txid = contractUtxoTxid;
+    constructor(deployTx, depositSatoshis) {
+        this._tx = deployTx;
         this._depositSatoshis = depositSatoshis;
     }
 
     async deposit() {
         await this._parseContract();
         const tx = await this._composeTx();
-        this._unlockContractInput(tx);
-        this._unlockInputsExceptContract(tx);
-        return await sendTx(tx)
+        await sendTx(tx);
+        return tx
     }
 
     async _parseContract() {
-        const parser = new FaucetTxParser(this._txid);
+        const parser = new FaucetTxParser(this._tx);
         await parser.parse();
         this._contractMatureTimestamp = parser.matureTimestamp;
         this._oldContractSatoshis = parser.satoshis;
@@ -81,30 +64,32 @@ class FaucetDeposit {
 
     async _composeTx() {
         const newContractSatoshis = this._oldContractSatoshis + this._depositSatoshis;
-        const tx = await createUnlockingTx(this._txid, this._oldContractSatoshis, this._contract.lockingScript,
-            newContractSatoshis, this._contract.lockingScript);
-        await anyOnePayforTx(tx, privateKey.toAddress(), this._fee);
-        return tx;
-    }
 
-    _unlockContractInput(tx) {
-        const preimage = getPreimage(tx, this._contract.lockingScript, this._oldContractSatoshis, 0);
-        const pkh = this._prvKeyToHexPKH();
-        const unlockingScript = this._contract.deposit(
-            new SigHashPreimage(toHex(preimage)),
-            this._depositSatoshis,
-            new Ripemd160(pkh),
-            tx.outputs[1].satoshis
-        ).toScript();
-        tx.inputs[0].setScript(unlockingScript);
-    }
+        const unlockingTx = new bsv.Transaction();
 
-    _unlockInputsExceptContract(tx) {
-        const Signature = bsv.crypto.Signature
-        const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
-        for (let i = 1; i < tx.inputs.length; i++) {
-            unlockP2PKHInput(privateKey, tx, i, sighashType);
-        }
+        unlockingTx.addInput(createInputFromPrevTx(this._tx))
+            .from(await fetchUtxos(privateKey.toAddress()))
+            .addOutput(new bsv.Transaction.Output({
+                script: this._contract.lockingScript,
+                satoshis: newContractSatoshis,
+            }))
+            .change(privateKey.toAddress())
+            .setInputScript(0, (tx, output) => {
+                const preimage = getPreimage(tx, output.script, output.satoshis);
+                const pkh = this._prvKeyToHexPKH();
+
+                return this._contract.deposit(
+                    new SigHashPreimage(toHex(preimage)),
+                    this._depositSatoshis,
+                    new Ripemd160(pkh),
+                    tx.getChangeAmount()
+                ).toScript();
+
+            })
+            .sign(privateKey)
+            .seal()
+
+        return unlockingTx;
     }
 
     _prvKeyToHexPKH() {
@@ -114,18 +99,17 @@ class FaucetDeposit {
 }
 
 class FaucetWithdraw {
-    constructor(contractUtxoTxid, receiverAddress) {
-        this._txid = contractUtxoTxid;
+    constructor(tx, receiverAddress) {
+        this._tx = tx;
         this._receiverAddress = bsv.Address.fromString(receiverAddress);
         this._withdrawSatothis = 10000;
-        this._fee = 4000;
     }
 
     async withdraw() {
         await this._parseContract();
         const tx = await this._composeTx();
-        this._unlockContractInput(tx);
-        return await sendTx(tx);
+        await sendTx(tx);
+        return tx
     }
 
     _buildContract() {
@@ -135,7 +119,7 @@ class FaucetWithdraw {
     }
 
     async _parseContract() {
-        const parser = new FaucetTxParser(this._txid);
+        const parser = new FaucetTxParser(this._tx);
         await parser.parse();
         this._lastMatureTimestamp = parser.matureTimestamp;
         this._oldContractSatoshis = parser.satoshis;
@@ -147,44 +131,55 @@ class FaucetWithdraw {
     }
 
     async _composeTx() {
-        const newLockingScript = bsv.Script.fromASM(this._contract.codePart.toASM() + ' ' + num2bin(this._calcNewMatureTimestamp(), 4));
-        const newContractSatoshis = this._oldContractSatoshis - this._fee - this._withdrawSatothis;
-        const tx = await createUnlockingTx(this._txid, this._oldContractSatoshis, this._contract.lockingScript, newContractSatoshis, newLockingScript);
-        tx.addOutput(new bsv.Transaction.Output({
-            script: bsv.Script.buildPublicKeyHashOut(this._receiverAddress),
-            satoshis: this._withdrawSatothis
-        }));
-        tx.inputs[0].sequenceNumber = 0xFFFFFFFE;
-        tx.nLockTime = this._calcNewMatureTimestamp();
-        tx.fee(this._fee);
-        return tx;
+
+        const unlockingTx = new bsv.Transaction();
+
+        unlockingTx.addInput(createInputFromPrevTx(this._tx))
+            .setOutput(0, (tx) => {
+                const newLockingScript = bsv.Script.fromASM(this._contract.codePart.toASM() + ' ' + num2bin(this._calcNewMatureTimestamp(), 4));
+
+                const changeAmount = this._oldContractSatoshis - this._withdrawSatothis - tx.getEstimateFee();
+                return new bsv.Transaction.Output({
+                    script: newLockingScript,
+                    satoshis: changeAmount,
+                })
+            })
+            .addOutput(new bsv.Transaction.Output({
+                script: bsv.Script.buildPublicKeyHashOut(this._receiverAddress),
+                satoshis: this._withdrawSatothis
+            }))
+            .setInputScript(0, (tx, output) => {
+                const preimage = getPreimage(tx, output.script, output.satoshis);
+                const changeAmount = this._oldContractSatoshis - this._withdrawSatothis - tx.getEstimateFee();
+                return this._contract.withdraw(new SigHashPreimage(toHex(preimage)),
+                    new Ripemd160(this._receiverAddress.toHex().substring(2)), changeAmount).toScript()
+            })
+            .setInputSequence(0, 0xFFFFFFFE)
+            .setLockTime(this._calcNewMatureTimestamp())
+            .seal()
+
+        return unlockingTx;
     }
 
-    async _unlockContractInput(tx) {
-        const preimage = getPreimage(tx, this._contract.lockingScript, this._oldContractSatoshis);
 
-        const unlockingScript = this._contract.withdraw(new SigHashPreimage(toHex(preimage)), new Ripemd160(this._receiverAddress.toHex().substring(2))).toScript();
-        tx.inputs[0].setScript(unlockingScript);
-    }
 }
 
 
 (async () => {
     try {
-        const FEE = 4000;
         const deploy = new FaucetDeploy(5000);
-        const deployTxid = await deploy.deploy();
-        console.log(`deploy ${deployTxid}`);
-        await wait(6);
+        const deployTx = await deploy.deploy();
+        console.log(`deploy ${deployTx.id}`);
+        await sleep(6);
 
-        const deposit = new FaucetDeposit(deployTxid, 10000, FEE);
-        const depositTxid = await deposit.deposit();
-        console.log(`deposit ${depositTxid}`);
-        await wait(6);
+        const deposit = new FaucetDeposit(deployTx, 10000);
+        const depositTx = await deposit.deposit();
+        console.log(`deposit ${depositTx.id}`);
+        await sleep(6);
 
-        const withdraw = new FaucetWithdraw(depositTxid, privateKey.toAddress().toString());
-        const withdrawTxid = await withdraw.withdraw();
-        console.log(`withdraw ${withdrawTxid}`);
+        const withdraw = new FaucetWithdraw(depositTx, privateKey.toAddress().toString());
+        const withdrawTx = await withdraw.withdraw();
+        console.log(`withdraw ${withdrawTx.id}`);
     } catch (error) {
         console.log('Failed on testnet')
         showError(error)

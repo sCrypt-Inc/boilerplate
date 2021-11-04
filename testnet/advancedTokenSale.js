@@ -12,7 +12,6 @@ const {
 const {
   DataLen,
   loadDesc,
-  createLockingTx,
   sendTx,
   showError,
   deployContract,

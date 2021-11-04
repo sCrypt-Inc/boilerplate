@@ -1,7 +1,11 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Bytes } = require('scryptlib');
-const { loadDesc, createUnlockingTx, createLockingTx, sendTx, showError  } = require('../helper');
+const { loadDesc, deployContract, createInputFromPrevTx, sendTx, showError } = require('../helper');
 const { privateKey } = require('../privateKey');
 const axios = require('axios');
+
+const Signature = bsv.crypto.Signature
+const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_SINGLE | Signature.SIGHASH_FORKID
+
 
 //Convert the "state", to a sequence of bytes
 function write(state) {
@@ -21,11 +25,11 @@ function write(state) {
 function newState(state) {
   new_state = []
   new_state.push(false)
-  for (i = 1; i < N-1; i++) {
+  for (i = 1; i < N - 1; i++) {
     newElem = true;
-    left = state[i-1];
+    left = state[i - 1];
     middle = state[i];
-    right = state[i+1];
+    right = state[i + 1];
     if (left && middle && right) {
       newElem = false;
     }
@@ -41,7 +45,7 @@ function newState(state) {
   return new_state;
 }
 
-(async() => {
+(async () => {
   try {
     console.log("Hello !")
     console.log("This is a demo that bitcoin is actually turing complete using rule101 : https://en.wikipedia.org/wiki/Rule_110")
@@ -60,15 +64,14 @@ function newState(state) {
     const contract = new Rule101(new Bytes(write(state)));
 
     //This is the amount the utxo will hold
-    let amount = 30000
-    //Each time you spend the utxo, 4000sats will be paid as fees
-    const FEE = 4000
+    let amount = 15000
 
-    //Create the transaction "OP_...... OP_RETURN 0101000100"
-    const lockingTx =  await createLockingTx(privateKey.toAddress(), amount, contract.lockingScript)
-    lockingTx.sign(privateKey)
-    let lockingTxid = await sendTx(lockingTx)
-    console.log('Funding txid:   ', lockingTxid)
+
+    // deploy contract on testnet
+    const lockingTx = await deployContract(contract, amount);
+    console.log('locking txid:     ', lockingTx.id)
+
+    let prevTx = lockingTx;
 
     //Now we will spend the utxo
     //This utxo can only be spent if the new utxo has a locking script which is "OP_...... OP_RETURN newstate"
@@ -82,34 +85,48 @@ function newState(state) {
       //And it won't be accepted by miners, because the verification that you sent the new state is written in script
       const new_state = newState(state);
 
-            //Building the new transaction
+      //Building the new transaction
       const newLockingScript = contract.getNewStateScript({
         board: new Bytes(write(new_state))
       });
-      
+
       state = new_state;
-      const newAmount = amount - FEE
-      const unlockingTx = await createUnlockingTx(lockingTxid, amount, contract.lockingScript, newAmount, newLockingScript)
-      const preimage = getPreimage(unlockingTx, contract.lockingScript, amount)
-      const unlockingScript = contract.play(newAmount, new SigHashPreimage(toHex(preimage))).toScript()
-      unlockingTx.inputs[0].setScript(unlockingScript)
-      amount = newAmount
 
-      contract.board = new Bytes(write(new_state));
+      const unlockingTx = new bsv.Transaction();
 
+      unlockingTx.addInput(createInputFromPrevTx(prevTx))
+        .setOutput(0, (tx) => {
+          return new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: amount - tx.getEstimateFee(),
+          })
+        })
+        .setInputScript(0, (tx, output) => {
+          const preimage = getPreimage(tx, output.script, output.satoshis, 0, sighashType)
+          const newAmount = unlockingTx.outputs[0].satoshis;
+          return contract.play(newAmount, new SigHashPreimage(toHex(preimage))).toScript()
+        })
+        .seal()
       //Let's send it
       console.log("Sending a new transaction...")
       lockingTxid = await sendTx(unlockingTx)
       console.log('Tx #' + ii + ' sent. Txid: ', lockingTxid)
+
+
+      amount = unlockingTx.outputs[0].satoshis
+
+      contract.board = new Bytes(write(new_state));
+
+      prevTx = unlockingTx
 
       //The transaction is now known by miners. We can ask them what it was
       //This is what we do here, ask them what's our transaction is, and we take the part after OP_RETURN to see what's the state of the rule101 thing
       //Of course it's "state", but just to show that I'm not lying it's on the blockchain in the script program
       //And script itself enforce that the next utxo will have the correct state, hence turing completness
       console.log("Asking api.whatsonchain.com for the transaction...")
-      const {data:outputHex} = await axios.get('https://api.whatsonchain.com/v1/bsv/test/tx/'+lockingTxid+'/hex')
+      const { data: outputHex } = await axios.get('https://api.whatsonchain.com/v1/bsv/test/tx/' + lockingTxid + '/hex')
       const size = outputHex.length
-      const data = outputHex.substring(size - 2*N - 8, size - 8)
+      const data = outputHex.substring(size - 2 * N - 8, size - 8)
       console.log("Here is the latest state : ", data)
       //Here is what to do if you want to check the state on the web version of whatsonchain
       //Go to https://test.whatsonchain.com (test is for testnet)

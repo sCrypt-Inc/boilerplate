@@ -11,10 +11,8 @@ const {
   loadDesc,
   showError,
   fetchUtxos,
-  createUnlockingTx,
   createInputFromPrevTx,
   sendTx,
-  DataLen,
   deployContract
 } = require('../helper');
 const {
