@@ -180,6 +180,7 @@ async function deployContract(contract, amount) {
 
   const address = privateKey.toAddress()
   const tx = new bsv.Transaction()
+  
   tx.from(await fetchUtxos(address))
   .addOutput(new bsv.Transaction.Output({
     script: contract.lockingScript,
@@ -187,6 +188,7 @@ async function deployContract(contract, amount) {
   }))
   .change(address)
   .sign(privateKey)
+
   await sendTx(tx)
   return tx
 }

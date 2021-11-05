@@ -5,7 +5,6 @@ const { privateKey } = require('../privateKey');
 (async () => {
     try {
         const amount = 2000
-        const newAmount = 546
 
         // get locking script
         const CLTV = buildContractClass(loadDesc('cltv_debug_desc.json'));
@@ -20,10 +19,13 @@ const { privateKey } = require('../privateKey');
 
         unlockingTx.addInput(createInputFromPrevTx(lockingTx))
             .setLockTime(1422674 + 1)
-            .addOutput(new bsv.Transaction.Output({
-                script: cltv.lockingScript,
-                satoshis: newAmount,
-            }))
+            .setOutput(0, (tx) => {
+                const newAmount = amount - tx.getEstimateFee();
+                return new bsv.Transaction.Output({
+                    script: cltv.lockingScript,
+                    satoshis: newAmount,
+                  })
+            })
             .setInputScript(0, (tx, output) => {
                 const preimage = getPreimage(tx, output.script, output.satoshis)
                 return cltv.spend(new SigHashPreimage(toHex(preimage))).toScript()
