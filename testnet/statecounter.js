@@ -3,12 +3,10 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
 
 (async() => {
     try {
-        const Counter = buildContractClass(loadDesc('counter_debug_desc.json'))
-        const counter = new Counter()
-        // append state as op_return data
-        counter.setDataPart(num2bin(0, DataLen))
-        
-        let amount = 6000
+        const StateCounter = buildContractClass(loadDesc('statecounter_debug_desc.json'))
+        const counter = new StateCounter(0)
+
+        let amount = 8000
         // lock fund to the script
         const lockingTx =  await deployContract(counter, amount)
         console.log('funding txid:      ', lockingTx.id);
@@ -18,23 +16,25 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
         // unlock
         for (i = 0; i < 3; i++) {
             
-            const newState = num2bin(i + 1, DataLen);
-
-            const newLockingScript = bsv.Script.fromASM([counter.codePart.toASM(), newState].join(' '))
+           
 
             const unlockingTx = new bsv.Transaction();
             
             unlockingTx.addInput(createInputFromPrevTx(prevTx))
             .setOutput(0, (tx) => {
+                const newLockingScript = counter.getNewStateScript({
+                    counter: i + 1
+                })
+                const newAmount =  amount - tx.getEstimateFee();
                 return new bsv.Transaction.Output({
                     script: newLockingScript,
-                    satoshis: amount - tx.getEstimateFee(),
+                    satoshis: newAmount,
                   })
             })
             .setInputScript(0, (tx, output) => {
                 const preimage = getPreimage(tx, output.script, output.satoshis)
-                const newAmount = unlockingTx.outputs[0].satoshis;
-                return counter.increment(new SigHashPreimage(toHex(preimage)), newAmount).toScript()
+                const newAmount =  amount - tx.getEstimateFee();
+                return counter.unlock(new SigHashPreimage(toHex(preimage)), newAmount).toScript()
             })
             .seal()
 
@@ -43,7 +43,7 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
 
             amount = unlockingTx.outputs[0].satoshis
             // update state
-            counter.setDataPart(newState);
+            counter.counter = i + 1;
             prevTx = unlockingTx;
         }
 

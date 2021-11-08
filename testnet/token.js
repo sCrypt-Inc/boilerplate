@@ -14,8 +14,9 @@ const {
   DataLen,
   loadDesc,
   createUnlockingTx,
-  createLockingTx,
+  deployContract,
   sendTx,
+  createInputFromPrevTx,
   showError
 } = require('../helper');
 const {
@@ -31,7 +32,7 @@ const {
   try {
     const desc = loadDesc('token_debug_desc.json');
     const Token = buildContractClass(desc);
-    const {Account} = buildTypeClasses(desc)
+    const { Account } = buildTypeClasses(desc)
 
 
     const token = new Token([new Account({
@@ -43,104 +44,105 @@ const {
     })])
 
 
-    let amount = 11000
-    const FEE = 5000;
+    let amount = 10000
 
-    // lock fund to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, token.lockingScript)
-    lockingTx.sign(privateKey)
-    let lockingTxid = await sendTx(lockingTx)
-    console.log('funding txid:      ', lockingTxid)
+    // deploy contract on testnet
+    const lockingTx = await deployContract(token, amount);
+    console.log('locking txid:     ', lockingTx.id)
 
     // transfer 40 tokens from publicKey1 to publicKey2
-    {
-      const prevLockingScript = token.lockingScript
 
-      // update data state
-  
+    const transferTx1 = new bsv.Transaction();
 
-      const newLockingScript = token.getNewStateScript({
-        accounts: [new Account({
-          pubKey: new PubKey(toHex(publicKey1)),
-          balance: 60
-        }), new Account({
-          pubKey: new PubKey(toHex(publicKey2)),
-          balance: 40
-        })]
+    transferTx1.addInput(createInputFromPrevTx(lockingTx))
+      .setOutput(0, (tx) => {
+        const newLockingScript = token.getNewStateScript({
+          accounts: [new Account({
+            pubKey: new PubKey(toHex(publicKey1)),
+            balance: 60
+          }), new Account({
+            pubKey: new PubKey(toHex(publicKey2)),
+            balance: 40
+          })]
+        })
+
+        return new bsv.Transaction.Output({
+          script: newLockingScript,
+          satoshis: amount - tx.getEstimateFee(),
+        })
       })
+      .setInputScript(0, (tx, output) => {
+        // call contract method to get unlocking script
+        const newAmount = amount - tx.getEstimateFee();
+        const preimage = getPreimage(tx, output.script, output.satoshis)
+        const sig1 = signTx(tx, privateKey1, output.script, output.satoshis)
+        return token.transfer(
+          new PubKey(toHex(publicKey1)),
+          new Sig(toHex(sig1)),
+          new PubKey(toHex(publicKey2)),
+          40,
+          new SigHashPreimage(toHex(preimage)),
+          newAmount
+        ).toScript()
+      })
+      .seal()
+
+    await sendTx(transferTx1)
+    console.log('transfer txid1:    ', transferTx1.id)
 
 
-      const newAmount = amount - FEE
+    amount = transferTx1.outputs[0].satoshis;
 
-      const unlockScriptTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
-
-      // call contract method to get unlocking script
-      const preimage = getPreimage(unlockScriptTx, prevLockingScript, amount)
-      const sig1 = signTx(unlockScriptTx, privateKey1, prevLockingScript, amount)
-      const unlockingScript = token.transfer(
-        new PubKey(toHex(publicKey1)),
-        new Sig(toHex(sig1)),
-        new PubKey(toHex(publicKey2)),
-        40,
-        new SigHashPreimage(toHex(preimage)),
-        newAmount
-      ).toScript()
-
-      // set unlocking script
-      unlockScriptTx.inputs[0].setScript(unlockingScript)
-
-      lockingTxid = await sendTx(unlockScriptTx)
-      console.log('transfer txid1:    ', lockingTxid)
-
-      amount = newAmount
-
-      token.accounts =  [new Account({
-        pubKey: new PubKey(toHex(publicKey1)),
-        balance: 60
-      }), new Account({
-        pubKey: new PubKey(toHex(publicKey2)),
-        balance: 40
-      })]
-    }
+    // update state
+    token.accounts = [new Account({
+      pubKey: new PubKey(toHex(publicKey1)),
+      balance: 60
+    }), new Account({
+      pubKey: new PubKey(toHex(publicKey2)),
+      balance: 40
+    })]
 
     // transfer 10 tokens from publicKey2 to publicKey1
-    {
-      const prevLockingScript = token.lockingScript
+    const transferTx2 = new bsv.Transaction();
 
-      // update data state
-      
-      const newLockingScript = token.getNewStateScript({
-        accounts: [new Account({
-          pubKey: new PubKey(toHex(publicKey1)),
-          balance: 70
-        }), new Account({
-          pubKey: new PubKey(toHex(publicKey2)),
-          balance: 30
-        })]
+    transferTx2.addInput(createInputFromPrevTx(transferTx1))
+      .setOutput(0, (tx) => {
+        const newLockingScript = token.getNewStateScript({
+          accounts: [new Account({
+            pubKey: new PubKey(toHex(publicKey1)),
+            balance: 70
+          }), new Account({
+            pubKey: new PubKey(toHex(publicKey2)),
+            balance: 30
+          })]
+        })
+
+        return new bsv.Transaction.Output({
+          script: newLockingScript,
+          satoshis: amount - tx.getEstimateFee(),
+        })
       })
+      .setInputScript(0, (tx, output) => {
+        // call contract method to get unlocking script
+        const newAmount = amount - tx.getEstimateFee();
+        const preimage = getPreimage(tx, output.script, output.satoshis)
+        const sig = signTx(tx, privateKey2, output.script, output.satoshis)
+        // call contract method to get unlocking script
+        return token.transfer(
+          new PubKey(toHex(publicKey2)),
+          new Sig(toHex(sig)),
+          new PubKey(toHex(publicKey1)),
+          10,
+          new SigHashPreimage(toHex(preimage)),
+          newAmount
+        ).toScript()
+      })
+      .seal()
 
-      const newAmount = amount - FEE
 
-      const unlockScriptTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
 
-      // call contract method to get unlocking script
-      const preimage = getPreimage(unlockScriptTx, prevLockingScript, amount)
-      const sig2 = signTx(unlockScriptTx, privateKey2, prevLockingScript, amount)
-      const unlockingScript = token.transfer(
-        new PubKey(toHex(publicKey2)),
-        new Sig(toHex(sig2)),
-        new PubKey(toHex(publicKey1)),
-        10,
-        new SigHashPreimage(toHex(preimage)),
-        newAmount
-      ).toScript()
-
-      // set unlocking script
-      unlockScriptTx.inputs[0].setScript(unlockingScript)
-
-      lockingTxid = await sendTx(unlockScriptTx)
-      console.log('transfer txid2:    ', lockingTxid)
-    }
+    await sendTx(transferTx2)
+    console.log('transfer txid2:    ', transferTx2.id)
 
     console.log('Succeeded on testnet')
   } catch (error) {

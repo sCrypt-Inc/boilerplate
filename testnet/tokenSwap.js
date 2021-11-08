@@ -12,15 +12,13 @@ const {
     Sha256,
 } = require('scryptlib');
 const {
-    DataLen,
     loadDesc,
-    createUnlockingTx,
-    createLockingTx,
+    fetchUtxos,
     sendTx,
     showError,
-    anyOnePayforTx,
-    unlockP2PKHInput,
-    sleep
+    sleep,
+    deployContract,
+    createInputFromPrevTx
 } = require('../helper');
 const {
     privateKey,
@@ -54,7 +52,7 @@ let receiverMerklePath = ''
 let poolMerklePath = ''
 let mergeMerklePath = ''
 
-function buildTokenMerkleRoot(createPath, isPool=false) {
+function buildTokenMerkleRoot(createPath, isPool = false) {
     let dataA = Buffer.concat([Buffer.from(toHex(privateKey.publicKey), 'hex'), Buffer.from(num2bin(tokenBalance1, 8), 'hex')])
     let leafA = bsv.crypto.Hash.sha256(dataA)
 
@@ -97,25 +95,15 @@ async function createContractTx(tokenSwap) {
     //// build lp token tree
     lpMerkleRoot = toHex(bsv.crypto.Hash.sha256(Buffer.concat([Buffer.from(toHex(privateKey.publicKey), 'hex'), Buffer.from(num2bin(lpBalance1, 8), 'hex')])))
 
-
     tokenSwap.setDataPart(tokenMerkleRoot + lpMerkleRoot + num2bin(lpPoolBalance, 8))
-    console.log('setDataPart:', tokenMerkleRoot, lpMerkleRoot, num2bin(lpPoolBalance, 8))
 
     const inputAmount = 1000;
 
-    const tx = await createLockingTx(privateKey.toAddress(), inputAmount, tokenSwap.lockingScript);
-
-    tx.sign(privateKey)
-    let rawTx = tx.serialize()
-    console.log('lockingTx raw:', rawTx.length)
-    //let txid = await sendTx(lockingTx)
-    let txid = tx.id
-    console.log('tokenSwap init contract txid:', txid, tx.verify())
+    const tx = await deployContract(tokenSwap, inputAmount);
     return tx
 }
 
 async function createAddTokenUserTx(prevTx, tokenSwap) {
-    const prevLockingScript = prevTx.outputs[0].script
 
     let dataC = Buffer.concat([Buffer.from(toHex(privateKey2.publicKey), 'hex'), Buffer.from(num2bin(0, 8), 'hex')])
     let leafC = bsv.crypto.Hash.sha256(dataC)
@@ -125,34 +113,38 @@ async function createAddTokenUserTx(prevTx, tokenSwap) {
 
     tokenSwap.setDataPart(tokenMerkleRoot + lpMerkleRoot + num2bin(lpPoolBalance, 8))
     const newLockingScript = tokenSwap.lockingScript
-    console.log('addUserToken.setDataPart:', tokenMerkleRoot, lpMerkleRoot, num2bin(lpPoolBalance, 8))
-
-    const tx = createUnlockingTx(prevTx.id, prevTx.outputs[0].satoshis, prevLockingScript, prevTx.outputs[0].satoshis, newLockingScript);
     await sleep(6);
-    await anyOnePayforTx(tx, privateKey.toAddress(), FEE);
 
-    // input 0 unlocking script
-    let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
-    const preimage = getPreimage(tx, prevLockingScript, bsvBalance, inputIndex=0, sighashType=sigtype)
-    const userPubkey = new PubKey(toHex(privateKey2.publicKey))
-    // get the sender sig 
-    let adminSig = signTx(tx, privateKey, prevLockingScript, bsvBalance, inputIndex=0, sighashType=sigtype)
-    const unlockingScript = tokenSwap.addTokenUser(
-        new SigHashPreimage(toHex(preimage)), 
-        userPubkey, 
-        insertMerklePath,
-        new Sig(toHex(adminSig)), 
-        ).toScript()
-    tx.inputs[0].setScript(unlockingScript)
+    const unlockingTx = new bsv.Transaction();
 
-    // sign the input 1
-    unlockP2PKHInput(privateKey, tx, 1, bsv.crypto.Signature.SIGHASH_ALL | bsv.crypto.Signature.SIGHASH_FORKID)
+    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+        .from(await fetchUtxos(privateKey.toAddress()))
+        .addOutput(new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: prevTx.outputs[0].satoshis,
+        }))
+        .change(privateKey.toAddress())
+        .setInputScript(0, (tx, output) => {
+            // input 0 unlocking script
+            let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
+            const preimage = getPreimage(tx, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
+            const userPubkey = new PubKey(toHex(privateKey2.publicKey))
+            // get the sender sig 
+            let adminSig = signTx(tx, privateKey, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
+            return tokenSwap.addTokenUser(
+                new SigHashPreimage(toHex(preimage)),
+                userPubkey,
+                insertMerklePath,
+                new Sig(toHex(adminSig)),
+            ).toScript()
+        })
+        .sign(privateKey)
+        .seal()
 
-    return tx
+    return unlockingTx
 }
 
 async function createTransferTx(prevTx, tokenSwap) {
-    const prevLockingScript = prevTx.outputs[0].script
     const transferAmount = 100000
 
     buildTokenMerkleRoot(true)
@@ -164,44 +156,48 @@ async function createTransferTx(prevTx, tokenSwap) {
     const newLockingScript = tokenSwap.lockingScript
     console.log('setDataPart:', tokenMerkleRoot, lpMerkleRoot, num2bin(lpPoolBalance, 8))
 
-    const tx = createUnlockingTx(prevTx.id, prevTx.outputs[0].satoshis, prevLockingScript, prevTx.outputs[0].satoshis, newLockingScript);
-
     await sleep(6);
-    await anyOnePayforTx(tx, privateKey.toAddress(), FEE);
 
-    // input 0 unlocking script
-    let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
-    const preimage = getPreimage(tx, prevLockingScript, bsvBalance, inputIndex=0, sighashType=sigtype)
-    const senderPubKey = new PubKey(toHex(privateKey.publicKey))
-    // get the sender sig 
-    let senderSig = signTx(tx, privateKey, prevLockingScript, bsvBalance, inputIndex=0, sighashType=sigtype)
-    const receiverPubKey = new PubKey(toHex(privateKey2.publicKey))
+    const unlockingTx = new bsv.Transaction();
 
-    const unlockingScript = tokenSwap.transfer(
-        new SigHashPreimage(toHex(preimage)), 
-        senderPubKey, 
-        new Sig(toHex(senderSig)), 
-        receiverPubKey, 
-        transferAmount,
-        tokenBalance1 + transferAmount,
-        senderMerklePath,
-        tokenBalance2 - transferAmount,
-        receiverMerklePath,
-        mergeMerklePath,
-        true
-        ).toScript()
-    tx.inputs[0].setScript(unlockingScript)
-    
-    // sign the input 1
-    unlockP2PKHInput(privateKey, tx, 1, bsv.crypto.Signature.SIGHASH_ALL | bsv.crypto.Signature.SIGHASH_FORKID)
+    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+        .from(await fetchUtxos(privateKey.toAddress()))
+        .addOutput(new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: prevTx.outputs[0].satoshis,
+        }))
+        .change(privateKey.toAddress())
+        .setInputScript(0, (tx, output) => {
+            // input 0 unlocking script
+            let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
+            const preimage = getPreimage(tx, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
+            const senderPubKey = new PubKey(toHex(privateKey.publicKey))
+            // get the sender sig 
+            let senderSig = signTx(tx, privateKey, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
+            const receiverPubKey = new PubKey(toHex(privateKey2.publicKey))
 
-    //console.log('transfer tx args:', toHex(preimage), senderPubKey, toHex(senderSig), receiverPubKey, transferAmount, tokenBalance1 + transferAmount, senderMerklePath, tokenBalance2 - transferAmount, receiverMerklePath, mergeMerklePath, true)
-    //console.log('\n\ntransferTx id:', tx.id, tx.serialize())
-    return tx
+            return tokenSwap.transfer(
+                new SigHashPreimage(toHex(preimage)),
+                senderPubKey,
+                new Sig(toHex(senderSig)),
+                receiverPubKey,
+                transferAmount,
+                tokenBalance1 + transferAmount,
+                senderMerklePath,
+                tokenBalance2 - transferAmount,
+                receiverMerklePath,
+                mergeMerklePath,
+                true
+            ).toScript()
+        })
+        .sign(privateKey)
+        .seal()
+
+
+    return unlockingTx
 }
 
 async function createAddLiqTx(prevTx, tokenSwap) {
-    const prevLockingScript = prevTx.outputs[0].script
 
     const addTokenAmount = firstSaveTokenAmount
     const addBsvAmount = firstSaveBsvAmount
@@ -223,48 +219,52 @@ async function createAddLiqTx(prevTx, tokenSwap) {
     const newLockingScript = tokenSwap.lockingScript
     console.log('addLiquidity.setDataPart:', tokenMerkleRoot, lpMerkleRoot, num2bin(lpPoolBalance, 8))
 
-
-    const tx = createUnlockingTx(prevTx.id, prevTx.outputs[0].satoshis, prevLockingScript, prevTx.outputs[0].satoshis + addBsvAmount, newLockingScript);
-
     await sleep(6);
-    await anyOnePayforTx(tx, privateKey.toAddress(), FEE);
 
 
-    // input 0 unlocking script
-    let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
-    const preimage = getPreimage(tx, prevLockingScript, prevTx.outputs[0].satoshis, inputIndex=0, sighashType=sigtype)
-    const senderPubKey = new PubKey(toHex(privateKey.publicKey))
-    // get the sender sig 
-    let senderSig = signTx(tx, privateKey, prevLockingScript, prevTx.outputs[0].satoshis, inputIndex=0, sighashType=sigtype)
+    const unlockingTx = new bsv.Transaction();
 
-    const unlockingScript = tokenSwap.addLiquidity(
-        new SigHashPreimage(toHex(preimage)), 
-        senderPubKey, 
-        new Sig(toHex(senderSig)), 
-        tokenBalance1 + addTokenAmount,
-        addTokenAmount,
-        addBsvAmount,
-        senderMerklePath,
-        poolBalance - addTokenAmount,
-        poolMerklePath,
-        true,
-        mergeMerklePath,
-        lpBalance1 - lpAddAmount,
-        lpMerklePath
-        ).toScript()
-    tx.inputs[0].setScript(unlockingScript)
+    const newAmount = prevTx.outputs[0].satoshis + addBsvAmount;
+    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+        .from(await fetchUtxos(privateKey.toAddress()))
+        .addOutput(new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: newAmount,
+        }))
+        .change(privateKey.toAddress())
+        .setInputScript(0, (tx, output) => {
+            // input 0 unlocking script
+            let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
+            const preimage = getPreimage(tx, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
+            const senderPubKey = new PubKey(toHex(privateKey.publicKey))
+            // get the sender sig 
+            let senderSig = signTx(tx, privateKey, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
 
-    // sign the input 1
-    unlockP2PKHInput(privateKey, tx, 1, bsv.crypto.Signature.SIGHASH_ALL | bsv.crypto.Signature.SIGHASH_FORKID)
+            return tokenSwap.addLiquidity(
+                new SigHashPreimage(toHex(preimage)),
+                senderPubKey,
+                new Sig(toHex(senderSig)),
+                tokenBalance1 + addTokenAmount,
+                addTokenAmount,
+                addBsvAmount,
+                senderMerklePath,
+                poolBalance - addTokenAmount,
+                poolMerklePath,
+                true,
+                mergeMerklePath,
+                lpBalance1 - lpAddAmount,
+                lpMerklePath
+            ).toScript()
+        })
+        .sign(privateKey)
+        .seal()
 
-    //console.log('addLiquidity tx args:', toHex(preimage), senderPubKey, toHex(senderSig), tokenBalance1 + addTokenAmount, addTokenAmount, addBsvAmount, senderMerklePath, poolBalance - addTokenAmount, poolMerklePath, true, mergeMerklePath, lpBalance1 - lpAddAmount, lpMerklePath)
-    //console.log('\n\ntransferTx id:', tx.id, tx.serialize())
-    return tx
+
+
+    return unlockingTx
 }
 
 async function createSwapBsvToTokenTx(prevTx, tokenSwap) {
-    const prevLockingScript = prevTx.outputs[0].script
-
     const swapBsvAmount = 10000
     const swapBsvFeeAmount = swapBsvAmount * (1000 - feeRate)
     const swapTokenAmount = Math.floor(swapBsvFeeAmount * poolBalance / (bsvBalance * 1000 + swapBsvFeeAmount))
@@ -275,56 +275,57 @@ async function createSwapBsvToTokenTx(prevTx, tokenSwap) {
     poolBalance = poolBalance - swapTokenAmount
     buildTokenMerkleRoot(false, true)
     console.log('tokenMerkleRoot', tokenMerkleRoot)
-    
+
 
     tokenSwap.setDataPart(tokenMerkleRoot + lpMerkleRoot + num2bin(lpPoolBalance, 8));
     const newLockingScript = tokenSwap.lockingScript;
 
-
-    console.log('swapBsvToToken.setDataPart:', tokenMerkleRoot, lpMerkleRoot, num2bin(lpPoolBalance, 8))
-    //console.log('swaBsvToToken. newLockingScript:', newLockingScript.toHex())
-
-    const tx = createUnlockingTx(prevTx.id, prevTx.outputs[0].satoshis, prevLockingScript, prevTx.outputs[0].satoshis + swapBsvAmount, newLockingScript);
-
     await sleep(6);
-    await anyOnePayforTx(tx, privateKey.toAddress(), FEE);
 
+    const unlockingTx = new bsv.Transaction();
 
-    // input 0 unlocking script
-    let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
-    const preimage = getPreimage(tx, prevLockingScript, prevTx.outputs[0].satoshis, inputIndex=0, sighashType=sigtype)
-    //console.log('preimage:', preimage)
-    const senderPubKey = new PubKey(toHex(privateKey.publicKey))
-    // get the sender sig 
-    let senderSig = signTx(tx, privateKey, prevLockingScript, prevTx.outputs[0].satoshis, inputIndex=0, sighashType=sigtype)
+    const newAmount = prevTx.outputs[0].satoshis + swapBsvAmount;
+    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+        .from(await fetchUtxos(privateKey.toAddress()))
+        .addOutput(new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: newAmount,
+        }))
+        .change(privateKey.toAddress())
+        .setInputScript(0, (tx, output) => {
+            // input 0 unlocking script
+            let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
+            const preimage = getPreimage(tx, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
+            //console.log('preimage:', preimage)
+            const senderPubKey = new PubKey(toHex(privateKey.publicKey))
+            // get the sender sig 
+            let senderSig = signTx(tx, privateKey, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
 
+            return tokenSwap.swapBsvToToken(
+                new SigHashPreimage(toHex(preimage)),
+                senderPubKey,
+                new Sig(toHex(senderSig)),
+                tokenBalance1 - swapTokenAmount,
+                senderMerklePath,
+                poolBalance + swapTokenAmount,
+                poolMerklePath,
+                mergeMerklePath,
+                false,
+                swapBsvAmount
+            ).toScript();
+        })
+        .sign(privateKey)
+        .seal()
 
-    const unlockingScript = tokenSwap.swapBsvToToken(
-        new SigHashPreimage(toHex(preimage)), 
-        senderPubKey, 
-        new Sig(toHex(senderSig)), 
-        tokenBalance1 - swapTokenAmount,
-        senderMerklePath,
-        poolBalance + swapTokenAmount,
-        poolMerklePath,
-        mergeMerklePath,
-        false,
-        swapBsvAmount
-    ).toScript();
-    tx.inputs[0].setScript(unlockingScript)
-
-    // sign the input 1
-    unlockP2PKHInput(privateKey, tx, 1, bsv.crypto.Signature.SIGHASH_ALL | bsv.crypto.Signature.SIGHASH_FORKID)
 
     bsvBalance = bsvBalance + swapBsvAmount
     //console.log('swapBsvToToken args:', toHex(preimage), senderPubKey, toHex(senderSig), tokenBalance1 - swapTokenAmount, senderMerklePath, poolBalance + swapTokenAmount, poolMerklePath, mergeMerklePath, false, swapBsvAmount)
     //console.log('\n\nswapBsvToToken tx:', tx.id, tx.serialize())
 
-    return tx
+    return unlockingTx
 }
 
 async function createSwapTokenToBsvTx(prevTx, tokenSwap) {
-    const prevLockingScript = prevTx.outputs[0].script
 
     const swapTokenAmount = 1500000
     const swapTokenFeeAmount = swapTokenAmount * (1000 - feeRate)
@@ -340,45 +341,49 @@ async function createSwapTokenToBsvTx(prevTx, tokenSwap) {
     const newLockingScript = tokenSwap.lockingScript
     console.log('swapTokenToBsv.setDataPart:', tokenMerkleRoot, lpMerkleRoot, num2bin(lpPoolBalance, 8))
 
-
-    const tx = createUnlockingTx(prevTx.id, prevTx.outputs[0].satoshis, prevLockingScript, prevTx.outputs[0].satoshis - swapBsvAmount, newLockingScript);
-
-
     await sleep(6);
-    await anyOnePayforTx(tx, privateKey.toAddress(), FEE);
 
-    // input 0 unlocking script
-    let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
-    const preimage = getPreimage(tx, prevLockingScript, prevTx.outputs[0].satoshis, inputIndex=0, sighashType=sigtype)
-    //console.log('preimage:', preimage)
-    const senderPubKey = new PubKey(toHex(privateKey.publicKey))
-    // get the sender sig 
-    let senderSig = signTx(tx, privateKey, prevLockingScript, prevTx.outputs[0].satoshis, inputIndex=0, sighashType=sigtype)
+    const unlockingTx = new bsv.Transaction();
 
-    const unlockingScript = tokenSwap.swapTokenToBsv(
-        new SigHashPreimage(toHex(preimage)), 
-        senderPubKey, 
-        new Sig(toHex(senderSig)), 
-        tokenBalance1 + swapTokenAmount,
-        swapTokenAmount,
-        senderMerklePath,
-        poolBalance - swapTokenAmount,
-        poolMerklePath,
-        mergeMerklePath,
-        true
-    ).toScript()
-    tx.inputs[0].setScript(unlockingScript)
+    const newAmount = prevTx.outputs[0].satoshis - swapBsvAmount;
+    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+        .from(await fetchUtxos(privateKey.toAddress()))
+        .addOutput(new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: newAmount,
+        }))
+        .change(privateKey.toAddress())
+        .setInputScript(0, (tx, output) => {
+            // input 0 unlocking script
+            let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
+            const preimage = getPreimage(tx, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
+            //console.log('preimage:', preimage)
+            const senderPubKey = new PubKey(toHex(privateKey.publicKey))
+            // get the sender sig 
+            let senderSig = signTx(tx, privateKey, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
 
-    unlockP2PKHInput(privateKey, tx, 1, bsv.crypto.Signature.SIGHASH_ALL | bsv.crypto.Signature.SIGHASH_FORKID)
+            return tokenSwap.swapTokenToBsv(
+                new SigHashPreimage(toHex(preimage)),
+                senderPubKey,
+                new Sig(toHex(senderSig)),
+                tokenBalance1 + swapTokenAmount,
+                swapTokenAmount,
+                senderMerklePath,
+                poolBalance - swapTokenAmount,
+                poolMerklePath,
+                mergeMerklePath,
+                true
+            ).toScript()
+        })
+        .sign(privateKey)
+        .seal()
 
-    //console.log('swapTokenToBsv args:', toHex(preimage), senderPubKey, toHex(senderSig), tokenBalance1 + swapTokenAmount, swapTokenAmount, senderMerklePath, poolBalance - swapTokenAmount, poolMerklePath, mergeMerklePath, false, fee)
-    //console.log('\n\nswapTokenToBsv tx:', tx.id, tx.serialize())
+
     bsvBalance = bsvBalance - swapBsvAmount
-    return tx
+    return unlockingTx
 }
 
 async function createRemoveLiquidityTx(prevTx, tokenSwap) {
-    const prevLockingScript = prevTx.outputs[0].script
 
     const lpAmount = 1000
     const poolBsvBalance = bsvBalance
@@ -402,42 +407,45 @@ async function createRemoveLiquidityTx(prevTx, tokenSwap) {
     const newLockingScript = tokenSwap.lockingScript
     console.log('removeLiquidity.setDataPart:', tokenMerkleRoot, lpMerkleRoot, num2bin(lpPoolBalance, 8))
 
-    const tx = createUnlockingTx(prevTx.id, prevTx.outputs[0].satoshis, prevLockingScript, prevTx.outputs[0].satoshis - addBsvAmount, newLockingScript);
-
-
     await sleep(6);
-    await anyOnePayforTx(tx, privateKey.toAddress(), FEE);
 
+    const unlockingTx = new bsv.Transaction();
 
-    // input 0 unlocking script
-    let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
-    const preimage = getPreimage(tx, prevLockingScript, prevTx.outputs[0].satoshis, inputIndex=0, sighashType=sigtype)
-    const senderPubKey = new PubKey(toHex(privateKey.publicKey))
-    // get the sender sig 
-    let senderSig = signTx(tx, privateKey, prevLockingScript, prevTx.outputs[0].satoshis, inputIndex=0, sighashType=sigtype)
+    const newAmount = prevTx.outputs[0].satoshis - addBsvAmount;
+    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+        .from(await fetchUtxos(privateKey.toAddress()))
+        .addOutput(new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: newAmount,
+        }))
+        .change(privateKey.toAddress())
+        .setInputScript(0, (tx, output) => {
+            // input 0 unlocking script
+            let sigtype = bsv.crypto.Signature.SIGHASH_SINGLE | bsv.crypto.Signature.SIGHASH_FORKID
+            const preimage = getPreimage(tx, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
+            const senderPubKey = new PubKey(toHex(privateKey.publicKey))
+            // get the sender sig 
+            let senderSig = signTx(tx, privateKey, output.script, output.satoshis, inputIndex = 0, sighashType = sigtype)
 
-    const unlockingScript = tokenSwap.removeLiquidity(
-        new SigHashPreimage(toHex(preimage)), 
-        senderPubKey, 
-        new Sig(toHex(senderSig)), 
-        tokenBalance1 - addTokenAmount,
-        lpAmount,
-        senderMerklePath,
-        true,
-        poolBalance + addTokenAmount,
-        poolMerklePath,
-        mergeMerklePath,
-        lpBalance1 + lpAmount,
-        lpMerklePath
-        ).toScript()
-    tx.inputs[0].setScript(unlockingScript)
+            return tokenSwap.removeLiquidity(
+                new SigHashPreimage(toHex(preimage)),
+                senderPubKey,
+                new Sig(toHex(senderSig)),
+                tokenBalance1 - addTokenAmount,
+                lpAmount,
+                senderMerklePath,
+                true,
+                poolBalance + addTokenAmount,
+                poolMerklePath,
+                mergeMerklePath,
+                lpBalance1 + lpAmount,
+                lpMerklePath
+            ).toScript()
+        })
+        .sign(privateKey)
+        .seal()
 
-    // sign the input 1
-    unlockP2PKHInput(privateKey, tx, 1, bsv.crypto.Signature.SIGHASH_ALL | bsv.crypto.Signature.SIGHASH_FORKID)
-
-    //console.log('removeLiquidity tx args:', toHex(preimage), senderPubKey, toHex(senderSig), tokenBalance1 - addTokenAmount, lpAmount, senderMerklePath, true, poolBalance + addTokenAmount, poolMerklePath, mergeMerklePath, lpBalance1 + lpAmount, lpMerklePath)
-    //console.log('\n\ntransferTx id:', tx.id, tx.serialize())
-    return tx
+    return unlockingTx
 }
 
 (async () => {

@@ -1,5 +1,6 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, signTx, Ripemd160, PubKey, Sig } = require("scryptlib");
-const { DataLen, loadDesc, unlockP2PKHInput, createLockingTx, createPayByOthersTx, sendTx, showError } = require("../helper");
+const { DataLen, loadDesc, deployContract,
+  createInputFromPrevTx, fetchUtxos, sendTx, showError, sleep } = require("../helper");
 const { privateKey } = require("../privateKey");
 
 (async () => {
@@ -34,113 +35,77 @@ const { privateKey } = require("../privateKey");
 
     rps.setDataPart(toHex(playerAdata) + num2bin(0, PubKeyHashLen) + num2bin(actionINIT, DataLen));
 
-    let initSatoshis = 10000;
+    let amount = 10000;
     let followSatoshis = 5000;
-    const FEE = 5000;
-    let finishSatoshis = 50000;
 
-    // lock fund to the script & player A start the game
-    const lockingTx = await createLockingTx(privateKey.toAddress(), initSatoshis, rps.lockingScript);
+    // deploy contract on testnet
+    const lockingTx = await deployContract(rps, amount);
+    console.log('locking txid:     ', lockingTx.id)
+    await sleep(6)
 
-    lockingTx.sign(privateKey);
+    const txFollow = new bsv.Transaction();
 
-    let lockingTxid = await sendTx(lockingTx);
-    // let lockingTxid = lockingTx.id;
-    let lockingTxHex = lockingTx.serialize();
-    console.log("funding txid:      ", lockingTxid);
-
-    // player B follow the game
-    const txFollow = await createPayByOthersTx(privateKeyB.toAddress());
-    {
-      txFollow.addInput(
-        new bsv.Transaction.Input({
-          prevTxId: lockingTxid,
-          outputIndex: 0,
-          script: "",
-        }),
-        rps.lockingScript,
-        initSatoshis
-      );
-
-      const curInputIndex = txFollow.inputs.length - 1;
-
-      lockingScript0 = [rps.codePart.toASM(), toHex(playerAdata) + toHex(playerBpkh) + num2bin(actionB, DataLen)].join(" ");
-      txFollow.addOutput(
-        new bsv.Transaction.Output({
-          script: bsv.Script.fromASM(lockingScript0),
-          satoshis: initSatoshis + followSatoshis,
+    txFollow.addInput(createInputFromPrevTx(lockingTx))
+      .from(await fetchUtxos(privateKey.toAddress()))
+      .setOutput(0, (tx) => {
+        // player B follow the game
+        const newLockingScript = [rps.codePart.toASM(), toHex(playerAdata)
+          + toHex(playerBpkh) + num2bin(actionB, DataLen)].join(" ");
+        const newAmount = amount + followSatoshis;
+        return new bsv.Transaction.Output({
+          script: bsv.Script.fromASM(newLockingScript),
+          satoshis: newAmount
         })
-      );
-      txFollow.change(privateKeyB.toAddress()).fee(FEE);
+      })
+      .change(privateKeyB.toAddress())
+      .setInputScript(0, (tx, output) => {
+        const preimage = getPreimage(tx, output.script, output.satoshis, 0, sighashType)
 
-      const changeAmount = txFollow.inputAmount - FEE - initSatoshis - followSatoshis;
+        return rps.follow(new SigHashPreimage(toHex(preimage)),
+          actionB,
+          new Ripemd160(toHex(playerBpkh)),
+          tx.getChangeAmount()
+        ).toScript()
+      })
+      .sign(privateKey)
+      .seal()
 
-      const preimage = getPreimage(txFollow, rps.lockingScript, initSatoshis, curInputIndex, sighashType);
+    let followTxid = await sendTx(txFollow);
+    console.log("follow txid: ", followTxid);
 
-      const unlockingScript = rps.follow(new SigHashPreimage(toHex(preimage)), actionB, new Ripemd160(toHex(playerBpkh)), changeAmount).toScript();
-
-      // unlock other p2pkh inputs
-      for (let i = 0; i < curInputIndex; i++) {
-        unlockP2PKHInput(privateKeyB, txFollow, i, sighashType);
-      }
-      txFollow.inputs[curInputIndex].setScript(unlockingScript);
-      let followTxid = await sendTx(txFollow);
-      // let followTxid = txFollow.id;
-      let followTxHex = txFollow.serialize();
-      console.log("follow txid:       ", followTxid);
-      console.log("follow txhex:       ", followTxHex);
-    }
-
-    rps.setDataPart(toHex(playerAdata) + toHex(playerBpkh) + num2bin(actionB, DataLen));
     // player A finish the game
-    const txFinish = await createPayByOthersTx(privateKeyA.toAddress());
-    {
-      txFinish.addInput(
-        new bsv.Transaction.Input({
-          prevTxId: txFollow.id,
-          outputIndex: 0,
-          script: "",
-        }),
-        rps.lockingScript,
-        initSatoshis + followSatoshis
-      );
+    rps.setDataPart(toHex(playerAdata) + toHex(playerBpkh) + num2bin(actionB, DataLen));
 
-      const curInputIndex = txFinish.inputs.length - 1;
-
-      // A lose
-      const amountPlayerB = initSatoshis;
-      const amountPlayerA = txFinish.inputAmount - FEE - amountPlayerB;
-
-      txFinish.addOutput(
-        new bsv.Transaction.Output({
+    const txFinish = new bsv.Transaction();
+    const newAmount = txFollow.outputs[0].satoshis;
+    const amountPlayerB = amount;
+    txFinish.addInput(createInputFromPrevTx(txFollow))
+      .change(privateKeyA.toAddress())
+      .setOutput(0, (tx) => {
+        const amountPlayerA = newAmount - amountPlayerB - tx.getEstimateFee();
+        return new bsv.Transaction.Output({
           script: bsv.Script.buildPublicKeyHashOut(privateKeyA.toAddress()),
-          satoshis: amountPlayerA,
+          satoshis: amountPlayerA
         })
-      );
-
-      txFinish.addOutput(
-        new bsv.Transaction.Output({
+      })
+      .setOutput(1, (tx) => {
+        return new bsv.Transaction.Output({
           script: bsv.Script.buildPublicKeyHashOut(privateKeyB.toAddress()),
           satoshis: amountPlayerB,
         })
-      );
-
-      const preimage = getPreimage(txFinish, rps.lockingScript, initSatoshis + followSatoshis, curInputIndex, sighashType);
-      const sig = signTx(txFinish, privateKeyA, rps.lockingScript, initSatoshis + followSatoshis, curInputIndex, sighashType);
-      const unlockingScript = rps.finish(new SigHashPreimage(toHex(preimage)), actionA,
+      })
+      .setInputScript(0, (tx, output) => {
+        const preimage = getPreimage(tx, output.script, output.satoshis, 0, sighashType)
+        const sig = signTx(tx, privateKeyA, output.script, output.satoshis, 0, sighashType);
+        const amountPlayerA = newAmount - amountPlayerB - tx.getEstimateFee();
+        return rps.finish(new SigHashPreimage(toHex(preimage)), actionA,
           new Sig(toHex(sig)),
-          new PubKey(toHex(publicKeyA)), amountPlayerA).toScript();
-
-      // unlock other p2pkh inputs
-      for (let i = 0; i < curInputIndex; i++) {
-        unlockP2PKHInput(privateKeyA, txFinish, i, sighashType);
-      }
-      txFinish.inputs[curInputIndex].setScript(unlockingScript);
-      let finishTxid = await sendTx(txFinish);
-      // let finishTxid = txFinish.id;
-      let finishTxHex = txFinish.serialize();
-      console.log("finish txid:       ", finishTxid);
-    }
+          new PubKey(toHex(publicKeyA)), amountPlayerA).toScript()
+      })
+      .sign(privateKey)
+      .seal()
+    let finishTxid = await sendTx(txFinish);
+    console.log("finish txid: ", finishTxid);
 
     console.log("Succeeded on testnet");
   } catch (error) {

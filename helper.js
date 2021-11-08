@@ -10,7 +10,7 @@ const {
   getPreimage,
   toHex
 } = require('scryptlib')
-
+const { privateKey } = require('./privateKey');
 const MSB_THRESHOLD = 0x7e;
 
 const Signature = bsv.crypto.Signature
@@ -50,123 +50,12 @@ function reverseEndian(hexStr) {
   return buf.toString('hex').match(/.{2}/g).reverse().join('')
 }
 
-async function createPayByOthersTx(address) {
-  // step 1: fetch utxos
-  let {
-    data: utxos
-  } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
-
-  utxos = utxos.map((utxo) => ({
-    txId: utxo.tx_hash,
-    outputIndex: utxo.tx_pos,
-    satoshis: utxo.value,
-    script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
-  }))
-
-  // step 2: build the tx
-  const tx = new bsv.Transaction().from(utxos)
-
-  return tx
-}
-async function createLockingTx(address, amountInContract, lockingScript) {
-  // step 1: fetch utxos
-  let {
-    data: utxos
-  } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
-
-  utxos = utxos.map((utxo) => ({
-    txId: utxo.tx_hash,
-    outputIndex: utxo.tx_pos,
-    satoshis: utxo.value,
-    script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
-  }))
-
-  // step 2: build the tx
-  const tx = new bsv.Transaction().from(utxos)
-  tx.addOutput(new bsv.Transaction.Output({
-    script: lockingScript,
-    satoshis: amountInContract,
-  }))
-  tx.feePerKb(500)
-  tx.change(address)
-
-  return tx
-}
-
-async function fetchUtxoLargeThan(address, amount) {
-
-  
-}
-
-async function anyOnePayforTx(tx, address, fee) {
-  // step 1: fetch utxos
-  let {
-    data: utxos
-  } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
-
-  utxos.map(utxo => {
-    tx.addInput(new bsv.Transaction.Input.PublicKeyHash({
-      prevTxId:  utxo.tx_hash,
-      outputIndex: utxo.tx_pos,
-      script: new bsv.Script(), // placeholder
-    }), bsv.Script.buildPublicKeyHashOut(address).toHex(), utxo.value)
-  })
-
-  if(fee) {
-    tx.change(address).fee(fee)
-  } else {
-    tx.change(address)
-  }
-
-  return tx
-}
-
-function createUnlockingTx(prevTxId, inputAmount, inputLockingScript, outputAmount, outputLockingScript) {
-  const tx = new bsv.Transaction()
-
-  tx.addInput(new bsv.Transaction.Input({
-    prevTxId,
-    outputIndex: inputIndex,
-    script: new bsv.Script(), // placeholder
-  }), inputLockingScript, inputAmount)
-
-  tx.addOutput(new bsv.Transaction.Output({
-    script: outputLockingScript,
-    satoshis: outputAmount,
-  }))
-
-  return tx
-}
-
-function unlockP2PKHInput(privateKey, tx, inputIndex, sigtype) {
-  const sig = new bsv.Transaction.Signature({
-    publicKey: privateKey.publicKey,
-    prevTxId: tx.inputs[inputIndex].prevTxId,
-    outputIndex: tx.inputs[inputIndex].outputIndex,
-    inputIndex,
-    signature: bsv.Transaction.Sighash.sign(tx, privateKey, sigtype,
-      inputIndex,
-      tx.inputs[inputIndex].output.script,
-      tx.inputs[inputIndex].output.satoshisBN),
-    sigtype,
-  });
-
-  tx.inputs[inputIndex].setScript(bsv.Script.buildPublicKeyHashIn(
-    sig.publicKey,
-    sig.signature.toDER(),
-    sig.sigtype,
-  ))
-}
 
 async function sendTx(tx) {
   const hex = tx.toString();
 
-  const fee = tx.inputAmount - tx.outputAmount;
-
-  const expectedFee = hex.length / 2 * 0.5;
-
-  if(fee < expectedFee) {
-    throw new Error(`Transaction with fee is too low: expected Fee is ${expectedFee}, but got ${fee}`)
+  if(!tx.checkFeeRate(500)) {
+    throw new Error(`checkFeeRate fail, transaction fee is too low`)
   }
 
   try {
@@ -287,6 +176,48 @@ const sleep = async(seconds) => {
   })
 }
 
+async function deployContract(contract, amount) {
+
+  const address = privateKey.toAddress()
+  const tx = new bsv.Transaction()
+  
+  tx.from(await fetchUtxos(address))
+  .addOutput(new bsv.Transaction.Output({
+    script: contract.lockingScript,
+    satoshis: amount,
+  }))
+  .change(address)
+  .sign(privateKey)
+
+  await sendTx(tx)
+  return tx
+}
+
+//create an input spending from prevTx's output, with empty script
+function createInputFromPrevTx(tx, outputIndex) {
+  const outputIdx = outputIndex || 0
+  return new bsv.Transaction.Input({
+    prevTxId: tx.id,
+    outputIndex: outputIdx,
+    script: new bsv.Script(), // placeholder
+    output: tx.outputs[outputIdx]
+  })
+}
+
+
+async function fetchUtxos(address) {
+  // step 1: fetch utxos
+  let {
+    data: utxos
+  } = await axios.get(`${API_PREFIX}/address/${address}/unspent`)
+
+  return utxos.map((utxo) => ({
+    txId: utxo.tx_hash,
+    outputIndex: utxo.tx_pos,
+    satoshis: utxo.value,
+    script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
+  }))
+}
 
 const emptyPublicKey = '000000000000000000000000000000000000000000000000000000000000000000'
 
@@ -295,14 +226,10 @@ module.exports = {
   inputSatoshis,
   sleep,
   newTx,
-  createPayByOthersTx,
-  createLockingTx,
-  createUnlockingTx,
   DataLen,
   dummyTxId,
   reversedDummyTxId,
   reverseEndian,
-  unlockP2PKHInput,
   sendTx,
   compileContract,
   loadDesc,
@@ -310,8 +237,10 @@ module.exports = {
   showError,
   compileTestContract,
   padLeadingZero,
-  anyOnePayforTx,
   emptyPublicKey,
   fixLowS,
-  checkLowS
+  checkLowS,
+  deployContract,
+  createInputFromPrevTx,
+  fetchUtxos
 }

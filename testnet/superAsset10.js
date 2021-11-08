@@ -26,11 +26,12 @@ const {
 } = require('scryptlib');
 const {
   loadDesc,
-  createLockingTx,
   sendTx,
-  fetchUtxoLargeThan,
-  unlockP2PKHInput,
-  sleep
+  sleep,
+  deployContract,
+  createInputFromPrevTx,
+  fetchUtxos,
+  showError
 } = require('../helper');
 const Signature = bsv.crypto.Signature;
 const { privateKey, privateKey2 } = require('../privateKey');
@@ -38,160 +39,137 @@ const { privateKey, privateKey2 } = require('../privateKey');
 
 (async () => {
 
-// DO NOT USE FOR REAL BITCOIN TRANSACTIONS. THE FUNDS WILL BE STOLEN.
-// REPLACE with your own private keys
+  // DO NOT USE FOR REAL BITCOIN TRANSACTIONS. THE FUNDS WILL BE STOLEN.
+  // REPLACE with your own private keys
 
-// Generate your own private keys (Ex: https://console.matterpool.io/tools)
-// And fund the addresses for them.
-const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
+  // Generate your own private keys (Ex: https://console.matterpool.io/tools)
+  // And fund the addresses for them.
+  const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
+
+  const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
+
+  // BEGIN
+  // Step 1: Deploy contract
+  // Step 2: Transfer and update it
+  // Step 3: Melt it back to plain satoshi (p2pkh)
+  try {
+    const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID;
+    // Instantiate a SuperAsset10 NFT asset from the compiled constract
+    const Token = buildContractClass(loadDesc('SuperAsset10_debug_desc.json'))
+    const token = new Token();
+    // Todo: Replace with optimized checkPreimage (will not affect functionality)
+    // const asmVars = {'Tx.checkPreimageOpt_.sigHashType': sighashType.toString() } // '41'} // FORKID | ALL
+    // token.replaceAsmVars(asmVars);
+
+    // -----------------------------------------------------
+    // Step 1: Deploy NFT with initial owner and satoshis value of 2650 (Lower than this may hit dust limit)
+    let assetId = null;
+    const nftSatoshiValue = 2650;
+    const initialState = '000000000000000000000000000000000000000000000000000000000000000000000000 ' + toHex(publicKey);
+    token.setDataPart(initialState)
+    const lockingTx = await deployContract(token, nftSatoshiValue)
+
+    console.log('Step 1 complete. Deployment Tx: ', lockingTx.id)
+    console.log('assetId: ', assetId);
+    // -----------------------------------------------------
+    // Step 2: Update NFT with payload
 
 
-const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
-console.log('privateKey2', privateKey2, publicKey2, publicKey2.toAddress().toString());
-
-// BEGIN
-// Step 1: Deploy contract
-// Step 2: Transfer and update it
-// Step 3: Melt it back to plain satoshi (p2pkh)
-try {
-  const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID;
-  // Instantiate a SuperAsset10 NFT asset from the compiled constract
-  const Token = buildContractClass(loadDesc('SuperAsset10_debug_desc.json'))
-  const token = new Token();
-  // Todo: Replace with optimized checkPreimage (will not affect functionality)
-  // const asmVars = {'Tx.checkPreimageOpt_.sigHashType': sighashType.toString() } // '41'} // FORKID | ALL
-  // token.replaceAsmVars(asmVars);
-
-  // -----------------------------------------------------
-  // Step 1: Deploy NFT with initial owner and satoshis value of 2650 (Lower than this may hit dust limit)
-  let assetId = null;
-  const nftSatoshiValue = 2650;
-  const FEE = 3000;
-  const initialState = '000000000000000000000000000000000000000000000000000000000000000000000000 ' + toHex(publicKey);
-  token.setDataPart(initialState)
-  const lockingTx = await createLockingTx(privateKey.toAddress(), nftSatoshiValue, token.lockingScript)
-
-  lockingTx.sign(privateKey)
-  const lockingTxid = await sendTx(lockingTx)
-  console.log('Step 1 complete. Deployment Tx: ', lockingTxid)
-  console.log('assetId: ', assetId);
-  // -----------------------------------------------------
-  // Step 2: Update NFT with payload
-  let newLockingScript = null;
-  let transferTx = null;
-  {
-    const prevLockingScript = token.lockingScript;
     console.log('Preparing first transfer update...');
-    assetId = Buffer.from(lockingTxid, 'hex').reverse().toString('hex') + '00000000'; // 0th output. Use full outpoint for identifier
+    assetId = Buffer.from(lockingTx.id, 'hex').reverse().toString('hex') + '00000000'; // 0th output. Use full outpoint for identifier
     const pushDataPayload = Buffer.from(`{ "hello": "world" }`, 'utf8').toString('hex');
     const newState = ' ' + assetId + ' ' + toHex(publicKey) + ' ' + pushDataPayload;
-    newLockingScript = bsv.Script.fromASM(token.codePart.toASM() + newState);
-    const tx = new bsv.Transaction()
-    const utxo = await fetchUtxoLargeThan(privateKey2.toAddress(), 20000);
-    // Add input is the NFT
-    token.setDataPart(newState);
-    tx.addInput(new bsv.Transaction.Input({
-      prevTxId: lockingTxid,
-      outputIndex: 0,
-      script: ''
-    }), initialLockingScript, nftSatoshiValue);
-    // Add funding input
-    tx.addInput(new bsv.Transaction.Input({
-      prevTxId: utxo.txId,
-      outputIndex: utxo.outputIndex,
-      script: ''
-    }), utxo.script, utxo.satoshis);
-    console.log('tx', tx.toString());
-    changeSatoshis = utxo.satoshis - FEE;
-    tx.addOutput(new bsv.Transaction.Output({
-      script: newLockingScript,
-      satoshis: nftSatoshiValue
-    }))
-    const changeOutputScript = bsv.Script.buildPublicKeyHashOut(publicKey2)
-    tx.addOutput(new bsv.Transaction.Output({
-      script: changeOutputScript,
-      satoshis: changeSatoshis
-    }))
-    const preimage = getPreimage(tx, prevLockingScript, nftSatoshiValue, 0, sighashType)
-    const sig = signTx(tx, privateKey, prevLockingScript, nftSatoshiValue, 0, sighashType)
-    // Use for debugging, with launch.json
-    // console.log('preimagehex', preimage.toJSON(), 'preimagejson', preimage.toString(), 'signature', toHex(sig));
-    const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey2.toBuffer())
-    const changeAddress = toHex(pkh) // Needs to be unprefixed address
-    const unlockingScript = token.transfer(
-      new Sig(toHex(sig)),
-      new PubKey(toHex(publicKey)),
-      preimage,
-      new Ripemd160(changeAddress),
-      changeSatoshis,
-      new Bytes(pushDataPayload)
-    ).toScript()
-    tx.inputs[0].setScript(unlockingScript)
-    unlockP2PKHInput(privateKey2, tx, 1, Signature.SIGHASH_ALL | Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_FORKID);
-    console.log('About to broadcast...', tx.toString());
-    transferTx = await sendTx(tx)
-    console.log('Step 2 complete. Transfer Tx: ', transferTx)
-    console.log('assetId: ', assetId);
-  }
 
-  // -----------------------------------------------------
-  // Step 3: Melt NFT'
-  {
+    await sleep(6);
+    const transferTx = new bsv.Transaction()
+    // Add input is the NFT
+
+    transferTx.addInput(createInputFromPrevTx(lockingTx))
+      // Add funding input
+      .from(await fetchUtxos(privateKey.toAddress()))
+      .setOutput(0, (_) => {
+        const newLockingScript = bsv.Script.fromASM(token.codePart.toASM() + newState);
+        return new bsv.Transaction.Output({
+          script: newLockingScript,
+          satoshis: nftSatoshiValue
+        })
+      })
+      .change(publicKey2.toAddress())
+      .setInputScript(0, (tx, output) => {
+        const preimage = getPreimage(tx, output.script, output.satoshis, 0, sighashType)
+        const sig = signTx(tx, privateKey, output.script, output.satoshis, 0, sighashType)
+        // Use for debugging, with launch.json
+        // console.log('preimagehex', preimage.toJSON(), 'preimagejson', preimage.toString(), 'signature', toHex(sig));
+        const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey2.toBuffer())
+        const changeAddress = toHex(pkh) // Needs to be unprefixed address
+
+        return token.transfer(
+          new Sig(toHex(sig)),
+          new PubKey(toHex(publicKey)),
+          preimage,
+          new Ripemd160(changeAddress),
+          tx.getChangeAmount(),
+          new Bytes(pushDataPayload)
+        ).toScript()
+      })
+      .sign(privateKey)
+      .seal()
+
+    await sendTx(transferTx)
+    console.log('Step 2 complete. Transfer Tx: ', transferTx.id)
+    console.log('assetId: ', assetId);
+
+    token.setDataPart(newState);
+    // -----------------------------------------------------
+    // Step 3: Melt NFT'
+
     await sleep(10);
     console.log('Preparing melt...');
-    const tx = new bsv.Transaction()
-    const utxo = await fetchUtxoLargeThan(privateKey2.toAddress(), 20000);
+
+    const meltTx = new bsv.Transaction()
     // Add input is the NFT
-    tx.addInput(new bsv.Transaction.Input({
-      prevTxId: transferTx,
-      outputIndex: 0,
-      script: ''
-    }), newLockingScript, nftSatoshiValue);
-    // Add funding input
-    tx.addInput(new bsv.Transaction.Input({
-      prevTxId: utxo.txId,
-      outputIndex: utxo.outputIndex,
-      script: ''
-    }), utxo.script, utxo.satoshis);
-    changeSatoshis = utxo.satoshis - FEE;
 
-    const changeOutputScriptRedeem = bsv.Script.buildPublicKeyHashOut(publicKey2)
-    tx.addOutput(new bsv.Transaction.Output({
-      script: changeOutputScriptRedeem,
-      satoshis: nftSatoshiValue
-    }))
+    meltTx.addInput(createInputFromPrevTx(transferTx))
+      // Add funding input
+      .from(await fetchUtxos(privateKey.toAddress()))
+      .setOutput(0, (_) => {
+        const changeOutputScriptRedeem = bsv.Script.buildPublicKeyHashOut(publicKey2)
+        return new bsv.Transaction.Output({
+          script: changeOutputScriptRedeem,
+          satoshis: nftSatoshiValue
+        })
+      })
+      .change(publicKey2.toAddress())
+      .setInputScript(0, (tx, output) => {
+        const preimage = getPreimage(tx, output.script, output.satoshis, 0, sighashType)
+        const sig = signTx(tx, privateKey, output.script, output.satoshis, 0, sighashType)
+        // console.log('preimagehex', preimage.toJSON(), 'preimagejson', preimage.toString(), 'signature', toHex(sig));
+        const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey2.toBuffer())
+        const changeAddress = toHex(pkh) // Needs to be unprefixed address
+        const recpkh = bsv.crypto.Hash.sha256ripemd160(publicKey2.toBuffer());
+        const recAddress = toHex(recpkh)
 
-    const changeOutputScript = bsv.Script.buildPublicKeyHashOut(publicKey2)
-    tx.addOutput(new bsv.Transaction.Output({
-      script: changeOutputScript,
-      satoshis: changeSatoshis
-    }))
-    const preimage = getPreimage(tx, newLockingScript.toASM(), nftSatoshiValue, 0, sighashType)
-    const sig = signTx(tx, privateKey, newLockingScript.toASM(), nftSatoshiValue, 0, sighashType)
-    // console.log('preimagehex', preimage.toJSON(), 'preimagejson', preimage.toString(), 'signature', toHex(sig));
-    const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey2.toBuffer())
-    const changeAddress = toHex(pkh) // Needs to be unprefixed address
-    const recpkh = bsv.crypto.Hash.sha256ripemd160(publicKey2.toBuffer());
-    const recAddress = toHex(recpkh)
+        return token.melt(
+          new Sig(toHex(sig)),
+          new Ripemd160(recAddress),
+          preimage,
+          new Ripemd160(changeAddress),
+          tx.getChangeAmount()).toScript();
+      })
+      .sign(privateKey2)
+      .seal()
 
-    const unlockingScript = token.melt(
-      new Sig(toHex(sig)),
-      new Ripemd160(recAddress),
-      preimage,
-      new Ripemd160(changeAddress),
-      changeSatoshis).toScript();
 
-    tx.inputs[0].setScript(unlockingScript)
-    unlockP2PKHInput(privateKey2, tx, 1, Signature.SIGHASH_ALL | Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_FORKID);
-    console.log('About to broadcast...', tx.toString());
-    let meltTx = await sendTx(tx)
-    console.log('Step 3 complete. Melt Tx: ', meltTx)
+    await sendTx(meltTx)
+    console.log('Step 3 complete. Melt Tx: ', meltTx.id)
     console.log('assetId (melted): ', assetId);
+
+    console.log('Succeeded on testnet')
+  } catch (error) {
+    console.log('Failed on testnet')
+    console.log(error.stack)
+    showError(error)
   }
-  console.log('Success.')
-} catch (error) {
-  console.log('Failure.', error)
-}
 
 })()
 

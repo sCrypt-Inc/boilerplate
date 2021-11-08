@@ -12,11 +12,11 @@ const {
 } = require('scryptlib');
 const {
   loadDesc,
-  createUnlockingTx,
-  createLockingTx,
+  createInputFromPrevTx,
   sendTx,
   showError,
-  padLeadingZero
+  padLeadingZero,
+  deployContract
 } = require('../helper');
 const { privateKey } = require('../privateKey');
 
@@ -51,39 +51,36 @@ const addressB = privateKeyB.toAddress();
 (async () => {
   try {
     const amount = 1000;
-    const newAmount = 546;
 
     const XorPuzzle = buildContractClass(loadDesc('xorPuzzle_debug_desc.json'));
     const xorPuzzle = new XorPuzzle(new Bytes(xorResultHex));
 
     // lock fund to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), amount, xorPuzzle.lockingScript);
-    lockingTx.sign(privateKey);
-    let lockingTxid = await sendTx(lockingTx);
-    console.log('funding txid:      ', lockingTxid);
+    const lockingTx = await deployContract(xorPuzzle, amount);
+    console.log('funding txid:      ', lockingTx.id);
 
     // unlock
-    const prevLockingScript = xorPuzzle.lockingScript;
-    const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressB);
+    const unlockingTx = new bsv.Transaction();
+    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+      .setOutput(0, (tx) => {
+        const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressB)
+        return new bsv.Transaction.Output({
+          script: newLockingScript,
+          satoshis: amount - tx.getEstimateFee(),
+        })
+      })
+      .setInputScript(0, (tx, output) => {
+        const sig = signTx(tx, privateKeyA, output.script, output.satoshis);
+        return xorPuzzle
+          .unlock(
+            new Sig(toHex(sig)),
+            new PubKey(toHex(publicKeyA)),
+            new Bytes(dataBufHashHex)
+          )
+          .toScript();
+      })
+      .seal()
 
-    const unlockingTx = await createUnlockingTx(
-      lockingTxid,
-      amount,
-      prevLockingScript,
-      newAmount,
-      newLockingScript
-    );
-
-    const sig = signTx(unlockingTx, privateKeyA, prevLockingScript, amount);
-    const unlockingScript = xorPuzzle
-      .unlock(
-        new Sig(toHex(sig)),
-        new PubKey(toHex(publicKeyA)),
-        new Bytes(dataBufHashHex)
-      )
-      .toScript();
-
-    unlockingTx.inputs[0].setScript(unlockingScript);
     const unlockingTxid = await sendTx(unlockingTx);
     console.log('unlocking txid:   ', unlockingTxid);
 

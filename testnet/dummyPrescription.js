@@ -8,9 +8,10 @@ const {
   Sig,
   toHex,
   Ripemd160,
+  buildTypeClasses
 } = require("scryptlib");
 
-const { loadDesc, createLockingTx, sendTx, showError } = require("../helper");
+const { loadDesc, deployContract, createInputFromPrevTx, sendTx, showError } = require("../helper");
 const { generatePrivKey, privKeyToPubKey, sign } = require("rabinsig");
 const { privateKey } = require('../privateKey');
 // prescription details
@@ -56,7 +57,7 @@ const publicKeyHashPatient = bsv.crypto.Hash.sha256ripemd160(
 );
 
 const fee = 1000;
-const inputSatoshis = patientReward + fee;
+const amount = patientReward + fee;
 
 (async () => {
   try {
@@ -65,10 +66,10 @@ const inputSatoshis = patientReward + fee;
       loadDesc("dummy_prescription_debug_desc.json")
     );
 
+    const { RabinSig, RabinPubKey } = buildTypeClasses(DummyPrescription);
+
     // init prescription locking script
     const dummyPrescription = new DummyPrescription(
-      prescriberSig.signature,
-      paddingBytes(prescriberSig.paddingByteCount),
       drug,
       expiration,
       new Bytes(prescriptionIDHex),
@@ -77,67 +78,48 @@ const inputSatoshis = patientReward + fee;
       [
         new PubKey(toHex(publicKeyPharmacy1)),
         new PubKey(toHex(publicKeyPharmacy2)),
-      ]
+      ],
+      new RabinSig({
+        s: prescriberSig.signature,
+        padding: paddingBytes(prescriberSig.paddingByteCount),
+      })
     );
 
-    // build tx that writes prescription
-    const lockingTx = await createLockingTx(
-      privateKeyPrescriberOffice.toAddress(),
-      inputSatoshis,
-      dummyPrescription.lockingScript
-    );
-    lockingTx.outputs[0].setScript(dummyPrescription.lockingScript);
-    lockingTx.sign(privateKeyPrescriberOffice);
-
-    // broadcast prescription tx
-    let lockingTxid = await sendTx(lockingTx);
-    console.log("Prescription txid:", lockingTxid);
+    // lock fund to the script
+    const lockingTx = await deployContract(dummyPrescription, amount)
+    console.log('funding txid:      ', lockingTx.id);
 
     // build tx that fills prescription
     let unlockingTx = new bsv.Transaction();
-    unlockingTx.addInput(
-      new bsv.Transaction.Input({
-        prevTxId: lockingTxid,
-        outputIndex: 0,
-        script: new bsv.Script(), // placeholder
-      }),
-      dummyPrescription.lockingScript,
-      inputSatoshis
-    );
-
-    // build output to dispense to patient & pay reward
-    unlockingTx.addOutput(
-      new bsv.Transaction.Output({
-        script: bsv.Script.buildPublicKeyHashOut(privateKeyPatient.toAddress()),
-        satoshis: patientReward,
-      })
-    );
-    unlockingTx.fee(fee);
-
-    // get dispensing pharmacy signature
-    pharmacySig1 = signTx(
-      unlockingTx,
-      privateKeyPharmacy1,
-      dummyPrescription.lockingScript,
-      inputSatoshis
-    );
-
-    const preimage = getPreimage(
-      unlockingTx,
-      dummyPrescription.lockingScript,
-      inputSatoshis
-    );
-
-    // build tx to input that fills prescription
-    let unlockingScript = dummyPrescription
-      .fill(
-        new Sig(toHex(pharmacySig1)),
-        prescriber_nRabin,
-        currTime,
-        preimage
+    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+      .addOutput(
+        new bsv.Transaction.Output({
+          script: bsv.Script.buildPublicKeyHashOut(privateKeyPatient.toAddress()),
+          satoshis: patientReward,
+        })
       )
-      .toScript();
-    unlockingTx.inputs[0].setScript(unlockingScript);
+      .setInputScript(0, (tx, output) => {
+        const preimage = getPreimage(tx, output.script, output.satoshis);
+        // get dispensing pharmacy signature
+        const pharmacySig1 = signTx(
+          tx,
+          privateKeyPharmacy1,
+          output.script,
+          output.satoshis
+        );
+
+        return dummyPrescription
+          .fill(
+            new Sig(toHex(pharmacySig1)),
+            prescriber_nRabin,
+            currTime,
+            preimage
+          )
+          .toScript()
+      })
+      .seal()
+
+
 
     // broadcast tx that fills prescription
     const unlockingTxid = await sendTx(unlockingTx);

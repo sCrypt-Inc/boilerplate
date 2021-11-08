@@ -7,14 +7,12 @@ import "util.scrypt";
 contract AnyoneCanSpend {
     Ripemd160 pubKeyHash;
 
-    public function unlock(SigHashPreimage txPreimage) {
+    public function unlock(SigHashPreimage txPreimage, int outputAmount) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         // this ensures the preimage is for the current tx
         require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
 
         bytes lockingScript = Util.buildPublicKeyHashScript(this.pubKeyHash);
-        int inputAmount = Util.value(txPreimage);
-        int outputAmount = inputAmount - 1000; // minFee
         bytes output = Util.buildOutput(lockingScript, outputAmount);
 
         Sha256 hashOutputs = hash256(output);

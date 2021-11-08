@@ -11,15 +11,13 @@ const {
   PubKey
 } = require('scryptlib');
 const {
-  DataLen,
   loadDesc,
-  createLockingTx,
   sendTx,
   showError,
-  unlockP2PKHInput,
-  createUnlockingTx,
-  anyOnePayforTx,
-  emptyPublicKey
+  deployContract,
+  createInputFromPrevTx,
+  fetchUtxos,
+  sleep
 } = require('../helper');
 const axios = require('axios')
 
@@ -40,18 +38,13 @@ const bidderPKH = new bsv.crypto.Hash.sha256ripemd160(bidderPubKey.toBuffer());/
 
 
 // initial contract funding - arbitrary amount
-let previousAmount = 1000;
+let amount = 1000;
 
-const FEE = 5000;
 const BID_INCREASE = 2000;
-const SLEEP_TIME = 5000;
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+const SLEEP_TIME = 5 // 5s;
 
 
-async function runBid(prevTxid, auction, amountInContract, refundPubKey) {
+async function runBid(prevTx, auction, amountInContract, refundPubKey) {
 
   return new Promise(async (resolve, reject) => {
 
@@ -59,93 +52,43 @@ async function runBid(prevTxid, auction, amountInContract, refundPubKey) {
 
       const unlockingTx = new bsv.Transaction()
 
-      //contract input
-      unlockingTx.addInput(new bsv.Transaction.Input({
-        prevTxId: prevTxid,
-        outputIndex: 0,
-        script: new bsv.Script(), // placeholder
-      }), auction.lockingScript, amountInContract)
-
-
-      // input(s) from bidder
-      let {
-        data: utxos
-      } = await axios.get(`https://api.whatsonchain.com/v1/bsv/test/address/` + bidderPrivKey.toAddress() + `/unspent`)
-
-      utxos.map(utxo => {
-        unlockingTx.addInput(new bsv.Transaction.Input({
-          prevTxId: utxo.tx_hash,
-          outputIndex: utxo.tx_pos,
-          script: new bsv.Script(), // placeholder
-        }), bsv.Script.buildPublicKeyHashOut(bidderPrivKey.toAddress()).toHex(), utxo.value)
+      unlockingTx.addInput(createInputFromPrevTx(prevTx))
+      .from(await fetchUtxos(bidderPrivKey.toAddress()))
+      .setOutput(0, (tx) => {
+        const newLockingScript = auction.getNewStateScript({
+          bidder: new Ripemd160(toHex(bidderPKH))
+        })
+        return new bsv.Transaction.Output({
+          script: newLockingScript,
+          satoshis: amountInContract + BID_INCREASE,
+        })
+      })      
+      .setOutput(1, (tx) => {
+        return new bsv.Transaction.Output({
+          script: bsv.Script.buildPublicKeyHashOut(refundPubKey.toAddress()),
+          satoshis: amountInContract,
+        })
       })
-
-      let newLockingScript = auction.getNewStateScript({
-        bidder: new Ripemd160(toHex(bidderPKH))
+      .change(bidderPubKey.toAddress())
+      .setInputScript(0, (tx, output) => {
+        const preimage = getPreimage(tx, output.script, output.satoshis, 0, sighashType);
+        return auction.bid(
+          new Ripemd160(toHex(bidderPKH)), // bidderPKH
+          (amountInContract + BID_INCREASE),
+          tx.getChangeAmount(),
+          new SigHashPreimage(toHex(preimage)) // sighashPreimage
+        ).toScript();
       })
-
-      unlockingTx.addOutput(new bsv.Transaction.Output({
-        script: newLockingScript,
-        satoshis: amountInContract + BID_INCREASE,
-      }))
-
-      unlockingTx.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.buildPublicKeyHashOut(refundPubKey.toAddress()),
-        satoshis: amountInContract,
-      }))
-
-
-      const changeAmount = unlockingTx.inputAmount - (amountInContract + BID_INCREASE)/*now*/ - amountInContract/*prev*/ - FEE;
-      unlockingTx.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.buildPublicKeyHashOut(bidderPubKey.toAddress()),
-        satoshis: changeAmount,
-      }))
-
-      unlockingTx.fee(FEE);
-
-
-      const preimage = getPreimage(unlockingTx, auction.lockingScript, amountInContract, 0, sighashType);
-      //console.log('preimage: '+preimage);
-
-      const unlockingScript = auction.bid(
-        new Ripemd160(toHex(bidderPKH)), // bidderPKH
-        (amountInContract + BID_INCREASE),
-        changeAmount,
-        new SigHashPreimage(toHex(preimage)) // sighashPreimage
-      ).toScript();
-
-
-      // unlock contract input
-      unlockingTx.inputs[0].setScript(unlockingScript);
-
-      // unlock other p2pkh inputs
-      for (let index = 1; index < unlockingTx.inputs.length; index++) {
-        unlockP2PKHInput(bidderPrivKey, unlockingTx, index, sighashType)
-      }
-
-      // you can verify before sendTx
-      const result = auction.bid(
-        new Ripemd160(toHex(bidderPKH)), // bidderPKH
-        (amountInContract + BID_INCREASE),
-        changeAmount,
-        new SigHashPreimage(toHex(preimage)) // sighashPreimage
-      ).verify({ tx: unlockingTx, inputSatoshis: amountInContract, inputIndex: 0 })
-
-      if (!result.success) {
-        console.error(result)
-      }
+      .sign(bidderPrivKey)
+      .seal()
 
       await sleep(SLEEP_TIME)
       const txid = await sendTx(unlockingTx);
-      console.log('txid: ', txid);
-
+      console.log('bid txid: ', txid);
 
       // change state after succeeded
       auction.bidder = new Ripemd160(toHex(bidderPKH))
-
-      console.log('Succeeded on testnet');
-
-      resolve(txid);
+      resolve(unlockingTx);
     } catch (error) {
       console.log('Failed on testnet');
       showError(error);
@@ -167,27 +110,22 @@ async function runBid(prevTxid, auction, amountInContract, refundPubKey) {
   try {
 
     //lock funds to the script
-    const lockingTx = await createLockingTx(auctionerPrivKey.toAddress(), previousAmount, auction.lockingScript)
-    lockingTx.sign(auctionerPrivKey)
-    let lockingTxid = await sendTx(lockingTx)
-    console.log('funding txid:      ', lockingTxid)
+    const lockingTx = await deployContract(auction, amount);
+    console.log('funding txid:      ', lockingTx.id);
 
-    let prevTxid = lockingTxid;
+    let prevTx = lockingTx;
 
     for (let i = 0; i < 3; i++) {
       await sleep(SLEEP_TIME)
-      const txid = await runBid(prevTxid, auction, previousAmount + (BID_INCREASE * i), i == 0 ? auctionerPubKey : bidderPubKey);
-
-      prevTxid = txid;
-
+      prevTx = await runBid(prevTx, auction, amount + (BID_INCREASE * i), i == 0 ? auctionerPubKey : bidderPubKey);
     }
 
+    console.log('Succeeded on testnet');
 
   } catch (error) {
     console.log('Failed on testnet');
     showError(error);
     console.log(error.context);
   }
-
 
 })()

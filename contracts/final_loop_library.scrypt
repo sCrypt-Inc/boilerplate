@@ -40,28 +40,25 @@ library Loop {
 
     //End get state
     //Set state
-    static function setState(SigHashPreimage preimage, Object object) : bool {
+    static function setState(SigHashPreimage preimage, Object object, int newAmount) : bool {
         bytes scriptCode = Util.scriptCode(preimage);
         int scriptLen = len(scriptCode);
         bytes nextScript = scriptCode[: scriptLen - 1 - 2 * Aux.SizeOfObject] + Aux.serialize(object) + num2bin(0, 1) + scriptCode[scriptLen - Aux.SizeOfObject :];
-        int nextValue = Util.value(preimage) - Aux.fee;
-        return (hash256(Util.buildOutput(nextScript, nextValue)) == Util.hashOutputs(preimage));
+        return (hash256(Util.buildOutput(nextScript, newAmount)) == Util.hashOutputs(preimage));
     }
 
-    static function setInLoop(SigHashPreimage preimage, int in_loop) : bool {
+    static function setInLoop(SigHashPreimage preimage, int in_loop, int newAmount) : bool {
         bytes scriptCode = Util.scriptCode(preimage);
         int scriptLen = len(scriptCode);
         bytes nextScript = scriptCode[: scriptLen - 1 - Aux.SizeOfObject] + num2bin(in_loop, 1) + scriptCode[scriptLen - Aux.SizeOfObject :];
-        int nextValue = Util.value(preimage) - Aux.fee;
-        return (hash256(Util.buildOutput(nextScript, nextValue)) == Util.hashOutputs(preimage));
+        return (hash256(Util.buildOutput(nextScript, newAmount)) == Util.hashOutputs(preimage));
     }
 
-    static function setTempState(SigHashPreimage preimage, Object object) : bool {
+    static function setTempState(SigHashPreimage preimage, Object object, int newAmount) : bool {
         bytes scriptCode = Util.scriptCode(preimage);
         int scriptLen = len(scriptCode);
         bytes nextScript = scriptCode[: scriptLen - Aux.SizeOfObject] + Aux.serialize(object);
-        int nextValue = Util.value(preimage) - Aux.fee;
-        return (hash256(Util.buildOutput(nextScript, nextValue)) == Util.hashOutputs(preimage));
+        return (hash256(Util.buildOutput(nextScript, newAmount)) == Util.hashOutputs(preimage));
     }
 
     //End set state
@@ -70,23 +67,23 @@ library Loop {
         return getState(preimage) == getTempState(preimage);
     }
 
-    static function to_loop_1(SigHashPreimage preimage) : bool {
+    static function to_loop_1(SigHashPreimage preimage, int newAmount) : bool {
         bool valid = Tx.checkPreimage(preimage);
         valid = valid && (getInLoop(preimage) == 0);
         valid = valid && synchronised(preimage);
-        valid = valid && setInLoop(preimage, 1);
+        valid = valid && setInLoop(preimage, 1, newAmount);
         return valid;
     }
 
-    static function to_loop_2(SigHashPreimage preimage) : bool {
+    static function to_loop_2(SigHashPreimage preimage, int newAmount) : bool {
         bool valid = Tx.checkPreimage(preimage);
         valid = valid && (getInLoop(preimage) == 1);
         Object object = getTempState(preimage);
         RecursiveReturn computation = Aux.my_great_function(object);
         if (computation.recursion) {
-            valid = valid && setTempState(preimage, computation.computation);
+            valid = valid && setTempState(preimage, computation.computation, newAmount);
         } else {
-            valid = valid && setInLoop(preimage, 2);
+            valid = valid && setInLoop(preimage, 2, newAmount);
         }
         return valid;
     }

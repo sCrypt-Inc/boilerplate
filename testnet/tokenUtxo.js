@@ -13,14 +13,12 @@ const {
 const {
   DataLen,
   loadDesc,
-  createLockingTx,
   sendTx,
   reverseEndian,
-  showError
+  showError,
+  deployContract,
+  createInputFromPrevTx
 } = require('../helper');
-const {
-  privateKey
-} = require('../privateKey');
 
 (async () => {
   const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
@@ -38,110 +36,98 @@ const {
     // initial token supply 100: publicKey1 has 100, publicKey2 0
     token.setDataPart(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
 
-    let inputSatoshis = 16000
-    const FEE = 3500
-    let outputAmount = Math.floor((inputSatoshis - FEE) / 2)
-
+    let amount = 15000
     // lock fund to the script
-    const lockingTx = await createLockingTx(privateKey.toAddress(), inputSatoshis, token.lockingScript)
-    lockingTx.sign(privateKey)
-    let lockingTxid = await sendTx(lockingTx)
-    console.log('funding txid:      ', lockingTxid)
+    const lockingTx = await deployContract(token, amount)
+    console.log('funding txid:      ', lockingTx.id)
 
     // split one UTXO of 100 tokens into one with 70 tokens and one with 30
-    let splitTxid, lockingScript0, lockingScript1 ;
-    {
-      const tx = new bsv.Transaction()
-      tx.addInput(new bsv.Transaction.Input({
-        prevTxId: lockingTxid,
-        outputIndex: 0,
-        script: ''
-      }), token.lockingScript, inputSatoshis)
+    const splitTx = new bsv.Transaction();
 
-      lockingScript0 = [token.codePart.toASM(), toHex(publicKey2) + num2bin(0, DataLen) + num2bin(70, DataLen)].join(' ')
-      tx.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.fromASM(lockingScript0),
-        satoshis: outputAmount
-      }))
-      lockingScript1 = [token.codePart.toASM(), toHex(publicKey3) + num2bin(0, DataLen) + num2bin(30, DataLen)].join(' ')
-      tx.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.fromASM(lockingScript1),
-        satoshis: outputAmount
-      }))
+    splitTx.addInput(createInputFromPrevTx(lockingTx))
+      .setOutput(0, (tx) => {
+        const newLockingScript = [token.codePart.toASM(), toHex(publicKey2) + num2bin(0, DataLen) + num2bin(70, DataLen)].join(' ')
+        const newAmount = Math.floor((amount - tx.getEstimateFee()) /2)
+        return new bsv.Transaction.Output({
+          script: bsv.Script.fromASM(newLockingScript),
+          satoshis: newAmount,
+        })
+      })
+      .setOutput(1, (tx) => {
+        const newLockingScript = [token.codePart.toASM(), toHex(publicKey3) + num2bin(0, DataLen) + num2bin(30, DataLen)].join(' ')
+        const newAmount = Math.floor((amount - tx.getEstimateFee()) /2)
+        return new bsv.Transaction.Output({
+          script: bsv.Script.fromASM(newLockingScript),
+          satoshis: newAmount,
+        })
+      })
+      .setInputScript(0, (tx, output) => {
+        const preimage = getPreimage(tx, output.script, output.satoshis)
+        const sig1 = signTx(tx, privateKey1, output.script, output.satoshis)
+        const newAmount = Math.floor((amount - tx.getEstimateFee()) /2)
+        return token.split(
+          new Sig(toHex(sig1)),
+          new PubKey(toHex(publicKey2)),
+          70,
+          newAmount,
+          new PubKey(toHex(publicKey3)),
+          30,
+          newAmount,
+          new SigHashPreimage(toHex(preimage))
+        ).toScript()
+      })
+      .seal()
 
-      const preimage = getPreimage(tx, token.lockingScript, inputSatoshis)
-      const sig1 = signTx(tx, privateKey1, token.lockingScript, inputSatoshis)
-      const unlockingScript = token.split(
-        new Sig(toHex(sig1)),
-        new PubKey(toHex(publicKey2)),
-        70,
-        outputAmount,
-        new PubKey(toHex(publicKey3)),
-        30,
-        outputAmount,
-        new SigHashPreimage(toHex(preimage))
-      ).toScript()
-      tx.inputs[0].setScript(unlockingScript);
-      splitTxid = await sendTx(tx);
-      console.log('split txid:       ', splitTxid)
-    }
+    const splitTxid = await sendTx(splitTx);
+    console.log('split txid:       ', splitTxid)
 
-    inputSatoshis = outputAmount
-    outputAmount -= FEE
+
     // merge one UTXO with 70 tokens and one with 30 into a single UTXO of 100 tokens
-    {
-      const tx = new bsv.Transaction()
-      tx.addInput(new bsv.Transaction.Input({
-        prevTxId: splitTxid,
-        outputIndex: 0,
-        script: ''
-      }), bsv.Script.fromASM(lockingScript0), inputSatoshis)
 
-      tx.addInput(new bsv.Transaction.Input({
-        prevTxId: splitTxid,
-        outputIndex: 1,
-        script: ''
-      }), bsv.Script.fromASM(lockingScript1), inputSatoshis)
+    const mergeTx = new bsv.Transaction();
 
-      const lockingScript2 = [token.codePart.toASM(), toHex(publicKey1) + num2bin(70, DataLen) + num2bin(30, DataLen)].join(' ')
-      tx.addOutput(new bsv.Transaction.Output({
-        script: bsv.Script.fromASM(lockingScript2),
-        satoshis: outputAmount
-      }))
-
-      // use reversed txid in outpoint
-      const txHash = reverseEndian(splitTxid)
-      const prevouts = txHash + num2bin(0, 4) + txHash + num2bin(1, 4)
-
-      // input 0
-      {
-        const preimage = getPreimage(tx, bsv.Script.fromASM(lockingScript0), inputSatoshis, 0)
-        const sig2 = signTx(tx, privateKey2, bsv.Script.fromASM(lockingScript0), inputSatoshis, 0)
-        const unlockingScript = token.merge(
+    mergeTx.addInput(createInputFromPrevTx(splitTx, 0))
+      .addInput(createInputFromPrevTx(splitTx, 1))
+      .setOutput(0, (tx) => {
+        const newLockingScript = [token.codePart.toASM(), toHex(publicKey1) + num2bin(70, DataLen) + num2bin(30, DataLen)].join(' ')
+        const newAmount = tx.inputAmount - tx.getEstimateFee()
+        return new bsv.Transaction.Output({
+          script: bsv.Script.fromASM(newLockingScript),
+          satoshis: newAmount,
+        })
+      })
+      .setInputScript(0, (tx, output) => {
+        // use reversed txid in outpoint
+        const txHash = reverseEndian(splitTxid)
+        const prevouts = txHash + num2bin(0, 4) + txHash + num2bin(1, 4)
+        const preimage = getPreimage(tx, output.script, output.satoshis, 0)
+        const sig2 = signTx(tx, privateKey2, output.script, output.satoshis, 0)
+        const newAmount = tx.inputAmount - tx.getEstimateFee()
+        return token.merge(
           new Sig(toHex(sig2)),
           new PubKey(toHex(publicKey1)),
-          new Bytes(prevouts), 30, outputAmount,
+          new Bytes(prevouts), 30, newAmount,
           new SigHashPreimage(toHex(preimage))
         ).toScript()
-        tx.inputs[0].setScript(unlockingScript);
-      }
-
-      // input 1
-      {
-        const preimage = getPreimage(tx, bsv.Script.fromASM(lockingScript1), inputSatoshis, 1)
-        const sig3 = signTx(tx, privateKey3, bsv.Script.fromASM(lockingScript1), inputSatoshis, 1)
-        const unlockingScript = token.merge(
+      })
+      .setInputScript(1, (tx, output) => {
+        // use reversed txid in outpoint
+        const txHash = reverseEndian(splitTxid)
+        const prevouts = txHash + num2bin(0, 4) + txHash + num2bin(1, 4)
+        const preimage = getPreimage(tx, output.script, output.satoshis, 1)
+        const sig3 = signTx(tx, privateKey3, output.script, output.satoshis, 1)
+        const newAmount = tx.inputAmount - tx.getEstimateFee()
+        return token.merge(
           new Sig(toHex(sig3)),
           new PubKey(toHex(publicKey1)),
-          new Bytes(prevouts), 70, outputAmount,
+          new Bytes(prevouts), 70, newAmount,
           new SigHashPreimage(toHex(preimage))
         ).toScript()
-        tx.inputs[1].setScript(unlockingScript);
-      }
+      })
+      .seal()
 
-      const mergeTxid = await sendTx(tx);
-      console.log('merge txid:       ', mergeTxid)
-    }
+    const mergeTxid = await sendTx(mergeTx);
+    console.log('merge txid:       ', mergeTxid)
 
     console.log('Succeeded on testnet')
   } catch (error) {

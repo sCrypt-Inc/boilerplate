@@ -23,7 +23,7 @@ contract Recurring {
     }
 
     // Merchant wants its money
-    public function withdraw_merchant(SigHashPreimage preImage) {
+    public function withdraw_merchant(SigHashPreimage preImage, int newAmount) {
         require(Tx.checkPreimage(preImage));
         //Output for the merchant
         bytes outputMerchant = Util.buildOutput(Util.buildPublicKeyHashScript(this.merchantPubKeyHash), this.merchantPayment);
@@ -36,9 +36,7 @@ contract Recurring {
         bytes newScript = codePart + pack(newMatureTime);
         require(Util.nLocktime(preImage) == newMatureTime);
         //Build the output
-        int fee = 5000;
-        int contractTotalAmount = Util.value(preImage) - this.merchantPayment - fee;
-        bytes outputContract = Util.buildOutput(newScript, contractTotalAmount);
+        bytes outputContract = Util.buildOutput(newScript, newAmount);
         require(hash256(outputContract + outputMerchant) == Util.hashOutputs(preImage));
     }
 

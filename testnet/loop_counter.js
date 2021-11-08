@@ -1,19 +1,15 @@
 const { buildContractClass, bsv, num2bin, getPreimage, SigHashPreimage, toHex } = require('scryptlib');
-const { loadDesc, showError, createLockingTx, sendTx, createUnlockingTx } = require('../helper');
+const { DataLen, loadDesc, showError, sendTx, createInputFromPrevTx, deployContract } = require('../helper');
 const { privateKey } = require('../privateKey');
-
-DataLen = 1
-const fee = 5000
-
 
 function Memory(a, b) {
   this.a = a
   this.b = b
 }
 
-function State(state, txid, loop, amount) {
+function State(state, tx, loop, amount) {
   this.current_state = state
-  this.txid = txid
+  this.tx = tx
   this.loop = loop
   this.amount = amount
 }
@@ -35,7 +31,7 @@ function condition(state) {
 }
 
 function log_state(f, state) {
-  console.log("function:", f, "current_state:", state.current_state.a, state.current_state.b, "amount:", this.amount, "txid:", state.txid)
+  console.log("function:", f, "current_state:", state.current_state.a, state.current_state.b, "amount:", state.amount, "txid:", state.tx.id)
 }
 
 async function create_contract(state, amount) {
@@ -43,109 +39,155 @@ async function create_contract(state, amount) {
   loop = new Loop()
   loop.setDataPart(tobin(state) + num2bin(0, DataLen) + tobin(state))
   // lock fund to the script
-  const lockingTx = await createLockingTx(privateKey.toAddress(), amount, loop.lockingScript)
+  const lockingTx = await deployContract(loop, amount)
 
-  lockingTx.sign(privateKey)
-  const lockingTxid = await sendTx(lockingTx)
-  new_state = new State(state, lockingTxid, loop, amount)
+  new_state = new State(state, lockingTx, loop, amount)
   log_state("create_contract", new_state)
   return new_state
 }
 async function begin_loop(state) {
-  current_state = state.current_state; lockingTxid = state.txid; loop = state.loop; amount = state.amount;
-  let prevLockingScript = state.loop.lockingScript
-
+  current_state = state.current_state; prevTx = state.tx; loop = state.loop; amount = state.amount;
   // update state
   loop.setDataPart(tobin(current_state) + num2bin(1, DataLen) + tobin(current_state))
   const newLockingScript = loop.lockingScript;
-  newAmount = amount - fee
 
-  const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
-  const preimage = getPreimage(unlockingTx, prevLockingScript, amount)
-  const unlockingScript = loop.to_loop_1(new SigHashPreimage(toHex(preimage))).toScript()
-  unlockingTx.inputs[0].setScript(unlockingScript)
+
+  const unlockingTx = new bsv.Transaction();
+  unlockingTx.addInput(createInputFromPrevTx(prevTx))
+    .setOutput(0, (tx) => {
+      const newAmount = amount - tx.getEstimateFee()
+      return new bsv.Transaction.Output({
+        script: newLockingScript,
+        satoshis: newAmount,
+      })
+    })
+    .setInputScript(0, (tx, output) => {
+      const preimage = getPreimage(tx, output.script, output.satoshis)
+      const newAmount = amount - tx.getEstimateFee()
+      return loop.to_loop_1(new SigHashPreimage(toHex(preimage)), newAmount).toScript()
+    })
+    .seal()
+
   unlockingTxid = await sendTx(unlockingTx)
-  new_state = new State(current_state, unlockingTxid, loop, newAmount)
+
+  const newAmount = unlockingTx.outputs[0].satoshis
+
+  new_state = new State(current_state, unlockingTx, loop, newAmount)
   log_state("begin_loop", new_state)
   return new_state
 }
 async function iter_loop(mem_n, state) {
-  current_state = state.current_state; lockingTxid = state.txid; loop = state.loop; amount = state.amount;
+  current_state = state.current_state; prevTx = state.tx; loop = state.loop; amount = state.amount;
 
   current_state = recursive_function(current_state)
-
-  let prevLockingScript = state.loop.lockingScript
 
   // update state
   loop.setDataPart(tobin(mem_n) + num2bin(1, DataLen) + tobin(current_state))
   const newLockingScript = loop.lockingScript;
-  newAmount = amount - fee
 
-  const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
-  const preimage = getPreimage(unlockingTx, prevLockingScript, amount)
-  const unlockingScript = loop.to_loop_2(new SigHashPreimage(toHex(preimage))).toScript()
-  unlockingTx.inputs[0].setScript(unlockingScript)
+  
+  const unlockingTx = new bsv.Transaction();
+  unlockingTx.addInput(createInputFromPrevTx(prevTx))
+    .setOutput(0, (tx) => {
+      const newAmount = amount - tx.getEstimateFee()
+      return new bsv.Transaction.Output({
+        script: newLockingScript,
+        satoshis: newAmount,
+      })
+    })
+    .setInputScript(0, (tx, output) => {
+      const preimage = getPreimage(tx, output.script, output.satoshis)
+      const newAmount = amount - tx.getEstimateFee()
+      return loop.to_loop_2(new SigHashPreimage(toHex(preimage)), newAmount).toScript()
+    })
+    .seal()
+
+
   unlockingTxid = await sendTx(unlockingTx)
-  new_state = new State(current_state, unlockingTxid, loop, newAmount)
+
+  const newAmount = unlockingTx.outputs[0].satoshis
+  new_state = new State(current_state, unlockingTx, loop, newAmount)
   log_state("iter_loop", new_state)
   return new_state
 }
 async function end_loop(mem_n, state) {
-  current_state= state.current_state; lockingTxid = state.txid; loop = state.loop; amount = state.amount;
-
-  let prevLockingScript = state.loop.lockingScript;
+  current_state = state.current_state; prevTx = state.tx; loop = state.loop; amount = state.amount;
 
   // update state
   loop.setDataPart(tobin(mem_n) + num2bin(2, DataLen) + tobin(current_state))
   const newLockingScript = loop.lockingScript;
-  newAmount = amount - fee
 
-  const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
-  const preimage = getPreimage(unlockingTx, prevLockingScript, amount)
-  const unlockingScript = loop.to_loop_2(new SigHashPreimage(toHex(preimage))).toScript()
-  unlockingTx.inputs[0].setScript(unlockingScript)
+  
+  const unlockingTx = new bsv.Transaction();
+  unlockingTx.addInput(createInputFromPrevTx(prevTx))
+    .setOutput(0, (tx) => {
+      const newAmount = amount - tx.getEstimateFee()
+      return new bsv.Transaction.Output({
+        script: newLockingScript,
+        satoshis: newAmount,
+      })
+    })
+    .setInputScript(0, (tx, output) => {
+      const preimage = getPreimage(tx, output.script, output.satoshis)
+      const newAmount = amount - tx.getEstimateFee()
+      return loop.to_loop_2(new SigHashPreimage(toHex(preimage)), newAmount).toScript()
+    })
+    .seal()
+
   unlockingTxid = await sendTx(unlockingTx)
-  new_state = new State(current_state, unlockingTxid, loop, newAmount)
+
+  const newAmount = unlockingTx.outputs[0].satoshis
+  new_state = new State(current_state, unlockingTx, loop, newAmount)
   log_state("end_loop", new_state)
   return new_state
 }
 async function unlock_utxo(first_state, state) {
-  current_state = state.current_state; lockingTxid = state.txid; loop = state.loop; amount = state.amount;
-
-  let prevLockingScript = state.loop.lockingScript;
-
+  current_state = state.current_state; prevTx = state.tx; loop = state.loop; amount = state.amount;
   // update state
   loop.setDataPart(num2bin(0, DataLen)); //Whatever this is the end of the computation anyway
-  const newLockingScript = loop.lockingScript;
-  newAmount = amount - fee
+  const newLockingScript = bsv.Script.buildPublicKeyHashOut(privateKey.toAddress())
 
-  const unlockingTx = await createUnlockingTx(lockingTxid, amount, prevLockingScript, newAmount, newLockingScript)
-  const preimage = getPreimage(unlockingTx, prevLockingScript, amount)
-  const unlockingScript = loop.unlock_utxo(new SigHashPreimage(toHex(preimage)), first_state.a, first_state.b).toScript()
-  unlockingTx.inputs[0].setScript(unlockingScript)
+  const unlockingTx = new bsv.Transaction();
+  unlockingTx.addInput(createInputFromPrevTx(prevTx))
+    .setOutput(0, (tx) => {
+      const newAmount = amount - tx.getEstimateFee()
+      return new bsv.Transaction.Output({
+        script: newLockingScript,
+        satoshis: newAmount,
+      })
+    })
+    .setInputScript(0, (tx, output) => {
+      const preimage = getPreimage(tx, output.script, output.satoshis)
+      return loop.unlock_utxo(new SigHashPreimage(toHex(preimage)), first_state.a, first_state.b).toScript()
+    })
+    .seal()
+
+
+
   unlockingTxid = await sendTx(unlockingTx)
-  new_state = new State(current_state, unlockingTxid, loop, newAmount)
+  const newAmount = unlockingTx.outputs[0].satoshis
+  new_state = new State(current_state, unlockingTx, loop, newAmount)
   log_state("random_computation", new_state)
   return new_state
 }
 
-(async() => {
-    try {
-        const amount = 50000
-        const first_state = new Memory(7, 5)
+(async () => {
+  try {
+    const amount = 50000
+    const first_state = new Memory(7, 5)
 
-        var state
-        state = await create_contract(first_state, amount)
-        state = await begin_loop(state)
-        while(condition(state.current_state)) {
-          state = await iter_loop(first_state, state)
-        }
-        state = await end_loop(first_state, state)
-        state = await unlock_utxo(first_state, state)
-
-        console.log('Succeeded on testnet')
-    } catch (error) {
-        console.log('Failed on testnet')
-        showError(error)
+    var state
+    state = await create_contract(first_state, amount)
+    state = await begin_loop(state)
+    while (condition(state.current_state)) {
+      state = await iter_loop(first_state, state)
     }
+    state = await end_loop(first_state, state)
+    state = await unlock_utxo(first_state, state)
+
+    console.log('Succeeded on testnet')
+  } catch (error) {
+    console.log('Failed on testnet')
+    showError(error)
+  }
 })()
