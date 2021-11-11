@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 const { compileContract, newTx} = require('../../helper');
-const {  buildContractClass, Bool, Bytes, Int, SigHashPreimage, bsv, toHex, getPreimage, Ripemd160, PubKey } = require('scryptlib');
+const {  buildContractClass, Bool, signTx, Int, SigHashPreimage, bsv, toHex, getPreimage, Ripemd160, PubKey } = require('scryptlib');
 const inputIndex = 0;
 const inputSatoshis = 100000;
 
@@ -17,8 +17,7 @@ const addressHighestBid = privateKeyHighestBid.toAddress();
 
 
 const privateKeyAuctioner = new bsv.PrivateKey.fromRandom('testnet');
-const publicKeyAuctioner = bsv.PublicKey.fromPrivateKey(privateKeyHighestBid);
-
+const publicKeyAuctioner = bsv.PublicKey.fromPrivateKey(privateKeyAuctioner);
 
 const privateKeyNewBid = new bsv.PrivateKey.fromRandom('testnet');
 const publicKeyNewBid = bsv.PublicKey.fromPrivateKey(privateKeyNewBid);
@@ -46,12 +45,6 @@ describe('auction', () => {
         })
 
         const tx = newTx(inputSatoshis);
-
-        tx.addInput(new bsv.Transaction.Input.PublicKeyHash({
-            prevTxId:  'f6c8b716d9968ef65f8724240882a0f6bdd4bb942fb27cdfbb3c0701331c70c2',
-            outputIndex: 0,
-            script: new bsv.Script(), // placeholder
-          }), bsv.Script.buildPublicKeyHashOut(addressNewBid).toHex(), payinputSatoshis)
 
 
         tx.addOutput(new bsv.Transaction.Output({
@@ -84,5 +77,33 @@ describe('auction', () => {
 
 
     });
+
+    it('should close success', () => {
+
+        const tx = newTx(inputSatoshis);
+
+
+
+        const today = Math.round( new Date().valueOf() / 1000 );
+
+        tx.addOutput(new bsv.Transaction.Output({
+            script: bsv.Script.buildPublicKeyHashOut(addressNewBid),
+            satoshis: changeSats
+        }))
+        .setLockTime(today)
+
+        const preimage = getPreimage(tx, auction.lockingScript, inputSatoshis)
+
+        auction.txContext = {
+            tx,
+            inputIndex,
+            inputSatoshis
+        }
+        const sig = signTx(tx, privateKeyAuctioner, auction.lockingScript, inputSatoshis)
+
+        const result1 = auction.close(sig, preimage).verify()
+        expect(result1.success, result1.error).to.be.true
+
+    })
 
 })

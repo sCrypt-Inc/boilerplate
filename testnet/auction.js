@@ -100,11 +100,54 @@ async function runBid(prevTx, auction, amountInContract, refundPubKey) {
 
 }
 
+
+
+async function runClose(prevTx, auction) {
+
+  return new Promise(async (resolve, reject) => {
+
+    try {
+
+      const unlockingTx = new bsv.Transaction()
+      const today = Math.round( new Date().valueOf() / 1000 );
+      unlockingTx.addInput(createInputFromPrevTx(prevTx))
+      .from(await fetchUtxos(auctionerPrivKey.toAddress()))
+      .change(auctionerPrivKey.toAddress())
+      .setInputScript(0, (tx, output) => {
+        const preimage = getPreimage(tx, output.script, output.satoshis);
+
+        const sig = signTx(tx, auctionerPrivKey, output.script, output.satoshis)
+        return auction.close(sig, preimage).toScript();
+      })
+      .setLockTime(today)
+      .sign(auctionerPrivKey)
+      .seal()
+
+    
+      const txid = await sendTx(unlockingTx);
+      console.log('close txid: ', txid);
+
+      resolve(unlockingTx);
+    } catch (error) {
+      console.log('Failed on testnet');
+      showError(error);
+      console.log(error.context);
+      reject(error)
+    }
+
+  })
+
+}
+
 (async () => {
 
   // get locking script
   const Auction = buildContractClass(loadDesc('auction_debug_desc.json'))
-  const auction = new Auction(new Ripemd160(toHex(auctionerPKH)), new PubKey(auctionerPubKey), Math.round(new Date().getTime() / 1000) + 3600)
+
+  const onedayAgo = new Date("2020-01-03");
+  const auctionDeadline = Math.round( onedayAgo.valueOf() / 1000 );
+
+  const auction = new Auction(new Ripemd160(toHex(auctionerPKH)), new PubKey(auctionerPubKey), auctionDeadline)
 
 
   try {
@@ -119,6 +162,10 @@ async function runBid(prevTx, auction, amountInContract, refundPubKey) {
       await sleep(SLEEP_TIME)
       prevTx = await runBid(prevTx, auction, amount + (BID_INCREASE * i), i == 0 ? auctionerPubKey : bidderPubKey);
     }
+
+    await sleep(SLEEP_TIME)
+    
+    await runClose(prevTx, auction);
 
     console.log('Succeeded on testnet');
 
