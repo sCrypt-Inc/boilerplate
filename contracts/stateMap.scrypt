@@ -1,0 +1,49 @@
+import "util.scrypt";
+struct MapEntry {
+    int key;
+    int val;
+    int keyIndex;
+}
+
+contract StateMap {
+    static const int MAX = 10;
+
+    @state
+    bytes _mpData;
+
+    public function insert(MapEntry entry, SigHashPreimage preimage) {
+        require(Tx.checkPreimage(preimage));
+        HashedMap<int, int> map = new HashedMap(this._mpData);
+        int size = map.size();
+        require(!map.has(entry.key, entry.keyIndex));
+        require(map.set(entry.key, entry.val, entry.keyIndex));
+        require(map.canGet(entry.key, entry.val, entry.keyIndex));
+        require(map.size() == size + 1);
+        require(this.passMap(map.data(), preimage));
+    }
+
+    public function update(MapEntry entry, SigHashPreimage preimage) {
+        require(Tx.checkPreimage(preimage));
+        HashedMap<int, int> map = new HashedMap(this._mpData);
+        require(map.has(entry.key, entry.keyIndex));
+        require(map.set(entry.key, entry.val, entry.keyIndex));
+        require(map.canGet(entry.key, entry.val, entry.keyIndex));
+        require(this.passMap(map.data(), preimage));
+    }
+
+    public function delete(int key, int keyIndex, SigHashPreimage preimage) {
+        require(Tx.checkPreimage(preimage));
+        HashedMap<int, int> map = new HashedMap(this._mpData);
+        require(map.has(key, keyIndex));
+        require(map.delete(key, keyIndex));
+        require(!map.has(key, keyIndex));
+        require(this.passMap(map.data(), preimage));
+    }
+
+    function passMap(bytes newData, SigHashPreimage preimage) : bool {
+        this._mpData = newData;
+        bytes outputScript = this.getStateScript();
+        bytes output = Util.buildOutput(outputScript, Util.value(preimage));
+        return (hash256(output) == Util.hashOutputs(preimage));
+    }
+}
