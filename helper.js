@@ -10,7 +10,7 @@ const {
   getPreimage,
   toHex
 } = require('scryptlib')
-const { privateKey } = require('./privateKey');
+
 const MSB_THRESHOLD = 0x7e;
 
 const Signature = bsv.crypto.Signature
@@ -177,7 +177,7 @@ const sleep = async(seconds) => {
 }
 
 async function deployContract(contract, amount) {
-
+  const { privateKey } = require('./privateKey');
   const address = privateKey.toAddress()
   const tx = new bsv.Transaction()
   
