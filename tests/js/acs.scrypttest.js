@@ -63,12 +63,12 @@ describe('Test sCrypt contract AnyoneCanSpend in Javascript', () => {
   });
 
   it('should succeed when pushing right preimage', () => {
-    result = acs.unlock(new SigHashPreimage(toHex(preimage))).verify();
+    result = acs.unlock(new SigHashPreimage(toHex(preimage)), outputAmount).verify();
     expect(result.success, result.error).to.be.true;
   });
 
   it('should fail when pushing wrong preimage', () => {
-    result = acs.unlock(new SigHashPreimage(toHex(preimage) + '01')).verify();
+    result = acs.unlock(new SigHashPreimage(toHex(preimage) + '01'), outputAmount).verify();
     expect(result.success, result.error).to.be.false;
   });
 });

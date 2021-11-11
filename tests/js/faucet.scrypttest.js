@@ -102,9 +102,8 @@ describe('Deposit', ()=>{
 describe('Withdraw', () => {
   let faucet, preimage, result, tx;
   const withdrawAmount = 10000;
-  const fee = 4000;
   const inputSatoshis = 10000000;
-  const outputAmount = inputSatoshis - withdrawAmount - fee;
+  const outputAmount = inputSatoshis - withdrawAmount;
   const matureTime = 1602553516;
 
   before(() => {
@@ -135,7 +134,7 @@ describe('Withdraw', () => {
       inputIndex,
       inputSatoshis
     }
-    result = faucet.withdraw(new SigHashPreimage(toHex(preimage)), new Ripemd160(toHex(pkh))).verify();
+    result = faucet.withdraw(new SigHashPreimage(toHex(preimage)), new Ripemd160(toHex(pkh)), outputAmount).verify();
     expect(result.success, result.error).to.be.true;
   });
 
@@ -161,7 +160,7 @@ describe('Withdraw', () => {
       inputSatoshis
     };
 
-    result = faucet.withdraw(new SigHashPreimage(toHex(preimage)), new Ripemd160(toHex(pkh))).verify();
+    result = faucet.withdraw(new SigHashPreimage(toHex(preimage)), new Ripemd160(toHex(pkh)), outputAmount).verify();
     expect(result.success, result.error).to.be.false;
   });
 
@@ -187,7 +186,7 @@ describe('Withdraw', () => {
       inputSatoshis
     };
 
-    result = faucet.withdraw(new SigHashPreimage(toHex(preimage)), new Ripemd160(toHex(pkh))).verify();
+    result = faucet.withdraw(new SigHashPreimage(toHex(preimage)), new Ripemd160(toHex(pkh)), outputAmount).verify();
     expect(result.success, result.error).to.be.false;
   });
 });
