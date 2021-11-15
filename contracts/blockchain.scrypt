@@ -1,0 +1,78 @@
+import "Util.scrypt";
+import "mast.scrypt";
+
+struct BlockHeader {
+    bytes version;
+    Sha256 prevBlockHash;
+    Sha256 merkleRoot;
+    int time;
+    // difficulty target
+    bytes bits;
+    bytes nonce;
+}
+
+// a library to trustlessly access the blockchain: including blockheaders and transactions
+library Blockchain {
+    // SPV: is a txid in a block
+    static function txInBlock(Sha256 txid, BlockHeader bh, MerklePath merklePath) : bool {
+        return MAST.calMerkleRoot(txid, merklePath) == bh.merkleRoot;
+    }
+
+    // is block header valid with difficulty meeting target
+    static function isBlockHeaderValid(BlockHeader bh, int blockchainTarget) : bool {
+        int bhHash = blockHeaderHashAsInt(bh);
+        int target = bits2Target(bh.bits);
+
+        // block hash below target and target below blockchain difficulty target
+        return bhHash <= target && target <= blockchainTarget;
+    }
+
+    // is a chain of block headers valid
+    static function isBlockHeaderChainValid(static const int N, BlockHeader[N] headers, int blockchainTarget) : bool {
+        bool res = true;
+
+        loop (N) : i {
+            if (res) {
+                // each block is valid
+                if (!isBlockHeaderValid(headers[i], blockchainTarget))
+                    res = false;
+
+                if (i > 0) {
+                    Sha256 prevBlockHash = blockHeaderHash(headers[i - 1]);
+                    // blocks are chained
+                    if (prevBlockHash != headers[i].prevBlockHash)
+                        res = false; 
+                }
+            }
+        }
+
+        return res;
+    }
+
+    // convert difficulty from bits to target
+    static function bits2Target(bytes bits) : int {
+        int exponent = unpack(bits[3 :]);
+        bytes coefficient = bits[: 3];
+        int leadingZeroBytes = exponent - 3;
+
+        bytes targetBytes = num2bin(0, leadingZeroBytes) + coefficient;
+        return Util.fromLEUnsigned(targetBytes);
+    }
+
+    // serialize a block header
+    static function serialize(BlockHeader bh) : bytes {
+        return bh.version + bh.prevBlockHash + bh.merkleRoot + num2bin(bh.time, 4) + bh.bits + bh.nonce;
+    }
+
+    // block header hash
+    static function blockHeaderHash(BlockHeader bh) : Sha256 {
+        return hash256(serialize(bh));
+    }
+
+    // block header hash, but converted to a number
+    static function blockHeaderHashAsInt(BlockHeader bh) : int {
+        // hash is reversed
+        // no need to change to unsigned here since it is already positive, due to leading zeros
+        return unpack(reverseBytes(blockHeaderHash(bh), 32));
+    }
+}
