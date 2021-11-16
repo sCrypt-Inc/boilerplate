@@ -10,7 +10,7 @@ const {
   getPreimage,
   toHex
 } = require('scryptlib')
-
+const crypto = require('crypto');
 const MSB_THRESHOLD = 0x7e;
 
 const Signature = bsv.crypto.Signature
@@ -25,15 +25,13 @@ const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
 
 const inputIndex = 0
 const inputSatoshis = 100000
-const flags = Interpreter.SCRIPT_VERIFY_MINIMALDATA | Interpreter.SCRIPT_ENABLE_SIGHASH_FORKID | Interpreter.SCRIPT_ENABLE_MAGNETIC_OPCODES | Interpreter.SCRIPT_ENABLE_MONOLITH_OPCODES
-const minFee = 546
-const dummyTxId = 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458'
-const reversedDummyTxId = '5884e5db9de218238671572340b207ee85b628074e7e467096c267266baf77a4'
+const dummyTxId = crypto.randomBytes(32).toString('hex');
+const reversedDummyTxId =  Buffer.from(dummyTxId, 'hex').reverse().toString('hex');
 const sighashType2Hex = s => s.toString(16)
 
 function newTx() {
   const utxo = {
-    txId: 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458',
+    txId: dummyTxId,
     outputIndex: 0,
     script: '',   // placeholder
     satoshis: inputSatoshis
