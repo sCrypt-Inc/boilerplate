@@ -13,6 +13,9 @@ struct BlockHeader {
 
 // a library to trustlessly access the blockchain: including blockheaders and transactions
 library Blockchain {
+    // block height's position relative to the beginning of coinbase tx
+    static const int BLOCK_HEIGHT_POS = 42;
+
     // SPV: is a txid in a block
     static function txInBlock(Sha256 txid, BlockHeader bh, MerklePath merklePath) : bool {
         return MAST.calMerkleRoot(txid, merklePath) == bh.merkleRoot;
@@ -47,6 +50,46 @@ library Blockchain {
         }
 
         return res;
+    }
+
+    // 01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1d0352e40a2f7376706f6f6c2e636f6d2f306c92f79739e3174831970000ffffffff01836e4125000000001976a91468888423f412b6b4166d61fe9e66a1aeff30df1f88ac00000000
+    // is raw transaction a coinbase tx
+    static function isCoinbase(bytes tx) : bool {
+        return tx[4:5] == b'01' // only 1 input
+            && tx[5:37] == b'0000000000000000000000000000000000000000000000000000000000000000' // null txid: all zeros
+            && tx[37:41] == b'FFFFFFFF';    // null vout: all Fs
+    }
+
+    // a coinbase tx is the 1st tx in a block; thus all siblings on the merkle path must be on the right
+    static function isCoinbase2(MerklePath merklePath) : bool {
+        bool res = true;
+
+        loop (MAST.DEPTH) : i {
+            // sibling on the right
+            res = res && !merklePath[i].left;
+        }
+        return res;
+    }
+
+    // get height of the block identified by the header
+    static function blockHeight(BlockHeader bh, bytes coinbaseTx, MerklePath merklePath, int blockchainTarget) : int {
+        require(isBlockHeaderValid(bh, blockchainTarget));
+        
+        // ensure coinbase it's in the block
+        require(txInBlock(hash256(coinbaseTx), bh, merklePath));
+
+        // ensure it's coinbase
+        require(isCoinbase(coinbaseTx));
+        // alternative
+        // require(isCoinbase2(merklePath));
+
+        return readBlockHeight(coinbaseTx);
+    }
+
+    // parse block height from coinbase tx: BIP34
+    static function readBlockHeight(bytes coinbaseTx) : int {
+        // block height is at the beginning of the unlocking script and encoded in varint
+        return unpack(Util.readVarint(coinbaseTx[BLOCK_HEIGHT_POS:]));
     }
 
     // convert difficulty from bits to target
