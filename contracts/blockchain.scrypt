@@ -21,6 +21,53 @@ library Blockchain {
         return MAST.calMerkleRoot(txid, merklePath) == bh.merkleRoot;
     }
 
+    // is txid the last transaction in a block
+    static function lastTxInBlock(Sha256 txid, BlockHeader bh, MerklePath merklePath) : bool {
+        bool last = true;
+        Sha256 root = txid;
+
+        loop (MAST.DEPTH) : i {
+            Sibling s = merklePath[i];
+
+            // if node on the merkle path is on the right, it must be a duplicate
+            if (!s.left) {
+                if (s.hash != root) {
+                    last = false;
+                }
+            }
+
+            root = s.left ? hash256(s.hash + root) : hash256(root + s.hash);
+        }
+
+        return last && root == bh.merkleRoot;
+    }
+
+    // calculate a tx's index in a block from its merkle path
+    // goes from top to bottom, the path basically encodes the index in binary form
+    // left/L means 1, and right/R 0: e.g., (L, R, L) denotes 101 in binary, and 5 in decimal
+    static function txIndex(MerklePath merklePath) : int {
+        int sum = 0;
+
+        // traverse the path from top to bottom
+        loop (MAST.DEPTH) : i {
+            Sibling s = merklePath[MAST.DEPTH - i - 1];
+
+            sum *= 2;
+            if (s.left) {
+                sum++;
+            }
+        }
+        return sum;
+    }
+
+    // get number of transactions in a block
+    static function blockTxCount(BlockHeader bh, Sha256 lastTxid, MerklePath merklePath) : int {
+        // ensure this tx is indeed the last one
+        require(lastTxInBlock(lastTxid, bh, merklePath));
+
+        return txIndex(merklePath) + 1;
+    }
+
     // is block header valid with difficulty meeting target
     static function isBlockHeaderValid(BlockHeader bh, int blockchainTarget) : bool {
         int bhHash = blockHeaderHashAsInt(bh);
