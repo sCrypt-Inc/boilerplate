@@ -7,24 +7,26 @@ contract BlockTimeBet {
     // 10 minutes in seconds
     static const int AVG_BLOCK_TIME = 600;
 
+    int blockchainTarget;
     PubKey alice;
     PubKey bob;
 
+
     // header[1] is the block containing the contract tx
-    public function main(BlockHeader[N] headers, MerklePath merklePath, Sig sig, int blockchainTarget, SigHashPreimage txPreimage) {
+    public function main(BlockHeader[N] headers, MerklePaths merklePath, Sig sig,  SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
         // get id of previous tx
         Sha256 prevTxid = Sha256(Util.outpoint(txPreimage)[:32]);
 
         // validate a chain of block headers
-        require(Blockchain.isBlockHeaderChainValid(N, headers, blockchainTarget));
+        require(Blockchain.isBlockHeaderChainValid(N, headers, this.blockchainTarget));
 
         // verify previous tx is in block with index 1
         require(Blockchain.txInBlock(prevTxid, headers[1], merklePath));
 
         // block time is the time difference between this block and last
-        int blockTime = headers[1].time - headers[0].time;
+        int blockTime = Util.fromLEUnsigned(headers[1].time) - Util.fromLEUnsigned(headers[0].time);
 
         // Alice wins if block is mined within 10 mins; otherwise Bob wins
         PubKey winner = blockTime < AVG_BLOCK_TIME ? this.alice : this.bob;

@@ -4,6 +4,8 @@ import "blockchain.scrypt";
   A trustless pesudo-random number generator using the block containing the deployed contract tx as an entropy source
 */
 contract BlockchainPRNG {
+
+    int blockchainTarget;
     PubKey alice;
     PubKey bob;
 
@@ -11,16 +13,15 @@ contract BlockchainPRNG {
       @bh: header of the block containing the contract tx/UTXO
       @merklePath: Merkle proof for the tx
       @sig: winner signature
-      @blockchainTarget: difficulty target on mainnet
      */
-    public function bet(BlockHeader bh, MerklePath merklePath, Sig sig, int blockchainTarget, SigHashPreimage txPreimage) {
+    public function bet(BlockHeader bh, MerklePaths merklePath, Sig sig,  SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
         // get id of previous tx
         Sha256 prevTxid = Sha256(Util.outpoint(txPreimage)[:32]);
 
         // validate block header
-        require(Blockchain.isBlockHeaderValid(bh, blockchainTarget));
+        require(Blockchain.isBlockHeaderValid(bh, this.blockchainTarget));
 
         // verify previous tx is in the block
         require(Blockchain.txInBlock(prevTxid, bh, merklePath));

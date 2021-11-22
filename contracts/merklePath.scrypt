@@ -1,0 +1,42 @@
+
+struct Sibling {
+    Sha256 hash;
+    // invalid {0} or left {1} or right {2} sibling
+    int left;
+}
+
+type MerklePaths = Sibling[MerklePath.DEPTH];
+
+library MerklePath {
+    // N is length of a Sibling
+    static const int N = 33;
+    // can support a block with 4294967296 transations
+    static const int DEPTH = 32;
+    //According to the given leaf node and merkle path, calculate the hash of the root node of the merkle tree
+    static function calMerkleRoot(Sha256 leaf, MerklePaths merklePath) : Sha256 {
+        Sha256 root = leaf;
+
+        loop (DEPTH) : i {
+            Sibling s = merklePath[i];
+            if(s.left > 0) { // s is valid
+                root = s.left == 1 ? hash256(s.hash + root) : hash256(root + s.hash);
+            }
+        }
+
+        return root;
+    }
+
+
+    static function isCoinbase(MerklePaths merklePath) : bool {
+
+        bool res = true;
+        loop (DEPTH) : i {
+            Sibling s = merklePath[i];
+            if (s.left > 0) {
+                // sibling on the right
+                res = res && s.left == 2;
+            }
+        }
+        return res;
+    }
+}

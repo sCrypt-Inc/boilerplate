@@ -1,0 +1,38 @@
+import "blockchain.scrypt";
+
+
+contract BlockchainTest {
+    
+    int blockchainTarget;
+    
+    public function testBlockHeight(BlockHeader bh, MerklePaths merklePath,  bytes coinbaseTx, int height, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
+
+        // get id of previous tx
+        Sha256 prevTxid = Sha256(Util.outpoint(txPreimage)[:32]);
+
+        // validate block header
+        require(Blockchain.isBlockHeaderValid(bh, this.blockchainTarget));
+
+        // verify previous tx is in the block
+        require(Blockchain.txInBlock(prevTxid, bh, merklePath));
+
+        require(Blockchain.blockHeight(bh, coinbaseTx, merklePath)  == height);
+    }
+
+
+    public function testBlockTxCount(BlockHeader bh, MerklePaths merklePath, MerklePaths merklePathOfLastTx, Sha256 lastTxid, int count, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
+
+        // get id of previous tx
+        Sha256 prevTxid = Sha256(Util.outpoint(txPreimage)[:32]);
+
+        // validate block header
+        require(Blockchain.isBlockHeaderValid(bh, this.blockchainTarget));
+
+        // verify previous tx is in the block
+        require(Blockchain.txInBlock(prevTxid, bh, merklePath));
+
+        require(Blockchain.blockTxCount(bh, lastTxid, merklePathOfLastTx)  == count);
+    }
+}

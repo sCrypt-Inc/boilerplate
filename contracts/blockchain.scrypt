@@ -1,43 +1,46 @@
-import "Util.scrypt";
-import "mast.scrypt";
+import "util.scrypt";
+import "merklepath.scrypt";
+
 
 struct BlockHeader {
     bytes version;
     Sha256 prevBlockHash;
     Sha256 merkleRoot;
-    int time;
+    bytes time;
     // difficulty target
     bytes bits;
     bytes nonce;
 }
+
 
 // a library to trustlessly access the blockchain: including blockheaders and transactions
 library Blockchain {
     // block height's position relative to the beginning of coinbase tx
     // TODO: This assumes unlocking script can be pushed using OP_PUSH_1. See if it always holds?
     static const int BLOCK_HEIGHT_POS = 42;
-
+    static const int DEPTH = 2;
     // SPV: is a txid in a block
-    static function txInBlock(Sha256 txid, BlockHeader bh, MerklePath merklePath) : bool {
-        return MAST.calMerkleRoot(txid, merklePath) == bh.merkleRoot;
+    static function txInBlock(Sha256 txid, BlockHeader bh, MerklePaths merklePath) : bool {
+        return MerklePath.calMerkleRoot(txid, merklePath) == bh.merkleRoot;
     }
 
     // is txid the last transaction in a block
-    static function lastTxInBlock(Sha256 txid, BlockHeader bh, MerklePath merklePath) : bool {
+    static function lastTxInBlock(Sha256 txid, BlockHeader bh, MerklePaths merklePath) : bool {
         bool last = true;
         Sha256 root = txid;
 
-        loop (MAST.DEPTH) : i {
+        loop (DEPTH) : i {
             Sibling s = merklePath[i];
 
-            // if node on the merkle path is on the right, it must be a duplicate
-            if (!s.left) {
-                if (s.hash != root) {
+            if(s.left > 0) { // s is valid
+                // if node on the merkle path is on the right, it must be a duplicate
+                // if node on the merkle path is on the left, it must NOT be a duplicate
+                if (s.left != 1 && s.hash != root || s.left == 1 && s.hash == root) {
                     last = false;
                 }
             }
 
-            root = s.left ? hash256(s.hash + root) : hash256(root + s.hash);
+            root = s.left == 1 ? hash256(s.hash + root) : hash256(root + s.hash);
         }
 
         return last && root == bh.merkleRoot;
@@ -46,23 +49,25 @@ library Blockchain {
     // calculate a tx's index in a block from its merkle path
     // goes from top to bottom, the path basically encodes the index in binary form
     // left/L means 1, and right/R 0: e.g., (L, R, L) denotes 101 in binary, and 5 in decimal
-    static function txIndex(MerklePath merklePath) : int {
+    static function txIndex(MerklePaths merklePath) : int {
         int sum = 0;
 
         // traverse the path from top to bottom
-        loop (MAST.DEPTH) : i {
-            Sibling s = merklePath[MAST.DEPTH - i - 1];
+        loop (DEPTH) : i {
+            Sibling s = merklePath[DEPTH - i - 1];
 
-            sum *= 2;
-            if (s.left) {
-                sum++;
+            if(s.left > 0 ) {
+                sum *= 2;
+                if (s.left == 1) {
+                    sum++;
+                }
             }
         }
         return sum;
     }
 
     // get number of transactions in a block
-    static function blockTxCount(BlockHeader bh, Sha256 lastTxid, MerklePath merklePath) : int {
+    static function blockTxCount(BlockHeader bh, Sha256 lastTxid, MerklePaths merklePath) : int {
         // ensure this tx is indeed the last one
         require(lastTxInBlock(lastTxid, bh, merklePath));
 
@@ -73,7 +78,7 @@ library Blockchain {
     static function isBlockHeaderValid(BlockHeader bh, int blockchainTarget) : bool {
         int bhHash = blockHeaderHashAsInt(bh);
         int target = bits2Target(bh.bits);
-
+        bytes hash = blockHeaderHash(bh);
         // block hash below target and target below blockchain difficulty target
         return bhHash <= target && target <= blockchainTarget;
     }
@@ -109,19 +114,12 @@ library Blockchain {
     }
 
     // a coinbase tx is the 1st tx in a block; thus all siblings on the merkle path must be on the right
-    static function isCoinbase2(MerklePath merklePath) : bool {
-        bool res = true;
-
-        loop (MAST.DEPTH) : i {
-            // sibling on the right
-            res = res && !merklePath[i].left;
-        }
-        return res;
+    static function isCoinbase2(MerklePaths merklePath) : bool { 
+        return MerklePath.isCoinbase(merklePath);
     }
 
     // get height of the block identified by the header
-    static function blockHeight(BlockHeader bh, bytes coinbaseTx, MerklePath merklePath, int blockchainTarget) : int {
-        require(isBlockHeaderValid(bh, blockchainTarget));
+    static function blockHeight(BlockHeader bh, bytes coinbaseTx, MerklePaths merklePath) : int {
         
         // ensure coinbase it's in the block
         require(txInBlock(hash256(coinbaseTx), bh, merklePath));
@@ -137,22 +135,21 @@ library Blockchain {
     // parse block height from coinbase tx: BIP34
     static function readBlockHeight(bytes coinbaseTx) : int {
         // block height is at the beginning of the unlocking script and encoded in varint
-        return unpack(Util.readVarint(coinbaseTx[BLOCK_HEIGHT_POS:]));
+        return Util.fromLEUnsigned(Util.readVarint(coinbaseTx[BLOCK_HEIGHT_POS:]));
     }
 
     // convert difficulty from bits to target
     static function bits2Target(bytes bits) : int {
-        int exponent = unpack(bits[3 :]);
-        bytes coefficient = bits[: 3];
-        int leadingZeroBytes = exponent - 3;
-
-        bytes targetBytes = num2bin(0, leadingZeroBytes) + coefficient;
-        return Util.fromLEUnsigned(targetBytes);
+        int exponent = Util.fromLEUnsigned(bits[3 :]);
+        int coefficient = Util.fromLEUnsigned(bits[: 3]);
+        int n = 8 * (exponent - 3);
+        bytes target = num2bin(coefficient, 32) >> n;
+        return  Util.fromLEUnsigned(target);
     }
 
     // serialize a block header
     static function serialize(BlockHeader bh) : bytes {
-        return bh.version + bh.prevBlockHash + bh.merkleRoot + num2bin(bh.time, 4) + bh.bits + bh.nonce;
+        return bh.version + bh.prevBlockHash + bh.merkleRoot + bh.time + bh.bits + bh.nonce;
     }
 
     // block header hash
@@ -164,6 +161,6 @@ library Blockchain {
     static function blockHeaderHashAsInt(BlockHeader bh) : int {
         // hash is reversed
         // no need to change to unsigned here since it is already positive, due to leading zeros
-        return unpack(reverseBytes(blockHeaderHash(bh), 32));
+        return Util.fromLEUnsigned(blockHeaderHash(bh));
     }
 }
