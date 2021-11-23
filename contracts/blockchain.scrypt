@@ -1,5 +1,5 @@
 import "util.scrypt";
-import "merklepath.scrypt";
+import "merklePath.scrypt";
 
 
 struct BlockHeader {
