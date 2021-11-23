@@ -6,10 +6,10 @@ struct BlockHeader {
     bytes version;
     Sha256 prevBlockHash;
     Sha256 merkleRoot;
-    bytes time;
+    int time;
     // difficulty target
     bytes bits;
-    bytes nonce;
+    int nonce;
 }
 
 
@@ -18,29 +18,29 @@ library Blockchain {
     // block height's position relative to the beginning of coinbase tx
     // TODO: This assumes unlocking script can be pushed using OP_PUSH_1. See if it always holds?
     static const int BLOCK_HEIGHT_POS = 42;
-    static const int DEPTH = 2;
+
     // SPV: is a txid in a block
-    static function txInBlock(Sha256 txid, BlockHeader bh, MerklePaths merklePath) : bool {
-        return MerklePath.calMerkleRoot(txid, merklePath) == bh.merkleRoot;
+    static function txInBlock(Sha256 txid, BlockHeader bh, MerkleProof merkleproof) : bool {
+        return MerklePath.calMerkleRoot(txid, merkleproof) == bh.merkleRoot;
     }
 
     // is txid the last transaction in a block
-    static function lastTxInBlock(Sha256 txid, BlockHeader bh, MerklePaths merklePath) : bool {
+    static function lastTxInBlock(Sha256 txid, BlockHeader bh, MerkleProof merkleproof) : bool {
         bool last = true;
         Sha256 root = txid;
 
-        loop (DEPTH) : i {
-            Sibling s = merklePath[i];
+        loop (MerklePath.DEPTH) : i {
+            Node node = merkleproof[i];
 
-            if(s.left > 0) { // s is valid
+            if(node.left != MerklePath.INVALID_NODE) { // s is valid
                 // if node on the merkle path is on the right, it must be a duplicate
                 // if node on the merkle path is on the left, it must NOT be a duplicate
-                if (s.left != 1 && s.hash != root || s.left == 1 && s.hash == root) {
+                if (node.left != MerklePath.LEFT_NODE && node.hash != root || node.left == MerklePath.LEFT_NODE && node.hash == root) {
                     last = false;
                 }
-            }
 
-            root = s.left == 1 ? hash256(s.hash + root) : hash256(root + s.hash);
+                root = node.left == MerklePath.LEFT_NODE ? hash256(node.hash + root) : hash256(root + node.hash);
+            }
         }
 
         return last && root == bh.merkleRoot;
@@ -49,16 +49,16 @@ library Blockchain {
     // calculate a tx's index in a block from its merkle path
     // goes from top to bottom, the path basically encodes the index in binary form
     // left/L means 1, and right/R 0: e.g., (L, R, L) denotes 101 in binary, and 5 in decimal
-    static function txIndex(MerklePaths merklePath) : int {
+    static function txIndex(MerkleProof merkleproof) : int {
         int sum = 0;
 
         // traverse the path from top to bottom
-        loop (DEPTH) : i {
-            Sibling s = merklePath[DEPTH - i - 1];
+        loop (MerklePath.DEPTH) : i {
+            Node node = merkleproof[MerklePath.DEPTH - i - 1];
 
-            if(s.left > 0 ) {
+            if(node.left != MerklePath.INVALID_NODE ) {
                 sum *= 2;
-                if (s.left == 1) {
+                if (node.left == MerklePath.LEFT_NODE) {
                     sum++;
                 }
             }
@@ -67,11 +67,11 @@ library Blockchain {
     }
 
     // get number of transactions in a block
-    static function blockTxCount(BlockHeader bh, Sha256 lastTxid, MerklePaths merklePath) : int {
+    static function blockTxCount(BlockHeader bh, Sha256 lastTxid, MerkleProof merkleproof) : int {
         // ensure this tx is indeed the last one
-        require(lastTxInBlock(lastTxid, bh, merklePath));
+        require(lastTxInBlock(lastTxid, bh, merkleproof));
 
-        return txIndex(merklePath) + 1;
+        return txIndex(merkleproof) + 1;
     }
 
     // is block header valid with difficulty meeting target
@@ -105,7 +105,7 @@ library Blockchain {
         return res;
     }
 
-    // 01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1d0352e40a2f7376706f6f6c2e636f6d2f306c92f79739e3174831970000ffffffff01836e4125000000001976a91468888423f412b6b4166d61fe9e66a1aeff30df1f88ac00000000
+
     // is raw transaction a coinbase tx
     static function isCoinbase(bytes tx) : bool {
         return tx[4:5] == b'01' // only 1 input
@@ -113,21 +113,18 @@ library Blockchain {
             && tx[37:41] == b'FFFFFFFF';    // null vout: all Fs
     }
 
-    // a coinbase tx is the 1st tx in a block; thus all siblings on the merkle path must be on the right
-    static function isCoinbase2(MerklePaths merklePath) : bool { 
-        return MerklePath.isCoinbase(merklePath);
-    }
+    
 
     // get height of the block identified by the header
-    static function blockHeight(BlockHeader bh, bytes coinbaseTx, MerklePaths merklePath) : int {
+    static function blockHeight(BlockHeader bh, bytes coinbaseTx, MerkleProof merkleproof) : int {
         
         // ensure coinbase it's in the block
-        require(txInBlock(hash256(coinbaseTx), bh, merklePath));
+        require(txInBlock(hash256(coinbaseTx), bh, merkleproof));
 
         // ensure it's coinbase
-        require(isCoinbase(coinbaseTx));
+        require(MerklePath.isCoinbase(merkleproof));
         // alternative
-        // require(isCoinbase2(merklePath));
+        // require(isCoinbase(merkleproof));
 
         return readBlockHeight(coinbaseTx);
     }
@@ -149,7 +146,7 @@ library Blockchain {
 
     // serialize a block header
     static function serialize(BlockHeader bh) : bytes {
-        return bh.version + bh.prevBlockHash + bh.merkleRoot + bh.time + bh.bits + bh.nonce;
+        return bh.version + bh.prevBlockHash + bh.merkleRoot + Util.toLEUnsigned(bh.time, 4) + bh.bits + Util.toLEUnsigned(bh.nonce, 4);
     }
 
     // block header hash
@@ -157,10 +154,8 @@ library Blockchain {
         return hash256(serialize(bh));
     }
 
-    // block header hash, but converted to a number
+    // block header hash, but converted to a positive number
     static function blockHeaderHashAsInt(BlockHeader bh) : int {
-        // hash is reversed
-        // no need to change to unsigned here since it is already positive, due to leading zeros
         return Util.fromLEUnsigned(blockHeaderHash(bh));
     }
 }

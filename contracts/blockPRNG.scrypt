@@ -5,16 +5,17 @@ import "blockchain.scrypt";
 */
 contract BlockchainPRNG {
 
+    // maximal target for any block to be considered valid
     int blockchainTarget;
     PubKey alice;
     PubKey bob;
 
     /*
       @bh: header of the block containing the contract tx/UTXO
-      @merklePath: Merkle proof for the tx
+      @merkleproof: Merkle proof for the tx
       @sig: winner signature
      */
-    public function bet(BlockHeader bh, MerklePaths merklePath, Sig sig,  SigHashPreimage txPreimage) {
+    public function bet(BlockHeader bh, MerkleProof merkleproof, Sig sig,  SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
         // get id of previous tx
@@ -24,10 +25,10 @@ contract BlockchainPRNG {
         require(Blockchain.isBlockHeaderValid(bh, this.blockchainTarget));
 
         // verify previous tx is in the block
-        require(Blockchain.txInBlock(prevTxid, bh, merklePath));
+        require(Blockchain.txInBlock(prevTxid, bh, merkleproof));
 
         // use block header's nonce's last bit as a pesudo-random number
-        PubKey winner = unpack(bh.nonce) % 2 ? this.alice : this.bob;
+        PubKey winner = bh.nonce % 2 ? this.alice : this.bob;
         require(checkSig(sig, winner));
     }
 }

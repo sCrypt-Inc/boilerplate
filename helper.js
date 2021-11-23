@@ -233,7 +233,7 @@ function toBigIndian(hexstr) {
   return reverseEndian(hexstr)
 }
 
-function uint322bin(d) {
+function uint32Tobin(d) {
   var s = (+d).toString(16);
   if(s.length < 4) {
       s = '0' + s;
@@ -280,14 +280,14 @@ function pdiff2Target(difficulty) {
 }
 
 
-// concat Header to get raw header
-function concatHeader(header) {
-  return uint322bin(header.version)
+// serialize Header to get raw header
+function serializeHeader(header) {
+  return uint32Tobin(header.version)
       + toLittleIndian(header.previousblockhash)
       + toLittleIndian(header.merkleroot)
-      + uint322bin(header.time)
+      + uint32Tobin(header.time)
       + toLittleIndian(header.bits)
-      + uint322bin(header.nonce)
+      + uint32Tobin(header.nonce)
 }
 
 
@@ -318,9 +318,9 @@ module.exports = {
   fetchUtxos,
   toLittleIndian,
   toBigIndian,
-  uint322bin,
+  uint32Tobin,
   num2hex,
   toTarget,
   pdiff2Target,
-  concatHeader
+  serializeHeader
 }

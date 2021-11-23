@@ -1,42 +1,47 @@
 
-struct Sibling {
+struct Node {
     Sha256 hash;
-    // invalid {0} or left {1} or right {2} sibling
+    // invalid {0} or left {1} or right {2} node
     int left;
 }
 
-type MerklePaths = Sibling[MerklePath.DEPTH];
+type MerkleProof = Node[MerklePath.DEPTH];
 
 library MerklePath {
-    // N is length of a Sibling
-    static const int N = 33;
-    // can support a block with 4294967296 transations
+    // maximal depth of a Merkle tree/path, which can support a block with 2^32 transations
     static const int DEPTH = 32;
+
+    static const int INVALID_NODE = 0;
+    static const int LEFT_NODE = 1;
+    static const int RIGHT_NODE = 2;
+
+
     //According to the given leaf node and merkle path, calculate the hash of the root node of the merkle tree
-    static function calMerkleRoot(Sha256 leaf, MerklePaths merklePath) : Sha256 {
+    static function calMerkleRoot(Sha256 leaf, MerkleProof merkleproof) : Sha256 {
         Sha256 root = leaf;
 
         loop (DEPTH) : i {
-            Sibling s = merklePath[i];
-            if(s.left > 0) { // s is valid
-                root = s.left == 1 ? hash256(s.hash + root) : hash256(root + s.hash);
+            Node node = merkleproof[i];
+            if(node.left != INVALID_NODE) { // s is valid
+                root = node.left == LEFT_NODE ? hash256(node.hash + root) : hash256(root + node.hash);
             }
         }
 
         return root;
     }
 
-
-    static function isCoinbase(MerklePaths merklePath) : bool {
+    // a tx if coinbase if all nodes on its Merkle path are on the right branch
+    static function isCoinbase(MerkleProof merkleproof) : bool {
 
         bool res = true;
         loop (DEPTH) : i {
-            Sibling s = merklePath[i];
-            if (s.left > 0) {
-                // sibling on the right
-                res = res && s.left == 2;
+            Node node = merkleproof[i];
+            if (node.left != INVALID_NODE) {
+                // node on the right
+                res = res && node.left == RIGHT_NODE;
             }
         }
         return res;
     }
+    
 }
