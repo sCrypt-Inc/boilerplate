@@ -1,7 +1,9 @@
 
 struct Node {
     Sha256 hash;
-    // invalid {0} or left {1} or right {2} node
+    // 0: invalid
+    // 1: on the left
+    // 2: on the right
     int left;
 }
 
