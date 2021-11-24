@@ -1,38 +1,19 @@
 import "util.scrypt";
-
-struct Sibling {
-    Sha256 hash;
-    // left or right sibling
-    bool left;
-}
-
-type MerklePath = Sibling[MAST.DEPTH];
+import "merklePath.scrypt";
 
 // Merklized Abstract Syntax Trees/Merklized Alternative Script Trees
 contract MAST {
-    static const int DEPTH = 4;
-
     Sha256 merkleRoot;
 
-    public function main(bytes branchScript, MerklePath merklePath, SigHashPreimage txPreimage) {
+    public function main(bytes branchScript, MerklePaths merklePath, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
         // validate branchScript is from the merkle tree
-        require(calMerkleRoot(branchScript, merklePath) == this.merkleRoot);
+        require(MerklePath.calMerkleRoot(sha256(branchScript), merklePath) == this.merkleRoot);
 
         // "P2SH": use branch script as the new locking script, while maintaining value
         bytes output = Util.buildOutput(branchScript, Util.value(txPreimage));
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
 
-    static function calMerkleRoot(bytes leaf, MerklePath merklePath) : Sha256 {
-        Sha256 root = sha256(leaf);
-
-        loop (DEPTH) : i {
-            Sibling s = merklePath[i];
-            root = s.left ? sha256(s.hash + root) : sha256(root + s.hash);
-        }
-
-        return root;
-    }
 }

@@ -43,9 +43,7 @@ function newTx() {
 
 // reverse hexStr byte order
 function reverseEndian(hexStr) {
-  let num = new BN(hexStr, 'hex')
-  let buf = num.toBuffer()
-  return buf.toString('hex').match(/.{2}/g).reverse().join('')
+  return hexStr.match(/../g).reverse().join('')
 }
 
 
@@ -219,6 +217,81 @@ async function fetchUtxos(address) {
 
 const emptyPublicKey = '000000000000000000000000000000000000000000000000000000000000000000'
 
+function sha256(hexstr) {
+  return bsv.crypto.Hash.sha256(Buffer.from(hexstr, 'hex')).toString('hex');
+}
+
+function sha256d(hexstr) {
+  return sha256(sha256(hexstr))
+}
+
+function toLittleIndian(hexstr) {
+  return reverseEndian(hexstr)
+}
+
+function toBigIndian(hexstr) {
+  return reverseEndian(hexstr)
+}
+
+function uint32Tobin(d) {
+  var s = (+d).toString(16);
+  if(s.length < 4) {
+      s = '0' + s;
+  }
+  return toLittleIndian(s);
+}
+
+function num2hex(d, padding) {
+  var s = Number(d).toString(16);
+  // add padding if needed.
+  while (s.length < padding) {
+      s = "0" + s;
+  }
+  return s;
+}
+
+
+
+/**
+ * inspired by : https://bigishdata.com/2017/11/13/how-to-build-a-blockchain-part-4-1-bitcoin-proof-of-work-difficulty-explained/
+ * @param {*} bitsHex bits of block header, in big endian
+ * @returns a target number 
+ */
+ function toTarget(bitsHex) {
+  const shift = bitsHex.substr(0, 2);
+  const exponent = parseInt(shift, 16);
+  const value = bitsHex.substr(2, bitsHex.length);
+  const coefficient = parseInt(value, 16);
+  const target = coefficient * 2 ** (8 * (exponent - 3));
+  return BigInt(target);
+}
+
+/**
+* convert pool difficulty to a target number 
+* @param {*}  difficulty which can fetch by api https://api.whatsonchain.com/v1/bsv/<network>/chain/info
+* @returns target
+*/
+function pdiff2Target(difficulty) {
+  if (typeof difficulty === 'number') {
+      difficulty = BigInt(Math.floor(difficulty))
+  }
+
+  return BigInt(toTarget("1d00ffff") / difficulty);
+}
+
+
+// serialize Header to get raw header
+function serializeHeader(header) {
+  return uint32Tobin(header.version)
+      + toLittleIndian(header.previousblockhash)
+      + toLittleIndian(header.merkleroot)
+      + uint32Tobin(header.time)
+      + toLittleIndian(header.bits)
+      + uint32Tobin(header.nonce)
+}
+
+
+
 module.exports = {
   inputIndex,
   inputSatoshis,
@@ -228,6 +301,8 @@ module.exports = {
   dummyTxId,
   reversedDummyTxId,
   reverseEndian,
+  sha256,
+  sha256d,
   sendTx,
   compileContract,
   loadDesc,
@@ -240,5 +315,12 @@ module.exports = {
   checkLowS,
   deployContract,
   createInputFromPrevTx,
-  fetchUtxos
+  fetchUtxos,
+  toLittleIndian,
+  toBigIndian,
+  uint32Tobin,
+  num2hex,
+  toTarget,
+  pdiff2Target,
+  serializeHeader
 }
