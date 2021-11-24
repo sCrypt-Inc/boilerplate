@@ -1,8 +1,8 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, PubKey, toHex, Sha256, Bytes, getPreimage, signTx, buildTypeClasses, num2bin } = require('scryptlib');
+const { bsv, buildContractClass, PubKey, Sha256, Bytes, buildTypeClasses, num2bin } = require('scryptlib');
 const { compileContract, toLittleIndian, pdiff2Target } = require('../../helper');
 const { COINBASETX, header, COINBASETX_FAKE_HEIGHT, merklePathOfNotLastTx, Last_TX_ID,
-    NotLastTxID, merklePath, merklePathOfLastTx, merklePathOfLastTxCopy, buildMerkleProof, toBlockHeader } = require('./blockchainhelper');
+    NotLastTxID, merklePath, merklePathOfLastTx, merklePathOfLastTxCopy, buildMerkleProof, toBlockHeader, headers } = require('./blockchainhelper');
 
 
 describe('Test sCrypt contract blockchainTest In Javascript', () => {
@@ -81,6 +81,44 @@ describe('Test sCrypt contract blockchainTest In Javascript', () => {
 
         const result = blockchainTest.testIsBlockHeaderValid(toBlockHeader(BlockHeader, header),
             pdiff2Target(header.difficulty + 100)).verify()
+
+        expect(result.success, result.error).to.be.false
+    });
+
+
+    it('testIsBlockHeaderChainValid should succeed when all headers validation and they are actually chained one after another', () => {
+
+        const result = blockchainTest.testIsBlockHeaderChainValid(headers.map(header =>
+            toBlockHeader(BlockHeader, header)),
+            pdiff2Target(headers[0].difficulty / 2)).verify()
+
+        expect(result.success, result.error).to.be.true
+    });
+
+
+    it('testIsBlockHeaderChainValid should FAIL when all headers NOT chained', () => {
+
+        const headersNotChained = headers.map(header =>
+            toBlockHeader(BlockHeader, header));
+        const tmp = headersNotChained[2];
+
+        headersNotChained[2] = headersNotChained[3]
+        headersNotChained[3] = tmp;
+
+        const result = blockchainTest.testIsBlockHeaderChainValid(headersNotChained,
+            pdiff2Target(headers[0].difficulty / 2)).verify()
+
+        expect(result.success, result.error).to.be.false
+    });
+
+
+
+    it('testIsBlockHeaderChainValid should FAIL when NOT all difficulty larger than blockchainTarget', () => {
+
+        // headers[1].difficulty < headers[0].difficulty
+        const result = blockchainTest.testIsBlockHeaderChainValid(
+            headers.map(header => toBlockHeader(BlockHeader, header)),
+            pdiff2Target(headers[0].difficulty)).verify()
 
         expect(result.success, result.error).to.be.false
     });

@@ -15,5 +15,9 @@ contract BlockchainTest {
         require(Blockchain.isBlockHeaderValid(bh, blockchainTarget));
     }
 
-    
+
+    public function testIsBlockHeaderChainValid(BlockHeader[7] headers, int blockchainTarget) {
+        require(Blockchain.isBlockHeaderChainValid(7, headers, blockchainTarget));
+    }
+
 }

@@ -42,15 +42,15 @@ describe('Test sCrypt contract blockTimeBet In Javascript', () => {
 
         const sig = signTx(tx, privateKey, blockTimeBet.lockingScript, inputSatoshis);
 
-        return blockTimeBet.main(headers,
-            proof, sig, preimage).verify()
+        return blockTimeBet.main(headers, proof, sig, preimage).verify()
 
     }
 
     it('blockTimeBet should succeed when using right block header', () => {
 
         const result = runMain(alicePrivateKey,
-            headers.map(h => toBlockHeader(BlockHeader, h)), buildMerkleProof(Node, merklePath))
+            headers.map(h => toBlockHeader(BlockHeader, h)),
+            buildMerkleProof(Node, merklePath))
         expect(result.success, result.error).to.be.true
     });
 
@@ -60,7 +60,8 @@ describe('Test sCrypt contract blockTimeBet In Javascript', () => {
         const result = runMain(alicePrivateKey,
             headers.map(h => toBlockHeader(BlockHeader, Object.assign({}, h, {
                 version: 1
-            }))), buildMerkleProof(Node, merklePath))
+            }))),
+            buildMerkleProof(Node, merklePath))
 
         expect(result.success, result.error).to.be.false
     });
@@ -69,7 +70,8 @@ describe('Test sCrypt contract blockTimeBet In Javascript', () => {
     it('blockTimeBet should fail when using wrongMerklePath', () => {
 
         const result = runMain(alicePrivateKey,
-            headers.map(h => toBlockHeader(BlockHeader, h)), buildMerkleProof(Node, wrongMerklePath))
+            headers.map(h => toBlockHeader(BlockHeader, h)),
+            buildMerkleProof(Node, wrongMerklePath))
         expect(result.success, result.error).to.be.false
     });
 
@@ -77,7 +79,8 @@ describe('Test sCrypt contract blockTimeBet In Javascript', () => {
     it('when time is less 10 minutes , Bob should NOT win and not able to unlock', () => {
 
         const result = runMain(bobPrivateKey,
-            headers.map(h => toBlockHeader(BlockHeader, h)), buildMerkleProof(Node, merklePath))
+            headers.map(h => toBlockHeader(BlockHeader, h)),
+            buildMerkleProof(Node, merklePath))
         expect(result.success, result.error).to.be.false
     });
 
