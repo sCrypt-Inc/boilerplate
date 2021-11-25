@@ -1,9 +1,12 @@
 
 struct Node {
     Sha256 hash;
-    // 0: invalid
-    // 1: on the left
-    // 2: on the right
+    /*
+    Where the actual Merkle path is shorter than the predefined DEPTH, all trailing nodes will be marked as invalid.
+     0: invalid
+     1: on the left
+     2: on the right
+    */
     int left;
 }
 
