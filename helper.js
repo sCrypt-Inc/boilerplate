@@ -217,18 +217,6 @@ async function fetchUtxos(address) {
 
 const emptyPublicKey = '000000000000000000000000000000000000000000000000000000000000000000'
 
-function ripemd160(hexstr) {
-  return bsv.crypto.Hash.sha256ripemd160(Buffer.from(hexstr, 'hex')).toString('hex');
-}
-
-function sha256(hexstr) {
-  return bsv.crypto.Hash.sha256(Buffer.from(hexstr, 'hex')).toString('hex');
-}
-
-function sha256d(hexstr) {
-  return sha256(sha256(hexstr))
-}
-
 function toLittleIndian(hexstr) {
   return reverseEndian(hexstr)
 }
@@ -294,14 +282,6 @@ function serializeHeader(header) {
       + uint32Tobin(header.nonce)
 }
 
-
-function codeHash(contract) {
-  if(contract.dataPart) {
-    return  ripemd160(contract.codePart.toHex())
-  } else {
-    return ripemd160(contract.lockingScript.toHex())
-  }
-}
 module.exports = {
   inputIndex,
   inputSatoshis,
@@ -310,11 +290,7 @@ module.exports = {
   DataLen,
   dummyTxId,
   reversedDummyTxId,
-  codeHash,
   reverseEndian,
-  ripemd160,
-  sha256,
-  sha256d,
   sendTx,
   compileContract,
   loadDesc,
