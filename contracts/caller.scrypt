@@ -7,13 +7,13 @@ import "callee.scrypt";
 
 contract Caller {
     static const int N = 2;
-    static const int calleeContractInputIndex = 0;
-
+    static const int calleeContractInputIndex = 1;
+    static const int selfContractInputIndex = 0;
     // hash of the callee contract, i.e., its locking script
-    bytes calleeContractHash;
+    Ripemd160 calleeContractHash;
 
     public function call(Coeff co, bytes prevouts, bytes calleeContractTx,
-         bytes outputScript, int amount, SigHashPreimage txPreimage) {
+        bytes outputScript, int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
         require(hash256(prevouts) == Util.hashPrevouts(txPreimage));
 
@@ -22,7 +22,7 @@ contract Caller {
         require(hash256(calleeContractTx) == prevScriptTxId);
 
         // validate the callee contract, i.e., its locking script
-        int lockContractTxOutIndex = Util.fromLEUnsigned(prevouts[calleeContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN : (calleeContractInputIndex + 1) * TxUtil.OUTPOINT_LEN]);
+        int lockContractTxOutIndex = Util.fromLEUnsigned(prevouts[selfContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN : selfContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN + 4]);
         bytes prevScriptCode = TxUtil.readOutputScript(calleeContractTx, lockContractTxOutIndex);
         require(hash160(prevScriptCode) == this.calleeContractHash);
 
