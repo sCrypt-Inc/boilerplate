@@ -20,7 +20,8 @@ const {
   createInputFromPrevTx
 } = require('../../helper');
 
-
+// Create a forged transaction which the input of transaction tx does not 
+// include this transaction
 function newFakeTx() {
   const utxo = {
     txId: crypto.randomBytes(32).toString('hex'),
@@ -62,6 +63,7 @@ describe('Test sCrypt contract Callee in Javascript', () => {
 
 
     newLockingScript = bsv.Script.fromASM(['OP_FALSE', 'OP_RETURN', num2bin(a, 2) + num2bin(b, 2) + num2bin(c, 2) + num2bin(x, 2)].join(' '))
+    // The first input of tx is the first output point of the transaction calleeContractTx
     tx.addInput(createInputFromPrevTx(calleeContractTx))
       .addOutput(
         new bsv.Transaction.Output({
@@ -85,7 +87,7 @@ describe('Test sCrypt contract Callee in Javascript', () => {
     };
   });
 
-  it('should succeed when call callee ', () => {
+  it('should succeed when callee calls', () => {
     result = caller.call(new Coeff({
       a: a,
       b: b,
@@ -99,9 +101,7 @@ describe('Test sCrypt contract Callee in Javascript', () => {
     expect(result.success, result.error).to.be.true;
   });
 
-  it('should fail when with fake calleeContractTx', () => {
-
-
+  it('should fail with fake calleeContractTx', () => {
 
     const fakecalleeContractTx = newFakeTx();
     fakecalleeContractTx.addOutput(
@@ -125,7 +125,7 @@ describe('Test sCrypt contract Callee in Javascript', () => {
   });
 
 
-  it('should fail when with fake prevouts', () => {
+  it('should fail with fake prevouts', () => {
 
     const fakeTx = newFakeTx();
     fakeTx.addInput(createInputFromPrevTx(calleeContractTx))
@@ -143,7 +143,7 @@ describe('Test sCrypt contract Callee in Javascript', () => {
   });
 
 
-  it('should fail when with fake newLockingScript', () => {
+  it('should fail with fake newLockingScript', () => {
 
     const fakeNewLockingScript = bsv.Script.fromASM(['OP_FALSE', 'OP_RETURN', num2bin(a, 2) + num2bin(b, 2) + num2bin(c, 2) + num2bin(x+ 1, 2)].join(' '))
 
