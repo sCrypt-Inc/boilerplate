@@ -49,7 +49,7 @@ library Util {
 
     // build false OPRETURN script from data payload
     static function buildOpreturnScript(bytes data) : bytes {
-        return OpCode.OP_FALSE + OpCode.OP_RETURN + data;
+        return OpCode.OP_FALSE + OpCode.OP_RETURN + Util.writeVarint(data);
     }
 
     // build P2PKH script from public key

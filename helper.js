@@ -217,14 +217,6 @@ async function fetchUtxos(address) {
 
 const emptyPublicKey = '000000000000000000000000000000000000000000000000000000000000000000'
 
-function sha256(hexstr) {
-  return bsv.crypto.Hash.sha256(Buffer.from(hexstr, 'hex')).toString('hex');
-}
-
-function sha256d(hexstr) {
-  return sha256(sha256(hexstr))
-}
-
 function toLittleIndian(hexstr) {
   return reverseEndian(hexstr)
 }
@@ -290,8 +282,6 @@ function serializeHeader(header) {
       + uint32Tobin(header.nonce)
 }
 
-
-
 module.exports = {
   inputIndex,
   inputSatoshis,
@@ -301,8 +291,6 @@ module.exports = {
   dummyTxId,
   reversedDummyTxId,
   reverseEndian,
-  sha256,
-  sha256d,
   sendTx,
   compileContract,
   loadDesc,
