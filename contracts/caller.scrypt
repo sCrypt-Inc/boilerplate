@@ -1,7 +1,6 @@
 /**
 * a contract calling quadratic equation contract
 */
-import "util.scrypt";
 import "txUtil.scrypt";
 import "callee.scrypt";
 
@@ -15,14 +14,14 @@ contract Caller {
     public function call(Coeff co, bytes prevouts, bytes calleeContractTx,
         bytes outputScript, int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
-        require(hash256(prevouts) == Util.hashPrevouts(txPreimage));
+        require(hash256(prevouts) == SigHash.hashPrevouts(txPreimage));
 
         // validate the tx containing the callee contract
         bytes prevScriptTxId = prevouts[calleeContractInputIndex * TxUtil.OUTPOINT_LEN : calleeContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN];
         require(hash256(calleeContractTx) == prevScriptTxId);
 
         // validate the callee contract, i.e., its locking script
-        int lockContractTxOutIndex = Util.fromLEUnsigned(prevouts[selfContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN : selfContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN + 4]);
+        int lockContractTxOutIndex = Utils.fromLEUnsigned(prevouts[selfContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN : selfContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN + 4]);
         bytes prevScriptCode = TxUtil.readOutputScript(calleeContractTx, lockContractTxOutIndex);
         require(hash160(prevScriptCode) == this.calleeContractHash);
 
@@ -35,7 +34,7 @@ contract Caller {
         // ------>> x must be a root for the following quadatic equition: no need to double check
         // require(a * x * x + b * x + c == 0);
 
-        bytes output = Util.buildOutput(outputScript, amount);
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes output = Utils.buildOutput(outputScript, amount);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 }

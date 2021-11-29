@@ -1,4 +1,3 @@
-import "util.scrypt";
 import "serializer.scrypt";
 
 // state as a struct
@@ -28,7 +27,7 @@ contract StateStruct {
 
     public function mutate(SigHashPreimage txPreimage, int amount) {
         require(Tx.checkPreimage(txPreimage));
-        bytes scriptCode = Util.scriptCode(txPreimage);
+        bytes scriptCode = SigHash.scriptCode(txPreimage);
 
         // read/deserialize state
         int stateStart = Reader.getStateStart(scriptCode);
@@ -44,7 +43,7 @@ contract StateStruct {
         bytes stateBuf = StateStruct.serialize(states);
 
         bytes scriptCode_ = scriptCode[: stateStart] + stateBuf;
-        bytes output = Util.buildOutput(scriptCode_, amount);
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes output = Utils.buildOutput(scriptCode_, amount);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 }

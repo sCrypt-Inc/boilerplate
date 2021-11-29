@@ -1,24 +1,24 @@
-import "util.scrypt";
-
 contract Counter {
+    static const int DataLen = 1;
+
     public function increment(SigHashPreimage txPreimage, int amount) {
         require(Tx.checkPreimage(txPreimage));
 
         // deserialize state (i.e., counter value)
-        bytes scriptCode = Util.scriptCode(txPreimage);
+        bytes scriptCode = SigHash.scriptCode(txPreimage);
         int scriptLen = len(scriptCode);
         // counter is at the end
-        int counter = unpack(scriptCode[scriptLen - Util.DataLen :]);
+        int counter = unpack(scriptCode[scriptLen - DataLen :]);
 
         // increment counter
         counter++;
 
         // serialize state
-        bytes outputScript = scriptCode[: scriptLen - Util.DataLen] + num2bin(counter, Util.DataLen);
+        bytes outputScript = scriptCode[: scriptLen - DataLen] + num2bin(counter, DataLen);
         
-        bytes output = Util.buildOutput(outputScript, amount);
+        bytes output = Utils.buildOutput(outputScript, amount);
         // ensure output is expected: amount is same with specified
         // also output script is the same with scriptCode except counter incremented
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 }

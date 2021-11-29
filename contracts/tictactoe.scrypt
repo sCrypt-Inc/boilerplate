@@ -1,4 +1,4 @@
-import "util.scrypt";
+import "arrayUtil.scrypt";
 
 contract TicTacToe {
 
@@ -30,35 +30,35 @@ contract TicTacToe {
         // ensure it's player's turn
         require(checkSig(sig, player));
         // make the move
-        this.board = Util.setElemAt(this.board, n, play);
+        this.board = ArrayUtil.setElemAt(this.board, n, play);
         this.is_alice_turn = !this.is_alice_turn;
 
 
         bytes outputs = b'';
         if (this.won(this.board, play)) {
             // winner takes all
-            bytes outputScript = Util.pubKeyToP2PKH(player);
-            bytes output = Util.buildOutput(outputScript, amount);
+            bytes outputScript = Utils.buildPublicKeyHashScript(hash160(player));
+            bytes output = Utils.buildOutput(outputScript, amount);
             outputs = output;
         }
         else if (this.full(this.board)) {
             // draw: equally split, i.e., both outputs have the same amount
-            bytes aliceScript = Util.pubKeyToP2PKH(this.alice);
-            bytes aliceOutput = Util.buildOutput(aliceScript, amount);
+            bytes aliceScript = Utils.buildPublicKeyHashScript(hash160(this.alice));
+            bytes aliceOutput = Utils.buildOutput(aliceScript, amount);
 
-            bytes bobScript = Util.pubKeyToP2PKH(this.bob);
-            bytes bobOutput = Util.buildOutput(bobScript, amount);
+            bytes bobScript = Utils.buildPublicKeyHashScript(hash160(this.bob));
+            bytes bobOutput = Utils.buildOutput(bobScript, amount);
 
             outputs = aliceOutput + bobOutput;
         }
         else {
             // update state
             bytes scriptCode_ = this.getStateScript();
-            bytes output = Util.buildOutput(scriptCode_, amount);
+            bytes output = Utils.buildOutput(scriptCode_, amount);
             outputs = output;
         }
 
-        require(hash256(outputs) == Util.hashOutputs(txPreimage));
+        require(hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 
     // does play win after current move?
@@ -70,7 +70,7 @@ contract TicTacToe {
         loop (8) : i {
             bool line = true;
             loop (3) : j {
-                line = line && Util.getElemAt(board, lines[i][j]) == play;
+                line = line && ArrayUtil.getElemAt(board, lines[i][j]) == play;
             }
 
             anyLine = anyLine || line;
@@ -84,7 +84,7 @@ contract TicTacToe {
         bool full = true;
 
         loop (BOARDLEN) : i {
-            full = full && Util.getElemAt(board, i) != EMPTY;
+            full = full && ArrayUtil.getElemAt(board, i) != EMPTY;
         }
 
         return full;

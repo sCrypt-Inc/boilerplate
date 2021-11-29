@@ -1,4 +1,4 @@
-import "util.scrypt";
+import "arrayUtil.scrypt";
 
 // Conway Game Of Life on a board of N * N
 contract GameOfLife {
@@ -23,10 +23,10 @@ contract GameOfLife {
 
         // update state: next turn & next board
         bytes scriptCode_ = this.getStateScript();
-        bytes output = Util.buildOutput(scriptCode_, amount);
+        bytes output = Utils.buildOutput(scriptCode_, amount);
         bytes outputs = output;
 
-        require(hash256(outputs) == Util.hashOutputs(txPreimage));
+        require(hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 
     static function evolve(bytes oldBoard) : bytes {
@@ -37,7 +37,7 @@ contract GameOfLife {
             int j = 1;
             loop (GameOfLife.N) {
                 bytes nextState = GameOfLife.next(oldBoard, i, j);
-                newBoard = Util.setElemAt(newBoard, GameOfLife.index(i, j), nextState);
+                newBoard = ArrayUtil.setElemAt(newBoard, GameOfLife.index(i, j), nextState);
 
                 j++;
             }
@@ -58,7 +58,7 @@ contract GameOfLife {
 
             loop (LOOP_NEIGHBORS) {
                 if (!(i == 0 && j == 0)) {
-                    if (Util.getElemAt(oldBoard, GameOfLife.index(row + i, col + j))) {
+                    if (ArrayUtil.getElemAt(oldBoard, GameOfLife.index(row + i, col + j))) {
                         alive++;
                     }
                 }
@@ -68,7 +68,7 @@ contract GameOfLife {
             i++;
         }
 
-        bytes oldState = Util.getElemAt(oldBoard, GameOfLife.index(row, col));
+        bytes oldState = ArrayUtil.getElemAt(oldBoard, GameOfLife.index(row, col));
         /* rule
         1. Any live cell with two or three live neighbours survives.
         2. Any dead cell with three live neighbours becomes a live cell.

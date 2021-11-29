@@ -132,21 +132,21 @@ library Blockchain {
     // parse block height from coinbase tx: BIP34
     static function readBlockHeight(bytes coinbaseTx) : int {
         // block height is at the beginning of the unlocking script and encoded in varint
-        return Util.fromLEUnsigned(Util.readVarint(coinbaseTx[BLOCK_HEIGHT_POS:]));
+        return Utils.fromLEUnsigned(Utils.readVarint(coinbaseTx[BLOCK_HEIGHT_POS:]));
     }
 
     // convert difficulty from bits to target
     static function bits2Target(bytes bits) : int {
-        int exponent = Util.fromLEUnsigned(bits[3 :]);
-        int coefficient = Util.fromLEUnsigned(bits[: 3]);
+        int exponent = Utils.fromLEUnsigned(bits[3 :]);
+        int coefficient = Utils.fromLEUnsigned(bits[: 3]);
         int n = 8 * (exponent - 3);
         bytes target = num2bin(coefficient, 32) >> n;
-        return  Util.fromLEUnsigned(target);
+        return  Utils.fromLEUnsigned(target);
     }
 
     // serialize a block header
     static function serialize(BlockHeader bh) : bytes {
-        return bh.version + bh.prevBlockHash + bh.merkleRoot + Util.toLEUnsigned(bh.time, 4) + bh.bits + Util.toLEUnsigned(bh.nonce, 4);
+        return bh.version + bh.prevBlockHash + bh.merkleRoot + Utils.toLEUnsigned(bh.time, 4) + bh.bits + Utils.toLEUnsigned(bh.nonce, 4);
     }
 
     // block header hash
@@ -156,6 +156,6 @@ library Blockchain {
 
     // block header hash, but converted to a positive number
     static function blockHeaderHashAsInt(BlockHeader bh) : int {
-        return Util.fromLEUnsigned(blockHeaderHash(bh));
+        return Utils.fromLEUnsigned(blockHeaderHash(bh));
     }
 }

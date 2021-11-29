@@ -1,4 +1,3 @@
-import "util.scrypt";
 import "rabin.scrypt";
 
 contract WitnessBinaryOption {
@@ -26,13 +25,13 @@ contract WitnessBinaryOption {
     // check price
     bytes outputScript = b'';
     if (price >= this.betPrice) {
-      outputScript = Util.buildPublicKeyHashScript(this.pubKeyHashA);
+      outputScript = Utils.buildPublicKeyHashScript(this.pubKeyHashA);
     } else {
-      outputScript = Util.buildPublicKeyHashScript(this.pubKeyHashB);
+      outputScript = Utils.buildPublicKeyHashScript(this.pubKeyHashB);
     }
 
     // check the output is the right winner
-    bytes output = Util.buildOutput(outputScript, outAmount);
-    require(hash256(output) == Util.hashOutputs(txPreimage));
+    bytes output = Utils.buildOutput(outputScript, outAmount);
+    require(hash256(output) == SigHash.hashOutputs(txPreimage));
   }
 }

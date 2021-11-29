@@ -1,5 +1,6 @@
-import "util.scrypt";
+
 import "array.scrypt";
+import "arrayUtil.scrypt";
 
 contract Sudoku {
 
@@ -70,15 +71,15 @@ contract Sudoku {
     }
 
     static function readValue(bytes board, int i, int j) : int {
-        return Util.fromLEUnsigned(Util.getElemAt(board, Sudoku.index(i, j)));
+        return Utils.fromLEUnsigned(ArrayUtil.getElemAt(board, Sudoku.index(i, j)));
     }
 
     static function setValue(bytes board, int i, int j, int value) : bytes {
-        return Util.setElemAt(board, index(i, j), Util.toLEUnsigned(value, 1));
+        return ArrayUtil.setElemAt(board, index(i, j), Utils.toLEUnsigned(value, 1));
     }
 
     static function readSquareValue(bytes board, int i, int j) : int {
-        return Util.fromLEUnsigned(Util.getElemAt(board, Sudoku.indexSquare(i, j)));
+        return Utils.fromLEUnsigned(ArrayUtil.getElemAt(board, Sudoku.indexSquare(i, j)));
     }
 
     static function index(int row, int col) : int {

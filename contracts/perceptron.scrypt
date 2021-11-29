@@ -1,4 +1,3 @@
-import "util.scrypt";
 import "serializer.scrypt";
 
 // Perceptron's internal state includes 2 inputs: height & weight
@@ -72,15 +71,15 @@ contract Perceptron {
 
     public function main(SigHashPreimage txPreimage, int amount) {
         require(Tx.checkPreimage(txPreimage));
-        bytes scriptCode = Util.scriptCode(txPreimage);
+        bytes scriptCode = SigHash.scriptCode(txPreimage);
 
         // train the perceptron
         this.states = this.train(this.states);
 
         // write/serialize state
         bytes outputScript = this.getStateScript();
-        bytes output = Util.buildOutput(outputScript, amount);
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes output = Utils.buildOutput(outputScript, amount);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 
 }

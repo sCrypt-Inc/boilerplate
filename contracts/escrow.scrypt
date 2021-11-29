@@ -11,7 +11,6 @@ Scenario 3: PB + PE + Hash 2
 Bob and Escrow have to sign and use the secret 2. Bob gets the output.
 **/
 
-import "util.scrypt";
 
 contract SimpleEscrow {
     Ripemd160 pubKeyHashA;
@@ -23,30 +22,30 @@ contract SimpleEscrow {
     function split(int amount, SigHashPreimage txPreimage,
         Ripemd160 changePKH, int changeAmount) : bool {
         // split amount, both new outputs get the same amount
-        bytes scriptA = Util.buildPublicKeyHashScript(this.pubKeyHashA);
-        bytes outputA = Util.buildOutput(scriptA, amount / 2);
+        bytes scriptA = Utils.buildPublicKeyHashScript(this.pubKeyHashA);
+        bytes outputA = Utils.buildOutput(scriptA, amount / 2);
 
-        bytes scriptB = Util.buildPublicKeyHashScript(this.pubKeyHashB);
-        bytes outputB = Util.buildOutput(scriptB, amount / 2);
+        bytes scriptB = Utils.buildPublicKeyHashScript(this.pubKeyHashB);
+        bytes outputB = Utils.buildOutput(scriptB, amount / 2);
 
-        bytes scriptChange = Util.buildPublicKeyHashScript(changePKH);
-        bytes outputChange = Util.buildOutput(scriptChange, changeAmount);
+        bytes scriptChange = Utils.buildPublicKeyHashScript(changePKH);
+        bytes outputChange = Utils.buildOutput(scriptChange, changeAmount);
 
         bytes outputs = outputA + outputB + outputChange;
 
-        return (hash256(outputs) == Util.hashOutputs(txPreimage));
+        return (hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 
     function spend(int amount, SigHashPreimage txPreimage, Ripemd160 pubKeyHash,
         Ripemd160 changePKH, int changeAmount) : bool {
-        bytes script = Util.buildPublicKeyHashScript(pubKeyHash);
-        bytes output = Util.buildOutput(script, amount);
+        bytes script = Utils.buildPublicKeyHashScript(pubKeyHash);
+        bytes output = Utils.buildOutput(script, amount);
 
-        bytes scriptChange = Util.buildPublicKeyHashScript(changePKH);
-        bytes outputChange = Util.buildOutput(scriptChange, changeAmount);
+        bytes scriptChange = Utils.buildPublicKeyHashScript(changePKH);
+        bytes outputChange = Utils.buildOutput(scriptChange, changeAmount);
 
         bytes outputs = output + outputChange;
-        return (hash256(outputs) == Util.hashOutputs(txPreimage));
+        return (hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 
     public function unlock(SigHashPreimage txPreimage, PubKey pubKey1, Sig sig1, PubKey pubKey2, Sig sig2, bytes secret,
@@ -55,9 +54,9 @@ contract SimpleEscrow {
 
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         // this ensures the preimage is for the current tx
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
-        int amount = Util.value(txPreimage);
+        int amount = SigHash.value(txPreimage);
 
         require(checkSig(sig1, pubKey1));
         require(checkSig(sig2, pubKey2));

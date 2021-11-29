@@ -1,5 +1,4 @@
 import "ec.scrypt";
-import "util.scrypt";
 
 struct RSPair {
     int r;

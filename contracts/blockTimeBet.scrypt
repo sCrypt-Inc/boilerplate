@@ -18,7 +18,7 @@ contract BlockTimeBet {
         require(Tx.checkPreimage(txPreimage));
 
         // get id of previous tx
-        Sha256 prevTxid = Sha256(Util.outpoint(txPreimage)[:32]);
+        Sha256 prevTxid = Sha256(SigHash.outpoint(txPreimage)[:32]);
 
         // validate a chain of block headers
         require(Blockchain.isBlockHeaderChainValid(N, headers, this.blockchainTarget));

@@ -1,4 +1,3 @@
-import "util.scrypt";
 
 /**
  * A toy token example between two holders
@@ -37,7 +36,7 @@ contract Token {
 
         // write new locking script
         bytes stateScript = this.getStateScript();
-        bytes output = Util.buildOutput(stateScript, amount);
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes output = Utils.buildOutput(stateScript, amount);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 }

@@ -1,4 +1,3 @@
-import "util.scrypt";
 import "serializer.scrypt";
 
 struct Submission {
@@ -69,8 +68,8 @@ contract Kaggle {
 
         bytes outputScript = this.getStateScript();
 
-        bytes output = Util.buildOutput(outputScript, Util.value(txPreimage));
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes output = Utils.buildOutput(outputScript, SigHash.value(txPreimage));
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 
     // reveal the testing dataset and pay the winner with smallest error
@@ -94,8 +93,8 @@ contract Kaggle {
             }
         }
         
-        bytes output = Util.buildOutput(Util.buildPublicKeyHashScript(winner), Util.value(txPreimage));
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes output = Utils.buildOutput(Utils.buildPublicKeyHashScript(winner), SigHash.value(txPreimage));
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 
     // calculate error

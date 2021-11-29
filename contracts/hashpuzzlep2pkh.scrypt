@@ -6,6 +6,31 @@ sha256("abc") = 0xba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015
 bytes("abc") = 0x616263
 **/
 
+contract HashPuzzleSha256 {
+    Sha256 hash;
+
+    constructor(Sha256 hash) {
+        this.hash = hash;
+    }
+
+    public function spend(bytes preimage) {
+        require(sha256(preimage) == this.hash);
+    }
+}
+
+contract P2PKH {
+    PubKeyHash pubKeyHash;
+
+    constructor(PubKeyHash pubKeyHash) {
+        this.pubKeyHash = pubKeyHash;
+    }
+
+    public function spend(Sig sig, PubKey pubKey) {
+        require(hash160(pubKey) == this.pubKeyHash);
+        require(checkSig(sig, pubKey));
+    }
+}
+
 // Main Data Check and P2PKH Contract
 contract HashPuzzleP2PKH {
     Ripemd160 pubKeyHash;
