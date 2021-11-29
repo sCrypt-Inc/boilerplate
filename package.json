@@ -27,7 +27,7 @@
   "author": "sCrypt Inc",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "glob": "^7.1.6",
     "minimist": "^1.2.5",
     "rabinsig": "^1.0.0",
