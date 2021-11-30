@@ -1,6 +1,5 @@
-import "util.scrypt";
 import "serializer.scrypt";
-
+import "arrayUtil.scrypt";
 // Turing machine state
 type State = bytes;
 // alphabet symbol in each cell, 1 byte long each
@@ -73,9 +72,9 @@ contract TuringMachine {
     public function transit(SigHashPreimage txPreimage) {
         // read/deserialize contract state
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
         // transition
-        Symbol head = Util.getElemAt(this.states.tape, this.states.headPos);
+        Symbol head = ArrayUtil.getElemAt(this.states.tape, this.states.headPos);
         // look up in transition table
         bool found = false;
         loop (N) : i {
@@ -86,7 +85,7 @@ contract TuringMachine {
                     // update state
                     this.states.curState = output.newState;
                     // write tape head
-                    this.states.tape = Util.setElemAt(this.states.tape, this.states.headPos, output.write);
+                    this.states.tape = ArrayUtil.setElemAt(this.states.tape, this.states.headPos, output.write);
                     // move head
                     this.states.headPos += output.moveLeft ? -1 : 1;
                     // extend tape if out of bound
@@ -114,8 +113,8 @@ contract TuringMachine {
 
         // otherwise machine goes to the next step
         bytes stateScript = this.getStateScript();
-        bytes output = Util.buildOutput(stateScript, Util.value(txPreimage));
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes output = Utils.buildOutput(stateScript, SigHash.value(txPreimage));
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
 
     }
 }

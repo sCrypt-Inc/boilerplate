@@ -1,4 +1,4 @@
-import "util.scrypt";
+
 struct MapEntry {
     int key;
     int val;
@@ -38,7 +38,7 @@ contract StateMap {
     function passMap(bytes newData, SigHashPreimage preimage) : bool {
         this._mpData = newData;
         bytes outputScript = this.getStateScript();
-        bytes output = Util.buildOutput(outputScript, Util.value(preimage));
-        return (hash256(output) == Util.hashOutputs(preimage));
+        bytes output = Utils.buildOutput(outputScript, SigHash.value(preimage));
+        return (hash256(output) == SigHash.hashOutputs(preimage));
     }
 }

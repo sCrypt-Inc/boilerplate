@@ -1,5 +1,3 @@
-import "util.scrypt";
-
 contract FaucetDeposit {
     public function deposit(SigHashPreimage preImage, int depositAmount, Ripemd160 changePKH, int changeAmount) {
         require(Tx.checkPreimage(preImage));
@@ -8,19 +6,19 @@ contract FaucetDeposit {
         bytes output0 = this.composeOutput0(preImage, depositAmount);
         bytes output1 = this.composeOutput1(changePKH, changeAmount);
         Sha256 hashOutputs = hash256(output0 + output1);
-        require(hashOutputs == Util.hashOutputs(preImage));
+        require(hashOutputs == SigHash.hashOutputs(preImage));
     }
 
     function composeOutput0(SigHashPreimage preImage, int depositAmount) : bytes {
-        bytes lockingScript = Util.scriptCode(preImage);
-        int contractTotalAmount = Util.value(preImage) + depositAmount;
-        return Util.buildOutput(lockingScript, contractTotalAmount);
+        bytes lockingScript = SigHash.scriptCode(preImage);
+        int contractTotalAmount = SigHash.value(preImage) + depositAmount;
+        return Utils.buildOutput(lockingScript, contractTotalAmount);
     }
 
     function composeOutput1(Ripemd160 changePKH, int changeAmount) : bytes {
         bytes output1 = b'';
         if (changeAmount > 546) {
-            output1 = Util.buildOutput(Util.buildPublicKeyHashScript(changePKH), changeAmount);
+            output1 = Utils.buildOutput(Utils.buildPublicKeyHashScript(changePKH), changeAmount);
         }
         return output1;
     }
@@ -30,13 +28,13 @@ contract FaucetWithdraw {
     public function withdraw(SigHashPreimage preImage, Ripemd160 receiverPKH, int changeAmount) {
         require(Tx.checkPreimage(preImage));
         //nLockTime is valid when nSequence < 0xFFFFFFFF https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
-        require(Util.nSequence(preImage) < 0xffffffff);
+        require(SigHash.nSequence(preImage) < 0xffffffff);
 
         int withdrawAmount = 10000;
         bytes output0 = this.composeOutput0(preImage, changeAmount);
         bytes output1 = this.composeOutput1(receiverPKH, withdrawAmount);
         Sha256 hashOutputs = hash256(output0 + output1);
-        require(hashOutputs == Util.hashOutputs(preImage));
+        require(hashOutputs == SigHash.hashOutputs(preImage));
     }
 
     function getPrevMatureTime(bytes lockingScript, int scriptLen) : int {
@@ -48,21 +46,21 @@ contract FaucetWithdraw {
     }
 
     function composeOutput0(SigHashPreimage preImage, int changeAmount) : bytes {
-        bytes prevLockingScript = Util.scriptCode(preImage);
+        bytes prevLockingScript = SigHash.scriptCode(preImage);
         int scriptLen = len(prevLockingScript);
 
         int fiveMinutesInSecond = 300;
         int newMatureTime = this.getPrevMatureTime(prevLockingScript, scriptLen) + fiveMinutesInSecond;
-        require(Util.nLocktime(preImage) == newMatureTime);
+        require(SigHash.nLocktime(preImage) == newMatureTime);
 
         bytes codePart = this.getCodePart(prevLockingScript, scriptLen);
         bytes script = codePart + pack(newMatureTime);
-        return Util.buildOutput(script, changeAmount);
+        return Utils.buildOutput(script, changeAmount);
     }
 
     function composeOutput1(Ripemd160 receiver, int withdrawAmount) : bytes {
-        bytes script = Util.buildPublicKeyHashScript(receiver);
-        return Util.buildOutput(script, withdrawAmount);
+        bytes script = Utils.buildPublicKeyHashScript(receiver);
+        return Utils.buildOutput(script, withdrawAmount);
     }
 }
 

@@ -1,4 +1,3 @@
-import "util.scrypt";
 
 /**
 * A toy token sale
@@ -6,6 +5,8 @@ import "util.scrypt";
 contract TokenSale {
     // satoshis / token
     int price;
+
+    static const int DataLen = 1;
 
     constructor(int price) {
         this.price = price;
@@ -16,17 +17,18 @@ contract TokenSale {
         require(Tx.checkPreimage(txPreimage));
 
         // read previous locking script
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
-        int oldBalance = Util.value(txPreimage);
+        int oldBalance = SigHash.value(txPreimage);
         int newBalance = oldBalance + numTokens * this.price;
 
         // write new locking script
 
-        bytes dataPart = buyer + num2bin(numTokens, Util.DataLen);
+        bytes dataPart = buyer + num2bin(numTokens, DataLen);
         bytes codePart = lockingScript[: len(lockingScript) - 1];
-        bytes lockingScript_ = codePart + Util.writeVarint(dataPart);
-        bytes output = Util.buildOutput(lockingScript_, newBalance);
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes lockingScript_ = codePart + Utils.writeVarint(dataPart);
+        bytes output = Utils.buildOutput(lockingScript_, newBalance);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        
     }
 }

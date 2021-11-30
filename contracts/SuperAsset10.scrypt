@@ -1,4 +1,3 @@
-import "util.scrypt";
 // The following code is Copyright MatterPool Inc.
 // Copyright (c) 2020 MatterPool Inc.
 //
@@ -87,9 +86,9 @@ contract SimpleAsset10 {
         // Allow anyone to fund this operation, commit to all the outputs.
         // Todo: Use Tx.checkPreimageOpt. Bug exists that prevents it from operating currently.
         // Update after alpha phase over.
-        require(Util.checkPreimageSigHashType(txPreimage, SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID));
+        require(Tx.checkPreimageSigHashType(txPreimage, SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID));
         // Get the locking script of THIS input.
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         // We know the static part of this contract is exactly 3237 in length (we pre-compiled and then replaced this constant).
         // Make sure to add 2 bytes to skip the push data for the assetID (36 bytes of the outpoint in little-endian)
         bytes dataState = lockingScript[3230 :];
@@ -99,15 +98,15 @@ contract SimpleAsset10 {
         // Was this a minting (ie: first) transfer?
         if (assetId == num2bin(0, 36)) {
             // Then the assetId must be equal to the outpoint that this input is spending.
-            assetId = Util.outpoint(txPreimage);
+            assetId = SigHash.outpoint(txPreimage);
         }
 
         // Use the constant code size of 3228 to pass along the assetId, receiver, and payload data (following all minimal push encoding rules)    // Make change from the other inputs that must exist to fund this transaction
         // Hardcode the length of the assetId (0x24 = 36 bytes) and the public key (0x21 = 33 bytes).
-        bytes output0 = Util.buildOutput(lockingScript[: 3228] + b'6a24' + assetId + b'21' + receiver + Util.writeVarMinimalPushdata(payload), Util.value(txPreimage));
-        bytes output1 = Util.buildOutput(Util.buildPublicKeyHashScript(changeAddress), changeSatoshis);
+        bytes output0 = Utils.buildOutput(lockingScript[: 3228] + b'6a24' + assetId + b'21' + receiver + payload, SigHash.value(txPreimage));
+        bytes output1 = Utils.buildOutput(Utils.buildPublicKeyHashScript(changeAddress), changeSatoshis);
         bytes outputs = output0 + output1;
-        require(hash256(outputs) == Util.hashOutputs(txPreimage));
+        require(hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 
     //
@@ -120,11 +119,13 @@ contract SimpleAsset10 {
     // @param changeSatoshis - Amount of satoshis to use (from the funding inputs) for change (thereby able to miner miner fees with difference)
     public function melt(Sig ownerSig, Ripemd160 receiverAddress, SigHashPreimage txPreimage, Ripemd160 changeAddress, int changeSatoshis) {
         // Allow anyone to fund this operation, commit to all the outputs.
-        require(Util.checkPreimageSigHashType(txPreimage, SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID));
+        require(Tx.checkPreimageSigHashType(txPreimage, SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID));
         // Upon the first transfer the locking
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         // Validate and authorize the transaction
         require(checkSig(ownerSig, PubKey((lockingScript[3230 :])[37 : 70])));
-        require(hash256(Util.buildOutput(Util.buildPublicKeyHashScript(receiverAddress), Util.value(txPreimage)) + Util.buildOutput(Util.buildPublicKeyHashScript(changeAddress), changeSatoshis)) == Util.hashOutputs(txPreimage));
+        require(hash256(Utils.buildOutput(Utils.buildPublicKeyHashScript(receiverAddress),
+         SigHash.value(txPreimage)) + Utils.buildOutput(Utils.buildPublicKeyHashScript(changeAddress), changeSatoshis)) 
+         == SigHash.hashOutputs(txPreimage));
     }
 }

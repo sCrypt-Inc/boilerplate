@@ -1,19 +1,18 @@
-import "util.scrypt";
 import "merklePath.scrypt";
 
 // Merklized Abstract Syntax Trees/Merklized Alternative Script Trees
 contract MAST {
     Sha256 merkleRoot;
 
-    public function main(bytes branchScript, MerklePaths merklePath, SigHashPreimage txPreimage) {
+    public function main(bytes branchScript, MerkleProof merklePath, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
         // validate branchScript is from the merkle tree
         require(MerklePath.calMerkleRoot(sha256(branchScript), merklePath) == this.merkleRoot);
 
         // "P2SH": use branch script as the new locking script, while maintaining value
-        bytes output = Util.buildOutput(branchScript, Util.value(txPreimage));
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes output = Utils.buildOutput(branchScript, SigHash.value(txPreimage));
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 
 }

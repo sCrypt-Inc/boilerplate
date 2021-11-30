@@ -17,7 +17,7 @@ It is important to note that this is called a dummy prescription because it woul
 HIPAA privacy guidelines.
 **/
 
-import "util.scrypt";
+
 import "rabin.scrypt";
 
 contract DummyPrescription {
@@ -44,8 +44,8 @@ contract DummyPrescription {
 
     // verify the prescription belongs to the patient
     // & reward is going to the patient
-    bytes script = Util.buildPublicKeyHashScript(this.patientPubKeyHash);
-    bytes output = Util.buildOutput(script, this.patientReward);
-    require(hash256(output) == Util.hashOutputs(txPreimage));
+    bytes script = Utils.buildPublicKeyHashScript(this.patientPubKeyHash);
+    bytes output = Utils.buildOutput(script, this.patientReward);
+    require(hash256(output) == SigHash.hashOutputs(txPreimage));
   }
 }

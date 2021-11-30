@@ -64,7 +64,6 @@ describe('Test sCrypt contract blockchainTest In Javascript', () => {
             3).verify()
 
         expect(result.success, result.error).to.be.false
-        expect(result.error).to.be.contains("blockchain.scrypt#72")
     });
 
 

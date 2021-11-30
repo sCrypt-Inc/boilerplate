@@ -1,5 +1,4 @@
 import "ec.scrypt";
-import "util.scrypt";
 
 // an oracle library signing any data using ECDSA
 library Oracle {
@@ -12,10 +11,10 @@ library Oracle {
 
         // We interpret hash as little endian, even though it's big endian.
         // This does not matter as long as it is converted to a 256-bit integer. We do not change endian to save script size
-        PrivKey x = PrivKey(Util.fromLEUnsigned(hash));
+        PrivKey x = PrivKey(Utils.fromLEUnsigned(hash));
 
         // verify X = x * G?
-        require(Tx.checkPreimageAdvanced(txPreimage, x, X, Util.invK, Util.r, Util.rBigEndian, SigHashType(SigHash.ALL | SigHash.FORKID)));
+        require(Tx.checkPreimageAdvanced(txPreimage, x, X, Tx.invK, Tx.r, Tx.rBigEndian, SigHashType(SigHash.ALL | SigHash.FORKID)));
 
         // verify P' = P + X
         require(EC.isPubKeySum(oraclePubKey, X, lambda, derivedOraclePubKey));

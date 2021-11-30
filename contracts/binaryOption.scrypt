@@ -1,4 +1,3 @@
-import "util.scrypt";
 
 contract BinaryOption {
     int betPrice;
@@ -20,28 +19,28 @@ contract BinaryOption {
         require(Tx.checkPreimage(txPreimage));
 
         // verify rabin signature
-        int h = Util.fromLEUnsigned(this.hash(msg + padding));
+        int h = Utils.fromLEUnsigned(this.hash(msg + padding));
         require((sig * sig) % this.rabinPubKey == h % this.rabinPubKey);
 
         // first 8 bytes
-        int price = Util.fromLEUnsigned(msg[0 : 8]);
+        int price = Utils.fromLEUnsigned(msg[0 : 8]);
         // the next 8 bytes
-        int timestamp = Util.fromLEUnsigned(msg[8 : 16]);
+        int timestamp = Utils.fromLEUnsigned(msg[8 : 16]);
         // check the time
         require(timestamp == this.timestamp);
 
         // check price
         bytes outputScript = b'';
         if (price >= this.betPrice) {
-            outputScript = Util.buildPublicKeyHashScript(this.pubKeyHashA);
+            outputScript = Utils.buildPublicKeyHashScript(this.pubKeyHashA);
         }
         else {
-            outputScript = Util.buildPublicKeyHashScript(this.pubKeyHashB);
+            outputScript = Utils.buildPublicKeyHashScript(this.pubKeyHashB);
         }
 
         // check the output is the right winner
-        bytes outputHash = hash256(Util.buildOutput(outputScript, outAmount));
-        bytes outputHash2 = Util.hashOutputs(txPreimage);
+        bytes outputHash = hash256(Utils.buildOutput(outputScript, outAmount));
+        bytes outputHash2 = SigHash.hashOutputs(txPreimage);
         require(outputHash == outputHash2);
     }
 }

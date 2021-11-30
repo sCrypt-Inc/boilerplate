@@ -19,7 +19,7 @@ contract BlockchainPRNG {
         require(Tx.checkPreimage(txPreimage));
 
         // get id of previous tx
-        Sha256 prevTxid = Sha256(Util.outpoint(txPreimage)[:32]);
+        Sha256 prevTxid = Sha256(SigHash.outpoint(txPreimage)[:32]);
 
         // validate block header
         require(Blockchain.isBlockHeaderValid(bh, this.blockchainTarget));

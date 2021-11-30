@@ -1,4 +1,3 @@
-import "util.scrypt";
 
 // Rabin public key
 type RabinPubKey = int;
@@ -13,7 +12,7 @@ struct RabinSig {
 
 library RabinSignature {
     static function checkSig(bytes msg, RabinSig sig, RabinPubKey pubKey) : bool {
-        int h = Util.fromLEUnsigned(hash(msg + sig.padding));
+        int h = Utils.fromLEUnsigned(hash(msg + sig.padding));
         return (sig.s * sig.s) % pubKey == h % pubKey;
     }
 

@@ -1,5 +1,3 @@
-import "util.scrypt";
-
 /**
  * Two players play Rock Paper Scissors
  *
@@ -13,53 +11,55 @@ contract RockPaperScissors {
     static const int PAPER = 2;
     static const int SCISSORS = 3;
 
+    static const int DataLen = 1;
+
     public function follow(SigHashPreimage txPreimage, int action, Ripemd160 playerBpkh, int satoshiAmount) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         // this ensures the preimage is for the current tx
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // valid action
         require(action > 0 && action < 4);
 
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
 
         // init action
-        int initAction = unpack(lockingScript[scriptLen - Util.DataLen :]);
+        int initAction = unpack(lockingScript[scriptLen - DataLen :]);
         require(initAction == RockPaperScissors.INIT);
 
-        int satoshiInit = Util.value(txPreimage);
-        bytes codePart = lockingScript[: scriptLen - Util.PubKeyHashLen - Util.DataLen];
+        int satoshiInit = SigHash.value(txPreimage);
+        bytes codePart = lockingScript[: scriptLen - Constants.PubKeyHashLen - DataLen];
 
-        bytes outputScript0 = codePart + playerBpkh + num2bin(action, Util.DataLen);
-        bytes output0 = Util.buildOutput(outputScript0, satoshiInit * 3 / 2);
+        bytes outputScript0 = codePart + playerBpkh + num2bin(action, DataLen);
+        bytes output0 = Utils.buildOutput(outputScript0, satoshiInit * 3 / 2);
 
-        bytes lockingScript1 = Util.buildPublicKeyHashScript(playerBpkh);
-        bytes output1 = Util.buildOutput(lockingScript1, satoshiAmount);
+        bytes lockingScript1 = Utils.buildPublicKeyHashScript(playerBpkh);
+        bytes output1 = Utils.buildOutput(lockingScript1, satoshiAmount);
 
         Sha256 hashOutputs = hash256(output0 + output1);
 
-        require(hashOutputs == Util.hashOutputs(txPreimage));
+        require(hashOutputs == SigHash.hashOutputs(txPreimage));
     }
 
     public function finish(SigHashPreimage txPreimage, int action, Sig sig, PubKey playerA, int satoshiAmountA) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         // this ensures the preimage is for the current tx
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // valid action
         require(action > 0 && action < 4);
 
-        int satoshiTotal = Util.value(txPreimage);
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        int satoshiTotal = SigHash.value(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
 
-        int bAction = unpack(lockingScript[scriptLen - Util.DataLen :]);
+        int bAction = unpack(lockingScript[scriptLen - DataLen :]);
         require(bAction != RockPaperScissors.INIT);
 
-        Ripemd160 playerAdata = Ripemd160(lockingScript[scriptLen - Util.PubKeyHashLen * 2 - Util.DataLen : scriptLen - Util.PubKeyHashLen - Util.DataLen]);
+        Ripemd160 playerAdata = Ripemd160(lockingScript[scriptLen - Constants.PubKeyHashLen * 2 - DataLen : scriptLen - Constants.PubKeyHashLen - DataLen]);
         // authorize
-        require(hash160(num2bin(action, Util.DataLen) + playerA) == playerAdata);
+        require(hash160(num2bin(action, DataLen) + playerA) == playerAdata);
         require(checkSig(sig, playerA));
 
         int satoshiAmountB = satoshiTotal * 1 / 3;
@@ -73,17 +73,17 @@ contract RockPaperScissors {
         }
 
         Ripemd160 playerApkh = Ripemd160(hash160(playerA));
-        bytes lockingScript0 = Util.buildPublicKeyHashScript(playerApkh);
-        bytes output0 = Util.buildOutput(lockingScript0, satoshiAmountA);
+        bytes lockingScript0 = Utils.buildPublicKeyHashScript(playerApkh);
+        bytes output0 = Utils.buildOutput(lockingScript0, satoshiAmountA);
 
         bytes output1 = b'';
         if (satoshiAmountB > 0) {
-            Ripemd160 playerBpkh = Ripemd160(lockingScript[scriptLen - Util.PubKeyHashLen - Util.DataLen : scriptLen - Util.DataLen]);
-            bytes lockingScript1 = Util.buildPublicKeyHashScript(playerBpkh);
-            output1 = Util.buildOutput(lockingScript1, satoshiAmountB);
+            Ripemd160 playerBpkh = Ripemd160(lockingScript[scriptLen - Constants.PubKeyHashLen - DataLen : scriptLen - DataLen]);
+            bytes lockingScript1 = Utils.buildPublicKeyHashScript(playerBpkh);
+            output1 = Utils.buildOutput(lockingScript1, satoshiAmountB);
         }
 
         Sha256 hashOutputs = hash256(output0 + output1);
-        require(hashOutputs == Util.hashOutputs(txPreimage));
+        require(hashOutputs == SigHash.hashOutputs(txPreimage));
     }
 }

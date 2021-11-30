@@ -1,4 +1,3 @@
-import "util.scrypt";
 
 /**
  * Demonstrates TxAdvanced, with external funding (additional input) and a change output
@@ -10,17 +9,19 @@ contract AdvancedCounter {
     public function increment(SigHashPreimage txPreimage) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
         // this ensures the preimage is for the current tx
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
+
+        // update counter state
         this.counter++;
         
         bytes outputScript = this.getStateScript();
-        int amount = Util.value(txPreimage);
+        int amount = SigHash.value(txPreimage);
 
-        bytes counterOutput = Util.buildOutput(outputScript, amount);
+        bytes counterOutput = Utils.buildOutput(outputScript, amount);
 
         // ensure output matches what we expect:
         // - amount is same as specified
         // - output script is the same as scriptCode except the counter was incremented
-        require(hash256(counterOutput) == Util.hashOutputs(txPreimage));
+        require(hash256(counterOutput) == SigHash.hashOutputs(txPreimage));
     }
 }

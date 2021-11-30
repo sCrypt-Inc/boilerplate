@@ -1,4 +1,4 @@
-import "util.scrypt";
+
 contract StateCounter {
 
     @state
@@ -9,7 +9,7 @@ contract StateCounter {
         // increment counter
         this.counter++;
         bytes outputScript = this.getStateScript();
-        bytes output = Util.buildOutput(outputScript, amount);
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes output = Utils.buildOutput(outputScript, amount);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 }
