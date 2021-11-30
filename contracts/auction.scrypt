@@ -1,4 +1,4 @@
-import "util.scrypt";
+
 
 // Auction: highest bid before deadline wins
 contract Auction {
@@ -12,7 +12,7 @@ contract Auction {
     public function bid(Ripemd160 bidder, int bid, int changeSats, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
-        int highestBid = Util.value(txPreimage);
+        int highestBid = SigHash.value(txPreimage);
         require(bid > highestBid);
 
         Ripemd160 highestBidder = this.bidder;
@@ -20,24 +20,24 @@ contract Auction {
 
         // auction continues with a higher bidder
         bytes stateScript = this.getStateScript();
-        bytes auctionOutput = Util.buildOutput(stateScript, bid);
+        bytes auctionOutput = Utils.buildOutput(stateScript, bid);
 
         // refund previous highest bidder
-        bytes refundScript = Util.buildPublicKeyHashScript(highestBidder);
-        bytes refundOutput = Util.buildOutput(refundScript, highestBid);
+        bytes refundScript = Utils.buildPublicKeyHashScript(highestBidder);
+        bytes refundOutput = Utils.buildOutput(refundScript, highestBid);
 
-        bytes changeScript = Util.buildPublicKeyHashScript(bidder);
-        bytes changeOutput = Util.buildOutput(changeScript, changeSats);
+        bytes changeScript = Utils.buildPublicKeyHashScript(bidder);
+        bytes changeOutput = Utils.buildOutput(changeScript, changeSats);
 
         bytes output = auctionOutput + refundOutput + changeOutput;
 
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 
     // withdraw after bidding is over
     public function close(Sig sig, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
-        require(Util.nLocktime(txPreimage) >= this.auctionDeadline);
+        require(SigHash.nLocktime(txPreimage) >= this.auctionDeadline);
         require(checkSig(sig, this.auctioner));
     }
 }

@@ -1,7 +1,6 @@
 /**
 * a contract solving quadratic equation
 */
-import "util.scrypt";
 
 struct Coeff {
     int a;
@@ -14,14 +13,14 @@ contract Callee {
 
     public function solve(Coeff co, int x, SigHashPreimage txPreimage) {
         // Note: SigHash_SINGLE is used
-        require(Util.checkPreimageSigHashType(txPreimage, SigHash.SINGLE | SigHash.FORKID));
+        require(Tx.checkPreimageSigHashType(txPreimage, SigHash.SINGLE | SigHash.FORKID));
 
         // check x is a root
         require(co.a * x * x + co.b * x + co.c == 0);
 
         bytes data = num2bin(co.a, N) + num2bin(co.b, N) + num2bin(co.c, N) + num2bin(x, N);
-        bytes outputScript = Util.buildOpreturnScript(data);
-        bytes output = Util.buildOutput(outputScript, 0);
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes outputScript = Utils.buildOpreturnScript(data);
+        bytes output = Utils.buildOutput(outputScript, 0);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 }

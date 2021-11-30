@@ -34,7 +34,7 @@ contract Forward {
         require(op.time == this.matureTime);
 
         // total collateral amount, in satoshis
-        int totalSats = Util.value(txPreimage);
+        int totalSats = SigHash.value(txPreimage);
 
         // Bob pays Alice the difference; could be nagative
         int payoff = this.dollars * (op.price - this.deliveryPrice);
@@ -45,13 +45,13 @@ contract Forward {
 
         // split according to the price when the contract is mature
 
-        bytes aliceScript = Util.buildPublicKeyHashScript(this.alice);
-        bytes aliceOutput = Util.buildOutput(aliceScript, aliceAmount);
+        bytes aliceScript = Utils.buildPublicKeyHashScript(this.alice);
+        bytes aliceOutput = Utils.buildOutput(aliceScript, aliceAmount);
 
-        bytes bobScript = Util.buildPublicKeyHashScript(this.bob);
-        bytes bobOutput = Util.buildOutput(bobScript, bobAmount);
+        bytes bobScript = Utils.buildPublicKeyHashScript(this.bob);
+        bytes bobOutput = Utils.buildOutput(bobScript, bobAmount);
 
-        require(hash256(aliceOutput + bobOutput) == Util.hashOutputs(txPreimage));
+        require(hash256(aliceOutput + bobOutput) == SigHash.hashOutputs(txPreimage));
     }
 
     // serialized price data. It is what oracle signs

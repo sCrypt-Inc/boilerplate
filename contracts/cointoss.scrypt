@@ -1,4 +1,3 @@
-import "util.scrypt";
 
 // fair coin toss using Blum's protocol
 // Coin Flipping by Telephone. by Manuel Blum CRYPTO 1981

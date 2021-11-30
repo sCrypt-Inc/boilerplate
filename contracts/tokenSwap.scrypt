@@ -1,4 +1,3 @@
-import "util.scrypt";
 import "merkleTree2.scrypt";
 
 // the token swap has two merkle trees to save data. one for token user, one for pool and the pool token balance
@@ -16,13 +15,13 @@ contract TokenSwap {
 
     public function addTokenUser(SigHashPreimage txPreimage, PubKey userPubkey, bytes insertMerklePath, Sig adminSig) {
         SigHashType sigHashType = SigHash.SINGLE | SigHash.FORKID;
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // check sender sig
         require(checkSig(adminSig, this.adminPubkey));
 
         // get the tokenMerkleRoot
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
         int hashLen = 32;
         int dataStart = scriptLen - hashLen * 2 - 8;
@@ -35,20 +34,20 @@ contract TokenSwap {
         bytes newScriptCode = lockingScript[: dataStart] + newMerkleRoot + lpMerkleRoot + lockingScript[dataStart + hashLen * 2 : dataStart + hashLen * 2 + 8];
         // txpreimage only has the one output by using the sighash_single
         // verify if the contract bsv amount is the same
-        bytes outputHash = hash256(Util.buildOutput(newScriptCode, Util.value(txPreimage)));
-        bytes outputHash2 = Util.hashOutputs(txPreimage);
+        bytes outputHash = hash256(Utils.buildOutput(newScriptCode, SigHash.value(txPreimage)));
+        bytes outputHash2 = SigHash.hashOutputs(txPreimage);
         require(outputHash == outputHash2);
     }
 
     public function addLpUser(SigHashPreimage txPreimage, PubKey userPubkey, bytes insertMerklePath, Sig adminSig) {
         SigHashType sigHashType = SigHash.SINGLE | SigHash.FORKID;
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // check sender sig
         require(checkSig(adminSig, this.adminPubkey));
 
         // get the tokenMerkleRoot
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
         int hashLen = 32;
         int dataStart = scriptLen - hashLen * 2 - 8;
@@ -61,8 +60,8 @@ contract TokenSwap {
         bytes newScriptCode = lockingScript[: dataStart] + tokenMerkleRoot + newLpMerkleRoot + lockingScript[dataStart + hashLen * 2 : dataStart + hashLen * 2 + 8];
         // txpreimage only has the one output by using the sighash_single
         // verify if the contract bsv amount is the same
-        bytes outputHash = hash256(Util.buildOutput(newScriptCode, Util.value(txPreimage)));
-        bytes outputHash2 = Util.hashOutputs(txPreimage);
+        bytes outputHash = hash256(Utils.buildOutput(newScriptCode, SigHash.value(txPreimage)));
+        bytes outputHash2 = SigHash.hashOutputs(txPreimage);
         require(outputHash == outputHash2);
     }
 
@@ -71,7 +70,7 @@ contract TokenSwap {
 
         // check preimage with sighash_single
         SigHashType sigHashType = SigHash.SINGLE | SigHash.FORKID;
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // check sender sig
         require(checkSig(senderSig, sender));
@@ -80,7 +79,7 @@ contract TokenSwap {
         require(senderTokenBalance >= tokenAmount);
 
         // get the tokenMerkleRoot
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
         int hashLen = 32;
         int dataStart = scriptLen - hashLen * 2 - 8;
@@ -105,8 +104,8 @@ contract TokenSwap {
         bytes newScriptCode = lockingScript[: dataStart] + newMerkleRoot + lpMerkleRoot + lockingScript[dataStart + hashLen * 2 : dataStart + hashLen * 2 + 8];
         // txpreimage only has the one output by using the sighash_single
         // verify if the contract bsv amount is the same
-        bytes outputHash = hash256(Util.buildOutput(newScriptCode, Util.value(txPreimage)));
-        bytes outputHash2 = Util.hashOutputs(txPreimage);
+        bytes outputHash = hash256(Utils.buildOutput(newScriptCode, SigHash.value(txPreimage)));
+        bytes outputHash2 = SigHash.hashOutputs(txPreimage);
         require(outputHash == outputHash2);
     }
 
@@ -114,7 +113,7 @@ contract TokenSwap {
     public function addLiquidity(SigHashPreimage txPreimage, PubKey sender, Sig senderSig, int senderTokenBalance, int tokenAmount, int bsvAmount, bytes senderMerklePath, int poolTokenBalance, bytes poolMerklePath, bool senderIsLeft, bytes mergeMerklePath, int senderLpBalance, bytes lpMerklePath) {
         // check preimage with sighash_single
         SigHashType sigHashType = SigHash.SINGLE | SigHash.FORKID;
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // check sender sig
         require(checkSig(senderSig, sender));
@@ -124,13 +123,13 @@ contract TokenSwap {
         require(bsvAmount > 0);
 
         // get the tokenMerkleRoot
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
         int hashLen = 32;
         int dataStart = scriptLen - hashLen * 2 - 8;
         bytes tokenMerkleRoot = lockingScript[dataStart : dataStart + hashLen];
         bytes lpMerkleRoot = lockingScript[dataStart + hashLen : dataStart + hashLen * 2];
-        int totalLpBalance = Util.fromLEUnsigned(lockingScript[dataStart + hashLen * 2 : dataStart + hashLen * 2 + 8]);
+        int totalLpBalance = Utils.fromLEUnsigned(lockingScript[dataStart + hashLen * 2 : dataStart + hashLen * 2 + 8]);
 
         // check token merkle tree
         bytes senderLeaf = sha256(sender + num2bin(senderTokenBalance, 8));
@@ -150,7 +149,7 @@ contract TokenSwap {
         bytes newPoolLeaf = sha256(this.poolPubkey + num2bin(newPoolBalance, 8));
         bytes newMerkleRoot = MerkleTree.calculateTwoLeafMerkleRoot(newSenderLeaf, senderMerklePath, newPoolLeaf, poolMerklePath, mergeMerklePath, senderIsLeft);
 
-        int preBsvBalance = Util.value(txPreimage) - this.initBsv;
+        int preBsvBalance = SigHash.value(txPreimage) - this.initBsv;
         int newBsvBalance = preBsvBalance + bsvAmount;
         int lpMinted = 0;
         // mint the lp token 
@@ -175,15 +174,15 @@ contract TokenSwap {
         bytes newLpMerkleRoot = MerkleTree.calculateMerkleRoot(newLpMerkleLeaf, lpMerklePath);
 
         bytes newScriptCode = lockingScript[: dataStart] + newMerkleRoot + newLpMerkleRoot + num2bin(newTotalLpBalance, 8);
-        bytes outputHash = hash256(Util.buildOutput(newScriptCode, newBsvBalance + this.initBsv));
-        bytes outputHash2 = Util.hashOutputs(txPreimage);
+        bytes outputHash = hash256(Utils.buildOutput(newScriptCode, newBsvBalance + this.initBsv));
+        bytes outputHash2 = SigHash.hashOutputs(txPreimage);
         require(outputHash == outputHash2);
     }
 
     public function removeLiquidity(SigHashPreimage txPreimage, PubKey sender, Sig senderSig, int senderTokenBalance, int lpAmount, bytes senderMerklePath, bool senderIsLeft, int poolTokenBalance, bytes poolMerklePath, bytes mergeMerklePath, int senderLpBalance, bytes lpMerklePath) {
         // check preimage with sighash_single
         SigHashType sigHashType = SigHash.SINGLE | SigHash.FORKID;
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // check sender sig
         require(checkSig(senderSig, sender));
@@ -192,13 +191,13 @@ contract TokenSwap {
         require(senderLpBalance > 0);
 
         // get the tokenMerkleRoot
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
         int hashLen = 32;
         int dataStart = scriptLen - hashLen * 2 - 8;
         bytes tokenMerkleRoot = lockingScript[dataStart : dataStart + hashLen];
         bytes lpMerkleRoot = lockingScript[dataStart + hashLen : dataStart + hashLen * 2];
-        int totalLpBalance = Util.fromLEUnsigned(lockingScript[dataStart + hashLen * 2 : dataStart + hashLen * 2 + 8]);
+        int totalLpBalance = Utils.fromLEUnsigned(lockingScript[dataStart + hashLen * 2 : dataStart + hashLen * 2 + 8]);
 
         // verify the lp merkle tree
         bytes lpLeaf = sha256(sender + num2bin(senderLpBalance, 8));
@@ -216,7 +215,7 @@ contract TokenSwap {
         bytes newLpMerkleRoot = MerkleTree.calculateMerkleRoot(newSenderLpLeaf, lpMerklePath);
 
         // change token amount and calculate new token amount
-        int preBsvBalance = Util.value(txPreimage) - this.initBsv;
+        int preBsvBalance = SigHash.value(txPreimage) - this.initBsv;
         int bsvAdd = lpAmount * preBsvBalance / totalLpBalance;
         int tokenAdd = lpAmount * poolTokenBalance / totalLpBalance;
 
@@ -233,13 +232,13 @@ contract TokenSwap {
 
         // check the output
         bytes newScriptCode = lockingScript[: dataStart] + newMerkleRoot + newLpMerkleRoot + num2bin(newTotalLpBalance, 8);
-        bytes newOutput = Util.buildOutput(newScriptCode, newBsvAmount + this.initBsv);
+        bytes newOutput = Utils.buildOutput(newScriptCode, newBsvAmount + this.initBsv);
         bytes outputHash = hash256(newOutput);
 
         //bytes bsvOutputScript = Util.buildPublicKeyHashScript(ripemd160(sha256(sender)));
         //bytes newOutput2 = Util.buildOutput(bsvOutputScript, bsvAdd - fee);
         //bytes outputHash = hash256(newOutput + newOutput2);
-        bytes outputHash2 = Util.hashOutputs(txPreimage);
+        bytes outputHash2 = SigHash.hashOutputs(txPreimage);
         require(outputHash == outputHash2);
     }
 
@@ -247,7 +246,7 @@ contract TokenSwap {
         bytes poolMerklePath, bytes mergeMerklePath, bool senderIsLeft) {
         // check preimage with sighash_single
         SigHashType sigHashType = SigHash.SINGLE | SigHash.FORKID;
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // check sender sig
         require(checkSig(senderSig, sender));
@@ -256,7 +255,7 @@ contract TokenSwap {
         require(senderTokenBalance >= tokenAmount);
 
         // get the tokenMerkleRoot
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
         int hashLen = 32;
         int dataStart = scriptLen - hashLen * 2 - 8;
@@ -279,27 +278,27 @@ contract TokenSwap {
 
         // get the bsv amount
         int tokenFeeAmount = tokenAmount * (1000 - this.feeRate);
-        int preBsvBalance = Util.value(txPreimage) - this.initBsv;
+        int preBsvBalance = SigHash.value(txPreimage) - this.initBsv;
         int outBsvAmount = tokenFeeAmount * preBsvBalance / (poolTokenBalance * 1000 + tokenFeeAmount);
         int newBsvBalance = preBsvBalance - outBsvAmount;
 
         bytes newScriptCode = lockingScript[: dataStart] + newTokenMerkleRoot + lpMerkleRoot + lockingScript[dataStart + hashLen * 2 : dataStart + hashLen * 2 + 8];
 
-        bytes newOutput = Util.buildOutput(newScriptCode, newBsvBalance + this.initBsv);
+        bytes newOutput = Utils.buildOutput(newScriptCode, newBsvBalance + this.initBsv);
 
-        require(hash256(newOutput) == Util.hashOutputs(txPreimage));
+        require(hash256(newOutput) == SigHash.hashOutputs(txPreimage));
     }
 
     public function swapBsvToToken(SigHashPreimage txPreimage, PubKey sender, Sig senderSig, int senderTokenBalance, bytes senderMerklePath, int poolTokenBalance, bytes poolMerklePath, bytes mergeMerklePath, bool poolIsLeft, int bsvAmount) {
         // check preimage with sighash_all
         SigHashType sigHashType = SigHash.SINGLE | SigHash.FORKID;
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
         // check sender sig
         require(checkSig(senderSig, sender));
 
         // get the tokenMerkleRoot
-        bytes lockingScript = Util.scriptCode(txPreimage);
+        bytes lockingScript = SigHash.scriptCode(txPreimage);
         int scriptLen = len(lockingScript);
         int hashLen = 32;
         int dataStart = scriptLen - hashLen * 2 - 8;
@@ -312,7 +311,7 @@ contract TokenSwap {
         require(MerkleTree.verifyTwoLeafPath(poolLeaf, poolMerklePath, senderLeaf, senderMerklePath, mergeMerklePath, poolIsLeft, tokenMerkleRoot));
 
         // change bsv and token balance
-        int preBsvBalance = Util.value(txPreimage) - this.initBsv;
+        int preBsvBalance = SigHash.value(txPreimage) - this.initBsv;
 
         int bsvInputWithFee = bsvAmount * (1000 - this.feeRate);
         int tokenAmount = bsvInputWithFee * poolTokenBalance / (preBsvBalance * 1000 + bsvInputWithFee);
@@ -329,8 +328,8 @@ contract TokenSwap {
         // check the output
         bytes newScriptCode = lockingScript[: dataStart] + newMerkleRoot + lpMerkleRoot + lockingScript[dataStart + hashLen * 2 : dataStart + hashLen * 2 + 8];
         // verify if the contract bsv amount is the same
-        bytes outputHash = hash256(Util.buildOutput(newScriptCode, newBsvBalance + this.initBsv));
-        bytes outputHash2 = Util.hashOutputs(txPreimage);
+        bytes outputHash = hash256(Utils.buildOutput(newScriptCode, newBsvBalance + this.initBsv));
+        bytes outputHash2 = SigHash.hashOutputs(txPreimage);
         require(outputHash == outputHash2);
     }
 }

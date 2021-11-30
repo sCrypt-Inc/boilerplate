@@ -1,0 +1,36 @@
+import "blockchain.scrypt";
+
+// bet on block time: how long it takes to mine the block containing the bet transaction
+contract BlockTimeBet {
+    // only 2 is needed; 7 means the transaction has 6 confirmations
+    static const int N = 7;
+    // 10 minutes in seconds
+    static const int AVG_BLOCK_TIME = 600;
+    // maximal target for any block to be considered valid
+    int blockchainTarget;
+
+    PubKey alice;
+    PubKey bob;
+
+
+    // header[1] is the block containing the contract tx
+    public function main(BlockHeader[N] headers, MerkleProof merkleproof, Sig sig,  SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
+
+        // get id of previous tx
+        Sha256 prevTxid = Sha256(SigHash.outpoint(txPreimage)[:32]);
+
+        // validate a chain of block headers
+        require(Blockchain.isBlockHeaderChainValid(N, headers, this.blockchainTarget));
+
+        // verify previous tx is in block with index 1
+        require(Blockchain.txInBlock(prevTxid, headers[1], merkleproof));
+
+        // block time is the time difference between this block and last
+        int blockTime = headers[1].time - headers[0].time;
+
+        // Alice wins if block is mined within 10 mins; otherwise Bob wins
+        PubKey winner = blockTime < AVG_BLOCK_TIME ? this.alice : this.bob;
+        require(checkSig(sig, winner));
+    }
+}

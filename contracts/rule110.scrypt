@@ -1,5 +1,3 @@
-import "util.scrypt";
-
 contract rule110 {
     static const int N = 5; //size of board
     static const int N2 = 3; //size of board
@@ -11,14 +9,14 @@ contract rule110 {
     public function play(int amount, SigHashPreimage txPreimage) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
         // this ensures the preimage is for the current tx
-        require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
 
         this.board = this.computeNewBoard(this.board);
 
         bytes newScriptCode = this.getStateScript();
-        bytes output = Util.buildOutput(newScriptCode, amount);
+        bytes output = Utils.buildOutput(newScriptCode, amount);
 
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 
     function computeNewBoard(bytes board) : bytes {

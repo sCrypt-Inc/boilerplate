@@ -1,0 +1,12 @@
+
+library ArrayUtil {
+    // get the byte at the given index
+    static function getElemAt(bytes b, int idx) : bytes {
+        return b[idx : idx + 1];
+    }
+
+    // set the byte at the given index
+    static function setElemAt(bytes b, int idx, bytes byteValue) : bytes {
+        return b[: idx] + byteValue + b[idx + 1 :];
+    }
+}

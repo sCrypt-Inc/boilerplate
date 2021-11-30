@@ -2,7 +2,6 @@
 // Copyright © 2021 Tokenized Group Pty Ltd
 //
 
-import "./util.scrypt";
 
 // EnforceAgentBitcoinTransfer ensures when bitcoin is included in an agent request containing an 
 // atomic swap of bitcoin for tokens that it is not in custody of the agent.
@@ -32,7 +31,7 @@ contract EnforceAgentBitcoinTransfer {
         require(checkSig(sig, pubKey));
 
         // Verify output hash is correct for approval.
-        require(this.approveOutputHash == Util.hashOutputs(preimage));
+        require(this.approveOutputHash == SigHash.hashOutputs(preimage));
 
         // Verify preimage is correct.
         require(Tx.checkPreimageOpt(preimage));
@@ -53,7 +52,7 @@ contract EnforceAgentBitcoinTransfer {
         require(checkSig(sig, pubKey));
 
         // Verify output hash is correct for refund.
-        require(this.refundOutputHash == Util.hashOutputs(preimage));
+        require(this.refundOutputHash == SigHash.hashOutputs(preimage));
 
         // Verify preimage is correct.
         require(Tx.checkPreimageOpt(preimage));
@@ -71,14 +70,14 @@ contract EnforceAgentBitcoinTransfer {
         require(checkSig(sig, pubKey));
 
         // Verify lock time.
-        require(this.expiration <= Util.nLocktime(preimage));
+        require(this.expiration <= SigHash.nLocktime(preimage));
 
         // Verify input's sequence from the preimage is not MAX to confirm the lock time is actually applied.
-        require(b'ffffffff' != Util.nSequenceRaw(preimage));
+        require(b'ffffffff' != SigHash.nSequenceRaw(preimage));
 
         // Verify sig hash type is SIGHASH_ALL or else sequence hash will have been zeroed out
         // in the preimage and the check above would not actually be checking anything.
-        require((SigHash.ALL | SigHash.FORKID) == Util.sigHashType(preimage));
+        require((SigHash.ALL | SigHash.FORKID) == SigHash.sigHashType(preimage));
 
         // Verify preimage is correct.
         require(Tx.checkPreimageOpt(preimage));

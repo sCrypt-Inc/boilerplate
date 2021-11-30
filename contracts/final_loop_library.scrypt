@@ -1,5 +1,4 @@
 // Library
-import "util.scrypt";
 import "final_loop_import.scrypt";
 
 library Loop {
@@ -9,31 +8,31 @@ library Loop {
 
     static function scriptCode(SigHashPreimage preimage) : bytes {
         //Return everything util.scriptCode except the space we need in this library
-        return Util.readVarint(preimage[104 : len(preimage) - Aux.SizeOfObject - 1]);
+        return Utils.readVarint(preimage[104 : len(preimage) - Aux.SizeOfObject - 1]);
     }
 
     static function buildOutput(SigHashPreimage preimage, bytes outputScript, int outputSatoshis) : bytes {
         //We reset in_loop, and build the output
-        bytes scriptCode = Util.scriptCode(preimage);
+        bytes scriptCode = SigHash.scriptCode(preimage);
         bytes next = num2bin(0, 1) + scriptCode[len(scriptCode) - Aux.SizeOfObject :];
-        return num2bin(outputSatoshis, Util.OutputValueLen) + Util.writeVarint(outputScript + next);
+        return num2bin(outputSatoshis, Constants.OutputValueLen) + Utils.writeVarint(outputScript + next);
     }
 
     //Get state
     static function getState(SigHashPreimage preimage) : Object {
-        bytes scriptCode = Util.scriptCode(preimage);
+        bytes scriptCode = SigHash.scriptCode(preimage);
         int scriptLen = len(scriptCode);
         return Aux.deserialize(scriptCode[scriptLen - 1 - 2 * Aux.SizeOfObject : scriptLen - 1 - Aux.SizeOfObject]);
     }
 
     static function getInLoop(SigHashPreimage preimage) : int {
-        bytes scriptCode = Util.scriptCode(preimage);
+        bytes scriptCode = SigHash.scriptCode(preimage);
         int scriptLen = len(scriptCode);
         return unpack(scriptCode[scriptLen - 1 - Aux.SizeOfObject : scriptLen - Aux.SizeOfObject]);
     }
 
     static function getTempState(SigHashPreimage preimage) : Object {
-        bytes scriptCode = Util.scriptCode(preimage);
+        bytes scriptCode = SigHash.scriptCode(preimage);
         int scriptLen = len(scriptCode);
         return Aux.deserialize(scriptCode[scriptLen - Aux.SizeOfObject :]);
     }
@@ -41,24 +40,24 @@ library Loop {
     //End get state
     //Set state
     static function setState(SigHashPreimage preimage, Object object, int newAmount) : bool {
-        bytes scriptCode = Util.scriptCode(preimage);
+        bytes scriptCode = SigHash.scriptCode(preimage);
         int scriptLen = len(scriptCode);
         bytes nextScript = scriptCode[: scriptLen - 1 - 2 * Aux.SizeOfObject] + Aux.serialize(object) + num2bin(0, 1) + scriptCode[scriptLen - Aux.SizeOfObject :];
-        return (hash256(Util.buildOutput(nextScript, newAmount)) == Util.hashOutputs(preimage));
+        return (hash256(Utils.buildOutput(nextScript, newAmount)) == SigHash.hashOutputs(preimage));
     }
 
     static function setInLoop(SigHashPreimage preimage, int in_loop, int newAmount) : bool {
-        bytes scriptCode = Util.scriptCode(preimage);
+        bytes scriptCode = SigHash.scriptCode(preimage);
         int scriptLen = len(scriptCode);
         bytes nextScript = scriptCode[: scriptLen - 1 - Aux.SizeOfObject] + num2bin(in_loop, 1) + scriptCode[scriptLen - Aux.SizeOfObject :];
-        return (hash256(Util.buildOutput(nextScript, newAmount)) == Util.hashOutputs(preimage));
+        return (hash256(Utils.buildOutput(nextScript, newAmount)) == SigHash.hashOutputs(preimage));
     }
 
     static function setTempState(SigHashPreimage preimage, Object object, int newAmount) : bool {
-        bytes scriptCode = Util.scriptCode(preimage);
+        bytes scriptCode = SigHash.scriptCode(preimage);
         int scriptLen = len(scriptCode);
         bytes nextScript = scriptCode[: scriptLen - Aux.SizeOfObject] + Aux.serialize(object);
-        return (hash256(Util.buildOutput(nextScript, newAmount)) == Util.hashOutputs(preimage));
+        return (hash256(Utils.buildOutput(nextScript, newAmount)) == SigHash.hashOutputs(preimage));
     }
 
     //End set state

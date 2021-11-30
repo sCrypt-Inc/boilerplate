@@ -1,4 +1,3 @@
-import "util.scrypt";
 
 // CLTV without OP_CLTV
 contract CheckLockTimeVerify {
@@ -7,6 +6,6 @@ contract CheckLockTimeVerify {
     public function spend(SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
-        require(Util.nLocktime(txPreimage) >= this.matureTime);
+        require(SigHash.nLocktime(txPreimage) >= this.matureTime);
     }
 }

@@ -1,5 +1,4 @@
 // folked from https://sensiblecontract.org
-import "util.scrypt";
 
 library TxUtil {
   static int OUTPOINT_LEN = 36; 
@@ -76,7 +75,7 @@ library TxUtil {
   }
 
   static function getScriptCodeFromOutput(bytes output): bytes {
-    return Util.readVarint(output[8:]);
+    return Utils.readVarint(output[8:]);
   }
 
   static function getVarOpLen(int length): int {
@@ -106,8 +105,8 @@ library TxUtil {
   static function genBsvOutput(int satoshis, Ripemd160 address): bytes {
     bytes output = b'';
     if (satoshis > 0) {
-      bytes outputScript = Util.buildPublicKeyHashScript(address);
-      output = Util.buildOutput(outputScript, satoshis);
+      bytes outputScript = Utils.buildPublicKeyHashScript(address);
+      output = Utils.buildOutput(outputScript, satoshis);
     }
     return output;
   }

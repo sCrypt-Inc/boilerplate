@@ -10,7 +10,7 @@ const {
   getPreimage,
   toHex
 } = require('scryptlib')
-
+const crypto = require('crypto');
 const MSB_THRESHOLD = 0x7e;
 
 const Signature = bsv.crypto.Signature
@@ -25,15 +25,13 @@ const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
 
 const inputIndex = 0
 const inputSatoshis = 100000
-const flags = Interpreter.SCRIPT_VERIFY_MINIMALDATA | Interpreter.SCRIPT_ENABLE_SIGHASH_FORKID | Interpreter.SCRIPT_ENABLE_MAGNETIC_OPCODES | Interpreter.SCRIPT_ENABLE_MONOLITH_OPCODES
-const minFee = 546
-const dummyTxId = 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458'
-const reversedDummyTxId = '5884e5db9de218238671572340b207ee85b628074e7e467096c267266baf77a4'
+const dummyTxId = crypto.randomBytes(32).toString('hex');
+const reversedDummyTxId =  Buffer.from(dummyTxId, 'hex').reverse().toString('hex');
 const sighashType2Hex = s => s.toString(16)
 
 function newTx() {
   const utxo = {
-    txId: 'a477af6b2667c29670467e4e0728b685ee07b240235771862318e29ddbe58458',
+    txId: dummyTxId,
     outputIndex: 0,
     script: '',   // placeholder
     satoshis: inputSatoshis
@@ -45,9 +43,7 @@ function newTx() {
 
 // reverse hexStr byte order
 function reverseEndian(hexStr) {
-  let num = new BN(hexStr, 'hex')
-  let buf = num.toBuffer()
-  return buf.toString('hex').match(/.{2}/g).reverse().join('')
+  return hexStr.match(/../g).reverse().join('')
 }
 
 
@@ -221,6 +217,71 @@ async function fetchUtxos(address) {
 
 const emptyPublicKey = '000000000000000000000000000000000000000000000000000000000000000000'
 
+function toLittleIndian(hexstr) {
+  return reverseEndian(hexstr)
+}
+
+function toBigIndian(hexstr) {
+  return reverseEndian(hexstr)
+}
+
+function uint32Tobin(d) {
+  var s = (+d).toString(16);
+  if(s.length < 4) {
+      s = '0' + s;
+  }
+  return toLittleIndian(s);
+}
+
+function num2hex(d, padding) {
+  var s = Number(d).toString(16);
+  // add padding if needed.
+  while (s.length < padding) {
+      s = "0" + s;
+  }
+  return s;
+}
+
+
+
+/**
+ * inspired by : https://bigishdata.com/2017/11/13/how-to-build-a-blockchain-part-4-1-bitcoin-proof-of-work-difficulty-explained/
+ * @param {*} bitsHex bits of block header, in big endian
+ * @returns a target number 
+ */
+ function toTarget(bitsHex) {
+  const shift = bitsHex.substr(0, 2);
+  const exponent = parseInt(shift, 16);
+  const value = bitsHex.substr(2, bitsHex.length);
+  const coefficient = parseInt(value, 16);
+  const target = coefficient * 2 ** (8 * (exponent - 3));
+  return BigInt(target);
+}
+
+/**
+* convert pool difficulty to a target number 
+* @param {*}  difficulty which can fetch by api https://api.whatsonchain.com/v1/bsv/<network>/chain/info
+* @returns target
+*/
+function pdiff2Target(difficulty) {
+  if (typeof difficulty === 'number') {
+      difficulty = BigInt(Math.floor(difficulty))
+  }
+
+  return BigInt(toTarget("1d00ffff") / difficulty);
+}
+
+
+// serialize Header to get raw header
+function serializeHeader(header) {
+  return uint32Tobin(header.version)
+      + toLittleIndian(header.previousblockhash)
+      + toLittleIndian(header.merkleroot)
+      + uint32Tobin(header.time)
+      + toLittleIndian(header.bits)
+      + uint32Tobin(header.nonce)
+}
+
 module.exports = {
   inputIndex,
   inputSatoshis,
@@ -242,5 +303,12 @@ module.exports = {
   checkLowS,
   deployContract,
   createInputFromPrevTx,
-  fetchUtxos
+  fetchUtxos,
+  toLittleIndian,
+  toBigIndian,
+  uint32Tobin,
+  num2hex,
+  toTarget,
+  pdiff2Target,
+  serializeHeader
 }

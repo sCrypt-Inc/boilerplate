@@ -1,0 +1,52 @@
+
+struct Node {
+    Sha256 hash;
+    /*
+    Where the actual Merkle path is shorter than the predefined DEPTH, all trailing nodes will be marked as invalid.
+     0: invalid
+     1: on the left
+     2: on the right
+    */
+    int left;
+}
+
+type MerkleProof = Node[MerklePath.DEPTH];
+
+library MerklePath {
+    // maximal depth of a Merkle tree/path, which can support a block with 2^32 transations
+    static const int DEPTH = 32;
+
+    static const int INVALID_NODE = 0;
+    static const int LEFT_NODE = 1;
+    static const int RIGHT_NODE = 2;
+
+
+    //According to the given leaf node and merkle path, calculate the hash of the root node of the merkle tree
+    static function calMerkleRoot(Sha256 leaf, MerkleProof merkleproof) : Sha256 {
+        Sha256 root = leaf;
+
+        loop (DEPTH) : i {
+            Node node = merkleproof[i];
+            if(node.left != INVALID_NODE) { // s is valid
+                root = node.left == LEFT_NODE ? hash256(node.hash + root) : hash256(root + node.hash);
+            }
+        }
+
+        return root;
+    }
+
+    // a tx if coinbase if all nodes on its Merkle path are on the right branch
+    static function isCoinbase(MerkleProof merkleproof) : bool {
+
+        bool res = true;
+        loop (DEPTH) : i {
+            Node node = merkleproof[i];
+            if (node.left != INVALID_NODE) {
+                // node on the right
+                res = res && node.left == RIGHT_NODE;
+            }
+        }
+        return res;
+    }
+    
+}

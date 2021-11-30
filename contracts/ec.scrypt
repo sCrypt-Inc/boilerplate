@@ -1,4 +1,4 @@
-import "util.scrypt";
+
 struct Point {
     int x;
     int y;
@@ -87,14 +87,20 @@ library EC {
     static function pubKey2Point(PubKey pubKey) : Point {
         require(pubKey[: 1] == b'04');
         //convert signed little endian to unsigned big endian
-        int x = Util.fromLEUnsigned(reverseBytes(pubKey[1 : 33], 32));
-        int y = Util.fromLEUnsigned(reverseBytes(pubKey[33 : 65], 32));
+        int x = Utils.fromLEUnsigned(reverseBytes(pubKey[1 : 33], 32));
+        int y = Utils.fromLEUnsigned(reverseBytes(pubKey[33 : 65], 32));
         return {x, y};
     }
 
     // convert a point to a uncompressed public key
     static function point2PubKey(Point point) : PubKey {
         //serializer point.x, point.y to unsigned big endian number
-        return PubKey(b'04' + Util.toBEUnsigned(point.x, 32) + Util.toBEUnsigned(point.y, 32));
+        return PubKey(b'04' + toBEUnsigned(point.x, 32) + toBEUnsigned(point.y, 32));
+    }
+
+    // convert signed integer `n` to unsigned integer of `l` bytes, in big endian
+    static function toBEUnsigned(int n, static const  int l) : bytes {
+        bytes m = Utils.toLEUnsigned(n, l);
+        return reverseBytes(m,l);
     }
 }
