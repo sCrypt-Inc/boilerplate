@@ -40,7 +40,7 @@ describe('check OCSPreimage', () => {
       inputIndex,
       inputSatoshis
     }
-    const preimage = getPreimage(tx, ocsPreimage.lockingScript.cropCodeseparators(0), inputSatoshis)
+    const preimage = getPreimage(tx, ocsPreimage.lockingScript.subScript(0), inputSatoshis)
 
     const result = ocsPreimage.unlock(new SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.true
@@ -89,7 +89,7 @@ describe('check OCSPreimage', () => {
     }
 
 
-    const preimage = getLowSPreimage(tx, ocsPreimage.lockingScript.cropCodeseparators(1), inputSatoshis)
+    const preimage = getLowSPreimage(tx, ocsPreimage.lockingScript.subScript(1), inputSatoshis)
 
     const result = ocsPreimage.unlock0(new SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.true
@@ -115,7 +115,7 @@ describe('check OCSPreimage', () => {
     }
 
 
-    const preimage = getLowSPreimage(tx, ocsPreimage.lockingScript.cropCodeseparators(0), inputSatoshis)
+    const preimage = getLowSPreimage(tx, ocsPreimage.lockingScript.subScript(0), inputSatoshis)
 
     const result = ocsPreimage.unlock0(new SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.false
@@ -157,11 +157,11 @@ describe('check OCSPreimage', () => {
     const newLockingScript = [ocsPreimage.codePart.toASM(), num2bin(1, DataLen)].join(' ')
 
     tx.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM(newLockingScript).cropCodeseparators(2),
+      script: bsv.Script.fromASM(newLockingScript).subScript(2),
       satoshis: outputAmount
     }))
 
-    let preimage = getPreimage(tx, ocsPreimage.lockingScript.cropCodeseparators(2), inputSatoshis)
+    let preimage = getPreimage(tx, ocsPreimage.lockingScript.subScript(2), inputSatoshis)
 
     // set txContext for verification
     ocsPreimage.txContext = {
