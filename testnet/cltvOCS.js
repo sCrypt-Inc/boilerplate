@@ -7,8 +7,8 @@ const { privateKey } = require('../privateKey');
         const amount = 2000
 
         // get locking script
-        const CLTV = buildContractClass(loadDesc('cltv_debug_desc.json'));
-        cltv = new CLTV(1422674);
+        const CLTVOCS = buildContractClass(loadDesc('cltvOCS_debug_desc.json'));
+        cltv = new CLTVOCS(1422674);
 
         // lock fund to the script
         const lockingTx = await deployContract(cltv, amount)
@@ -21,7 +21,7 @@ const { privateKey } = require('../privateKey');
             .setLockTime(1422674 + 1)
             .change(privateKey.toAddress())
             .setInputScript(0, (tx, output) => {
-                const preimage = getPreimage(tx, output.script, output.satoshis)
+                const preimage = getPreimage(tx, output.script.cropCodeseparators(0), output.satoshis)
                 return cltv.spend(new SigHashPreimage(toHex(preimage))).toScript()
             })
             .seal()
