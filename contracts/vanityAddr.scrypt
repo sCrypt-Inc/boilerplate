@@ -1,0 +1,32 @@
+import "ec.scrypt";
+
+// outsource a vanity address generation
+contract VanityAddr {
+    // buyer's public key
+    PubKey pubKey;
+    // vanity address pattern such as vanity prefix "nChain"
+    bytes pattern;
+
+    // x is the secret seller finds
+    // all other parameters are auxiliaries of it
+    public function offerVanityAddr(PrivKey x, PubKey X, PubKey derivedPubKey, int lambda, SigHashPreimage txPreimage) {
+        // verify = X = x * G?
+        require(Tx.checkPreimageAdvanced(txPreimage, x, X, Tx.invK, Tx.r, Tx.rBigEndian, SigHashType(SigHash.ALL | SigHash.FORKID)));
+
+        // verify P' = P + X
+        require(EC.isPubKeySum(this.pubKey, X, lambda, derivedPubKey));
+
+        // meet requirement
+        require(matchPattern(derivedPubKey, this.pattern));
+    }
+
+    // check if public key's address matches the given pattern
+    static function matchPattern(PubKey pubKey, bytes pattern) : bool {
+        // convert public key to address
+        bytes addr = ripemd160(sha256(pubKey));
+
+        // prefix match
+        int l = len(pattern);
+        return addr[:l] == pattern;
+    }
+}
