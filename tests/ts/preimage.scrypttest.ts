@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { compileContract, newTx } from "../../helper"
-import { AbstractContract, buildContractClass, getLowSPreimage, SigHashPreimage, Ripemd160, bsv, toHex, getPreimage, buildOpreturnScript } from 'scryptlib'
+import { AbstractContract, buildContractClass, getLowSPreimage, SigHashPreimage, Ripemd160, bsv, toHex, getPreimage, buildOpreturnScript, num2bin } from 'scryptlib'
 
 
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')
@@ -142,6 +142,36 @@ describe('check OCSPreimage', () => {
 
     const result = ocsPreimage.unlock0(new SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.false
+  })
+
+
+
+  it('checkPreimageOCS should success when using right cropped preimage', () => {
+    // number of bytes to denote some numeric value
+    const DataLen = 1
+    
+    const tx = newTx(inputSatoshis);
+    // set initial counter value
+    ocsPreimage.setDataPart(num2bin(0, DataLen))
+
+    const newLockingScript = [ocsPreimage.codePart.toASM(), num2bin(1, DataLen)].join(' ')
+
+    tx.addOutput(new bsv.Transaction.Output({
+      script: bsv.Script.fromASM(newLockingScript).cropCodeseparators(2),
+      satoshis: outputAmount
+    }))
+
+    let preimage = getPreimage(tx, ocsPreimage.lockingScript.cropCodeseparators(2), inputSatoshis)
+
+    // set txContext for verification
+    ocsPreimage.txContext = {
+      tx,
+      inputIndex,
+      inputSatoshis
+    }
+
+    const result = ocsPreimage.increment(new SigHashPreimage(toHex(preimage)), outputAmount).verify()
+    expect(result.success, result.error).to.be.true
   })
 
 })
