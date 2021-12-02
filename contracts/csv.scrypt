@@ -1,0 +1,46 @@
+import "blockchain.scrypt";
+
+// relative locktime, aka, OP_CheckSequenceVerify https://en.bitcoin.it/wiki/Timelock#CheckSequenceVerify
+contract CheckSequenceVerify {
+    // relative timelock: specified in either unix time or block height
+    int relativeTime;
+    // maximal target for any block to be considered valid
+    int blockchainTarget;
+
+    // unlock based on unix timestamp
+    public function unlockWithTime(BlockHeader utxoBh, BlockHeader latestBh, MerkleProof merkleproof, SigHashPreimage txPreimage) {
+        this.validateHelper(utxoBh, latestBh, merkleproof, txPreimage);
+
+        // enough time has elapsed since the UTXO is mined
+        require(latestBh.time - utxoBh.time >= this.relativeTime);
+    }
+
+    // unlock based on block height
+    public function unlockWithBlockHeight(BlockHeader utxoBh, BlockHeader latestBh, MerkleProof utxoMerkleproof, MerkleProof latestMerkleproof,
+        bytes utxoCoinbaseTx, bytes latestCoinbaseTx, MerkleProof merkleproof, SigHashPreimage txPreimage) {
+        this.validateHelper(utxoBh, latestBh, merkleproof, txPreimage);
+
+        // get block height from header
+        int utxoBlockHeight = Blockchain.blockHeight(utxoBh, utxoCoinbaseTx, utxoMerkleproof);
+        int latestBlockHeight = Blockchain.blockHeight(latestBh, latestCoinbaseTx, latestMerkleproof);
+
+        require(latestBlockHeight - utxoBlockHeight >= this.relativeTime);
+    }
+
+    // common validation for both relative timelock: Unix timestamp and block height
+    // @utxoBh: block header containing the UTXO containing the contract
+    // @latestBh: latest block header
+    function validateHelper(BlockHeader utxoBh, BlockHeader latestBh, MerkleProof merkleproof, SigHashPreimage txPreimage) : bool {
+        require(Tx.checkPreimage(txPreimage));
+        // get id of previous tx
+        Sha256 prevTxid = Sha256(SigHash.outpoint(txPreimage)[: 32]);
+        // verify previous tx is in the block
+        require(Blockchain.txInBlock(prevTxid, utxoBh, merkleproof));
+
+        // validate block headers
+        require(Blockchain.isBlockHeaderValid(utxoBh, this.blockchainTarget));
+        require(Blockchain.isBlockHeaderValid(latestBh, this.blockchainTarget));
+
+        return true;
+    }
+}
