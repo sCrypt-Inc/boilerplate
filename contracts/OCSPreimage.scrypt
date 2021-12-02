@@ -1,0 +1,18 @@
+
+/**
+* OCSPreimage
+*/
+contract OCSPreimage {
+
+    int time;
+
+    public function unlock(SigHashPreimage preimage) {
+        require(Tx.checkPreimageOCS(preimage));
+        require(SigHash.nLocktime(preimage) > this.time);
+    }
+
+    public function unlock0(SigHashPreimage preimage) {
+        require(Tx.checkPreimageOptOCS(preimage));
+        require(SigHash.nLocktime(preimage) > this.time);
+    }
+}
