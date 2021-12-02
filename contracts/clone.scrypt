@@ -3,7 +3,9 @@ contract Clone {
     public function unlock(SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
 
-        bytes output = Utils.buildOutput(SigHash.scriptCode(txPreimage), SigHash.value(txPreimage));
+        bytes scriptCode = SigHash.scriptCode(txPreimage);
+        int satoshis = SigHash.value(txPreimage);
+        bytes output = Utils.buildOutput(scriptCode, satoshis);
         require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 }

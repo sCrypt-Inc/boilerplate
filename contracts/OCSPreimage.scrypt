@@ -1,0 +1,39 @@
+
+/**
+* OCSPreimage
+*/
+contract OCSPreimage {
+    static const int DataLen = 1;
+    int time;
+
+    public function unlock(SigHashPreimage preimage) {
+        require(Tx.checkPreimageOCS(preimage));
+        require(SigHash.nLocktime(preimage) > this.time);
+    }
+
+    public function unlock0(SigHashPreimage preimage) {
+        require(Tx.checkPreimageOptOCS(preimage));
+        require(SigHash.nLocktime(preimage) > this.time);
+    }
+
+    public function increment(SigHashPreimage txPreimage, int amount) {
+        require(Tx.checkPreimageOCS(txPreimage));
+
+        // deserialize state (i.e., counter value)
+        bytes scriptCode = SigHash.scriptCode(txPreimage);
+        int scriptLen = len(scriptCode);
+        // counter is at the end
+        int counter = unpack(scriptCode[scriptLen - DataLen :]);
+
+        // increment counter
+        counter++;
+
+        // serialize state
+        bytes outputScript = scriptCode[: scriptLen - DataLen] + num2bin(counter, DataLen);
+        
+        bytes output = Utils.buildOutput(outputScript, amount);
+        // ensure output is expected: amount is same with specified
+        // also output script is the same with scriptCode except counter incremented
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+    }
+}
