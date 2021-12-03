@@ -1,0 +1,63 @@
+import "blockchain.scrypt";
+
+contract Vault {
+    // time to wait before the money in the vault can be spent after unvaulted, using the vault key
+    int unvaultingPeriod;
+    // vault key, typically stored in a hot wallet
+    PubKey vaultKey;
+    // recovery key, typically stored in a cold wallet
+    PubKey recoveryKey;
+    // maximal target for any block to be considered valid
+    int blockchainTarget;
+
+    // initialized to false
+    @state
+    bool unvaulted;
+
+    // step 1
+    public function unvault(Sig sig, SigHashPreimage txPreimage) {
+        require(checkSig(sig, this.vaultKey));
+
+        require(!this.unvaulted);
+        this.unvaulted = true;
+
+        bytes outputScript = this.getStateScript();
+        bytes output = Utils.buildOutput(outputScript, SigHash.value(txPreimage));
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+    }
+
+    // step 2
+    public function withdraw(Sig sig, BlockHeader utxoBh, BlockHeader latestBh, MerkleProof merkleproof, SigHashPreimage txPreimage) {
+        require(this.unvaulted);
+        require(checkSig(sig, this.vaultKey));
+
+        // ensure UTXO has been locked long enough
+        this.validateHelper(utxoBh, latestBh, merkleproof, txPreimage);
+        // enough time has elapsed since being unvaulted
+        require(latestBh.time - utxoBh.time >= this.unvaultingPeriod);
+    }
+
+    // cancel if vault key is stolen
+    public function cancel(Sig sig) {
+        require(checkSig(sig, this.recoveryKey));
+    }
+    
+
+    // copied from contract CheckSequenceVerify
+    // common validation for both relative timelock: Unix timestamp and block height
+    // @utxoBh: block header containing the UTXO containing the contract
+    // @latestBh: latest block header
+    function validateHelper(BlockHeader utxoBh, BlockHeader latestBh, MerkleProof merkleproof, SigHashPreimage txPreimage) : bool {
+        require(Tx.checkPreimage(txPreimage));
+        // get id of previous tx
+        Sha256 prevTxid = Sha256(SigHash.outpoint(txPreimage)[: 32]);
+        // verify previous tx is in the block
+        require(Blockchain.txInBlock(prevTxid, utxoBh, merkleproof));
+
+        // validate block headers
+        require(Blockchain.isBlockHeaderValid(utxoBh, this.blockchainTarget));
+        require(Blockchain.isBlockHeaderValid(latestBh, this.blockchainTarget));
+
+        return true;
+    }
+}
