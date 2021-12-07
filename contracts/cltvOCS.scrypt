@@ -1,5 +1,5 @@
 
-// CLTV without OP_CLTV
+// CLTV without OP_CODESEPARATOR/OCS
 contract CheckLockTimeVerifyOCS {
     int matureTime;
 
