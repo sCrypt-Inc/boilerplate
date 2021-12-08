@@ -1,0 +1,27 @@
+library Base58 {
+
+    static const bytes P2PKH_verbyte_mainnet = b'00';
+    static const bytes P2PKH_verbyte_testnet = b'6f';
+    
+    static function base58EncodeCheckAddr(bytes addr, byte verbyte) : bytes {
+        bytes payload = verbyte + addr;
+        bytes beBytes = payload + hash256(payload)[:4];
+        int addrInt = Util.fromLEUnsigned(reverseBytes(beBytes, 24));
+        bytes res = b'';
+        bool done = false;
+        loop (33) : i {
+            if (addrInt <= 0) {
+                done = true;
+            }
+            if (!done) {
+                int tmp = addrInt / 58;
+                int carry = addrInt % 58;
+                res = num2bin(carry, 1) + res;
+                addrInt = tmp;
+            }
+        }
+        return res;
+    }
+
+}
+

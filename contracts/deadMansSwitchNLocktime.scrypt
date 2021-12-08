@@ -1,0 +1,42 @@
+import "util.scrypt";
+
+/**
+ * Dead man's switch / last will contract.
+ */
+
+contract DeadMansSwitch {
+
+    @state
+    PubKey pubKeyRefresh;
+
+    @state
+    PubKey pubKeyCancel;
+
+    @state
+    PubKey pubKeyInheritor;
+
+    @state
+    int inheritanceSats;
+
+    public function refresh(SigHashPreimage txPreimage, Sig sig) {
+        require(Tx.checkPreimage(txPreimage));
+        require(checkSig(sig, this.pubKeyRefresh));
+
+        // Make sure the inheritor still gets the funds if someone steals the refresh key.
+        bytes outputScript = this.getStateScript();
+        bytes output = Util.buildOutput(outputScript, this.inheritanceSats);
+        require(hash256(output) == Util.hashOutputs(txPreimage));
+    }
+
+    public function cancel(SigHashPreimage txPreimage, Sig sig) {
+        require(Tx.checkPreimage(txPreimage));
+        require(checkSig(sig, this.pubKeyRefresh));
+    }
+
+    public function inherit(Sig sig) {
+        // If the contract stops being refreshed offline, then it will hit the chain.
+        // Once it's on chain, the inheritor can withdraw the funds.
+        require(checkSig(sig, this.pubKeyInheritor));
+    }
+
+ }

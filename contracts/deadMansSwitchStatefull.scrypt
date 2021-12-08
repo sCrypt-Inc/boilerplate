@@ -1,0 +1,66 @@
+import "util.scrypt";
+import "blockchain.scrypt";
+
+/**
+ * Dead man's switch / last will contract.
+ */
+
+contract DeadMansSwitch {
+    
+    static const int MIN_BLOCK_TARGET = 128;
+    static const int MIN_N_BLOCKS_PASSED = 52500; // Around 1 year
+  
+    @state
+    PubKey pubKeyRefresh;
+  
+    @state
+    PubKey pubKeyCancel;
+  
+    @state
+    PubKey pubKeyInheritor;
+
+    @state
+    int inheritanceSats;
+
+    // The point of the refresh function is just to replace the old UTXO 
+    // with an exact copy in a newer block.
+    public function refresh(SigHashPreimage txPreimage, Sig sig) {
+        require(Tx.checkPreimage(txPreimage));
+        require(checkSig(sig, this.pubKeyRefresh));
+
+        bytes outputScript = this.getStateScript();
+        bytes output = Util.buildOutput(outputScript, this.inheritanceSats);
+        require(hash256(output) == Util.hashOutputs(txPreimage));
+    }
+  
+    public function cancel(SigHashPreimage txPreimage, Sig sig) {
+        require(Tx.checkPreimage(txPreimage));
+        require(checkSig(sig, this.pubKeyRefresh));
+    }
+  
+    public function inherit(SigHashPreimage txPreimage, 
+                            Sig sig,
+                            BlockHeader utxoBH,
+                            BlockHeader latestBH,
+                            MerkleProof utxoMerkleProof,
+                            MerkleProof latestMerkleProof,
+                            bytes utxoCoinbaseTx,
+                            bytes latestCoinbaseTx,
+                            MerkleProof merkleProof) {
+        require(Tx.checkPreimage(txPreimage));
+        require(checkSig(sig, this.pubKeyInheritor));
+
+        Sha256 txID = Sha256(Util.outpoint(txPreimage)[:32]);
+        require(Blockchain.txInBlock(txID, utxoBH, merkleProof));
+
+        require(Blockchain.isBlockHeaderValid(utxoBH, MIN_BLOCK_TARGET));
+        require(Blockchain.isBlockHeaderValid(latestBH, MIN_BLOCK_TARGET));
+
+        // get block height from header
+        int utxoBlockHeight = Blockchain.blockHeight(utxoBH, utxoCoinbaseTx, utxoMerkleProof);
+        int latestBlockHeight = Blockchain.blockHeight(latestBH, latestCoinbaseTx, latestMerkleProof);
+
+        require(latestBlockHeight - utxoBlockHeight >= MIN_N_BLOCKS_PASSED);
+    }
+
+ }
