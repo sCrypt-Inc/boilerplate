@@ -11,6 +11,7 @@ const {
   signTx,
   toHex,
   Bytes,
+  readLaunchJson
 } = require('scryptlib');
 const {
   inputIndex,
