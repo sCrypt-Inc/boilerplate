@@ -1,5 +1,5 @@
 const { expect } = require( 'chai' );
-const { buildContractClass, Bytes } = require( 'scryptlib' );
+const { buildContractClass, Bytes, readLaunchJson } = require( 'scryptlib' );
 const { compileContract } = require( '../../helper' );
 
 // (min, max]
@@ -81,6 +81,11 @@ describe( 'Test sCrypt contract Serializer In Javascript', () => {
         const h = getRandomBytesHex( m )
 
         result = demo.main( n % 2 === 0, new Bytes( h ), n ).verify()
+
+        if(result.success === false) {
+
+          console.log(JSON.stringify(readLaunchJson(result.error)))
+        }
         expect( result.success, result.error ).to.be.true
       }
     }
