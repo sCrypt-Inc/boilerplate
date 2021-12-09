@@ -4,8 +4,7 @@ contract CheckLockTimeVerifyOCS {
     int matureTime;
 
     public function spend(SigHashPreimage txPreimage) {
-        require(Tx.checkPreimageOCS(txPreimage));
-
         require(SigHash.nLocktime(txPreimage) >= this.matureTime);
+        require(Tx.checkPreimageOCS(txPreimage));
     }
 }
