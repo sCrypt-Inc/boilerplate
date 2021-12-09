@@ -1,5 +1,5 @@
 const { expect } = require( 'chai' );
-const { buildContractClass, Bytes } = require( 'scryptlib' );
+const { buildContractClass, Bytes, readLaunchJson } = require( 'scryptlib' );
 const { compileContract } = require( '../../helper' );
 
 // (min, max]
@@ -73,6 +73,7 @@ describe( 'Test sCrypt contract Serializer In Javascript', () => {
   it( 'should return true', () => {
     // skip largest two bounds since they cause out of memory error
     const varIntBounds = [ 0x0, 0xFC, 0xFFFF ] // , 0xFFFFFFFF, 0xFFFFFFFFFFFFFFFF
+
     for ( let i = 0; i < varIntBounds.length - 1; i++ ) {
       for ( let j = 0; j < 10; j++ ) {
         const n = getRandomInt( 0, 2 ** 32 )
@@ -81,8 +82,14 @@ describe( 'Test sCrypt contract Serializer In Javascript', () => {
         const h = getRandomBytesHex( m )
 
         result = demo.main( n % 2 === 0, new Bytes( h ), n ).verify()
+
+        if(result.success === false) {
+          //Print error message, when an unreproducible error occurs
+          console.log(JSON.stringify(readLaunchJson(result.error)))
+        }
         expect( result.success, result.error ).to.be.true
       }
     }
+    
   } );
 } );

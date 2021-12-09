@@ -21,7 +21,7 @@ const { privateKey } = require('../privateKey');
             .setLockTime(1422674 + 1)
             .change(privateKey.toAddress())
             .setInputScript(0, (tx, output) => {
-                const preimage = getPreimage(tx, output.script.cropCodeseparators(0), output.satoshis)
+                const preimage = getPreimage(tx, output.script.subScript(0), output.satoshis)
                 return cltv.spend(new SigHashPreimage(toHex(preimage))).toScript()
             })
             .seal()
