@@ -1,0 +1,19 @@
+// an example contract to malleate transaction
+contract Netflix {
+    PubKey alice;
+    PubKey bob;
+
+    Sha256 hash;
+
+    // can be unlocked in two ways
+    // 1) data and Bob's signature
+    // 2) both Alice and Bob's signatures
+    public function unlock(bytes dataOrSig, Sig bobSig) {
+        if (sha256(dataOrSig) != this.hash) {
+            // Alice signature is used to unlock, not the data
+            Sig aliceSig = Sig(dataOrSig);
+            require(checkSig(aliceSig, this.alice));
+        }
+        require(checkSig(bobSig, this.bob));
+    }
+}
