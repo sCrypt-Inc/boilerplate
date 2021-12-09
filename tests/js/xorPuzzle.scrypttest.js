@@ -75,6 +75,10 @@ describe('Test sCrypt contract HashPuzzle In Javascript', () => {
         new Bytes(dataBufHashHex)
       )
       .verify();
+      //Print error message, when an unreproducible error occurs
+      if(result.success === false) {
+        console.log(JSON.stringify(readLaunchJson(result.error)))
+      }
     expect(result.success, result.error).to.be.true;
   });
   
