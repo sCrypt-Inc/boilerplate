@@ -3,6 +3,7 @@ library Base58 {
     static const bytes P2PKH_verbyte_mainnet = b'00';
     static const bytes P2PKH_verbyte_testnet = b'6f';
     
+    // Encodes PKH and version byte into a Base58Check address.
     static function base58EncodeCheckAddr(bytes addr, byte verbyte) : bytes {
         bytes payload = verbyte + addr;
         bytes beBytes = payload + hash256(payload)[:4];

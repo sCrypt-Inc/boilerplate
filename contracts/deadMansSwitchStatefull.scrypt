@@ -2,7 +2,8 @@ import "util.scrypt";
 import "blockchain.scrypt";
 
 /**
- * Dead man's switch / last will contract.
+ * Dead man's switch / last will contract on-chain implementation using
+ * state propagation.
  */
 
 contract DeadMansSwitch {
@@ -24,42 +25,52 @@ contract DeadMansSwitch {
 
     // The point of the refresh function is just to replace the old UTXO 
     // with an exact copy in a newer block.
+    // This efectively extends the duration of the inheritance lock by MIN_N_BLOCKS_PASSED.
     public function refresh(SigHashPreimage txPreimage, Sig sig) {
         require(Tx.checkPreimage(txPreimage));
         require(checkSig(sig, this.pubKeyRefresh));
 
+        // Ensure the next output will contain the same contract in case the refresh key
+        // gets stolen.
         bytes outputScript = this.getStateScript();
         bytes output = Util.buildOutput(outputScript, this.inheritanceSats);
         require(hash256(output) == Util.hashOutputs(txPreimage));
     }
   
+    // The controler of the funds can cancel the contract at any time.
     public function cancel(SigHashPreimage txPreimage, Sig sig) {
         require(Tx.checkPreimage(txPreimage));
         require(checkSig(sig, this.pubKeyRefresh));
     }
   
+    // To withdraw the funds, the inheritor needs to prove the existance of a block,
+    // that is at least MIN_N_BLOCKS_PASSED newer, as the block containing the UTXO (latest refresh).
     public function inherit(SigHashPreimage txPreimage, 
                             Sig sig,
-                            BlockHeader utxoBH,
-                            BlockHeader latestBH,
-                            MerkleProof utxoMerkleProof,
-                            MerkleProof latestMerkleProof,
-                            bytes utxoCoinbaseTx,
-                            bytes latestCoinbaseTx,
-                            MerkleProof merkleProof) {
+                            BlockHeader utxoBH,             // Header of the block containing the UTXO, that is being unlocked.
+                            BlockHeader latestBH,           // Header of the latest block mined.
+                            MerkleProof utxoMerkleProof,    // Merkle proof of the coinbase in the block, that contains the UTXO.
+                            MerkleProof latestMerkleProof,  // Merkle proof of the coinbase in the latest block.
+                            bytes utxoCoinbaseTx,           // TXID of the coinbase from the block, that contains the UTXO.
+                            bytes latestCoinbaseTx,         // TXID of the coinbase from the latest block.
+                            MerkleProof merkleProof         // Merkle proof of the TX, that contains the UTXO.
+                            ) {
         require(Tx.checkPreimage(txPreimage));
         require(checkSig(sig, this.pubKeyInheritor));
 
+        // Extract TXID of the TX, that contains the spent UTXO.
         Sha256 txID = Sha256(Util.outpoint(txPreimage)[:32]);
         require(Blockchain.txInBlock(txID, utxoBH, merkleProof));
 
+        // Ensure, that the passed block headers contain proof of the minimum amount of work.
         require(Blockchain.isBlockHeaderValid(utxoBH, MIN_BLOCK_TARGET));
         require(Blockchain.isBlockHeaderValid(latestBH, MIN_BLOCK_TARGET));
 
-        // get block height from header
+        // Get block height from header.
         int utxoBlockHeight = Blockchain.blockHeight(utxoBH, utxoCoinbaseTx, utxoMerkleProof);
         int latestBlockHeight = Blockchain.blockHeight(latestBH, latestCoinbaseTx, latestMerkleProof);
 
+        // Ensure, that MIN_N_BLOCKS_PASSED blocks have passed since the UTXO block.
         require(latestBlockHeight - utxoBlockHeight >= MIN_N_BLOCKS_PASSED);
     }
 
