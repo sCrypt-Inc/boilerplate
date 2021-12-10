@@ -1,0 +1,23 @@
+// Demonstrate "Pay-to-NFT-PubKey-Hash"
+// Reference: https://attilaaf.medium.com/introducing-a-non-fungible-token-standard-for-bitcoin-pay-to-nft-pubkey-hash-p2npkh-a01e41ef82bd
+// Use replaceAsmVars to set the initial $asset and $pkh
+// To deploy an NFT set the $asset to 36 bytes NULL (72 zeroes)
+// and the $pkh to the initial owner/issuer of the asset.
+// Then to mint the NFT, spend to the same script by replacing the $asset
+// value with the outpoint (36 bytes txid+outputIndex) that was spent
+// Use SIGHASH_SINGLE to trace the identity of the asset.
+contract DemoP2NPKH {
+    public function unlock(Sig sig, PubKey pubKey) {
+        asm {
+            $asset
+            OP_TOALTSTACK 
+            OP_DUP 
+            OP_TOALTSTACK 
+            OP_DUP 
+            OP_HASH160 
+            $pkh
+            OP_EQUALVERIFY
+            OP_CHECKSIG
+        }
+    }
+}
