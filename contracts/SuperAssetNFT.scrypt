@@ -1,0 +1,106 @@
+/**
+Copyright (c) 2021 Matter Web Services Inc., Attila Aros
+ 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+ 
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+Addtionally, the ASM Versions are included in this copyright:
+
+A)
+<assetId (36 bytes)> <pkh 20 bytes> OP_2 OP_PICK OP_HASH160 OP_OVER OP_EQUALVERIFY OP_2OVER OP_CHECKSIGVERIFY OP_4 OP_PICK OP_NOTIF OP_6 OP_PICK OP_2 OP_PICK 0 24 OP_NUM2BIN OP_EQUAL OP_IF OP_8 OP_PICK 68 OP_SPLIT OP_DROP 44 OP_SPLIT OP_NIP OP_ELSE OP_2 OP_PICK OP_ENDIF OP_CAT OP_6 OP_PICK OP_CAT OP_8 OP_PICK 69 OP_10 OP_PICK 69 OP_SPLIT OP_DROP 68 OP_SPLIT OP_NIP 00 OP_CAT OP_BIN2NUM OP_ADD OP_SPLIT OP_DROP a300 OP_SPLIT OP_NIP OP_CAT OP_HASH256 OP_8 OP_PICK OP_9 OP_PICK OP_SIZE OP_NIP OP_8 OP_SUB OP_SPLIT OP_DROP OP_9 OP_PICK OP_SIZE OP_NIP 28 OP_SUB OP_SPLIT OP_NIP OP_EQUALVERIFY OP_ENDIF OP_7 OP_PICK OP_HASH256 OP_1 OP_SPLIT OP_SWAP OP_BIN2NUM OP_1ADD OP_SWAP OP_CAT 3044022079be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f817980220 OP_SWAP OP_CAT <sighashType> OP_CAT 02b405d7f0322a89d0f9f3a98e6f938fdc1c969a8d1382a2bf66a71ae74a1e83b0 OP_CHECKSIG OP_NIP OP_NIP OP_NIP OP_NIP OP_NIP OP_NIP OP_NIP OP_NIP
+
+B)
+<assetId (36 bytes)> <pkh 20 bytes> OP_2 OP_PICK OP_HASH160 OP_OVER OP_EQUALVERIFY OP_2OVER OP_CHECKSIGVERIFY OP_4 OP_PICK OP_NOTIF OP_6 OP_PICK OP_2 OP_PICK 0 24 OP_NUM2BIN OP_EQUAL OP_IF OP_8 OP_PICK 68 OP_SPLIT OP_DROP 44 OP_SPLIT OP_NIP OP_ELSE OP_2 OP_PICK OP_ENDIF OP_CAT OP_6 OP_PICK OP_CAT OP_8 OP_PICK 69 OP_10 OP_PICK 69 OP_SPLIT OP_DROP 68 OP_SPLIT OP_NIP 00 OP_CAT OP_BIN2NUM OP_ADD OP_SPLIT OP_DROP a300 OP_SPLIT OP_NIP OP_CAT OP_HASH256 OP_8 OP_PICK OP_9 OP_PICK OP_SIZE OP_NIP OP_8 OP_SUB OP_SPLIT OP_DROP OP_9 OP_PICK OP_SIZE OP_NIP 28 OP_SUB OP_SPLIT OP_NIP OP_EQUALVERIFY OP_ENDIF OP_7 OP_PICK OP_HASH256 OP_1 OP_SPLIT OP_SWAP OP_BIN2NUM OP_1ADD OP_SWAP OP_CAT 3044022079be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f817980220 OP_SWAP OP_CAT <sighashType> OP_CAT 02b405d7f0322a89d0f9f3a98e6f938fdc1c969a8d1382a2bf66a71ae74a1e83b0 OP_CHECKSIG OP_TOALTSTACK OP_2DROP OP_2DROP OP_2DROP OP_2DROP OP_FROMALTSTACK
+*/
+
+// SuperAssetNFT
+//
+// Non-Fungible-Token (NFT) Smart Contract for Bitcoin.
+// ----------------------------------------------------------------------------------------------
+//
+// Key Features of SuperAssetNFT:
+//     - Mint, transfer, update, and transform(melt) NFTs.
+//     - Supports seperate funding inputs and change outputs with ANYONECANPAY
+//     - Store arbitrary data payloads (HTML, JSON, Protobuf, PDFs, images, XML, etc)
+//     - Replay protection with globally unique ID passed on as an 'identity baton'
+//     - Can destroy or transform the token via "transform(melt)" and retrieve the satoshis
+//     - Identical trust guarantees as a regular UTXO
+//     - Developers can easily verify authenticity and asset history by requesting it in it's entirety from the seller
+//     - Wallets and indexers can proactively index these UTXO's via a blind pattern match for the minting pattern
+//     - Simplfied Payment Verification (SPV) and 0-conf works as expected with all the properties afforded to the native satoshi
+//     - Use of SIGHASH_SINGLE allows token to be composable with other smart contracts
+//     - Polymorphism is made possible because the data state (assetID and ownerAddress) appears at the beginning of the contract layout
+//     - Small footprint of 242 bytes (release) or 252 bytes (debug)
+//
+//  Contract Code and State Layout:
+//  ============================================================================
+//                       
+//  assetID(36B) ownerAddress(20B) | SuperAssetNFT STATIC CODE
+//                       
+//  ============================================================================
+//
+// Example Deploy Transaction: https://www.whatsonchain.com/tx/d68ba8105e9ae9f3fac2a26b0727f7d05f4445d7809a7a5d44c40a198ec678e7
+// Example Mint Transaction: https://www.whatsonchain.com/tx/876e5586998bf53893441027882da44eae0aeb5506153d245a8e0813f7262672
+// Example Transfer Transaction: https://www.whatsonchain.com/tx/85afa621a98404e3478d3013ca827e30a867cd3ed5b5782b05f80c70879f9e48
+// Example Melt Transaction: https://www.whatsonchain.com/tx/a9c86b7d9bc91694345cc286f282c25ee3484a9d7d073c0aae1d81c603387ca0
+contract SuperAssetNFT {
+
+    // Do NOT provide a constructor as that will add unnecessary OP_0 OP_0 to the beginning of the contract
+    bytes assetid;          // Assetid is the first push data
+    Ripemd160 pubKeyHash;   // Current owner is the second push data
+
+    /**
+    * There is a single method 'unlock' that can be used to transition to token into any state.
+    * 
+    * @param txPreimage - Preimage used for reflection of the currrent transaction
+    * @param outputSatsWithSize - The bytes of the satoshis to transfer along with the output varInt (ex: f2) to indicate the length of the script. Plus '24' at the end.
+    * @param receiveAddressWithSize - Leading '14' with the hash160 to send the token to
+    * @param isTransform - Whether to transform or morph the transaction into anything else. Care must be taken to preseve the assetid as the first push data
+    * @param senderSig - The signature of the previous owner to authorize this update
+    * @param unlockKey - The public key that belonged to the previous owner that is beng used to unlock
+    */
+    public function unlock(SigHashPreimage txPreimage, bytes outputSatsWithSize, bytes receiveAddressWithSize, bool isTransform, Sig senderSig, PubKey unlockKey) {
+        // Modify this contract to your needs but ensure that the resulting contract produces <assetid> <pkh> as the first two push datas
+        // But following the convention that <assetid> <pkh> are the first two push datas then we have "polymorphism"
+        // For example we can transform (using isTransform=true) to an auction script, and then transform back when there is a winning bid
+        require(hash160(unlockKey) == this.pubKeyHash);
+        require(checkSig(senderSig, unlockKey));
+        if (!isTransform) {
+            // This is highly optimized for reduction in size
+            require(
+                hash256(
+                    // Include the bytes satoshis, and the script varInt byte size
+                    outputSatsWithSize +
+                    // Notice that this.assetid is a member variable and we do not check the locking script in the preimage
+                    // The reason we do not need to check the locking script is that this.assetid is the first push data
+                    // The compiler will reference the bottom 
+                    (this.assetid == num2bin(0, 36) ? txPreimage[ 68 : 104 ] : this.assetid) +
+                    receiveAddressWithSize + 
+                    // Note: Assumes script size is < 255. Add 2 extra bytes for 'fd' varInt if larger than 255
+                    txPreimage[ 163 : 105 + unpack(txPreimage[ 104 : 105 ] + b'00')] 
+                ) 
+                ==
+                txPreimage[len(txPreimage) - 40 : len(txPreimage) - 8] // HashOuts
+            );   
+            // Any other logic here to maintain the 'P2NPKH' format with the leading 2 push datas of assetId and pkh
+            // ... Auctions, royalty NFTs, etc...
+        }  
+
+        require(Tx.checkPreimageOpt_(txPreimage));
+    }
+}
