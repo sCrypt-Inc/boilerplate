@@ -1,0 +1,84 @@
+// Copyright 2021 (c) Matter Web Services, Inc. Attila Aros
+// Strictly confidential. No use allowed.
+contract BNS {
+    // Do NOT provide a constructor as that will add unnecessary OP_0 OP_0 to the beginning of the contract
+    bytes bnsConstant;      // Assetid is the first push data
+    Ripemd160 issuerPkh;    // Issuer can transform or destroy the nodes
+    Ripemd160 claimPkh;     // Claim NFT pkh
+    Ripemd160 dupHash;      // Dedup hash
+    int currentDimension;   // Current dimension
+    bytes char;             // current char
+    /**
+    * There is a single method 'extend' that can be used to extend prefix tree.
+    * 
+    * @param txPreimage - Preimage used for reflection of the currrent transaction
+    * @param releaseSig - The signature of the previous owner to authorize this update
+    * @param unlockKey - The public key that belonged to the previous owner that is beng used to unlock
+    */
+    public function extend(SigHashPreimage txPreimage, bytes dividedSatoshisBytesWithSize, bytes claimSatoshis, bytes changeAddress, bytes changeSatoshis, bool isTransform, bytes issuerSig, bytes issuerPubKey) {
+        if (!isTransform) {
+            require(this.currentDimension < 84);
+            bytes extendOutputBase = 
+                dividedSatoshisBytesWithSize + 
+                b'04' + this.bnsConstant +                              // Ex: bns1
+                b'14' + this.issuerPkh +                                // Destroy/release extension nodes
+                b'14' + this.claimPkh +                                 // The required claim pkh
+                b'14' + ripemd160(this.dupHash + txPreimage[178 : 179]) + // Hash chain to prevent merging multiple tree branches
+                b'01' + num2bin(this.currentDimension + 1, 1) +         // Track depth. Allow up to 64 characters
+                b'01';                                                  // The character will be pushed as 1 byte at the end
+
+            bytes logic = txPreimage[ 179 : 107 + unpack(txPreimage[ 105 : 107 ] + b'00')];
+            require(
+                hash256(
+                    claimSatoshis + b'3f24' + num2bin(0, 36) + b'14' + this.claimPkh + b'7778a988ac' +
+                    extendOutputBase + b'2d' + logic + // -
+                    extendOutputBase + b'5f' + logic + // _
+                    extendOutputBase + b'30' + logic + // 0
+                    extendOutputBase + b'31' + logic + // 1
+                    extendOutputBase + b'32' + logic + // 2 
+                    extendOutputBase + b'33' + logic + // 3 
+                    extendOutputBase + b'34' + logic + // 4 
+                    extendOutputBase + b'35' + logic + // 5 
+                    extendOutputBase + b'36' + logic + // 6 
+                    extendOutputBase + b'37' + logic + // 7 
+                    extendOutputBase + b'38' + logic + // 8 
+                    extendOutputBase + b'39' + logic + // 9
+                    extendOutputBase + b'61' + logic + // a
+                    extendOutputBase + b'62' + logic + // b
+                    extendOutputBase + b'63' + logic + // c
+                    extendOutputBase + b'64' + logic + // d
+                    extendOutputBase + b'65' + logic + // e
+                    extendOutputBase + b'66' + logic + // f
+                    extendOutputBase + b'67' + logic + // g
+                    extendOutputBase + b'68' + logic + // h
+                    extendOutputBase + b'69' + logic + // i
+                    extendOutputBase + b'6a' + logic + // j
+                    extendOutputBase + b'6b' + logic + // k
+                    extendOutputBase + b'6c' + logic + // l
+                    extendOutputBase + b'6d' + logic + // m
+                    extendOutputBase + b'6e' + logic + // n
+                    extendOutputBase + b'6f' + logic + // o
+                    extendOutputBase + b'70' + logic + // p
+                    extendOutputBase + b'71' + logic + // q
+                    extendOutputBase + b'72' + logic + // r
+                    extendOutputBase + b'73' + logic + // s
+                    extendOutputBase + b'74' + logic + // t
+                    extendOutputBase + b'75' + logic + // u
+                    extendOutputBase + b'76' + logic + // v
+                    extendOutputBase + b'77' + logic + // w
+                    extendOutputBase + b'78' + logic + // x
+                    extendOutputBase + b'79' + logic + // y
+                    extendOutputBase + b'7a' + logic + // z  
+                    changeSatoshis + b'1976a914' + changeAddress + b'88ac'
+                ) 
+                ==
+                txPreimage[len(txPreimage) - 40 : len(txPreimage) - 8] // HashOuts
+            );   
+        } else {
+            // Transform the node into anything else with the issuerSig
+            require(hash160(issuerPubKey) == this.issuerPkh);
+            require(checkSig(Sig(issuerSig), PubKey(issuerPubKey))); 
+        }
+        require(Tx.checkPreimageOpt_(txPreimage));
+    }
+}
