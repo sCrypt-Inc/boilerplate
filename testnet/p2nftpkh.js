@@ -34,7 +34,7 @@ const sleeper = async(seconds) => {
 /*
   Example output and transactions....
 
-  node testnet/p2npkh.js
+  node testnet/p2nftpkh.js
 
   About to deploy (pre-mint) nft...
   Deploy txid:      https://test.whatsonchain.com/tx/856141fbaf887f8fbd3ea0eae41b54d1e043f11ffd91c6cea25c07ad6d16919d
@@ -55,12 +55,12 @@ async function main() {
 
     const woc = 'https://test.whatsonchain.com/tx/';
     // Initialize contract
-    const P2NPKH = buildContractClass(loadDesc('p2npkh_debug_desc.json'))
+    const P2NFTPKH = buildContractClass(loadDesc('p2nftpkh_debug_desc.json'))
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
-    const nft = new P2NPKH()
+    const nft = new P2NFTPKH()
     const asmVars = {
-      'DemoP2NPKH.unlock.pkh': toHex(publicKeyHash),
-      'DemoP2NPKH.unlock.asset': '000000000000000000000000000000000000000000000000000000000000000000000000'
+      'P2NFTPKH.unlock.pkh': toHex(publicKeyHash),
+      'P2NFTPKH.unlock.asset': '000000000000000000000000000000000000000000000000000000000000000000000000'
     };
     nft.replaceAsmVars(asmVars);
     const amount = 10000;
@@ -142,9 +142,9 @@ async function main() {
       .setInputScript(0, (tx, output) => {
         // Set SIGHASH_SINGLE to ensure identity is traced correctly and no mistakes can be made 
         // Note: This gives the signing visibility to the i'th output for the i'th input
-        // .... But in practice for p2npkh this does not matter since it is not using OP_PUSH_TX
+        // .... But in practice for p2nftpkh this does not matter since it is not using OP_PUSH_TX
         //const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL| Signature.SIGHASH_FORKID;
-        const sig = signTx(transferTX, privateKey, output.script, output.satoshis);//, 0, sighashType)
+        const sig = signTx(transferTX, privateKey, output.script, output.satoshis); 
         return nft.unlock(sig, new PubKey(toHex(publicKey))).toScript()
       })
       .seal()
@@ -176,9 +176,9 @@ async function main() {
       .setInputScript(0, (tx, output) => {
         // Set SIGHASH_SINGLE to ensure identity is traced correctly and no mistakes can be made 
         // Note: This gives the signing visibility to the i'th output for the i'th input
-        // .... But in practice for p2npkh this does not matter since it is not using OP_PUSH_TX
+        // .... But in practice for p2nftpkh this does not matter since it is not using OP_PUSH_TX
         //const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL| Signature.SIGHASH_FORKID;
-        const sig = signTx(meltTX, privateKey, output.script, output.satoshis);//, 0, sighashType)
+        const sig = signTx(meltTX, privateKey, output.script, output.satoshis); 
         return nft.unlock(sig, new PubKey(toHex(publicKey))).toScript()
       })
       .seal()

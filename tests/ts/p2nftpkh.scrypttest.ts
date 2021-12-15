@@ -3,7 +3,7 @@ import { buildContractClass, signTx, toHex, bsv, Ripemd160, PubKey, Sig, VerifyR
 import { compileContract, newTx } from "../../helper";
 
 /**
- * an example p2npkh test for contract containing signature verification
+ * An example P2NFTPKH test for contract containing signature verification
  */
 import { inputIndex, inputSatoshis, tx } from '../../helper';
 
@@ -12,19 +12,19 @@ const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
 
-describe('Test sCrypt contract DemoP2NPKH In Typescript', () => {
+describe('Test sCrypt contract P2NFTPKH In Typescript', () => {
   let demo: any;
   let sig: any;
   let result: VerifyResult
   let tx:any = newTx();
 
   before(() => {
-    const DemoP2PKH = buildContractClass(compileContract('p2npkh.scrypt'))
-    demo = new DemoP2PKH()
+    const P2NFTPKH = buildContractClass(compileContract('p2nftpkh.scrypt'))
+    demo = new P2NFTPKH()
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
     const asmVars = {
-      'DemoP2NPKH.unlock.pkh': toHex(publicKeyHash),
-      'DemoP2NPKH.unlock.asset': '000000000000000000000000000000000000000000000000000000000000000000000000'
+      'P2NFTPKH.unlock.pkh': toHex(publicKeyHash),
+      'P2NFTPKH.unlock.asset': '000000000000000000000000000000000000000000000000000000000000000000000000'
     };
     demo.replaceAsmVars(asmVars);
     demo.txContext = {

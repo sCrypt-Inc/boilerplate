@@ -6,7 +6,7 @@
 // Then to mint the NFT, spend to the same script by replacing the $asset
 // value with the outpoint (36 bytes txid+outputIndex) that was spent
 // Use SIGHASH_SINGLE to trace the identity of the asset.
-contract DemoP2NPKH {
+contract P2NFTPKH {
     public function unlock(Sig sig, PubKey pubKey) {
         asm {
             $asset
