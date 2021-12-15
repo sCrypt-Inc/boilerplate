@@ -13,7 +13,6 @@ const {
 const crypto = require('crypto');
 const MSB_THRESHOLD = 0x7e;
 
-const Signature = bsv.crypto.Signature
 const BN = bsv.crypto.BN
 const Interpreter = bsv.Script.Interpreter
 

@@ -34,35 +34,33 @@ const sleeper = async(seconds) => {
 /*
   Example output and transactions....
 
-  node testnet/p2npkh.js
+  node testnet/p2nftpkh.js
 
   About to deploy (pre-mint) nft...
-  Deploy txid:      baf89060477742330b119f808710f15df36a1f89b06b722046f334378af17d5b
-  assetId (outpoint):      5b7df18a3734f34620726bb0891f6af35df11087809f110b334277476090f8ba00000000
-
+  Deploy txid:      https://test.whatsonchain.com/tx/856141fbaf887f8fbd3ea0eae41b54d1e043f11ffd91c6cea25c07ad6d16919d
+  assetId (outpoint):      9d91166dad075ca2cec691fd1ff143e0d1541be4eaa03ebd8f7f88affb41618500000000
   About to mint nft...
-  mintTx 01000000015b7df18a3734f34620726bb0891f6af35df11087809f110b334277476090f8ba000000006b483045022100b08709eaf86660ae790e0de48ee63955ee035a2ace72fd6a9ff828f9fe36d05e02207fe9e529766885f6cf9c3a6aaad4b0b8cef9d9aab7ef24db2cb8808d989cd578412103f7b098436ded4a04dfa8bb0069f4e4670d2202f726727f58f610d3b6292af449ffffffff02592600000000000041245b7df18a3734f34620726bb0891f6af35df11087809f110b334277476090f8ba000000006b766b76a914ada084074f9a305be43e3366455db062d6d3669788ac000000000000000049006a46496d6167653a2068747470733a2f2f69312e736e6463646e2e636f6d2f617274776f726b732d3030303239393930313536372d6f69773874712d74353030783530302e6a706700000000
-  Mint txid:  8150c98ab64ba534bd61b104753f01e5449c287d6d87260e83872f713df1aca4
-
+  mintTx 01000000019d91166dad075ca2cec691fd1ff143e0d1541be4eaa03ebd8f7f88affb416185000000006a47304402204f209a2cbbd528bfa30cb4e0d5a4dec8aa95c7c0583e5675212d233724c1e9aa0220068f4dd211addefeb41952d6ba0d60d8738c503ea1d419b9d67d6e1dd5b8c7f5412103f7b098436ded4a04dfa8bb0069f4e4670d2202f726727f58f610d3b6292af449ffffffff02592600000000000041249d91166dad075ca2cec691fd1ff143e0d1541be4eaa03ebd8f7f88affb416185000000006b766b76a914ada084074f9a305be43e3366455db062d6d3669788ac000000000000000049006a46496d6167653a2068747470733a2f2f69312e736e6463646e2e636f6d2f617274776f726b732d3030303239393930313536372d6f69773874712d74353030783530302e6a706700000000
+  Mint txid:  https://test.whatsonchain.com/tx/93f93528084e141e47a462b6de8b68d7a422d541f66dd5afbf96537dedd5b21f
   About to transfer nft...
-  transferTX 0100000001a4acf13d712f87830e26876d7d289c44e5013f7504b161bd34a54bb68ac95081000000006b4830450221008c739d701e9a77e95ee7b8ed2621f20930abf977719eabbea993a3f59c7d0ea5022047186e3e32922e5c871ae3e1fc17acf5357ca3089fe8a3953e9e1fde0ce6ddbb412103f7b098436ded4a04dfa8bb0069f4e4670d2202f726727f58f610d3b6292af449ffffffff02bf2500000000000041245b7df18a3734f34620726bb0891f6af35df11087809f110b334277476090f8ba000000006b766b76a914ada084074f9a305be43e3366455db062d6d3669788ac00000000000000000e006a0b68656c6c6f20776f726c6400000000
-  Transfer txid:  21f5e2c2f5ad7e705c7eb856f8bb03357e0c2aab7746228b32b88b59efbdbed1
-
+  transferTX 01000000011fb2d5ed7d5396bfafd56df641d522a4d7688bdeb662a4471e144e082835f993000000006a47304402201befd4b0d6d5b284290ff831d55706fe86e9d1a06e7de99f4857b0e0865b441a022036e52a22e306b7e1ce809a49a5c5d48dc2c130a07177f6d2bc6290fc4634e37f412103f7b098436ded4a04dfa8bb0069f4e4670d2202f726727f58f610d3b6292af449ffffffff02c02500000000000041249d91166dad075ca2cec691fd1ff143e0d1541be4eaa03ebd8f7f88affb416185000000006b766b76a914ada084074f9a305be43e3366455db062d6d3669788ac00000000000000000e006a0b68656c6c6f20776f726c6400000000
+  Transfer txid:  https://test.whatsonchain.com/tx/46996a6fc3da0b18bf690f4e713d3ec2e1cc0b53f68c467dcc55d7c526272daf
   About to melt nft...
-  meltTx 0100000001d1bebdef598bb8328b224677ab2a0c7e3503bbf856b87e5c707eadf5c2e2f521000000006a47304402204c4df14e16a630a3a9a3708492bbad54fad74cc4b9be9914a85959e4bfc5228002207d113c5f5807e982ee97b8a439e8abb9ffd7ac0df8012564d112ab6782def148412103f7b098436ded4a04dfa8bb0069f4e4670d2202f726727f58f610d3b6292af449ffffffff0145250000000000001976a914ada084074f9a305be43e3366455db062d6d3669788ac00000000
-  Melt txid:  991a5aece32f8b5d36fedcd02ea954d467472b949025e3e33f4ffecbe0e9e9fb
+  meltTx 0100000001af2d2726c5d755cc7d468cf6530bcce1c23e3d714e0f69bf180bdac36f6a9946000000006a473044022031d8f276de8ea5efc5ff41bd8a59593c49bdde03e119a2295871a3490558e04a02203cfe3294e1b92aa9fcedfbe982c562ab750d8c25cb3c1842cfdf25b5a8b1930b412103f7b098436ded4a04dfa8bb0069f4e4670d2202f726727f58f610d3b6292af449ffffffff0146250000000000001976a914ada084074f9a305be43e3366455db062d6d3669788ac00000000
+  Melt txid:  https://test.whatsonchain.com/tx/3517ed212e4c95f45928c5a4c1bebd75248e443df3a9fe2e926ece198e1b600c
 */
 async function main() {
   try {
     const publicKey = privateKey.publicKey
 
+    const woc = 'https://test.whatsonchain.com/tx/';
     // Initialize contract
-    const P2NPKH = buildContractClass(loadDesc('p2npkh_debug_desc.json'))
+    const P2NFTPKH = buildContractClass(loadDesc('p2nftpkh_debug_desc.json'))
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
-    const nft = new P2NPKH()
+    const nft = new P2NFTPKH()
     const asmVars = {
-      'DemoP2NPKH.unlock.pkh': toHex(publicKeyHash),
-      'DemoP2NPKH.unlock.asset': '000000000000000000000000000000000000000000000000000000000000000000000000'
+      'P2NFTPKH.unlock.pkh': toHex(publicKeyHash),
+      'P2NFTPKH.unlock.asset': '000000000000000000000000000000000000000000000000000000000000000000000000'
     };
     nft.replaceAsmVars(asmVars);
     const amount = 10000;
@@ -71,7 +69,7 @@ async function main() {
     console.log('About to deploy (pre-mint) nft...')
     const deployTx = await deployContract(nft, amount);
 
-    console.log('Deploy txid:     ', deployTx.id)
+    console.log('Deploy txid:     ', woc + deployTx.id)
     // We must reverse the endianness of the printed txid to match the outpoint format in the raw tx
     const mintAssetId = Buffer.from(deployTx.id, 'hex').reverse().toString('hex') + '00000000';
     console.log('assetId (outpoint):     ', mintAssetId)
@@ -112,7 +110,7 @@ async function main() {
 
     console.log('mintTx', mintTx.toString());
     const mintTxid = await sendTx(mintTx)
-    console.log('Mint txid: ', mintTxid)
+    console.log('Mint txid: ', woc + mintTxid)
 
     // Transfer ownership
     console.log('About to transfer nft...')
@@ -144,16 +142,16 @@ async function main() {
       .setInputScript(0, (tx, output) => {
         // Set SIGHASH_SINGLE to ensure identity is traced correctly and no mistakes can be made 
         // Note: This gives the signing visibility to the i'th output for the i'th input
-        // .... But in practice for p2npkh this does not matter since it is not using OP_PUSH_TX
+        // .... But in practice for p2nftpkh this does not matter since it is not using OP_PUSH_TX
         //const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL| Signature.SIGHASH_FORKID;
-        const sig = signTx(transferTX, privateKey, output.script, output.satoshis);//, 0, sighashType)
+        const sig = signTx(transferTX, privateKey, output.script, output.satoshis); 
         return nft.unlock(sig, new PubKey(toHex(publicKey))).toScript()
       })
       .seal()
 
     console.log('transferTX', transferTX.toString());
     const transferTxid = await sendTx(transferTX)
-    console.log('Transfer txid: ', transferTxid)
+    console.log('Transfer txid: ', woc + transferTxid)
 
     // Transfer ownership
     console.log('About to melt nft...')
@@ -178,16 +176,16 @@ async function main() {
       .setInputScript(0, (tx, output) => {
         // Set SIGHASH_SINGLE to ensure identity is traced correctly and no mistakes can be made 
         // Note: This gives the signing visibility to the i'th output for the i'th input
-        // .... But in practice for p2npkh this does not matter since it is not using OP_PUSH_TX
+        // .... But in practice for p2nftpkh this does not matter since it is not using OP_PUSH_TX
         //const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL| Signature.SIGHASH_FORKID;
-        const sig = signTx(meltTX, privateKey, output.script, output.satoshis);//, 0, sighashType)
+        const sig = signTx(meltTX, privateKey, output.script, output.satoshis); 
         return nft.unlock(sig, new PubKey(toHex(publicKey))).toScript()
       })
       .seal()
 
     console.log('meltTx', meltTX.toString());
     const meltTxid = await sendTx(meltTX)
-    console.log('Melt txid: ', meltTxid)
+    console.log('Melt txid: ', woc + meltTxid)
   } catch (error) {
     console.log('Failed on testnet')
     showError(error)
