@@ -13,7 +13,7 @@ const Signature = bsv.crypto.Signature;
 const { privateKey } = require('../privateKey');
 
 function buildNFTPublicKeyHashOut(asset, pkh) {
-  return bsv.Script.fromASM(`${asset} OP_TOALTSTACK OP_DUP OP_TOALTSTACK OP_DUP OP_HASH160 ${pkh} OP_EQUALVERIFY OP_CHECKSIG`);
+  return bsv.Script.fromASM(`${asset} ${pkh} OP_NIP OP_OVER OP_HASH160 OP_EQUALVERIFY OP_CHECKSIG`);
 }
 
 function buildNFTMintMetadataOpReturn() {
