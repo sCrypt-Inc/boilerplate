@@ -6,7 +6,8 @@ const {
   sendTx,
   showError,
   loadDesc,
-  sighashType2Hex
+  sighashType2Hex,
+  fetchUtxos
 } = require('../helper')
 
 const axios = require('axios')
@@ -22,10 +23,32 @@ const woc = 'https://test.whatsonchain.com/tx/';
 const claimSatoshisInt = 300;
 const claimSatoshis = new Bytes(num2bin(claimSatoshisInt, 8));
 
+
+function unlockP2PKHInput(privateKey, tx, inputIndex, sigtype) {
+  const sig = new bsv.Transaction.Signature({
+    publicKey: privateKey.publicKey,
+    prevTxId: tx.inputs[inputIndex].prevTxId,
+    outputIndex: tx.inputs[inputIndex].outputIndex,
+    inputIndex,
+    signature: bsv.Transaction.Sighash.sign(tx, privateKey, sigtype,
+      inputIndex,
+      tx.inputs[inputIndex].output.script,
+      tx.inputs[inputIndex].output.satoshisBN),
+    sigtype,
+  });
+
+  tx.inputs[inputIndex].setScript(bsv.Script.buildPublicKeyHashIn(
+    sig.publicKey,
+    sig.signature.toDER(),
+    sig.sigtype,
+  ))
+}
+
 function generatePreimage(isOpt, tx, lockingScriptASM, satValue, sighashType, idx = 0) {
   let preimage = null;
   if (isOpt) {
     for (i = 0; ; i++) {
+      console.log('i', i);
       // malleate tx and thus sighash to satisfy constraint
       tx.nLockTime = i;
       const preimage_ = getPreimage(tx, lockingScriptASM, satValue, idx, sighashType);
@@ -218,11 +241,14 @@ async function main() {
     const utxo = await fetchUtxoLargeThan(privateKey.toAddress(), 300000);
 
     extendRootTx.addInput(createInputFromPrevTx(deployTx))
+    .from(await fetchUtxos(privateKey.toAddress()))
+
     extendRootTx.setInputScript(0, (tx, output) => {
       // console.log('prevlockingScript', prevLockingScript, output.satoshis);
       const preimage = generatePreimage(true, tx, prevLockingScript, output.satoshis, sighashTypeBns);
       const changeAddress = new Bytes(privateKey.toAddress().toHex().substring(2));
-      const changeSatoshis = num2bin(utxo.satoshis - FEE - (dividedSats), 8);
+      //const changeSatoshis = num2bin(utxo.satoshis - FEE - (dividedSats), 8);
+      const changeSatoshis = num2bin(tx.getChangeAmount(), 8);
       const issuerPubKey = new Bytes('0000');
       // Signature is only needed for release
       // const sig = signTx(tx, privateKey, output.script, output.satoshis, 0, sighashTypeBns);
@@ -254,11 +280,11 @@ async function main() {
         issuerPubKey).toScript()
     })
 
-    extendRootTx.addInput(new bsv.Transaction.Input({
+   /* extendRootTx.addInput(new bsv.Transaction.Input({
       prevTxId: utxo.txId,
       outputIndex: utxo.outputIndex,
       script: ''
-    }), utxo.script, utxo.satoshis);
+    }), utxo.script, utxo.satoshis); */
 
     // NFT claim output
     extendRootTx.setOutput(0, (tx) => {
@@ -296,18 +322,25 @@ async function main() {
     }
 
     // Add Change
-    changeSatoshis = (utxo.satoshis - FEE - (dividedSats));
+   /* changeSatoshis = (utxo.satoshis - FEE - (dividedSats));
     console.log('changeSatoshis', changeSatoshis);
     const changeOutputScript = bsv.Script.buildPublicKeyHashOut(privateKey.toAddress())
     // const changea4187bd7b8a126716eeb9586eeb1261d5861d24c = bsv.Script.buildPublicKeyHashOut('a4187bd7b8a126716eeb9586eeb1261d5861d24c');
     extendRootTx.addOutput(new bsv.Transaction.Output({
       script: changeOutputScript,
       satoshis: changeSatoshis
-    }));
+    })); */
+    
+    //unlockP2PKHInput(privateKey, extendRootTx, 1, Signature.SIGHASH_ALL | Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_FORKID);
 
-    extendRootTx.seal()
 
-    console.log('extendRootTx', extendRootTx.toString());
+  //  extendRootTx.from(await fetchUtxos(privateKey.toAddress()))
+   extendRootTx.change(privateKey.toAddress())
+   .sign(privateKey)
+   .seal()
+    //extendRootTx.seal()
+
+    console.log('extendRootTx', extendRootTx, extendRootTx.toString());
     const extendRootTxid = await sendTx(extendRootTx)
     console.log('Root Extend txid: ', woc + extendRootTxid)
     prevLockingScript = newLockingScript;
