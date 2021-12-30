@@ -86,7 +86,7 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
     }
 
     const assetId = reversedDummyTxId + '00000000';
-    console.log('assetId', assetId);
+
     const newLockingScript = replaceAssetAndPkh(nft.lockingScript, assetId, privateKey.toAddress().toHex().substring(2));  
     tx 
     .setOutput(0, (tx) => {
@@ -107,13 +107,7 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
     const outputSatsWithSize = new Bytes(num2bin(inputSatoshis, 8) + `${outputSize}24`);
     const preimage = generatePreimage(true, tx, nft.lockingScript, inputSatoshis, sighashType);
     let sig = signTx(tx, privateKey, nft.lockingScript, inputSatoshis, 0, sighashType)
-    console.log('debug info');
-    console.log('tx', tx.toString());
-    console.log('preimage', preimage);
-    console.log('outputSatsWithSize', outputSatsWithSize);
-    console.log('receiveAddressWithSize', receiveAddressWithSize);
-    console.log('sig', sig);
-    console.log('pubKey', toHex(publicKey));
+
     let result = nft.unlock(
       preimage,
       outputSatsWithSize,
@@ -268,7 +262,7 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
     }
 
     const assetId = '0a0000000000000000000000000000000000000000000000000000000000000000000001';
-    console.log('assetId', assetId);
+
     const newLockingScript = replaceAssetAndPkh(nft.lockingScript, assetId, privateKey.toAddress().toHex().substring(2));  
     tx 
     .setOutput(0, (tx) => {
@@ -289,13 +283,6 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
     const outputSatsWithSize = new Bytes(num2bin(inputSatoshis, 8) + `${outputSize}24`);
     const preimage = generatePreimage(true, tx, nft.lockingScript, inputSatoshis, sighashType);
     let sig = signTx(tx, privateKey, nft.lockingScript, inputSatoshis, 0, sighashType)
-    console.log('debug info');
-    console.log('tx', tx.toString());
-    console.log('preimage', preimage);
-    console.log('outputSatsWithSize', outputSatsWithSize);
-    console.log('receiveAddressWithSize', receiveAddressWithSize);
-    console.log('sig', sig);
-    console.log('pubKey', toHex(publicKey));
     let result = nft.unlock(
       preimage,
       outputSatsWithSize,
