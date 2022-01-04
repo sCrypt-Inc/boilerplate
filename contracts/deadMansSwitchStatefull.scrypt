@@ -33,8 +33,8 @@ contract DeadMansSwitch {
         // Ensure the next output will contain the same contract in case the refresh key
         // gets stolen.
         bytes outputScript = this.getStateScript();
-        bytes output = Util.buildOutput(outputScript, this.inheritanceSats);
-        require(hash256(output) == Util.hashOutputs(txPreimage));
+        bytes output = Utils.buildOutput(outputScript, this.inheritanceSats);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
   
     // The controler of the funds can cancel the contract at any time.
@@ -59,7 +59,7 @@ contract DeadMansSwitch {
         require(checkSig(sig, this.pubKeyInheritor));
 
         // Extract TXID of the TX, that contains the spent UTXO.
-        Sha256 txID = Sha256(Util.outpoint(txPreimage)[:32]);
+        Sha256 txID = Sha256(SigHash.outpoint(txPreimage)[:32]);
         require(Blockchain.txInBlock(txID, utxoBH, merkleProof));
 
         // Ensure, that the passed block headers contain proof of the minimum amount of work.
