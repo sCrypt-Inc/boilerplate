@@ -1,0 +1,237 @@
+import "./serializer.scrypt";
+
+struct HashMapValue {
+    bool has;
+    bytes value;
+}
+
+struct HashMapPair {
+    bytes key;
+    bytes value;
+    int dataOffset;
+    bytes nextDataOffset;
+    int index;
+}
+
+//Immutable HashMap
+library HashMap {
+
+    static const bytes EMPTY = b'';
+    static const int DATAOFFSET_ENTRY_LEN = 8;
+    static const int KeyLenLen = 2;
+    static const int ValueLenLen = 2;
+    //Maximum number of collisions
+    static const int MAX_COLLISIONS = 8;
+    static const bytes EMPTY_DATAOFFSET_ENTRY = b'ffffffffffffffff';
+    // static const bytes MAX_SIZE = 1
+    bytes dataOffsets;
+    bytes data;
+    int _size;
+    int _maxSize;
+
+    constructor(int maxSize) {
+        this.dataOffsets = b'';
+        this.data = b'';
+        this._size = 0;
+        require(maxSize > 0);
+        this._maxSize = maxSize;
+        this.dataOffsets = ~num2bin(0, this._maxSize * DATAOFFSET_ENTRY_LEN);
+    }
+
+    function size() : int {
+        return this._size;
+    }
+
+    function put(bytes key, bytes value) : bool {
+
+        int keyLen = len(key);
+        int valueLen = len(value);
+        require(keyLen < 65536);
+        require(valueLen < 65536);
+
+        HashMapPair pair = this.getPair(key);
+
+        //it's empty
+        bool success = true;
+        if (pair.dataOffset == -1) {
+            // No collision, just save key-value directly
+            int offset = len(this.data);
+            this.data = this.data + num2bin(keyLen, 3)[: 2] + num2bin(valueLen, 3)[: 2] + key + value + EMPTY_DATAOFFSET_ENTRY;
+            this.dataOffsets = this.dataOffsets[: pair.index * DATAOFFSET_ENTRY_LEN] + num2bin(offset, 9)[: 8] + this.dataOffsets[pair.index * DATAOFFSET_ENTRY_LEN + DATAOFFSET_ENTRY_LEN :];
+            this._size++;
+        }
+        else {
+
+            // No collision
+            if (key == pair.key) {
+                int exsitValuelen = len(pair.value);
+                if (exsitValuelen == valueLen) {
+                    //only update value
+                    this.data = this.data[: pair.dataOffset + KeyLenLen + ValueLenLen + keyLen] + value + this.data[pair.dataOffset + KeyLenLen + ValueLenLen + keyLen + valueLen :];
+                }
+                else {
+                    //update pair
+                    int offset = len(this.data);
+                    bytes nextDataOffset = this.data[pair.dataOffset + KeyLenLen + ValueLenLen + keyLen + exsitValuelen : pair.dataOffset + KeyLenLen + ValueLenLen + keyLen + exsitValuelen + DATAOFFSET_ENTRY_LEN];
+                    this.data = this.data + num2bin(keyLen, 3)[: 2] + num2bin(valueLen, 3)[: 2] + key + value + nextDataOffset;
+                    this.dataOffsets = this.dataOffsets[: pair.index * DATAOFFSET_ENTRY_LEN] + num2bin(offset, 9)[: 8] + this.dataOffsets[pair.index * DATAOFFSET_ENTRY_LEN + DATAOFFSET_ENTRY_LEN :];
+                }
+            }
+            else // collision happend
+            {
+                if(pair.nextDataOffset == EMPTY_DATAOFFSET_ENTRY) {
+                    int offset = len(this.data);
+                    //update next DATAOFFSET of current and append key-value
+                    this.data = this.data[: pair.dataOffset + KeyLenLen + ValueLenLen + len(pair.key) + len(pair.value)] 
+                        + num2bin(offset, 9)[: 8]
+                        + this.data[pair.dataOffset + KeyLenLen + ValueLenLen + len(pair.key) + len(pair.value) + DATAOFFSET_ENTRY_LEN :]
+                        + num2bin(keyLen, 3)[: 2] + num2bin(valueLen, 3)[: 2] + key + value + EMPTY_DATAOFFSET_ENTRY;
+                    this._size++;
+
+                } else {
+                    require(this.findAndUpdateLinkedlist( pair.dataOffset, Utils.fromLEUnsigned(pair.nextDataOffset), key, value));
+                }
+                
+
+            }
+        }
+        return success;
+    }
+
+    function get(bytes key) : HashMapValue {
+
+        HashMapValue result = { false, b'' };
+
+        if (this._size > 0) {
+            HashMapPair pair = this.getPair(key);
+
+            result.has = pair.dataOffset != -1;
+            result.value = pair.value;
+
+            if (result.has && pair.key != key) {
+                result = this.findPairInLinkedlist(pair.dataOffset, key);
+            }
+        }
+
+        return result;
+    }
+
+    function fromData(bytes buf) : bool {
+        if (len(buf) > 0) {
+            Reader r = new Reader(buf);
+            this._size = r.readInt();
+            this._maxSize = r.readInt();
+            this.dataOffsets = r.readBytes();
+            this.data = r.readBytes();
+        }
+
+        return len(buf) > 0 && this._size <= this._maxSize;
+    }
+
+    function toData() : bytes {
+        return Writer.writeInt(this._size) + Writer.writeInt(this._maxSize) + Writer.writeBytes(this.dataOffsets) + Writer.writeBytes(this.data);
+    }
+
+    private function getPair(bytes originKey) : HashMapPair {
+
+        int keyHashCode = Utils.fromLEUnsigned(hash160(originKey));
+        int index = keyHashCode % this._maxSize;
+        bytes value = b'';
+        bytes key = b'';
+        bytes dataOffsetEntry = this.dataOffsets[index * DATAOFFSET_ENTRY_LEN : index * DATAOFFSET_ENTRY_LEN + DATAOFFSET_ENTRY_LEN];
+        int dataOffset = -1;
+        bytes nextDataOffset = EMPTY_DATAOFFSET_ENTRY;
+        if (dataOffsetEntry != EMPTY_DATAOFFSET_ENTRY) {
+            dataOffset = Utils.fromLEUnsigned(dataOffsetEntry);
+            int keyLenExist = Utils.fromLEUnsigned(this.data[dataOffset : dataOffset + KeyLenLen]);
+            int valueLenExist = Utils.fromLEUnsigned(this.data[dataOffset + KeyLenLen : dataOffset + KeyLenLen + ValueLenLen]);
+            key = this.data[dataOffset + KeyLenLen + ValueLenLen : dataOffset + KeyLenLen + ValueLenLen + keyLenExist];
+            value = this.data[dataOffset + KeyLenLen + ValueLenLen + keyLenExist : dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist];
+            nextDataOffset = this.data[dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist : dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist + DATAOFFSET_ENTRY_LEN];
+        }
+
+        HashMapPair result = { key, value, dataOffset, nextDataOffset, index };
+        return result;
+    }
+
+    private function findAndUpdateLinkedlist(int prevOffset, int dataOffset, bytes key, bytes value) : bool {
+
+        int keyLenExist = 0;
+        int valueLenExist = 0;
+        bool found = false;
+        int offset = len(this.data);
+
+
+        loop (MAX_COLLISIONS) : i {
+            if (!found) {
+
+                keyLenExist = Utils.fromLEUnsigned(this.data[dataOffset : dataOffset + KeyLenLen]);
+                valueLenExist = Utils.fromLEUnsigned(this.data[dataOffset + KeyLenLen : dataOffset + KeyLenLen + ValueLenLen]);
+                bytes key_ = this.data[dataOffset + KeyLenLen + ValueLenLen : dataOffset + KeyLenLen + ValueLenLen + keyLenExist];
+                bytes value_ = this.data[dataOffset + KeyLenLen + ValueLenLen : dataOffset + KeyLenLen + ValueLenLen + keyLenExist];
+                bytes nextDataOffset = this.data[dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist : dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist + DATAOFFSET_ENTRY_LEN];
+                if (key_ == key) {
+                    found = true;
+
+                    if(len(value) == valueLenExist) {
+                        // update value
+                        this.data = this.data[: dataOffset + KeyLenLen + ValueLenLen + keyLenExist] + value + this.data[dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist :];
+                    } else {
+
+                        int prevKeyLen = Utils.fromLEUnsigned(this.data[prevOffset : prevOffset + KeyLenLen]);
+                        int prevValueLen = Utils.fromLEUnsigned(this.data[prevOffset + KeyLenLen : prevOffset + KeyLenLen + ValueLenLen]);
+
+
+                        //update next DATAOFFSET of prev and append key-value
+                        this.data = this.data[: prevOffset + KeyLenLen + ValueLenLen + prevKeyLen + prevValueLen] 
+                            + num2bin(offset, 9)[: 8] 
+                            + this.data[prevOffset + KeyLenLen + ValueLenLen + prevKeyLen + prevValueLen + DATAOFFSET_ENTRY_LEN :]
+                            + num2bin(keyLenExist, 3)[: 2] + num2bin(len(value), 3)[: 2] + key + value + nextDataOffset;
+                    }
+
+                } else if (nextDataOffset == EMPTY_DATAOFFSET_ENTRY) {
+                    found = true;
+                    //update next DATAOFFSET of current and append key-value
+                    this.data = this.data[: dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist] 
+                        + num2bin(offset, 9)[: 8] 
+                        + this.data[dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist + DATAOFFSET_ENTRY_LEN :]
+                        + num2bin(keyLenExist, 3)[: 2] + num2bin(len(value), 3)[: 2] + key + value + EMPTY_DATAOFFSET_ENTRY;
+                    this._size++;
+                }
+                else {
+                    prevOffset = dataOffset;
+                    dataOffset = Utils.fromLEUnsigned(nextDataOffset);
+                }
+            }
+        }
+
+        return found;
+    }
+
+    private function findPairInLinkedlist(int dataOffset, bytes originKey) : HashMapValue {
+
+        bytes value = b'';
+        bool found = false;
+        loop (MAX_COLLISIONS) : i {
+            if (!found && dataOffset != -1) {
+                int keyLenExist = Utils.fromLEUnsigned(this.data[dataOffset : dataOffset + KeyLenLen]);
+                int valueLenExist = Utils.fromLEUnsigned(this.data[dataOffset + KeyLenLen : dataOffset + KeyLenLen + ValueLenLen]);
+                bytes key = this.data[dataOffset + KeyLenLen + ValueLenLen : dataOffset + KeyLenLen + ValueLenLen + keyLenExist];
+                value = this.data[dataOffset + KeyLenLen + ValueLenLen + keyLenExist : dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist];
+                bytes nextDataOffset = this.data[dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist : dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist + DATAOFFSET_ENTRY_LEN];
+
+                if (key == originKey) {
+                    found = true;
+                }
+                else if (nextDataOffset == EMPTY_DATAOFFSET_ENTRY) {
+                    dataOffset = -1;
+                }
+                else {
+                    dataOffset = Utils.fromLEUnsigned(nextDataOffset);
+                }
+            }
+        }
+
+        return { found, value };
+    }
+}

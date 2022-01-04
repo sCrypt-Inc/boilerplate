@@ -1,0 +1,105 @@
+import "hashmap.scrypt";
+
+contract HashMapTest {
+
+    static const int MaxMapSize = 10;
+
+    public function test(int size) {
+
+        HashMap map = new HashMap(MaxMapSize);
+        require(map.put(b'01', b'02'));
+
+        HashMapValue value = map.get(b'01');
+
+        require(value.has);
+        require(value.value == b'02');
+
+        require(map.size() == 1);
+
+        require(map.put(b'010331', b'011233'));
+
+        value = map.get(b'010331');
+
+        require(value.has);
+        require(value.value == b'011233');
+
+        value = map.get(b'1111');
+
+        require(!value.has);
+
+        require(map.size() == 2);
+
+        bytes data = map.toData();
+
+        HashMap mapClone = new HashMap(1);
+
+        mapClone.fromData(data);
+
+        require(map.size() == mapClone.size());
+    }
+
+    public function testUpdate(int size) {
+
+        HashMap map = new HashMap(MaxMapSize);
+        require(map.put(b'01', b'01'));
+        require(map.put(b'02', b'02'));
+        require(map.put(b'03', b'03'));
+
+        
+
+        //update to 06 which is same len
+        require(map.put(b'01', b'06'));
+
+        HashMapValue value = map.get(b'01');
+
+        require(value.has);
+        require(value.value == b'06');
+
+        //update to 060900 which is not same len
+        require(map.put(b'01', b'060900'));
+
+        value = map.get(b'01');
+
+        require(value.has);
+        require(value.value == b'060900');
+
+        require(map.put(b'02', b'0102'));
+
+
+        value = map.get(b'02');
+
+        require(value.has);
+        require(value.value == b'0102');
+
+
+        require(map.put(b'03', b'010101'));
+
+
+        value = map.get(b'03');
+
+        require(value.has);
+        require(value.value == b'010101');
+
+        value = map.get(b'01');
+
+        require(value.has);
+        require(value.value == b'060900');
+
+        require(map.size() == 3);
+
+    }
+
+
+     public function testCollision(int a) {
+
+        HashMap map = new HashMap(1);
+
+        loop (11) : i {
+            require(map.put(num2bin(i + a, 5), num2bin(i + a, 5)));
+        }
+        require(map.size() == 11);
+     }
+
+
+
+}
