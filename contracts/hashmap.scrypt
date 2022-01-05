@@ -89,7 +89,7 @@ library HashMap {
                     this._size++;
 
                 } else {
-                    require(this.findAndUpdateLinkedlist( pair.dataOffset, Utils.fromLEUnsigned(pair.nextDataOffset), key, value));
+                    require(this.findAndUpdateLinkedlist( pair.dataOffset, Utils.fromLEUnsigned(pair.nextDataOffset), key, value, keyLen, valueLen));
                 }
                 
 
@@ -109,7 +109,9 @@ library HashMap {
             result.value = pair.value;
 
             if (result.has && pair.key != key) {
-                result = this.findPairInLinkedlist(pair.dataOffset, key);
+                if(pair.nextDataOffset != EMPTY_DATAOFFSET_ENTRY) {
+                    result = this.findPairInLinkedlist(Utils.fromLEUnsigned(pair.nextDataOffset), key);
+                }
             }
         }
 
@@ -154,7 +156,7 @@ library HashMap {
         return result;
     }
 
-    private function findAndUpdateLinkedlist(int prevOffset, int dataOffset, bytes key, bytes value) : bool {
+    private function findAndUpdateLinkedlist(int prevOffset, int dataOffset, bytes key, bytes value, int keyLen, int valueLen) : bool {
 
         int keyLenExist = 0;
         int valueLenExist = 0;
@@ -168,12 +170,11 @@ library HashMap {
                 keyLenExist = Utils.fromLEUnsigned(this.data[dataOffset : dataOffset + KeyLenLen]);
                 valueLenExist = Utils.fromLEUnsigned(this.data[dataOffset + KeyLenLen : dataOffset + KeyLenLen + ValueLenLen]);
                 bytes key_ = this.data[dataOffset + KeyLenLen + ValueLenLen : dataOffset + KeyLenLen + ValueLenLen + keyLenExist];
-                bytes value_ = this.data[dataOffset + KeyLenLen + ValueLenLen : dataOffset + KeyLenLen + ValueLenLen + keyLenExist];
                 bytes nextDataOffset = this.data[dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist : dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist + DATAOFFSET_ENTRY_LEN];
                 if (key_ == key) {
                     found = true;
 
-                    if(len(value) == valueLenExist) {
+                    if(valueLen== valueLenExist) {
                         // update value
                         this.data = this.data[: dataOffset + KeyLenLen + ValueLenLen + keyLenExist] + value + this.data[dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist :];
                     } else {
@@ -181,12 +182,11 @@ library HashMap {
                         int prevKeyLen = Utils.fromLEUnsigned(this.data[prevOffset : prevOffset + KeyLenLen]);
                         int prevValueLen = Utils.fromLEUnsigned(this.data[prevOffset + KeyLenLen : prevOffset + KeyLenLen + ValueLenLen]);
 
-
                         //update next DATAOFFSET of prev and append key-value
                         this.data = this.data[: prevOffset + KeyLenLen + ValueLenLen + prevKeyLen + prevValueLen] 
                             + num2bin(offset, 9)[: 8] 
                             + this.data[prevOffset + KeyLenLen + ValueLenLen + prevKeyLen + prevValueLen + DATAOFFSET_ENTRY_LEN :]
-                            + num2bin(keyLenExist, 3)[: 2] + num2bin(len(value), 3)[: 2] + key + value + nextDataOffset;
+                            + num2bin(keyLen, 3)[: 2] + num2bin(valueLen, 3)[: 2] + key + value + nextDataOffset;
                     }
 
                 } else if (nextDataOffset == EMPTY_DATAOFFSET_ENTRY) {
@@ -195,7 +195,7 @@ library HashMap {
                     this.data = this.data[: dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist] 
                         + num2bin(offset, 9)[: 8] 
                         + this.data[dataOffset + KeyLenLen + ValueLenLen + keyLenExist + valueLenExist + DATAOFFSET_ENTRY_LEN :]
-                        + num2bin(keyLenExist, 3)[: 2] + num2bin(len(value), 3)[: 2] + key + value + EMPTY_DATAOFFSET_ENTRY;
+                        + num2bin(keyLen, 3)[: 2] + num2bin(valueLen, 3)[: 2] + key + value + EMPTY_DATAOFFSET_ENTRY;
                     this._size++;
                 }
                 else {
@@ -223,11 +223,8 @@ library HashMap {
                 if (key == originKey) {
                     found = true;
                 }
-                else if (nextDataOffset == EMPTY_DATAOFFSET_ENTRY) {
-                    dataOffset = -1;
-                }
                 else {
-                    dataOffset = Utils.fromLEUnsigned(nextDataOffset);
+                    dataOffset = nextDataOffset == EMPTY_DATAOFFSET_ENTRY ? -1 : Utils.fromLEUnsigned(nextDataOffset);
                 }
             }
         }

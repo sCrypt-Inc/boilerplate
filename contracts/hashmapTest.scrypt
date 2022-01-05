@@ -29,6 +29,12 @@ contract HashMapTest {
 
         require(map.size() == 2);
 
+
+        loop (20) : i {
+            require(map.put(num2bin(i, 5), num2bin(i, 5)));
+            require(map.get(num2bin(i, 5)).has);
+        }
+
         bytes data = map.toData();
 
         HashMap mapClone = new HashMap(1);
