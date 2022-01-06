@@ -1,0 +1,17 @@
+
+/**
+* An example contract that limits the number of outputs
+*/
+contract Outputs {
+    
+    public function unlock(SigHashPreimage txPreimage, bytes[2] outputs, int[2] amounts) {
+        
+        require(Tx.checkPreimage(txPreimage));
+        
+        bytes output1 = Utils.buildOutput(outputs[0], amounts[0]);
+
+        bytes output2 = Utils.buildOutput(outputs[1], amounts[1]);
+
+        require(hash256(output1 + output2) == SigHash.hashOutputs(txPreimage));
+    }
+}
