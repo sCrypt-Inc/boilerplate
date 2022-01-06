@@ -1,0 +1,57 @@
+
+import "serializer.scrypt";
+// example of save state in property
+contract Counter {
+    bytes data;
+    // dataOffset can be calculated externally through the SDK, if the SDK provides a method
+    int dataOffset;
+
+    public function increment(SigHashPreimage txPreimage, int amount) {
+        require(Tx.checkPreimage(txPreimage));
+
+
+        // counter is at the end
+        int counter = this.parseData();
+
+        // increment counter
+        counter++;
+
+        int n = len(this.data); // old data len
+        // save new state
+        require(this.serializerData(counter));
+        bytes outputScript = this.getStateScript(txPreimage, n);
+        bytes output = Utils.buildOutput(outputScript, amount);
+        // ensure output is expected: amount is same with specified
+        // also output script is the same with scriptCode except counter incremented
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+    }
+
+    function parseData() : int {     
+        return unpack(this.data);
+    }
+
+    function serializerData(int states) : bool {
+        this.data = num2bin(states, 4);
+        return true;
+    }
+
+    function getStateScript(SigHashPreimage txPreimage, int n) : bytes {
+        bytes scriptCode = SigHash.scriptCode(txPreimage);
+        
+        int tailoffset = 0;
+        if (n < 0x4c) {
+            tailoffset = 1 + n;
+        }
+        else if (n < 0x100) {
+            tailoffset = 2 + n;
+        }
+        else if (n < 0x10000) {
+            tailoffset = 3 + n;
+        }
+        else if (n < 0x100000000) {
+            tailoffset = 5 + n;
+        }
+        bytes stateScript = scriptCode[:this.dataOffset] + Writer.writeBytes(this.data) + scriptCode[this.dataOffset+ tailoffset:];
+        return stateScript;
+    }
+}
