@@ -3,7 +3,7 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
 
 (async() => {
     try {
-        const Counter = buildContractClass(loadDesc('statecounter1_debug_desc.json'))
+        const Counter = buildContractClass(loadDesc('counter1_debug_desc.json'))
         let DATA_LEN = 2
         // 103 is offset of state， which can be calculated very well in the SDK
         let counter = new Counter(new Bytes(num2bin(0, DATA_LEN)))
