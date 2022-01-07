@@ -3,13 +3,14 @@ contract Counter {
 
     static const int DataLen = 2;
 
+    // missinglockingScript can be faked, but here is a simulation implementation, ignore it
     public function increment(SigHashPreimage txPreimage, int amount, bytes missinglockingScript) {
         ***
         require(Tx.checkPreimage(txPreimage));
 
-        // deserialize state (i.e., counter value)
+
         bytes scriptCode = SigHash.scriptCode(txPreimage);
-        // counter is at the end
+        // deserialize state (i.e., counter value)
         int counter = unpack(this.data);
 
         // increment counter
@@ -19,8 +20,6 @@ contract Counter {
         bytes outputScript = missinglockingScript + Utils.toLEUnsigned(DataLen, 1) + num2bin(counter, DataLen) + OpCode.OP_CODESEPARATOR + scriptCode;
         
         bytes output = Utils.buildOutput(outputScript, amount);
-        // ensure output is expected: amount is same with specified
-        // also output script is the same with scriptCode except counter incremented
         require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 }

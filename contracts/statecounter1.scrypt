@@ -4,11 +4,12 @@ import "serializer.scrypt";
 contract Counter {
     bytes data;
 
+    // missinglockingScript can be faked, but here is a simulation implementation, ignore it
     public function increment(SigHashPreimage txPreimage, int amount, bytes missinglockingScript) {
         ***
         require(Tx.checkPreimage(txPreimage));
 
-        // counter is at the end
+        // parse state from data
         int counter = this.parseData();
 
         // increment counter
@@ -18,8 +19,6 @@ contract Counter {
         require(this.serializerData(counter));
         bytes outputScript = this.getStateScript(txPreimage, missinglockingScript);
         bytes output = Utils.buildOutput(outputScript, amount);
-        // ensure output is expected: amount is same with specified
-        // also output script is the same with scriptCode except counter incremented
         require(hash256(output) == SigHash.hashOutputs(txPreimage));
     }
 

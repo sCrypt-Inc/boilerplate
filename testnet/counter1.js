@@ -5,7 +5,6 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
     try {
         const Counter = buildContractClass(loadDesc('counter1_debug_desc.json'))
         let DATA_LEN = 2
-        // 103 is offset of state， which can be calculated very well in the SDK
         let counter = new Counter(new Bytes(num2bin(0, DATA_LEN)))
         
         let amount = 6000
@@ -40,6 +39,7 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
                     inputIndex: 0,
                     inputSatoshis: output.satoshis
                 }
+                // we get misslockingScript from compiling result in desc file. wich is before template parameters $data
                 const misslockingScript = bsv.Script.fromASM("ab OP_1 40 97dfd76851bf465e8f715593b217714858bbe9570ff3bd5e33840a34e20ff026 02ba79df5f8ae7604a9830f03c7933028186aede0675a16f025dc4f8be8eec0382 1008ce7480da41702918d1ec8e6849ba32b4d65b1e40dc669c31a1e6306b266c")
                 console.log(counter.increment(new SigHashPreimage(toHex(preimage)), newAmount, new Bytes(misslockingScript.toHex())).verify())
                 return counter.increment(new SigHashPreimage(toHex(preimage)), newAmount, new Bytes(misslockingScript.toHex())).toScript()
