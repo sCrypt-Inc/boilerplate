@@ -1,0 +1,40 @@
+// a basic ERC20-like fungible token
+contract ERC20 {
+    PubKey minter;
+
+    @state
+    HashedMap<PubKey, int> balances;
+
+    // mint new tokens to receiver
+    public function mint(PubKey receiver, Sig minterSig, int balance, int amount, int keyIndex, SigHashPreimage preimage) {
+        // authenticate
+        require(checkSig(minterSig, this.minter));
+
+        require(this.balances.canGet(receiver, balance, keyIndex));
+        require(this.balances.set(receiver, balance + amount, keyIndex));
+
+        require(this.propagateState(preimage));
+    }
+
+    // transfer tokens from sender to receiver
+    public function transferFrom(PubKey sender, PubKey receiver, int amount, Sig senderSig, int senderBalance, int senderKeyIndex, int receiverBalance, int receiverKeyIndex, SigHashPreimage preimage) {
+        // authenticate
+        require(checkSig(senderSig, sender));
+
+        require(this.balances.canGet(sender, senderBalance, senderKeyIndex));
+        require(senderBalance >= amount);
+        require(this.balances.set(sender, senderBalance - amount, senderKeyIndex));
+        require(this.balances.canGet(receiver, receiverBalance, receiverKeyIndex));
+        require(this.balances.set(receiver, receiverBalance + amount, receiverKeyIndex));
+    
+        require(this.propagateState(preimage));
+    }
+
+    // propagate state to the next UTXO
+    function propagateState(SigHashPreimage preimage): bool {
+        require(Tx.checkPreimage(preimage));
+        bytes outputScript = this.getStateScript();
+        bytes output = Utils.buildOutput(outputScript, SigHash.value(preimage));
+        return hash256(output) == SigHash.hashOutputs(preimage);
+    }
+}

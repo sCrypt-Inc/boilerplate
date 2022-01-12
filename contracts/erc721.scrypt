@@ -1,0 +1,49 @@
+// a basic ERC721-like non-fungible token
+contract ERC721 {
+    PubKey minter;
+
+    @state
+    HashedMap<int, PubKey> owners;
+
+    // mint a new token to receiver
+    public function mint(PubKey to, int tokenId, Sig minterSig, int keyIndex, SigHashPreimage preimage) {
+        // token not minted
+        require(this.owners.has(tokenId, keyIndex));
+        // authenticate
+        require(checkSig(minterSig, this.minter));
+
+        require(this.owners.set(tokenId, to, keyIndex));
+
+        require(this.propagateState(preimage));
+    }
+
+    // transfer a token from sender to receiver
+    public function burn(int tokenId, PubKey from, Sig fromSig, int keyIndex, SigHashPreimage preimage) {
+        // verify ownership
+        require(this.owners.canGet(tokenId, from, keyIndex));
+        // authenticate
+        require(checkSig(fromSig, from));
+
+        require(this.owners.delete(tokenId, keyIndex));
+
+        require(this.propagateState(preimage));
+    }
+
+    public function transferFrom(PubKey from, PubKey to, Sig fromSig, int tokenId, int keyIndex, SigHashPreimage preimage) {
+        // verify ownership
+        require(this.owners.canGet(tokenId, from, keyIndex));
+        // authenticate
+        require(checkSig(fromSig, from));
+
+        require(this.owners.set(tokenId, to, keyIndex));
+    
+        require(this.propagateState(preimage));
+    }
+
+    function propagateState(SigHashPreimage preimage): bool {
+        require(Tx.checkPreimage(preimage));
+        bytes outputScript = this.getStateScript();
+        bytes output = Utils.buildOutput(outputScript, SigHash.value(preimage));
+        return hash256(output) == SigHash.hashOutputs(preimage);
+    }
+}
