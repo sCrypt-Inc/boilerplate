@@ -1,5 +1,4 @@
-// a example Counter contract than show how to custom states.
-contract Counter {
+contract Counter { // a example Counter contract than show how to custom states.
     static const int DataLen = 1;
 
     public function increment(SigHashPreimage txPreimage, int amount) {
