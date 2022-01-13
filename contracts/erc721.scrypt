@@ -41,7 +41,7 @@ contract ERC721 {
     }
 
     function propagateState(SigHashPreimage preimage): bool {
-        require(Tx.checkPreimage(preimage));
+        require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
         bytes outputScript = this.getStateScript();
         bytes output = Utils.buildOutput(outputScript, SigHash.value(preimage));
         return hash256(output) == SigHash.hashOutputs(preimage);
