@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, Ripemd160, toHex, Bytes, getPreimage, SigHashPreimage } = require('scryptlib');
+const { bsv, buildContractClass, PubKeyHash, toHex, Bytes, getPreimage, SigHashPreimage } = require('scryptlib');
 
 /**
  * an example test for contract containing signature verification
@@ -19,7 +19,7 @@ describe('Test sCrypt contract P2SH In Javascript', () => {
     const codeScript = demoContract.codePart.toBuffer()
     const scriptHash = bsv.crypto.Hash.sha256ripemd160( codeScript )
 
-    p2sh = new P2SH(new Ripemd160(toHex(scriptHash)))
+    p2sh = new P2SH(new PubKeyHash(toHex(scriptHash)))
 
 
     tx.addInput(new bsv.Transaction.Input({

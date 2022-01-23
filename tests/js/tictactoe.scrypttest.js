@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { buildContractClass, Bytes, signTx, bsv, Sig, SigHashPreimage, PubKey, toHex, getPreimage, Ripemd160 } = require('scryptlib');
+const { buildContractClass, Bytes, signTx, bsv, Sig, SigHashPreimage, PubKey, toHex, getPreimage } = require('scryptlib');
 const { inputIndex, inputSatoshis, newTx, compileContract, DataLen } = require('../../helper');
 
 

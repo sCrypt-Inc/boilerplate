@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, PubKey, Ripemd160, SigHashPreimage, Sig } = require("scryptlib");
+const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, PubKey, PubKeyHash, SigHashPreimage, Sig } = require("scryptlib");
 const { inputIndex, inputSatoshis, newTx, compileContract, DataLen, dummyTxId } = require("../../helper");
 
 // make a copy since it will be mutated
@@ -79,7 +79,7 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
       rps.txContext = { tx, inputIndex, inputSatoshis: initAmount };
       const preimage = getPreimage(tx, rps.lockingScript, initAmount, inputIndex, sighashType);
 
-      return rps.follow(new SigHashPreimage(toHex(preimage)), action, new Ripemd160(toHex(playerBpkh)), changeAmount);
+      return rps.follow(new SigHashPreimage(toHex(preimage)), action, new PubKeyHash(toHex(playerBpkh)), changeAmount);
     };
 
     let initAmount = 100000;

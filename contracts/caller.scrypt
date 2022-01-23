@@ -9,7 +9,7 @@ contract Caller {
     static const int calleeContractInputIndex = 1;
     static const int selfContractInputIndex = 0;
     // hash of the callee contract, i.e., its locking script
-    Ripemd160 calleeContractHash;
+    PubKeyHash calleeContractHash;
 
     public function call(Coeff co, bytes prevouts, bytes calleeContractTx,
         bytes outputScript, int amount, SigHashPreimage txPreimage) {

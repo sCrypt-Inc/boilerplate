@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { buildContractClass, PubKey, Ripemd160, Int, toHex, Sig, bsv, Bytes, signTx, getPreimage, SigHashPreimage, num2bin, buildTypeClasses } = require('scryptlib');
+const { buildContractClass, PubKey, PubKeyHash, Int, toHex, Sig, bsv, Bytes, signTx, getPreimage, SigHashPreimage, num2bin, buildTypeClasses } = require('scryptlib');
 const { compileContract, inputIndex, inputSatoshis, newTx } = require('../../helper');
 
 const axios = require('axios')
@@ -31,7 +31,7 @@ describe('Test Witness Service Timestamp', () => {
     onedayAgo.setDate(onedayAgo.getDate() - 1);
     const matureTime = Math.round(onedayAgo.valueOf() / 1000)
 
-    const cltv = new WitnessCLTV(new Ripemd160(toHex(pkh)), new RabinPubKey(BigInt(now.pubkey)), new Int(matureTime));
+    const cltv = new WitnessCLTV(new PubKeyHash(toHex(pkh)), new RabinPubKey(BigInt(now.pubkey)), new Int(matureTime));
 
     sig = signTx(tx, privateKey, cltv.lockingScript, inputSatoshis)
     const context = { tx, inputIndex, inputSatoshis }
@@ -67,7 +67,7 @@ describe('Test Witness Service Timestamp', () => {
     nextday.setDate(nextday.getDate() + 1);
     const matureTime = Math.round(nextday.valueOf() / 1000)
 
-    const cltv = new WitnessCLTV(new Ripemd160(toHex(pkh)), new RabinPubKey(BigInt(now.pubkey)), new Int(matureTime));
+    const cltv = new WitnessCLTV(new PubKeyHash(toHex(pkh)), new RabinPubKey(BigInt(now.pubkey)), new Int(matureTime));
 
     sig = signTx(tx, privateKey, cltv.lockingScript, inputSatoshis)
     const context = { tx, inputIndex, inputSatoshis }
@@ -128,8 +128,8 @@ describe('Test Witness Service BSV Price', () => {
       new Int(betPrice),
       new Int(matureTime),
       new RabinPubKey(BigInt(witness.pubkey)),
-      new Ripemd160(toHex(pkh_A)),
-      new Ripemd160(toHex(pkh_B)));
+      new PubKeyHash(toHex(pkh_A)),
+      new PubKeyHash(toHex(pkh_B)));
 
     const tx = newTx();
 

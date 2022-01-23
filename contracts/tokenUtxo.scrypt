@@ -85,7 +85,7 @@ contract Token {
     }
 
     // burn a token back to normal bitcoins
-    public function burn(Sig senderSig, Ripemd160 receiverPkh, int satoshiAmount, SigHashPreimage txPreimage) {
+    public function burn(Sig senderSig, PubKeyHash receiverPkh, int satoshiAmount, SigHashPreimage txPreimage) {
         // this ensures the preimage is for the current tx
         require(Tx.checkPreimage(txPreimage));
 

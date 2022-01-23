@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, Ripemd160, Sig, PubKey, signTx, toHex } = require('scryptlib');
+const { bsv, buildContractClass, PubKeyHash, Sig, PubKey, signTx, toHex } = require('scryptlib');
 
 /**
  * an example test for contract containing signature verification
@@ -17,7 +17,7 @@ describe('Test sCrypt contract DemoP2PKH In Javascript', () => {
 
   before(() => {
     const DemoP2PKH = buildContractClass(compileContract('p2pkh.scrypt'))
-    demo = new DemoP2PKH(new Ripemd160(toHex(pkh)))
+    demo = new DemoP2PKH(new PubKeyHash(toHex(pkh)))
     // any contract that includes checkSig() must be verified in a given context
     context = { tx, inputIndex, inputSatoshis }
   });

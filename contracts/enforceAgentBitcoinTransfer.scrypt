@@ -9,11 +9,11 @@
 // Note: This requires SIG_HASH_SINGLE when being spent by the agent, or only one output in the 
 // tx, so that the output hash in the preimage matches the hash of the specified output.
 contract EnforceAgentBitcoinTransfer {
-    Ripemd160 agentKeyHash; // Hash of public key for agent to authorize transfer.
+    PubKeyHash agentKeyHash; // Hash of public key for agent to authorize transfer.
     Sha256 approveOutputHash; // Hash of output to approve transfer.
     Sha256 refundOutputHash; // Hash of output to deny transfer.
 
-    Ripemd160 expirationKeyHash; // Hash of public key for expiration spend if time lock expire. 
+    PubKeyHash expirationKeyHash; // Hash of public key for expiration spend if time lock expire. 
     int expiration; // Block height after which the expiration key can reclaim bitcoin.
 
     /*

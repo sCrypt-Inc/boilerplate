@@ -13,14 +13,14 @@ Bob and Escrow have to sign and use the secret 2. Bob gets the output.
 
 
 contract SimpleEscrow {
-    Ripemd160 pubKeyHashA;
-    Ripemd160 pubKeyHashB;
-    Ripemd160 pubKeyHashE;
+    PubKeyHash pubKeyHashA;
+    PubKeyHash pubKeyHashB;
+    PubKeyHash pubKeyHashE;
     Sha256 hash1;
     Sha256 hash2;
 
     function split(int amount, SigHashPreimage txPreimage,
-        Ripemd160 changePKH, int changeAmount) : bool {
+        PubKeyHash changePKH, int changeAmount) : bool {
         // split amount, both new outputs get the same amount
         bytes scriptA = Utils.buildPublicKeyHashScript(this.pubKeyHashA);
         bytes outputA = Utils.buildOutput(scriptA, amount / 2);
@@ -36,8 +36,8 @@ contract SimpleEscrow {
         return (hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 
-    function spend(int amount, SigHashPreimage txPreimage, Ripemd160 pubKeyHash,
-        Ripemd160 changePKH, int changeAmount) : bool {
+    function spend(int amount, SigHashPreimage txPreimage, PubKeyHash pubKeyHash,
+        PubKeyHash changePKH, int changeAmount) : bool {
         bytes script = Utils.buildPublicKeyHashScript(pubKeyHash);
         bytes output = Utils.buildOutput(script, amount);
 
@@ -49,7 +49,7 @@ contract SimpleEscrow {
     }
 
     public function unlock(SigHashPreimage txPreimage, PubKey pubKey1, Sig sig1, PubKey pubKey2, Sig sig2, bytes secret,
-        Ripemd160 changePKH, int changeAmount) {
+        PubKeyHash changePKH, int changeAmount) {
         bool status = false;
 
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;

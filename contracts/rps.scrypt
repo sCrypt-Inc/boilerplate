@@ -13,7 +13,7 @@ contract RockPaperScissors {
 
     static const int DataLen = 1;
 
-    public function follow(SigHashPreimage txPreimage, int action, Ripemd160 playerBpkh, int satoshiAmount) {
+    public function follow(SigHashPreimage txPreimage, int action, PubKeyHash playerBpkh, int satoshiAmount) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         // this ensures the preimage is for the current tx
         require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));

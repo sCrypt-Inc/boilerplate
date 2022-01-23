@@ -4,7 +4,7 @@ A Bitcoin contract which can be spent by anyone but only to a specific pubKeyHas
 
 
 contract AnyoneCanSpend {
-    Ripemd160 pubKeyHash;
+    PubKeyHash pubKeyHash;
 
     public function unlock(SigHashPreimage txPreimage, int outputAmount) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;

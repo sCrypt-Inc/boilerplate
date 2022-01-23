@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, signTx, getPreimage, num2bin, toHex, Bytes, PubKey, Sig, Sha256, Ripemd160 } = require('scryptlib');
+const { bsv, buildContractClass, signTx, getPreimage, num2bin, toHex, Bytes, PubKey, Sig, Sha256, PubKeyHash } = require('scryptlib');
 const { compileContract, fixLowS, checkLowS } = require('../../helper.js');
 
 const inputIndex = 0;
@@ -22,10 +22,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
   before(() => {
     EnforceAgentBitcoinTransfer = buildContractClass(compileContract('enforceAgentBitcoinTransfer.scrypt'));
-    agentKeyHash = new Ripemd160(toHex(bsv.crypto.Hash.sha256ripemd160(agentKey.publicKey.toBuffer())));
+    agentKeyHash = new PubKeyHash(toHex(bsv.crypto.Hash.sha256ripemd160(agentKey.publicKey.toBuffer())));
     approveOutputsHash = new Sha256(toHex(bsv.crypto.Hash.sha256sha256(Buffer.from(approveOutputBytes, 'hex'))));
     refundOutputsHash = new Sha256(toHex(bsv.crypto.Hash.sha256sha256(Buffer.from(refundOutputBytes, 'hex'))));
-    expireKeyHash = new Ripemd160(toHex(bsv.crypto.Hash.sha256ripemd160(expireKey.publicKey.toBuffer())));
+    expireKeyHash = new PubKeyHash(toHex(bsv.crypto.Hash.sha256ripemd160(expireKey.publicKey.toBuffer())));
     contract = new EnforceAgentBitcoinTransfer(agentKeyHash, approveOutputsHash, refundOutputsHash, expireKeyHash, expiration);
   });
 
@@ -180,7 +180,7 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
     for (i=0;i<25;i++) {
         // Modify agent key to get tx to work with low s.
         const maxSequenceAgentKey = new bsv.PrivateKey.fromRandom('testnet');
-        const maxSequenceAgentKeyHash = new Ripemd160(toHex(bsv.crypto.Hash.sha256ripemd160(maxSequenceAgentKey.publicKey.toBuffer())));
+        const maxSequenceAgentKeyHash = new PubKeyHash(toHex(bsv.crypto.Hash.sha256ripemd160(maxSequenceAgentKey.publicKey.toBuffer())));
         maxSequenceContract = new EnforceAgentBitcoinTransfer(maxSequenceAgentKeyHash, approveOutputsHash, refundOutputsHash, expireKeyHash, expiration);
         if (checkLowS(tx, maxSequenceContract.lockingScript, inputSatoshis, inputIndex)) {
             break;

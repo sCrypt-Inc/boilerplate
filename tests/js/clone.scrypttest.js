@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, Ripemd160, toHex, Bytes, getPreimage, SigHashPreimage, num2bin } = require('scryptlib');
+const { bsv, buildContractClass, toHex, Bytes, getPreimage, SigHashPreimage, num2bin } = require('scryptlib');
 
 /**
  * an example test for contract containing signature verification

@@ -6,7 +6,7 @@ const {
   getPreimage,
   num2bin,
   SigHashPreimage,
-  Ripemd160,
+  PubKeyHash,
   Sig,
   Bytes,
   PubKey,
@@ -84,8 +84,8 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
       .buy(
         preimage,
         amount,
-        new Ripemd160(changeAddress),
-        new Ripemd160(payoutAddress),
+        new PubKeyHash(changeAddress),
+        new PubKeyHash(payoutAddress),
         changeSats,
         new Bytes(lastEntry),
         lastMerklePath
@@ -139,8 +139,8 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
       .buyMore(
         preimage,
         amount,
-        new Ripemd160(changeAddress),
-        new Ripemd160(payoutAddress),
+        new PubKeyHash(changeAddress),
+        new PubKeyHash(payoutAddress),
         changeSats,
         prevBalance,
         merklePath

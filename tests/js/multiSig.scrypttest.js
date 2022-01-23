@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, Ripemd160, Sig, PubKey, signTx, toHex } = require('scryptlib');
+const { bsv, buildContractClass, PubKeyHash, Sig, PubKey, signTx, toHex } = require('scryptlib');
 const { compileContract, inputIndex, inputSatoshis, newTx } = require('../../helper');
 
 
@@ -21,7 +21,7 @@ describe('Test sCrypt contract MultiSig In Javascript', () => {
 
   before(() => {
     const MultiSig = buildContractClass(compileContract('multiSig.scrypt'));
-    multiSig = new MultiSig([new Ripemd160(toHex(pkh1)), new Ripemd160(toHex(pkh2)), new Ripemd160(toHex(pkh3))]);
+    multiSig = new MultiSig([new PubKeyHash(toHex(pkh1)), new PubKeyHash(toHex(pkh2)), new PubKeyHash(toHex(pkh3))]);
     context = { tx, inputIndex, inputSatoshis }
   });
 

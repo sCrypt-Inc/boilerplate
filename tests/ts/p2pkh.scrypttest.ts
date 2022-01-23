@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { buildContractClass, signTx, toHex, bsv, Ripemd160, PubKey, Sig, VerifyResult } from 'scryptlib';
+import { buildContractClass, signTx, toHex, bsv, PubKeyHash, PubKey, Sig, VerifyResult } from 'scryptlib';
 import { compileContract, newTx } from "../../helper";
 
 /**
@@ -20,7 +20,7 @@ describe('Test sCrypt contract DemoP2PKH In Typescript', () => {
 
   before(() => {
     const DemoP2PKH = buildContractClass(compileContract('p2pkh.scrypt'))
-    demo = new DemoP2PKH(new Ripemd160(toHex(pkh)))
+    demo = new DemoP2PKH(new PubKeyHash(toHex(pkh)))
     demo.txContext = {
       tx,
       inputIndex,

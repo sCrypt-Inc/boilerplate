@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 const { compileContract, newTx} = require('../../helper');
-const {  buildContractClass, Bool, signTx, Int, SigHashPreimage, bsv, toHex, getPreimage, Ripemd160, PubKey } = require('scryptlib');
+const {  buildContractClass, Bool, signTx, Int, SigHashPreimage, bsv, toHex, getPreimage, PubKeyHash, PubKey } = require('scryptlib');
 const inputIndex = 0;
 const inputSatoshis = 100000;
 
@@ -36,12 +36,12 @@ describe('auction', () => {
     const auctionDeadline = Math.round( onedayAgo.valueOf() / 1000 );
     const higherBid  = inputSatoshis + 10000;
 
-    const auction = new Auction(new Ripemd160(toHex(publicKeyHashHighestBid)), new PubKey(toHex(publicKeyAuctioner)), auctionDeadline);
+    const auction = new Auction(new PubKeyHash(toHex(publicKeyHashHighestBid)), new PubKey(toHex(publicKeyAuctioner)), auctionDeadline);
     it('should call success', () => {
 
 
         let newLockingScript = auction.getNewStateScript({
-            bidder: new Ripemd160(toHex(publicKeyHashNewBid))
+            bidder: new PubKeyHash(toHex(publicKeyHashNewBid))
         })
 
         const tx = newTx(inputSatoshis);
@@ -72,7 +72,7 @@ describe('auction', () => {
             inputSatoshis
         }
 
-        const result1 = auction.bid(new Ripemd160(toHex(publicKeyHashNewBid)), bid, changeSats, new SigHashPreimage(toHex(preimage))).verify()
+        const result1 = auction.bid(new PubKeyHash(toHex(publicKeyHashNewBid)), bid, changeSats, new SigHashPreimage(toHex(preimage))).verify()
         expect(result1.success, result1.error).to.be.true
 
 

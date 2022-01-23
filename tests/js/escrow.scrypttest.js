@@ -4,7 +4,7 @@ const {
   buildContractClass,
   PubKey,
   getPreimage,
-  Ripemd160,
+  PubKeyHash,
   Sig,
   signTx,
   toHex,
@@ -60,7 +60,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
 
   before(() => {
     const Escrow = buildContractClass(compileContract('escrow.scrypt'));
-    escrow = new Escrow(new Ripemd160(toHex(publicKeyHashA)), new Ripemd160(toHex(publicKeyHashB)), new Ripemd160(toHex(publicKeyHashE)), new Sha256(toHex(hashSecret1)), new Sha256(toHex(hashSecret2)));
+    escrow = new Escrow(new PubKeyHash(toHex(publicKeyHashA)), new PubKeyHash(toHex(publicKeyHashB)), new PubKeyHash(toHex(publicKeyHashE)), new Sha256(toHex(hashSecret1)), new Sha256(toHex(hashSecret2)));
     const Signature = bsv.crypto.Signature
     const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
     switch(scenario) {
@@ -132,7 +132,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
           new PubKey(toHex(publicKeyB)),
           new Sig(toHex(sigB)),
           new Bytes(toHex('')),
-          new Ripemd160(toHex(publicKeyHashChange)),
+          new PubKeyHash(toHex(publicKeyHashChange)),
           1000
         )
         .verify();
@@ -147,7 +147,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
           new PubKey(toHex(publicKeyB)),
           new Sig(toHex(sigB)),
           new Bytes(toHex('')),
-          new Ripemd160(toHex(publicKeyHashChange)),
+          new PubKeyHash(toHex(publicKeyHashChange)),
           amount / 2 - fee
         )
         .verify();
@@ -164,7 +164,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
           new PubKey(toHex(publicKeyE)),
           new Sig(toHex(sigE)),
           new Bytes(toHex(secretBuf1)),
-          new Ripemd160(toHex(publicKeyHashChange)),
+          new PubKeyHash(toHex(publicKeyHashChange)),
           amount - fee
         )
         .verify();
@@ -179,7 +179,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
           new PubKey(toHex(publicKeyE)),
           new Sig(toHex(sigE)),
           new Bytes(toHex(secretBuf1)),
-          new Ripemd160(toHex(publicKeyHashChange)),
+          new PubKeyHash(toHex(publicKeyHashChange)),
           amount - fee
         )
         .verify();
@@ -195,7 +195,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
           new PubKey(toHex(publicKeyE)),
           new Sig(toHex(sigE)),
           new Bytes(toHex(secretBuf2)),
-          new Ripemd160(toHex(publicKeyHashChange)),
+          new PubKeyHash(toHex(publicKeyHashChange)),
           amount - fee
         )
         .verify();
@@ -210,7 +210,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
           new PubKey(toHex(publicKeyE)),
           new Sig(toHex(sigE)),
           new Bytes(toHex(secretBuf2)),
-          new Ripemd160(toHex(publicKeyHashChange)),
+          new PubKeyHash(toHex(publicKeyHashChange)),
           amount - fee
         )
         .verify();
