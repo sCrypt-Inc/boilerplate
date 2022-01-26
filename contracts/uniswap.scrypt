@@ -1,0 +1,117 @@
+import "liberc20.scrypt";
+
+contract Uniswap {
+    // pool's public key
+    PubKey poolPubkey;
+
+    // the main token
+    @state
+    ERC20 token;
+
+    // the liquidity pool governance token
+    @state
+    ERC20 lpToken;
+
+    // add bitcoin and token to liquidity pool
+    public function addLiquidity(PubKey sender, Sig senderSig, int tokenAmount, int senderBalance, int senderKeyIndex, int oldTokenBalance,
+                                int lpSenderBalance, int lpSenderKeyIndex, int newBitcoinBalance, SigHashPreimage txPreimage) {
+        require(checkSig(senderSig, sender));
+
+        int oldBitcoinBalance = SigHash.value(txPreimage);
+        
+        // mint new lp tokens for the liquidity provider
+        if (oldBitcoinBalance == 0) {
+            // initialize pool
+            
+            // initially, just mint new lp tokens per the amount of new bitcoins deposited
+            int lpMint = newBitcoinBalance;
+            require(this.lpToken.mint(sender, lpSenderBalance, lpMint, lpSenderKeyIndex));
+        } else {
+            // add more liquidity
+
+            int bitcoinAmount = newBitcoinBalance - oldBitcoinBalance;
+            
+            // deposit ratio must be the same with current pool ration
+            // i.e., oldBitcoinBalance / oldTokenBalance == bitcoinAmount / tokenAmount
+            require(oldBitcoinBalance * tokenAmount == bitcoinAmount * oldTokenBalance);
+
+            // mint new lp tokens, proportinal to the amount of new bitcoins deposited
+            int lpMint = this.lpToken.totalSupply() * bitcoinAmount / oldBitcoinBalance;
+            require(this.lpToken.mint(sender, lpSenderBalance, lpMint, lpSenderKeyIndex));
+        }
+
+        // transfer tokens to the pool
+        require(this.token.transferFrom(sender, this.poolPubkey, tokenAmount, senderBalance, senderKeyIndex, oldTokenBalance, senderKeyIndex));
+        
+        require(this.propagateState(newBitcoinBalance, txPreimage));
+    }
+
+    // remove bitcoin and token from liquidity pool
+    public function removeLiquidity(PubKey sender, int lpAmount, Sig senderSig, int oldTokenBalance, int senderKeyIndex, int senderBalance,
+                                    int lpSenderBalance, int lpSenderKeyIndex, SigHashPreimage txPreimage) {
+        require(checkSig(senderSig, sender));
+
+        int oldBitcoinBalance = SigHash.value(txPreimage);
+        
+        // withdraw amount
+        int bitcoinAmount = oldBitcoinBalance * lpAmount / this.lpToken.totalSupply();
+        int tokenAmount = oldTokenBalance * lpAmount / this.lpToken.totalSupply();
+
+        // burn the lp tokens
+        require(this.lpToken.burn(sender, lpSenderBalance, lpAmount, lpSenderKeyIndex));
+
+        // transfer tokens from pool to the sender
+        require(this.token.transferFrom(this.poolPubkey, sender, tokenAmount, oldTokenBalance, senderKeyIndex, senderBalance, senderKeyIndex));
+        // transfer bitcoins to the sender
+        int newBitcoinBalance = oldBitcoinBalance - bitcoinAmount;
+        
+        require(this.propagateState(newBitcoinBalance, txPreimage));
+    }
+
+    // swap tokens for bitcoins
+    public function swapTokenToBitcoin(PubKey sender, int tokenAmount, Sig senderSig, int senderBalance, int senderKeyIndex, int oldTokenBalance,
+                                int lpSenderBalance, SigHashPreimage txPreimage) {
+        require(checkSig(senderSig, sender));
+
+        int oldBitcoinBalance = SigHash.value(txPreimage);
+
+        // calculate bitcoins in return
+        int bitcoinsAmount = this.getAmount(tokenAmount, oldTokenBalance, oldBitcoinBalance);
+        int newBitcoinBalance = oldBitcoinBalance - bitcoinsAmount;
+
+        // transfer tokens to the pool
+        require(this.token.transferFrom(sender, this.poolPubkey, tokenAmount, senderBalance, senderKeyIndex, oldTokenBalance, senderKeyIndex));        
+        
+        require(this.propagateState(newBitcoinBalance, txPreimage));
+    }
+
+    // swap bitcoins for tokens
+    public function swapBitcoinToToken(PubKey sender, int tokenAmount, Sig senderSig, int oldTokenBalance, int senderKeyIndex, int senderBalance,
+                                        int newBitcoinBalance, SigHashPreimage txPreimage) {
+        require(checkSig(senderSig, sender));
+
+        int oldBitcoinBalance = SigHash.value(txPreimage);
+        int bitcoinAmount = newBitcoinBalance - oldBitcoinBalance;
+
+        // calculate tokens in return
+        int tokensAmount = this.getAmount(bitcoinAmount, oldBitcoinBalance, oldTokenBalance);
+
+        // transfer tokens from pool to the sender
+        require(this.token.transferFrom(this.poolPubkey, sender, tokensAmount, oldTokenBalance, senderKeyIndex, senderBalance, senderKeyIndex));
+
+        require(this.propagateState(newBitcoinBalance, txPreimage));
+    }
+
+    // use reserve ratio as price
+    function getAmount(int input, int inputReserve, int outputReserve) : int {
+        return outputReserve * input / inputReserve;
+    }
+
+    // propagate state to the next UTXO, containing specified satoshis
+    function propagateState(int satoshis, SigHashPreimage preimage): bool {
+        require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
+        bytes outputScript = this.getStateScript();
+        bytes output = Utils.buildOutput(outputScript, satoshis);
+        return hash256(output) == SigHash.hashOutputs(preimage);
+    }
+}
