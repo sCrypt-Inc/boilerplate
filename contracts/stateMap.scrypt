@@ -7,36 +7,32 @@ struct MapEntry {
 
 contract StateMap {
     @state
-    bytes _mpData;  //Save the serialized data of the map
+    HashedMap<int, int> map;  //Save the serialized data of the map
 
     // Add key-value pairs to the map
     public function insert(MapEntry entry, SigHashPreimage preimage) {
         require(Tx.checkPreimage(preimage));
-        HashedMap<int, int> map = new HashedMap(this._mpData);
-        require(map.set(entry.key, entry.val, entry.keyIndex));
-        require(this.passMap(map.data(), preimage));
+        require(this.map.set(entry.key, entry.val, entry.keyIndex));
+        require(this.passMap(preimage));
     }
 
     // update key-value pairs in the map
     public function update(MapEntry entry, SigHashPreimage preimage) {
         require(Tx.checkPreimage(preimage));
-        HashedMap<int, int> map = new HashedMap(this._mpData);
-        require(map.set(entry.key, entry.val, entry.keyIndex));
-        require(this.passMap(map.data(), preimage));
+        require(this.map.set(entry.key, entry.val, entry.keyIndex));
+        require(this.passMap(preimage));
     }
 
     // delete key-value pairs in the map
     public function delete(int key, int keyIndex, SigHashPreimage preimage) {
         require(Tx.checkPreimage(preimage));
-        HashedMap<int, int> map = new HashedMap(this._mpData);
-        require(map.delete(key, keyIndex));
+        require(this.map.delete(key, keyIndex));
         // Serialize map, update state
-        require(this.passMap(map.data(), preimage));
+        require(this.passMap(preimage));
     }
 
-    // update state _mpData, and build a output contains new state
-    function passMap(bytes newData, SigHashPreimage preimage) : bool {
-        this._mpData = newData;
+    // update state map, and build a output contains new state
+    function passMap(SigHashPreimage preimage) : bool {
         bytes outputScript = this.getStateScript();
         bytes output = Utils.buildOutput(outputScript, SigHash.value(preimage));
         return (hash256(output) == SigHash.hashOutputs(preimage));
