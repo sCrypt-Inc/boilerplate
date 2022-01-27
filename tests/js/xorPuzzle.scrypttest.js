@@ -49,7 +49,7 @@ const publicKeyDataHashBI = BigInt('0x' + publicKeyDataHashHex);
 
 const xorResult = dataBufHashBI ^ publicKeyDataHashBI;
 
-let xorResultHex = padLeadingZero(xorResult.toString(16));
+let xorResultHex = padLeadingZero(xorResult.toString(16), 32);
 
 const tx = newTx();
 
@@ -76,14 +76,11 @@ describe('Test sCrypt contract HashPuzzle In Javascript', () => {
         new Bytes(dataBufHashHex)
       )
       .verify();
-      //Print error message, when an unreproducible error occurs
-      if(result.success === false) {
-        console.log(JSON.stringify(readLaunchJson(result.error)))
-      }
+
     expect(result.success, result.error).to.be.true;
   });
-  
-  
+
+
   it('check should fail when wrong data provided', () => {
     result = xorPuzzle
       .unlock(
