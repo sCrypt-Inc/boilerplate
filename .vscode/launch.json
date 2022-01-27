@@ -1,7 +1,4 @@
 {
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
     {
@@ -100,8 +97,8 @@
       "name": "Debug Demo bigint",
       "program": "${workspaceFolder}/contracts/demo.scrypt",
       "constructorArgs": [
-        "0x304402205b131a25e067bd9d692e2e5b5ccef30f74a1c0dfb3dd19f97e8cd65871ec703f0220323e5747dccb2a8698ab02b61b6a39867b57b824c8569a6398fe2d8a2cd4ab3f41", //hex string
-        "30" //dec string
+        "0x304402205b131a25e067bd9d692e2e5b5ccef30f74a1c0dfb3dd19f97e8cd65871ec703f0220323e5747dccb2a8698ab02b61b6a39867b57b824c8569a6398fe2d8a2cd4ab3f41",
+        "30"
       ],
       "pubFunc": "add",
       "pubFuncArgs": [
@@ -281,7 +278,7 @@
       "request": "launch",
       "internalConsoleOptions": "openOnSessionStart",
       "name": "Debug Token",
-      "program": "file:///Users/hh/code/boilerplate/contracts/tokenUtxo.scrypt",
+      "program": "${workspaceFolder}/contracts/tokenUtxo.scrypt",
       "constructorArgs": [],
       "pubFunc": "split",
       "pubFuncArgs": [
