@@ -1,18 +1,16 @@
 // a basic ERC20-like fungible token
-contract ERC20 {
+import "liberc20.scrypt";
+contract Coin {
     PubKey minter;
 
     @state
-    HashedMap<PubKey, int> balances;
+    ERC20 liberc20;
 
     // mint new tokens to receiver
     public function mint(PubKey receiver, Sig minterSig, int balance, int amount, int keyIndex, SigHashPreimage preimage) {
         // authenticate
         require(checkSig(minterSig, this.minter));
-
-        require(this.balances.canGet(receiver, balance, keyIndex));
-        require(this.balances.set(receiver, balance + amount, keyIndex));
-
+        require(this.liberc20.mint(receiver, balance, amount, balance));
         require(this.propagateState(preimage));
     }
 
@@ -20,18 +18,20 @@ contract ERC20 {
     public function transferFrom(PubKey sender, PubKey receiver, int amount, Sig senderSig, int senderBalance, int senderKeyIndex, int receiverBalance, int receiverKeyIndex, SigHashPreimage preimage) {
         // authenticate
         require(checkSig(senderSig, sender));
+        require(this.liberc20.transferFrom(sender, receiver, amount, senderBalance, senderKeyIndex, receiverBalance, receiverKeyIndex));
+        require(this.propagateState(preimage));
+    }
 
-        require(this.balances.canGet(sender, senderBalance, senderKeyIndex));
-        require(senderBalance >= amount);
-        require(this.balances.set(sender, senderBalance - amount, senderKeyIndex));
-        require(this.balances.canGet(receiver, receiverBalance, receiverKeyIndex));
-        require(this.balances.set(receiver, receiverBalance + amount, receiverKeyIndex));
-    
+    // burn tokens of a receiver
+    public function burn(PubKey receiver, Sig minterSig, int balance, int amount, int keyIndex, SigHashPreimage preimage) {
+        // authenticate
+        require(checkSig(minterSig, this.minter));
+        require(this.liberc20.burn(receiver, balance, amount, keyIndex));
         require(this.propagateState(preimage));
     }
 
     // propagate state to the next UTXO
-    function propagateState(SigHashPreimage preimage): bool {
+    function propagateState(SigHashPreimage preimage) : bool {
         require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
         bytes outputScript = this.getStateScript();
         bytes output = Utils.buildOutput(outputScript, SigHash.value(preimage));
