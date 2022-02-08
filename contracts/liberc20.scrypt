@@ -1,0 +1,44 @@
+// a basic ERC20-like fungible token
+library ERC20 {
+    int _totalSupply;
+
+    HashedMap<PubKey, int> balances;
+
+    // mint new tokens to a receiver
+    function mint(PubKey receiver, int balance, int amount, int keyIndex) : bool {
+        require(!this.balances.has(receiver, keyIndex) || this.balances.canGet(receiver, balance, keyIndex));
+        require(this.balances.set(receiver, balance + amount, keyIndex));
+
+        this._totalSupply += amount;
+        return true;
+    }
+
+    // burn tokens of a receiver
+    function burn(PubKey receiver, int balance, int amount, int keyIndex) : bool {
+        require(this.balances.canGet(receiver, balance, keyIndex));
+        require(balance >= amount);
+        require(this.balances.set(receiver, balance - amount, keyIndex));
+
+        this._totalSupply -= amount;
+        return true;
+    }
+
+    // transfer tokens from sender to receiver
+    function transferFrom(PubKey sender, PubKey receiver, int amount, int senderBalance, int senderKeyIndex, int receiverBalance, int receiverKeyIndex) : bool {
+        require(this.balances.canGet(sender, senderBalance, senderKeyIndex));
+        require(senderBalance >= amount);
+        require(this.balances.set(sender, senderBalance - amount, senderKeyIndex));
+        require(!this.balances.has(receiver, receiverKeyIndex) || this.balances.canGet(receiver, receiverBalance, receiverKeyIndex));
+        require(this.balances.set(receiver, receiverBalance + amount, receiverKeyIndex));
+
+        return true;
+    }
+
+    function totalSupply() : int {
+        return this._totalSupply;
+    }
+
+    function balanceOf(PubKey account, int balance, int keyIndex) : bool {
+        return this.balances.canGet(account, balance, keyIndex);
+    }
+}
