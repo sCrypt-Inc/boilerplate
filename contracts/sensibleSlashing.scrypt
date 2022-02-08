@@ -1,0 +1,41 @@
+import "rabin.scrypt";
+import "txUtil.scrypt";
+
+// signed data format
+struct PayloadU4Data {
+    // outpoint
+    Sha256 txid;
+    int index;    // 4 bytes
+
+    // satoshis in the outpoint; 8 bytes
+    int satoshis;
+    // hash of the script of the outpoint
+    Ripemd160 scriptHash;
+}
+
+// slash fraudulent Sensible oracles
+contract SlashSensibleOracle {
+    // oracle's public key
+    RabinPubKey pubKey;
+
+    public function slash(bytes fraudProofTx, bytes signedMsg, RabinSig sig) {
+        // verify message is signed
+        require(RabinSignature.checkSig(signedMsg, sig, this.pubKey));
+
+        // deserialize into specified format
+        PayloadU4Data payload = deserialize(signedMsg);
+
+        // verify transaction is referenced in the signed message
+        require(hash256(fraudProofTx) == payload.txid);
+
+        // parse the output at the given index from the tx
+        Output output = TxUtil.readOutput(fraudProofTx, payload.index);
+        
+        // fraud detected: either satoshi or script part of the output mismatches
+        require(output.satoshis != payload.satoshis || hash160(output.script) != payload.scriptHash);
+    }
+
+    static function deserialize(bytes msg) : PayloadU4Data {
+        return { Sha256(msg[: 32]), Utils.fromLEUnsigned(msg[32 : 36]), Utils.fromLEUnsigned(msg[36 : 44]), Ripemd160(msg[44 :]) };
+    }
+}

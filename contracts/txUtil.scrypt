@@ -1,5 +1,10 @@
 // folked from https://sensiblecontract.org
 
+struct Output {
+  int satoshis;
+  bytes script;
+}
+
 library TxUtil {
   static int OUTPOINT_LEN = 36; 
   static int TX_ID_LEN = 32;
@@ -8,13 +13,14 @@ library TxUtil {
     return unpack(b + b'00');
   }
 
-  static function readOutputScript(bytes tx, int outputIndex): bytes {
+  static function readOutput(bytes tx, int outputIndex): Output {
     // first 4 bytes version
     // 1 byte input num, only support max 3
     int pos = 4;
     int ninputs = TxUtil.fromLEUnsigned(tx[pos: pos + 1]);
     pos = pos + 1;
     bytes res = b'';
+    int satoshis = 0;
     // max support 3 input
     // input
     require(ninputs <= 3);
@@ -47,6 +53,7 @@ library TxUtil {
     loop(3): i {
       if (i < noutputs) {
         // 8 bytes value
+        int sats = fromLEUnsigned(tx[pos : pos + 8]);
         pos = pos + 8;
         // script code
         int varLen = TxUtil.fromLEUnsigned(tx[pos: pos + 1] + b'00');
@@ -66,12 +73,13 @@ library TxUtil {
         }
         if (i == outputIndex) {
           res = tx[pos - scriptLen: pos];
+          satoshis = sats;
         }
       }
     }
 
     // 4 bytes locktime
-    return res;
+    return { satoshis, res };
   }
 
   static function getScriptCodeFromOutput(bytes output): bytes {

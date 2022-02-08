@@ -22,7 +22,7 @@ contract Caller {
 
         // validate the callee contract, i.e., its locking script
         int lockContractTxOutIndex = Utils.fromLEUnsigned(prevouts[selfContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN : selfContractInputIndex * TxUtil.OUTPOINT_LEN + TxUtil.TX_ID_LEN + 4]);
-        bytes prevScriptCode = TxUtil.readOutputScript(calleeContractTx, lockContractTxOutIndex);
+        bytes prevScriptCode = TxUtil.readOutput(calleeContractTx, lockContractTxOutIndex).script;
         require(hash160(prevScriptCode) == this.calleeContractHash);
 
         int l = len(outputScript);
