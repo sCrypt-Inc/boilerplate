@@ -1,0 +1,43 @@
+import "txUtil.scrypt";
+
+contract Pay2ContractHash {
+    @state
+    HashedMap<int, PubKeyHash> owners;
+
+    public function transferFrom(PubKeyHash from, PubKeyHash to,    // can be hash of a user's public key, or a contract
+        Sig fromSig, PubKey fromPubKey,                             // only needed when token belongs to a user controlling a private key
+        bytes prevouts, bytes contractTx, int contractInputIndex,   // only needed when token belongs to a contract
+        int tokenId, int keyIndex, SigHashPreimage preimage) {
+        // verify ownership
+        require(this.owners.canGet(tokenId, from, keyIndex));
+        
+        // authenticate
+        if (hash160(fromPubKey) == from) {
+            // belongs to a user
+            require(checkSig(fromSig, fromPubKey));
+        } else {
+            // belongs to a contract, not a user
+
+            // validate the tx containing the contract
+            require(hash256(prevouts) == SigHash.hashPrevouts(preimage));
+            bytes contractTxId = TxUtil.getPrevoutTxid(prevouts, contractInputIndex);
+            // validate the contract raw tx
+            require(hash256(contractTx) == contractTxId);
+            // validate the contract, i.e., its locking script
+            int contractOutputIndex = TxUtil.getPrevoutOutputIdx(prevouts, contractInputIndex);
+            bytes contractScript = TxUtil.readOutput(contractTx, contractOutputIndex).script;
+            require(hash160(contractScript) == from);
+        }
+
+        require(this.owners.set(tokenId, to, keyIndex));
+    
+        require(this.propagateState(preimage));
+    }
+
+    function propagateState(SigHashPreimage preimage): bool {
+        require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
+        bytes outputScript = this.getStateScript();
+        bytes output = Utils.buildOutput(outputScript, SigHash.value(preimage));
+        return hash256(output) == SigHash.hashOutputs(preimage);
+    }
+}
