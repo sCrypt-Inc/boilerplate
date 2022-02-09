@@ -2,19 +2,13 @@ import "hashmap.scrypt";
 
 contract HashMapTest2 {
     
-    static const int MaxMapSize = 10000;
-
     @state
-    bytes data;
+    HashMap map;
 
     public function testPut(SigHashPreimage txPreimage, int key, int value) {
         require(Tx.checkPreimage(txPreimage));
-        HashMap map = new HashMap(MaxMapSize);
-        if(this.data != b'') {
-            map.fromData(this.data);
-        }
-        map.put(num2bin(key, 8), num2bin(value, 8));
-        this.data = map.toData();
+
+        this.map.put(num2bin(key, 8), num2bin(value, 8));
         bytes outputScript = this.getStateScript();
         bytes output = Utils.buildOutput(outputScript, SigHash.value(txPreimage));
         require(hash256(output) == SigHash.hashOutputs(txPreimage));
@@ -22,12 +16,7 @@ contract HashMapTest2 {
 
     public function testGet(SigHashPreimage txPreimage, int key) {
         require(Tx.checkPreimage(txPreimage));
-        HashMap map = new HashMap(MaxMapSize);
-        if(this.data != b'') {
-            map.fromData(this.data);
-        }
-        
-        require(map.get(num2bin(key, 8)).has);
+        require(this.map.get(num2bin(key, 8)).has);
         bytes outputScript = this.getStateScript();
         bytes output = Utils.buildOutput(outputScript, SigHash.value(txPreimage));
         require(hash256(output) == SigHash.hashOutputs(txPreimage));
