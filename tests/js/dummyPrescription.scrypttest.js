@@ -8,7 +8,7 @@ const {
   PubKey,
   toHex,
   Sig,
-  Ripemd160,
+  PubKeyHash,
   buildTypeClasses,
 } = require("scryptlib");
 const { compileContract, inputIndex, newTx } = require("../../helper");
@@ -75,7 +75,7 @@ describe("Dummy Prescription", () => {
       expiration,
       new Bytes(prescriptionIDHex),
       patientReward,
-      new Ripemd160(toHex(publicKeyHashPatient)),
+      new PubKeyHash(toHex(publicKeyHashPatient)),
       [
         new PubKey(toHex(publicKeyPharmacy1)),
         new PubKey(toHex(publicKeyPharmacy2)),

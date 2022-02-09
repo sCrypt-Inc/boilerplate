@@ -6,8 +6,8 @@ contract WitnessBinaryOption {
   int betPrice;
   int matureTime;
   RabinPubKey witnessPubKey;
-  Ripemd160 pubKeyHashA;
-  Ripemd160 pubKeyHashB;
+  PubKeyHash pubKeyHashA;
+  PubKeyHash pubKeyHashB;
 
   public function unlock(SigHashPreimage txPreimage, int price, int unlockTime, int outAmount, RabinSig rabinSig) {
 

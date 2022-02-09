@@ -1,6 +1,6 @@
 
 contract P2SH {
-    Ripemd160 scriptHash;
+    PubKeyHash scriptHash;
 
     public function redeem(bytes redeemScript, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));

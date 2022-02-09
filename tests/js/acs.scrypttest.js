@@ -3,7 +3,7 @@ const {
   bsv,
   buildContractClass,
   getPreimage,
-  Ripemd160,
+  PubKeyHash,
   toHex,
   SigHashPreimage,
 } = require('scryptlib');
@@ -37,7 +37,7 @@ describe('Test sCrypt contract AnyoneCanSpend in Javascript', () => {
 
   before(() => {
     const AnyoneCanSpend = buildContractClass(compileContract('acs.scrypt'));
-    acs = new AnyoneCanSpend(new Ripemd160(toHex(pkhX)));
+    acs = new AnyoneCanSpend(new PubKeyHash(toHex(pkhX)));
 
     tx.addOutput(
       new bsv.Transaction.Output({

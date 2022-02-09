@@ -3,7 +3,7 @@ import "./merkleTree.scrypt";
 contract merkleToken {
     int price;
 
-    public function buyMore(SigHashPreimage txPreimage, int amount, Ripemd160 changePKH, Ripemd160 payoutPKH, int changeSats, int prevBalance, bytes merklePath) {
+    public function buyMore(SigHashPreimage txPreimage, int amount, PubKeyHash changePKH, PubKeyHash payoutPKH, int changeSats, int prevBalance, bytes merklePath) {
 
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
@@ -35,7 +35,7 @@ contract merkleToken {
         require(hashOutputs == SigHash.hashOutputs(txPreimage));
     }
 
-    public function buy(SigHashPreimage txPreimage, int amount, Ripemd160 changePKH, Ripemd160 payoutPKH, int changeSats, bytes lastEntry, bytes lastMerklePath) {
+    public function buy(SigHashPreimage txPreimage, int amount, PubKeyHash changePKH, PubKeyHash payoutPKH, int changeSats, bytes lastEntry, bytes lastMerklePath) {
 
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
@@ -78,7 +78,7 @@ contract merkleToken {
 
         bytes balanceTableRoot = scriptCode[scriptLen - 32 :];
 
-        Ripemd160 address = hash160(pubKey);
+        PubKeyHash address = hash160(pubKey);
         require(checkSig(sig, pubKey));
 
         int newBalance = oldBalance - amount;

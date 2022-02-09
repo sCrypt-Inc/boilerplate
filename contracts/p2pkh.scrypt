@@ -1,7 +1,7 @@
 contract DemoP2PKH {
-    Ripemd160 pubKeyHash;
+    PubKeyHash pubKeyHash;
 
-    constructor(Ripemd160 pubKeyHash) {
+    constructor(PubKeyHash pubKeyHash) {
         this.pubKeyHash = pubKeyHash;
     }
 

@@ -25,7 +25,7 @@ contract DummyPrescription {
   int expirationDate;
   bytes prescriptionID;
   int patientReward;
-  Ripemd160 patientPubKeyHash;
+  PubKeyHash patientPubKeyHash;
   PubKey[2] pharmacyPubKeys;
 
   RabinSig rabinSig;

@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Ripemd160, Bytes } = require('scryptlib');
+const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, PubKeyHash, Bytes } = require('scryptlib');
 const {
   inputIndex,
   inputSatoshis,
@@ -68,7 +68,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
 
 
     const context = { tx, inputIndex, inputSatoshis }
-    result = seller.buy(new SigHashPreimage(toHex(preimage)), new Ripemd160(toHex(pkh)), changeAmount, new Bytes(toHex(publicKey)), numBought).verify(context)
+    result = seller.buy(new SigHashPreimage(toHex(preimage)), new PubKeyHash(toHex(pkh)), changeAmount, new Bytes(toHex(publicKey)), numBought).verify(context)
     expect(result.success, result.error).to.be.true;
     return newState;
   }

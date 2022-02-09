@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, Ripemd160, Sig, PubKey, signTx, toHex, Bytes } = require('scryptlib');
+const { bsv, buildContractClass, Sig, PubKey, signTx, toHex, Bytes } = require('scryptlib');
 const { compileContract, inputIndex, inputSatoshis, newTx } = require('../../helper');
 
 const privateKey = new bsv.PrivateKey.fromRandom('testnet')

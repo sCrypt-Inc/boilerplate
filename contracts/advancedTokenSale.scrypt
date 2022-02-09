@@ -17,7 +17,7 @@ contract AdvancedTokenSale {
         this.price = price;
     }
 
-    public function buy(SigHashPreimage txPreimage, Ripemd160 changePKH, int changeSats, bytes buyer, int numTokens) {
+    public function buy(SigHashPreimage txPreimage, PubKeyHash changePKH, int changeSats, bytes buyer, int numTokens) {
         SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
         // this ensures the preimage is for the current tx
         require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));

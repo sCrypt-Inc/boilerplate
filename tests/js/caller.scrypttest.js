@@ -8,7 +8,7 @@ const {
   SigHashPreimage,
   buildTypeClasses,
   num2bin,
-  Ripemd160,
+  PubKeyHash,
   Bytes,
 } = require('scryptlib');
 
@@ -59,7 +59,7 @@ describe('Test sCrypt contract Callee in Javascript', () => {
       })
     );
 
-    caller = new Caller(new Ripemd160(callee.codeHash));
+    caller = new Caller(new PubKeyHash(callee.codeHash));
 
 
     newLockingScript = bsv.Script.fromASM(['OP_FALSE', 'OP_RETURN', num2bin(a, 2) + num2bin(b, 2) + num2bin(c, 2) + num2bin(x, 2)].join(' '))

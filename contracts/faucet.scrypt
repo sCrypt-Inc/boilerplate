@@ -1,5 +1,5 @@
 contract FaucetDeposit {
-    public function deposit(SigHashPreimage preImage, int depositAmount, Ripemd160 changePKH, int changeAmount) {
+    public function deposit(SigHashPreimage preImage, int depositAmount, PubKeyHash changePKH, int changeAmount) {
         require(Tx.checkPreimage(preImage));
         require(depositAmount > 0);
 
@@ -15,7 +15,7 @@ contract FaucetDeposit {
         return Utils.buildOutput(lockingScript, contractTotalAmount);
     }
 
-    function composeOutput1(Ripemd160 changePKH, int changeAmount) : bytes {
+    function composeOutput1(PubKeyHash changePKH, int changeAmount) : bytes {
         bytes output1 = b'';
         if (changeAmount > 546) {
             output1 = Utils.buildOutput(Utils.buildPublicKeyHashScript(changePKH), changeAmount);
@@ -25,7 +25,7 @@ contract FaucetDeposit {
 }
 
 contract FaucetWithdraw {
-    public function withdraw(SigHashPreimage preImage, Ripemd160 receiverPKH, int changeAmount) {
+    public function withdraw(SigHashPreimage preImage, PubKeyHash receiverPKH, int changeAmount) {
         require(Tx.checkPreimage(preImage));
         //nLockTime is valid when nSequence < 0xFFFFFFFF https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
         require(SigHash.nSequence(preImage) < 0xffffffff);
@@ -58,19 +58,19 @@ contract FaucetWithdraw {
         return Utils.buildOutput(script, changeAmount);
     }
 
-    function composeOutput1(Ripemd160 receiver, int withdrawAmount) : bytes {
+    function composeOutput1(PubKeyHash receiver, int withdrawAmount) : bytes {
         bytes script = Utils.buildPublicKeyHashScript(receiver);
         return Utils.buildOutput(script, withdrawAmount);
     }
 }
 
 contract Faucet {
-    public function deposit(SigHashPreimage preImage, int depositAmount, Ripemd160 changePKH, int changeAmount) {
+    public function deposit(SigHashPreimage preImage, int depositAmount, PubKeyHash changePKH, int changeAmount) {
         FaucetDeposit depositContract = new FaucetDeposit();
         require(depositContract.deposit(preImage, depositAmount, changePKH, changeAmount));
     }
 
-    public function withdraw(SigHashPreimage preImage, Ripemd160 receiver, int changeAmount) {
+    public function withdraw(SigHashPreimage preImage, PubKeyHash receiver, int changeAmount) {
         FaucetWithdraw withdrawContract = new FaucetWithdraw();
         require(withdrawContract.withdraw(preImage, receiver, changeAmount));
     }
