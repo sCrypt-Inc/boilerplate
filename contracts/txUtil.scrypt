@@ -118,4 +118,16 @@ library TxUtil {
     }
     return output;
   }
+
+  // get i-th outpoint's txid
+  static function getPrevoutTxid(bytes prevouts, int i): bytes {
+    int offset = i * OUTPOINT_LEN;
+    return prevouts[offset : offset + TxUtil.TX_ID_LEN];
+  }
+
+  // get i-th outpoint's output index
+  static function getPrevoutOutputIdx(bytes prevouts, int i): int {
+    int offset = i * OUTPOINT_LEN;
+    return Utils.fromLEUnsigned(prevouts[offset + TX_ID_LEN : offset + OUTPOINT_LEN]);
+  }
 }
