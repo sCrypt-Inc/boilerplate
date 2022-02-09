@@ -2,6 +2,7 @@ const { expect } = require('chai');
 const { compileContract, newTx } = require('../../helper');
 
 const { buildContractClass, toData, Bytes, bsv, findKeyIndex, getPreimage, buildTypeClasses } = require('scryptlib');
+const { toHashedMap } = require('scryptlib/dist/utils');
 
 const inputIndex = 0;
 const inputSatoshis = 100000;
@@ -16,12 +17,12 @@ describe('test.stateMap', () => {
         before(() => {
             StateMap = buildContractClass(compileContract('stateMap.scrypt'))
             MapEntry = buildTypeClasses(StateMap).MapEntry
-            mapTest = new StateMap(new Bytes('')) // empty initial map
+            mapTest = new StateMap(toHashedMap(map)) // empty initial map
         })
 
         function preHook(map) {
             let newLockingScript = mapTest.getNewStateScript({
-                _mpData: toData(map),
+                map: toHashedMap(map),
             });
 
             const tx = newTx(inputSatoshis);
@@ -54,10 +55,10 @@ describe('test.stateMap', () => {
                     key: key,
                     val: val,
                     keyIndex: findKeyIndex(map, key)
-                }), preimage).verify()
+                }), preimage).verify()                
                 expect(result.success, result.error).to.be.true;
 
-                mapTest._mpData = toData(map)
+                mapTest.map = toHashedMap(map)
             }
 
             testInsert(3, 1);
@@ -87,7 +88,7 @@ describe('test.stateMap', () => {
                 }), preimage).verify()
                 expect(result.success, result.error).to.be.true;
 
-                mapTest._mpData = toData(map)
+                mapTest.map = toHashedMap(map)
             }
 
 
@@ -112,7 +113,7 @@ describe('test.stateMap', () => {
                 const result = mapTest.delete(key, keyIndex, preimage).verify()
                 expect(result.success, result.error).to.be.true;
 
-                mapTest._mpData = toData(map)
+                mapTest.map = toHashedMap(map)
             }
 
 

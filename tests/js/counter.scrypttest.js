@@ -1,56 +1,116 @@
+
+
 const { expect } = require('chai');
-const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage } = require('scryptlib');
+const { compileContract, newTx} = require('../../helper');
+const {  buildContractClass, Bool, Bytes, Int, SigHashPreimage, bsv, toHex, getPreimage, buildTypeClasses } = require('scryptlib');
+const inputIndex = 0;
+const inputSatoshis = 100000;
 
-const {
-  inputIndex,
-  inputSatoshis,
-  newTx,
-  DataLen,
-  compileContract
-} = require('../../helper');
-
-const tx = newTx();
 const outputAmount = 222222
 
-describe('Test sCrypt contract Counter In Javascript', () => {
-  let counter, preimage, result
+const result = compileContract('counter.scrypt');
+const Counter = buildContractClass(result);
 
-  before(() => {
-    const Counter = buildContractClass(compileContract('counter.scrypt'))
-    counter = new Counter()
 
-    // set initial counter value
-    counter.setDataPart(num2bin(0, DataLen))
+describe('Counter', () => {
 
-    const newLockingScript = [counter.codePart.toASM(), num2bin(1, DataLen)].join(' ')
+    it('should call success', () => {
+        const counter = new Counter(0);
 
-    tx.addOutput(new bsv.Transaction.Output({
-      script: bsv.Script.fromASM(newLockingScript),
-      satoshis: outputAmount
-    }))
+        let newLockingScript = counter.getNewStateScript({
+            counter: 1
+        })
+        const tx1 = newTx(inputSatoshis);
+        tx1.addOutput(new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: outputAmount
+        }))
 
-    preimage = getPreimage(tx, counter.lockingScript, inputSatoshis)
+        const preimage1 = getPreimage(tx1, counter.lockingScript, inputSatoshis)
 
-    // set txContext for verification
-    counter.txContext = {
-      tx,
-      inputIndex,
-      inputSatoshis
-    }
-  });
+        counter.txContext = {
+            tx: tx1,
+            inputIndex,
+            inputSatoshis
+        }
 
-  it('should succeed when pushing right preimage & amount', () => {
-    result = counter.increment(new SigHashPreimage(toHex(preimage)), outputAmount).verify()
-    expect(result.success, result.error).to.be.true
-  });
+        const result1 = counter.increment(new SigHashPreimage(toHex(preimage1)), outputAmount).verify()
+        expect(result1.success, result1.error).to.be.true
 
-  it('should fail when pushing wrong preimage', () => {
-    result = counter.increment(new SigHashPreimage(toHex(preimage) + '01'), outputAmount).verify()
-    expect(result.success, result.error).to.be.false
-  });
+        // save state
+        counter.counter = 1
 
-  it('should fail when pushing wrong amount', () => {
-    result = counter.increment(new SigHashPreimage(toHex(preimage)), outputAmount - 1).verify()
-    expect(result.success, result.error).to.be.false
-  });
-});
+        newLockingScript = counter.getNewStateScript({
+            counter: 2
+        })
+
+
+        const tx2 = newTx(inputSatoshis);
+        tx2.addOutput(new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: outputAmount
+        }))
+
+        const preimage2 = getPreimage(tx2, counter.lockingScript, inputSatoshis)
+
+        counter.txContext = {
+            tx: tx2,
+            inputIndex,
+            inputSatoshis
+        }
+
+        const result2 = counter.increment(new SigHashPreimage(toHex(preimage2)), outputAmount).verify()
+        expect(result2.success, result2.error).to.be.true
+
+    });
+
+    it('should fail when pushing wrong amount', () => {
+        const counter = new Counter(0);
+
+        let newLockingScript = counter.getNewStateScript({
+            counter: 1
+        })
+        const tx1 = newTx(inputSatoshis);
+        tx1.addOutput(new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: outputAmount
+        }))
+
+        const preimage1 = getPreimage(tx1, counter.lockingScript, inputSatoshis)
+
+        counter.txContext = {
+            tx: tx1,
+            inputIndex,
+            inputSatoshis
+        }
+
+        const result1 = counter.increment(new SigHashPreimage(toHex(preimage1)), outputAmount - 1).verify()
+        expect(result1.success, result1.error).to.be.false
+      });
+
+
+      it('should fail when pushing wrong new state', () => {
+        const counter = new Counter(0);
+
+        let newLockingScript = counter.getNewStateScript({
+            counter: 2
+        })
+        const tx1 = newTx(inputSatoshis);
+        tx1.addOutput(new bsv.Transaction.Output({
+            script: newLockingScript,
+            satoshis: outputAmount
+        }))
+
+        const preimage1 = getPreimage(tx1, counter.lockingScript, inputSatoshis)
+
+        counter.txContext = {
+            tx: tx1,
+            inputIndex,
+            inputSatoshis
+        }
+
+        const result1 = counter.increment(new SigHashPreimage(toHex(preimage1)), outputAmount ).verify()
+        expect(result1.success, result1.error).to.be.false
+      });
+
+})

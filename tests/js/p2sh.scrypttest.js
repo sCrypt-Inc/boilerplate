@@ -12,7 +12,7 @@ describe('Test sCrypt contract P2SH In Javascript', () => {
 
   before(() => {
     const P2SH = buildContractClass(compileContract('p2sh.scrypt'))
-    const DemoContract = buildContractClass(compileContract('counter.scrypt'))
+    const DemoContract = buildContractClass(compileContract('counterRaw.scrypt'))
 
     demoContract = new DemoContract()
 

@@ -136,7 +136,12 @@ function showError(error) {
   }
 };
 
-function padLeadingZero(hex) {
+function padLeadingZero(hex, byteslen = 0) {
+  if(byteslen > 0) {
+    if(hex.length < byteslen * 2) {
+      return "0".repeat(byteslen * 2 - hex.length) + hex
+    }
+  }
   if(hex.length % 2 === 0) return hex;
   return "0" + hex;
 }
