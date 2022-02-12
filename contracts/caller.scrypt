@@ -14,16 +14,13 @@ contract Caller {
     public function call(Coeff co, bytes prevouts, bytes calleeContractTx,
         bytes outputScript, int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
-        require(hash256(prevouts) == SigHash.hashPrevouts(txPreimage));
 
-        // validate the tx containing the callee contract
-        bytes prevScriptTxId = TxUtil.getPrevoutTxid(prevouts, calleeContractInputIndex);
-        require(hash256(calleeContractTx) == prevScriptTxId);
-
-        // validate the callee contract, i.e., its locking script
-        int lockContractTxOutIndex = TxUtil.getPrevoutOutputIdx(prevouts, selfContractInputIndex);
-        bytes prevScriptCode = TxUtil.readOutput(calleeContractTx, lockContractTxOutIndex).script;
-        require(hash160(prevScriptCode) == this.calleeContractHash);
+        require(TxUtil.verifyContractByHash(
+                    prevouts,
+                    calleeContractInputIndex,
+                    calleeContractTx,
+                    this.calleeContractHash,
+                    txPreimage) == true);
 
         int l = len(outputScript);
         int a = unpack(outputScript[l - 4 * N : l - 3 * N]);

@@ -17,16 +17,12 @@ contract Pay2ContractHash {
             require(checkSig(fromSig, fromPubKey));
         } else {
             // belongs to a contract, not a user
-
-            // validate the tx containing the contract
-            require(hash256(prevouts) == SigHash.hashPrevouts(preimage));
-            bytes contractTxId = TxUtil.getPrevoutTxid(prevouts, contractInputIndex);
-            // validate the contract raw tx
-            require(hash256(contractTx) == contractTxId);
-            // validate the contract, i.e., its locking script
-            int contractOutputIndex = TxUtil.getPrevoutOutputIdx(prevouts, contractInputIndex);
-            bytes contractScript = TxUtil.readOutput(contractTx, contractOutputIndex).script;
-            require(hash160(contractScript) == from);
+            require(TxUtil.verifyContractByHash(
+                        prevouts,
+                        contractInputIndex,
+                        contractTx,
+                        from,
+                        preimage) == true);
         }
 
         require(this.owners.set(tokenId, to, keyIndex));

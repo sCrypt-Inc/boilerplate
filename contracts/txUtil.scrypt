@@ -130,4 +130,25 @@ library TxUtil {
     int offset = i * OUTPOINT_LEN;
     return Utils.fromLEUnsigned(prevouts[offset + TX_ID_LEN : offset + OUTPOINT_LEN]);
   }
+
+  static function verifyContractByHash(bytes prevouts,
+                                       int inputIdx, 
+                                       bytes prevTx,
+                                       Ripemd160 contractScriptHash,
+                                       SigHashPreimage preimage) : bool {
+    bool res = true;
+    res = res && hash256(prevouts) == SigHash.hashPrevouts(preimage);
+    
+    // validate the tx containing the called contract
+    bytes prevTxId = TxUtil.getPrevoutTxid(prevouts, inputIdx);
+    res = res && hash256(prevTx) == prevTxId;
+
+    // validate the called contract, i.e., its locking script 
+    int outputIndex = TxUtil.getPrevoutOutputIdx(prevouts, inputIdx);
+    bytes contractScript = TxUtil.readOutput(prevTx, outputIndex).script;
+    res = res && hash160(contractScript) == contractScriptHash;
+
+    return res;
+  }
+
 }
