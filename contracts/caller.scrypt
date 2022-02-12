@@ -20,7 +20,7 @@ contract Caller {
                     calleeContractInputIndex,
                     calleeContractTx,
                     this.calleeContractHash,
-                    txPreimage) == true);
+                    txPreimage));
 
         int l = len(outputScript);
         int a = unpack(outputScript[l - 4 * N : l - 3 * N]);

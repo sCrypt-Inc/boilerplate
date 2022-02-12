@@ -22,7 +22,7 @@ contract Pay2ContractHash {
                         contractInputIndex,
                         contractTx,
                         from,
-                        preimage) == true);
+                        preimage));
         }
 
         require(this.owners.set(tokenId, to, keyIndex));
