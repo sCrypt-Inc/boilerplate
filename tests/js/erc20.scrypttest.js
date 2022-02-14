@@ -95,8 +95,7 @@ describe('Test sCrypt contract Erc20 In Javascript', () => {
 
     const receiverKeyIndex = findKeyIndex(map, receiver);
 
-    const erc20 = new ERC20(FIRST_MINT, toHashedMap(map))
-    erc20._totalSupply = FIRST_MINT
+    const erc20 = coin.liberc20.clone();
     erc20.balances = toHashedMap(map)
     let newLockingScript = coin.getNewStateScript({
       liberc20: erc20
@@ -145,8 +144,7 @@ describe('Test sCrypt contract Erc20 In Javascript', () => {
     map.set(receiver, senderBalance - amount)
     map.set(sender, receiverBalance + amount)
 
-    const erc20 = new ERC20(FIRST_MINT, toHashedMap(map))
-    erc20._totalSupply = FIRST_MINT
+    const erc20 = coin.liberc20.clone();
     erc20.balances = toHashedMap(map)
     let newLockingScript = coin.getNewStateScript({
       liberc20: erc20
@@ -196,8 +194,7 @@ describe('Test sCrypt contract Erc20 In Javascript', () => {
 
     const receiverKeyIndex = findKeyIndex(map, sender);
 
-    const erc20 = new ERC20(FIRST_MINT, toHashedMap(map))
-    erc20._totalSupply = FIRST_MINT
+    const erc20 = coin.liberc20.clone();
     erc20.balances = toHashedMap(map)
     let newLockingScript = coin.getNewStateScript({
       liberc20: erc20
