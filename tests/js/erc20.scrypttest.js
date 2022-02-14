@@ -34,6 +34,8 @@ describe('Test sCrypt contract Erc20 In Javascript', () => {
   before(() => {
     map = new Map();
     erc20 = new ERC20(0, toHashedMap(map));
+    erc20._totalSupply = 0
+    erc20.balances = toHashedMap(map)
     coin = new Coin(new PubKey(toHex(publicKeyMinter)), erc20)
   });
 
@@ -45,6 +47,7 @@ describe('Test sCrypt contract Erc20 In Javascript', () => {
 
     map.set(sender, FIRST_MINT)
 
+    const erc20 = coin.liberc20.clone();
     erc20._totalSupply = FIRST_MINT
     erc20.balances = toHashedMap(map)
 
