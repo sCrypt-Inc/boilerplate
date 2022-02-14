@@ -25,7 +25,7 @@ let map = new Map();
 const tokenId = 111;
 map.set(tokenId, new PubKeyHash(toHex(pkh)))
 
-// tx that transfering token from PubKeyHash to Counter ContractHash
+// tx that transfers token from PubKeyHash to Counter's contract hash
 const tx1 = newTx(inputSatoshis);
 
 describe('Pay2ContractHash', () => {
@@ -39,7 +39,7 @@ describe('Pay2ContractHash', () => {
       });
     
 
-    it('should success when token transfer from PubKeyHash to Counter ContractHash', () => {
+    it('should succeed when token is transferred from a PubKeyHash to hash of Counter contract', () => {
 
 
         map.set(tokenId, counterContractHash)
@@ -74,7 +74,7 @@ describe('Pay2ContractHash', () => {
     });
 
 
-    it('should success when transfer token from Counter ContractHash to PubKeyHash', () => {
+    it('should succeed when token is transferred from Counter to a PubKeyHash', () => {
 
 
         // tx that deploying a Counter
@@ -119,7 +119,7 @@ describe('Pay2ContractHash', () => {
 
 
 
-    it('should fail when transfer token without Counter as a input', () => {
+    it('should fail when transferring token without Counter as an input', () => {
 
 
         // tx that deploying a Counter
@@ -137,7 +137,7 @@ describe('Pay2ContractHash', () => {
             owners: toHashedMap(map)
         })
 
-        // tx that transfering token from Counter ContractHash to PubKeyHash
+        // tx that transferstoken from Counter ContractHash to PubKeyHash
         const tx3 = new bsv.Transaction();
         tx3.addInput(createInputFromPrevTx(tx1))
         .addInput(createInputFromPrevTx(tx2))
