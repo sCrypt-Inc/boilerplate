@@ -1,0 +1,8 @@
+
+contract HelloWolrd {
+
+    public function unlock(bytes message) {
+        
+        require(message == "hello world");
+    }
+}

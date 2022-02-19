@@ -4,6 +4,18 @@
     {
       "type": "scrypt",
       "request": "launch",
+      "name": "Debug Hello World",
+      "program": "${workspaceFolder}/contracts/helloworld.scrypt",
+      "constructorArgs": [
+      ],
+      "pubFunc": "unlock",
+      "pubFuncArgs": [
+        "\"hello world\""
+      ]
+    },
+    {
+      "type": "scrypt",
+      "request": "launch",
       "internalConsoleOptions": "openOnSessionStart",
       "name": "Debug Counter",
       "program": "${workspaceFolder}/contracts/counter.scrypt",
