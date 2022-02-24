@@ -1,40 +1,36 @@
 import "util.scrypt";
+import "txUtil.scrypt";
 /**
  * A non-fungible token enforced by miners at layer 1
  */
 contract SPVToken {
+    @state
+    bytes tokenId;
+
+    @state
+    PubKey owner;
+
+    // uninitialized token ID
+    static const int TokenIdLen = Constants.TxIdLen;
+    static const int PrevTxIdIdx = 5;
+    static const int UnlockingScriptIdx = 41;
+ 
+    static const bytes NullTokenId = num2bin(0, TokenIdLen);
+
     // prevTx: tx being spent by the current tx
     // prevPrevTx: tx being spent by prevTx
     public function transfer(Sig senderSig, PubKey receiver, int satoshiAmount, SigHashPreimage txPreimage, bytes prevTx, bytes prevPrevTx) {
-        // constants
-        int TokenIdLen = Constants.TxIdLen;
-        int PrevTxIdIdx = 5;
-        int UnlockingScriptIdx = 41;
-        // uninitialized token ID
-        bytes NullTokenId = num2bin(0, TokenIdLen);
 
-        require(Tx.checkPreimage(txPreimage));
-
-        // read previous locking script: codePart + OP_RETURN + tokenID + ownerPublicKey
-        bytes lockingScript = SigHash.scriptCode(txPreimage);
-        int scriptLen = len(lockingScript);
-
-        // constant part of locking script: upto OP_RETURN
-        int constStart = scriptLen - TokenIdLen - Constants.PubKeyLen;
-        bytes constPart = lockingScript[: constStart];
-
-        PubKey sender = PubKey(lockingScript[constStart + TokenIdLen :]);
         // authorize
-        require(checkSig(senderSig, sender));
+        require(checkSig(senderSig, this.owner));
 
         bytes outpoint = SigHash.outpoint(txPreimage);
         bytes prevTxId = outpoint[: TokenIdLen];
         require(hash256(prevTx) == prevTxId);
 
-        bytes tokenId = lockingScript[constStart : constStart + TokenIdLen];
-        if (tokenId == NullTokenId) {
+        if (this.tokenId == NullTokenId) {
             // get prevTxId and use it to initialize token ID
-            tokenId = prevTxId;
+            this.tokenId = prevTxId;
         }
         else {
             /*
@@ -44,24 +40,27 @@ contract SPVToken {
             // TODO: assume 1 input, to extend to multiple inputs
             bytes prevPrevTxId = prevTx[PrevTxIdIdx : PrevTxIdIdx + Constants.TxIdLen];
             require(hash256(prevPrevTx) == prevPrevTxId);
-
-            int unlockingScriptLen = Util.readVarintLen(prevPrevTx[UnlockingScriptIdx :]);
-
             // TODO: only validate output 0 here, to extend to multiple outputs
-            int lockingScriptIdx = UnlockingScriptIdx + unlockingScriptLen + Constants.InputSeqLen + 1 /* output count length */ + Constants.OutputValueLen;
-            bytes prevLockingScript = Utils.readVarint(prevPrevTx[lockingScriptIdx :]);
+            bytes contractScript = TxUtil.readOutput(prevPrevTx, 0).script;
+            ScriptCode prevSc = Util.parseScriptCode(contractScript);
+            ScriptCode sc = Util.parseScriptCode(SigHash.scriptCode(txPreimage));
+            bytes prevTokenId = prevSc.dataPart[ : TokenIdLen];
             // ensure prev tx uses the same contract code
-            require(len(prevLockingScript) == len(lockingScript));
-            require(prevLockingScript[: constStart] == constPart);
+            require(prevSc.codePart == sc.codePart);
             // belongs to the same token
-            bytes prevTokenId = prevLockingScript[constStart : constStart + TokenIdLen];
-            require(prevTokenId == tokenId || prevTokenId == NullTokenId);
+            require(prevTokenId == this.tokenId || prevTokenId == NullTokenId);
         }
 
-        // validate parent tx
-        bytes outputScript = constPart + tokenId + receiver;
+        this.owner = receiver;
 
-        bytes output = Utils.buildOutput(outputScript, satoshiAmount);
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        require(this.propagateState(txPreimage, satoshiAmount));
+    }
+
+    // propagate state to the next UTXO
+    function propagateState(SigHashPreimage preimage, int amount) : bool {
+        require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
+        bytes outputScript = this.getStateScript();
+        bytes output = Utils.buildOutput(outputScript, amount);
+        return hash256(output) == SigHash.hashOutputs(preimage);
     }
 }
