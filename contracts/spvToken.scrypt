@@ -13,7 +13,6 @@ contract SPVToken {
     // uninitialized token ID
     static const int TokenIdLen = Constants.TxIdLen;
     static const int PrevTxIdIdx = 5;
-    static const int UnlockingScriptIdx = 41;
  
     static const bytes NullTokenId = num2bin(0, TokenIdLen);
 

@@ -75,22 +75,21 @@ library Util {
 
 
 
-    //read data part and contractPart of a stateful contract
+    //read data part and contract part of a stateful contract
     static function parseScriptCode(bytes scriptCode) : ScriptCode { 
 
         int len = len(scriptCode);
         bytes metaScript = scriptCode[len - 5:];
 
-        ScriptCode sc = {0, 0, b'', b''};
-        sc.version = Utils.fromLEUnsigned(metaScript[4:5]);
-        sc.dataPartLen = Utils.fromLEUnsigned(metaScript[0:4]);
-        const int start = len - sc.dataPartLen - 5;
-        sc.dataPart = scriptCode[start: start + sc.dataPartLen];
-        sc.codePart = scriptCode[0: start];
-        return sc;
+        const int version = Utils.fromLEUnsigned(metaScript[4:5]);
+        const int dataPartLen = Utils.fromLEUnsigned(metaScript[0:4]);
+        const int start = len - dataPartLen - 5;
+        const bytes dataPart = scriptCode[start: start + dataPartLen];
+        const bytes codePart = scriptCode[: start];
+        return {version, dataPartLen, dataPart, codePart};
     }
 
-    //get codeHash of a stateful contract
+    //get code hash of a stateful contract
     static function codeHash(SigHashPreimage txPreimage) : bytes { 
 
         ScriptCode sc = Util.parseScriptCode(txPreimage);
