@@ -1,3 +1,14 @@
+
+struct ScriptCode {
+    int version;
+    int dataPartLen;
+    /* The datapart consists of the value order of the @state properties, where the bool type is represented by a byte, 
+    and the other types use minimal push rules */
+    bytes dataPart;
+    // codePart of the contract
+    bytes codePart;
+}
+
 library Util {
 
     // build P2PKH script from public key
@@ -60,5 +71,29 @@ library Util {
             header = b'4e' + Utils.toLEUnsigned(n, 4) + b;
         }
         return header;
+    }
+
+
+
+    //read data part and contract part of a stateful contract
+    static function parseScriptCode(bytes scriptCode) : ScriptCode { 
+
+        int len = len(scriptCode);
+        bytes metaScript = scriptCode[len - 5:];
+
+        const int version = Utils.fromLEUnsigned(metaScript[4:5]);
+        const int dataPartLen = Utils.fromLEUnsigned(metaScript[0:4]);
+        const int start = len - dataPartLen - 5;
+        const bytes dataPart = scriptCode[start: start + dataPartLen];
+        const bytes codePart = scriptCode[: start];
+        return {version, dataPartLen, dataPart, codePart};
+    }
+
+    //get code hash of a stateful contract
+    static function codeHash(SigHashPreimage txPreimage) : bytes { 
+
+        ScriptCode sc = Util.parseScriptCode(txPreimage);
+
+        return hash160(sc.codePart);
     }
 }
