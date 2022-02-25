@@ -17,9 +17,9 @@ contract IncrementLocktime {
     ];
 
     static const int MAX_CHUNKS = 2;
-    static const int MAX_VOUT = 2;
 
     public function main(bytes partialHash, bytes partialTx, bytes padding, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
         // get parent tx's id
         bytes txid = SigHash.outpoint(txPreimage)[:32];
         // validate partial tx without the full tx
