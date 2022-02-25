@@ -1,0 +1,53 @@
+import "util.scrypt";
+import "serializer.scrypt";
+import "txUtil.scrypt";
+
+// same as contract IncrementLocktime, but splitting it
+contract IncrementLocktimeSplit {
+    int delay;
+
+    static const int calleeContractInputIndex = 1;
+
+    static const int N = 3;
+    // all possble hashes of the callee contract, i.e., all possible MAX_CHUNKS supported
+    PubKeyHash[N] calleeContractHashes;
+
+    public function main(int selector, bytes partialHash, bytes partialTx, bytes padding, bytes prevouts, 
+        bytes calleeContractTx, bytes outputScript, int amount, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
+        // get parent tx's id
+        bytes txid = SigHash.outpoint(txPreimage)[:32];
+        
+
+        // validate partial tx without the full tx
+        // P2CH: Pay to Contract Hash
+        require(TxUtil.verifyContractByHash(
+                    prevouts,
+                    calleeContractInputIndex,
+                    calleeContractTx,
+                    this.calleeContractHashes[selector],    // which MAX_CHUNKS
+                    txPreimage));
+        // read function call arguments and return
+        // remove leading OP_FALSE OP_RETURN
+        bytes data = outputScript[2:];
+        Reader r = new Reader(data);
+        // arguments
+        require(r.readBytes() == partialHash);
+        require(r.readBytes() == partialTx);
+        require(r.readBytes() == padding);
+        // return value
+        require(r.readBytes() == txid);
+        // once we reach here, the following must be true
+        //require(sha256(partialSha256(partialHash, partialTx, padding)) == txid);
+
+        
+        // get parent tx's nlocktime as the last 4 bytes
+        // note: this assume the 4-byte nlocktime is in the last chunk, not split across the last 2 chunks
+        int nLocktimeParent = Utils.fromLEUnsigned(partialTx[len(partialTx) - 4 :]);
+        // ensure timelock is incremented as expected
+        require(SigHash.nLocktime(txPreimage) - nLocktimeParent == this.delay);
+
+        bytes output = Utils.buildOutput(outputScript, amount);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+    }
+}
