@@ -44,7 +44,8 @@ contract SPVToken {
             bytes contractScript = TxUtil.readOutput(prevPrevTx, 0).script;
             ScriptCode prevSc = Util.parseScriptCode(contractScript);
             ScriptCode sc = Util.parseScriptCode(SigHash.scriptCode(txPreimage));
-            bytes prevTokenId = prevSc.dataPart[ : TokenIdLen];
+            //bool firtCall = prevSc.dataPart[ : 1] == b'01' ? true : false;
+            bytes prevTokenId = prevSc.dataPart[ 1: TokenIdLen];
             // ensure prev tx uses the same contract code
             require(prevSc.codePart == sc.codePart);
             // belongs to the same token
