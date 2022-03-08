@@ -1,0 +1,25 @@
+//
+library Shift {
+
+    // return 2^n
+    static function pow2 (int n) : int {
+
+        return unpack(
+            num2bin(0, n/8) +
+            (b'0100' << n%8)
+        );
+    }
+
+    // binary left shift number x by n places
+    static function left (int x, int n) : int {
+
+        return x * pow2(n);
+    }
+
+    // binary right shift number x by n places
+    static function right (int x, int n) : int {
+
+        return x / pow2(n);
+    }
+
+}
