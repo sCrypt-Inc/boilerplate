@@ -1,0 +1,35 @@
+// A transparent Pyramid scheme
+contract Pyramid {
+    @state
+    PubKeyHash schemer;
+
+    // satoshi amount required to enter the scheme
+    int entryFee;
+
+    // dust limit
+    static const int DUST = 1;
+
+    // recruite two members to get double payout
+    public function recruit(PubKeyHash recruit0, PubKeyHash recruit1, SigHashPreimage txPreimage) {
+        // use ANYONECANPAY so recruits can deposit
+        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
+
+        // commission payout: double the original entry fee
+        bytes commissionScript = Utils.buildPublicKeyHashScript(this.schemer);
+        bytes commissionOutput = Utils.buildOutput(commissionScript, 2 * this.entryFee);
+
+        // keep the scheme going from recruit0
+        this.schemer = recruit0;
+        bytes recruitScript0 = this.getStateScript();
+        bytes recruitOutput0 = Utils.buildOutput(recruitScript0, DUST);
+
+        // keep the scheme going from recruit1
+        this.schemer = recruit1;
+        bytes recruitScript1 = this.getStateScript();
+        bytes recruitOutput1 = Utils.buildOutput(recruitScript1, DUST);
+
+        bytes output = commissionOutput + recruitOutput0 + recruitOutput1;
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+    }
+}
