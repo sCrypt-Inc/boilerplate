@@ -1,3 +1,5 @@
+
+// https://aaron67.cc/2022/03/13/bsv-smart-contract-faucet/
 contract FaucetV2 {
 
     // miner fee in satoshi per each withdraw
