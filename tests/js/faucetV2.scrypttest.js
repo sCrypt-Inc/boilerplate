@@ -55,14 +55,26 @@ describe('Test Faucet Withdraw', () => {
     })
 
     it('should fail if not meet withdraw interval', () => {
-        const _newLocktime = newLocktime - 1
-        const _newLockingScript = faucet.getNewStateScript({ lastWithdrawTimestamp: _newLocktime })
+        // nLocktime too low
+        let _newLocktime = newLocktime - 1
+        let _newLockingScript = faucet.getNewStateScript({ lastWithdrawTimestamp: _newLocktime })
         tx.setOutput(0, new bsv.Transaction.Output({ script: _newLockingScript, satoshis: contractAmount }))
         tx.nLockTime = _newLocktime
 
-        const _preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis)
-        const context = { tx, inputIndex, inputSatoshis }
-        const result = faucet.withdraw(new SigHashPreimage(toHex(_preimage)), new PubKeyHash(toHex(publicKeyHash))).verify(context)
+        let _preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis)
+        let context = { tx, inputIndex, inputSatoshis }
+        let result = faucet.withdraw(new SigHashPreimage(toHex(_preimage)), new PubKeyHash(toHex(publicKeyHash))).verify(context)
+        expect(result.success, result.error).to.be.false
+
+        // nLocktime too high
+        _newLocktime = newLocktime * 2
+        _newLockingScript = faucet.getNewStateScript({ lastWithdrawTimestamp: _newLocktime })
+        tx.setOutput(0, new bsv.Transaction.Output({ script: _newLockingScript, satoshis: contractAmount }))
+        tx.nLockTime = _newLocktime
+
+        _preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis)
+        context = { tx, inputIndex, inputSatoshis }
+        result = faucet.withdraw(new SigHashPreimage(toHex(_preimage)), new PubKeyHash(toHex(publicKeyHash))).verify(context)
         expect(result.success, result.error).to.be.false
 
         tx.setOutput(0, new bsv.Transaction.Output({ script: newLockingScript, satoshis: contractAmount }))

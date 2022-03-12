@@ -17,8 +17,9 @@ contract FaucetV2 {
         require(Tx.checkPreimage(txPreimage));
         // require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
         require(SigHash.nSequence(txPreimage) < 0xffffffff);
-        // require meets the call interval limit
+        // require meets the call interval limits
         require(SigHash.nLocktime(txPreimage) - this.lastWithdrawTimestamp >= this.withdrawIntervals);
+        require(SigHash.nLocktime(txPreimage) - this.lastWithdrawTimestamp < 2 * this.withdrawIntervals);
 
         this.lastWithdrawTimestamp = SigHash.nLocktime(txPreimage);
 
