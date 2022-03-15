@@ -1,0 +1,50 @@
+
+// https://aaron67.cc/2022/03/13/bsv-smart-contract-faucet/
+contract FaucetV2 {
+
+    // miner fee in satoshi per each withdraw
+    static const int withdrawMinerFee = 6000;
+
+    // withdraw interval limit in seconds
+    int withdrawIntervals;
+    // how many satoshis can be withdrawn each time
+    int withdrawAmount;
+    // public key hash of the creator
+    PubKeyHash creatorPkh;
+
+    @state
+    int lastWithdrawTimestamp;
+
+    public function withdraw(SigHashPreimage txPreimage, PubKeyHash pkh) {
+        require(Tx.checkPreimage(txPreimage));
+        // require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
+        require(SigHash.nSequence(txPreimage) < 0xffffffff);
+        // require meets the call interval limits
+        require(SigHash.nLocktime(txPreimage) - this.lastWithdrawTimestamp >= this.withdrawIntervals);
+        require(SigHash.nLocktime(txPreimage) - this.lastWithdrawTimestamp < 2 * this.withdrawIntervals);
+
+        this.lastWithdrawTimestamp = SigHash.nLocktime(txPreimage);
+
+        bytes contractOutput = Utils.buildOutput(this.getStateScript(), SigHash.value(txPreimage) - this.withdrawAmount - withdrawMinerFee);
+        bytes withdrawOutput = Utils.buildOutput(Utils.buildPublicKeyHashScript(pkh), this.withdrawAmount);
+        // require 2 outputs
+        bytes expectedOutputs = contractOutput + withdrawOutput;
+        require(SigHash.hashOutputs(txPreimage) == hash256(expectedOutputs));
+    }
+
+    public function deposit(SigHashPreimage txPreimage, int depositAmount) {
+        SigHashType sigHashType = SigHash.SINGLE | SigHash.ANYONECANPAY | SigHash.FORKID;
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
+        // avoid stealing money from the contract
+        require(depositAmount > 0);
+
+        bytes expectedOutput = Utils.buildOutput(this.getStateScript(), SigHash.value(txPreimage) + depositAmount);
+        require(SigHash.hashOutputs(txPreimage) == hash256(expectedOutput));
+    }
+
+    public function destroy(Sig sig, PubKey pk) {
+        // only the creator can destroy
+        require(hash160(pk) == this.creatorPkh);
+        require(checkSig(sig, pk));
+    }
+}
