@@ -1,0 +1,38 @@
+
+// a simple crowdfunding contract
+contract Crowdfund {
+    // receiver of the fund
+    PubKeyHash recepient;
+    
+    PubKey contributor;
+
+    int deadline;
+    
+    // minimum amount to raise
+    int target;
+
+    // collect pledged fund
+    public function collect(SigHashPreimage txPreimage, int raisedAmount) {
+        require(Tx.checkPreimage(txPreimage));
+
+        // reach target
+        require(raisedAmount >= this.target);
+
+        // fund goes to the recepient
+        bytes lockingScript = Utils.buildPublicKeyHashScript(this.recepient);
+        
+        bytes output = Utils.buildOutput(lockingScript, raisedAmount);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+
+    }
+
+    // contributor can take the fund back after deadline
+    public function refund(Sig sig, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
+
+        // fundraising expired
+        require(SigHash.nLocktime(txPreimage) >= this.deadline);
+
+        require(checkSig(sig, this.contributor));
+    }
+}
