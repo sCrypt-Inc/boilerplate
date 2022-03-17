@@ -1,16 +1,16 @@
 import "shift.scrypt";
 
 contract Test {
-  public function unlock(int x, int n, int op, int expected) {
+  public function unlock(int x, int n, bytes op, int expected) {
     
     int result = 0;
-    if (pack(op) == "pow2") {
+    if (op == "pow2") {
         result = Shift.pow2(n);
     }
-    else if (pack(op) == "left") {
+    else if (op == "left") {
         result = Shift.left(x, n);
     }
-    else if (pack(op) == "right") {
+    else if (op == "right") {
         result = Shift.right(x, n);
     }
 

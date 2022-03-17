@@ -15,7 +15,7 @@ const Test = buildContractClass(contract);
 //
 const s2b = str => new Bytes(toHex(Buffer.from(str)));
 
-describe("Test Shift Library In Javascript", () => {
+describe("Test Shift10 Library In Javascript", () => {
   let test, result;
 
   before(() => {
