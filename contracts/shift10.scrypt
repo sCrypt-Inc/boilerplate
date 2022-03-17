@@ -1,0 +1,69 @@
+/*
+
+NOTICES:
+    1) due to the computational nature of base 10, pow(n) is limited (n=10^999 as max value)
+    2) import of this module adds ~40 bytes to a contract, even if not using any of its functions
+       (subject to change, depending on future compiler optimizations)
+
+*/
+library Shift10 {
+
+    static const int i1 = 10;
+    static const int i2 = 100;
+    static const int i3 = 1000;
+    static const int i4 = 10000;
+    static int i5 = 100000;
+    static int [] arr0 = [
+        // 1, i1, i2, i1*i2, i2*i2, i5, i5*i1, i5*i2, i5*i1*i2, i5*i2*i2
+        1, i1, i2, i3, i4, i5,
+        i5*i1, i5*i2, i5*i3, i5*i4
+    ];
+
+    static int i1_1 = i5*i5; // 10000000000;
+    static int i2_1 = i1_1*i1_1;
+    static int i3_1 = i2_1*i1_1;
+    static int i4_1 = i2_1*i2_1;
+    static int i5_1 = i4_1*i1_1;
+    static int [] arr1 = [
+        // 1, i1_1, i2_1, i1_1*i2_1, i2_1*i2_1, i5_1, i5_1*i1_1, i5_1*i2_1, i5_1*i1_1*i2_1, i5_1*i2_1*i2_1
+        1, i1_1, i2_1, i3_1, i4_1, i5_1,
+        i5_1*i1_1, i5_1*i2_1, i5_1*i3_1, i5_1*i4_1
+    ];
+
+    static int i1_2 = i5_1*i5_1;
+    static int i2_2 = i1_2*i1_2;
+    static int i3_2 = i2_2*i1_2;
+    static int i4_2 = i2_2*i2_2;
+    static int i5_2 = i4_2*i1_2;
+    static int [] arr2 = [
+        // 1, i1_2, i2_2, i1_2*i2_2, i2_2*i2_2, i5_2, i5_2*i1_2, i5_2*i2_2, i5_2*i1_2*i2_2, i5_2*i2_2*i2_2
+        1, i1_2, i2_2, i3_2, i4_2, i5_2,
+        i5_2*i1_2, i5_2*i2_2, i5_2*i3_2, i5_2*i4_2
+    ];
+
+    // return 10^n
+    static function pow (int n) : int {
+
+        // FAIL otherwise
+        require (n <=999);
+
+        return
+            arr0[ n%10 ]*
+            arr1[ (n/10)%10 ]*
+            arr2[ (n/100)%10 ]
+        ;
+    }
+
+    // base10 left shift number x by n places
+    static function left (int x, int n) : int {
+
+        return x * pow(n);
+    }
+
+    // base10 right shift number x by n places
+    static function right (int x, int n) : int {
+
+        return x / pow(n);
+    }
+
+}
