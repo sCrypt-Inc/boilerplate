@@ -1,0 +1,30 @@
+// disclose private key of the specified public key, indirectly
+contract PrivateKeyPuzzle {
+    PubKey pubKey;
+
+    // extract r from DER-encoded signature
+    static function extractRFromSig(Sig sig) : bytes {
+        int rlen = unpack(sig[3 : 4]);
+        return sig[4 : 4 + rlen];
+    }
+
+    // extract SIGHASH flag from DER-encoded signature
+    static function extractSighashFlagFromSig(Sig sig) : SigHashType {
+        int len = len(sig);
+        return SigHashType(sig[len - 2 : ]);
+    }
+
+    public function unlock(Sig sig1, Sig sig2) {
+        require(checkSig(sig1, this.pubKey));
+        // ensure signed messages are different option (1): insert CODESEPERATOR in between two checkSigs
+        ***
+        require(checkSig(sig2, this.pubKey));
+
+        // ensure signed messages are different option (2): use different sighash flags
+        require(extractSighashFlagFromSig(sig1) == (SigHash.NONE | SigHash.FORKID));
+        require(extractSighashFlagFromSig(sig2) != (SigHash.NONE | SigHash.FORKID));
+
+        // sign with same r, thus same ephemeral key k
+        require(extractRFromSig(sig1) == extractRFromSig(sig2));
+    }
+}
