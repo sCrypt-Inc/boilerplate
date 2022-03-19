@@ -1,19 +1,14 @@
 contract RPuzzle {
     Ripemd160 rhash;
 
-    constructor(Ripemd160 rhash) {
-        this.rhash = rhash;
-    }
-
-    function getSigR(Sig sigr) : bytes {
-        bytes lenBytes = sigr[3 : 4];
-        int len = unpack(lenBytes);
-        bytes r = sigr[4 : 4 + len];
-        return r;
+    // extract r from DER-encoded signature
+    static function extractRFromSig(Sig sig) : bytes {
+        int rlen = unpack(sig[3 : 4]);
+        return sig[4 : 4 + rlen];
     }
 
     public function unlock(Sig sig, PubKey pubKey, Sig sigr) {
-        require(this.rhash == hash160(this.getSigR(sigr)));
+        require(this.rhash == hash160(extractRFromSig(sigr)));
         require(checkSig(sigr, pubKey));
         require(checkSig(sig, pubKey));
     }
