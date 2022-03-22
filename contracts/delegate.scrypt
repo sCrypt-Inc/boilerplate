@@ -1,0 +1,41 @@
+import "./oracle.scrypt";
+
+contract Delegate {
+    PubKey owner;
+
+    static const int N = 3;
+
+    // can only delegate once
+    public function delegate(Sig ownerSig, PubKey delegate, Sig delegateSig, 
+            PubKey derivedPubKey, PubKey X, int lambda, SigHashPreimage txPreimage) {
+        
+        // ensure delegate's public key is signed by the owner
+        require(Oracle.verifyData(delegate, ownerSig, this.owner, derivedPubKey, X, lambda, txPreimage));
+
+        // delegate signs
+        require(checkSig(delegateSig, delegate));
+    }
+
+    // can delegate N times
+    public function delegateN(Sig[N] ownerSig, PubKey[N] delegate, Sig delegateSig, 
+            PubKey[N] derivedPubKey, PubKey[N] X, int[N] lambda, SigHashPreimage txPreimage) {
+        
+        // last delegate
+        PubKey lastDelegate = this.owner;
+        bool break = false;
+        loop (N) : i {
+            if (!break) {
+                PubKey owner = i == 0 ? this.owner : delegate[i - 1];
+                // check if the next delegate is delegated by the current delegate
+                if (Oracle.verifyData(delegate[i], ownerSig[i], owner, derivedPubKey[i], X[i], lambda[i], txPreimage)) {
+                    lastDelegate = delegate[i];
+                } else {
+                    break = true;
+                }
+            }
+        }
+        
+        // last delegate signs
+        require(checkSig(delegateSig, lastDelegate));
+    }
+}
