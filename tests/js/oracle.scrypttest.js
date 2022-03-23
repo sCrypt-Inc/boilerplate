@@ -6,7 +6,7 @@ const Point = bsv.crypto.Point;
 
 const Signature = bsv.crypto.Signature
 
-const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
+const sighashType = Signature.SIGHASH_NONE | Signature.SIGHASH_FORKID
 
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');

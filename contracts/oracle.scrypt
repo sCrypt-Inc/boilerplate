@@ -14,7 +14,7 @@ library Oracle {
         PrivKey x = PrivKey(Utils.fromLEUnsigned(hash));
 
         // verify X = x * G?
-        require(Tx.checkPreimageAdvanced(txPreimage, x, X, Tx.invK, Tx.r, Tx.rBigEndian, SigHashType(SigHash.ALL | SigHash.FORKID)));
+        require(Tx.checkPreimageAdvanced(txPreimage, x, X, Tx.invK, Tx.r, Tx.rBigEndian, SigHashType(SigHash.NONE | SigHash.FORKID)));
 
         // verify P' = P + X
         require(EC.isPubKeySum(oraclePubKey, X, lambda, derivedOraclePubKey));
