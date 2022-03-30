@@ -11,6 +11,8 @@ struct Signature {
 library EC {
 
     static const int S = 33;    // 32 bytes plus sign byte
+    // upper bound for eGCD
+    static const int UB = 368;
     static const Point G = { 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798,
                              0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8 };
 
@@ -32,7 +34,7 @@ library EC {
             OP_2DUP OP_MOD OP_DUP OP_0 OP_LESSTHAN OP_IF OP_DUP OP_2 OP_PICK OP_ADD OP_ELSE OP_DUP OP_ENDIF OP_NIP OP_2 OP_ROLL OP_DROP
             OP_DUP OP_TOALTSTACK OP_TOALTSTACK OP_TOALTSTACK
             OP_1 OP_0 OP_1
-            loop(368) {
+            loop(UB) {
                 OP_FROMALTSTACK OP_FROMALTSTACK OP_2DUP OP_DUP OP_IF OP_TUCK OP_MOD OP_TOALTSTACK OP_TOALTSTACK OP_DIV OP_MUL OP_SUB OP_TUCK OP_ELSE OP_TOALTSTACK OP_TOALTSTACK OP_DROP OP_DROP OP_ENDIF
             }
             OP_FROMALTSTACK OP_FROMALTSTACK OP_DROP OP_DROP OP_DROP OP_FROMALTSTACK OP_SWAP OP_NIP
