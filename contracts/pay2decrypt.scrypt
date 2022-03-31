@@ -1,0 +1,12 @@
+import "ecArithmeticOptimized.scrypt";
+
+contract Pay2Decrypt {
+    // ciphertext: (K, C)
+    Point K;
+    Point C;
+
+    public function decrypt(PrivKey privKey, Point plaintext) {
+        Point sharedSecret = EC.multByScalar(this.K, privKey);
+        require(EC.addPoints(sharedSecret, plaintext) == this.C);
+    }
+}
