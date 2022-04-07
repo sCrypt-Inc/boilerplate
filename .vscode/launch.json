@@ -17,6 +17,18 @@
       "type": "scrypt",
       "request": "launch",
       "internalConsoleOptions": "openOnSessionStart",
+      "name": "Debug Test Library",
+      "program": "${workspaceFolder}/contracts/library.scrypt",
+      "constructorArgs": [
+        1, [1, 1]
+      ],
+      "pubFunc": "unlock",
+      "pubFuncArgs": [1]
+    },
+    {
+      "type": "scrypt",
+      "request": "launch",
+      "internalConsoleOptions": "openOnSessionStart",
       "name": "Debug Counter",
       "program": "${workspaceFolder}/contracts/counter.scrypt",
       "constructorArgs": [
