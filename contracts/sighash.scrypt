@@ -1,0 +1,23 @@
+
+import "ec.scrypt";
+
+// a template to implement any new SIGHASH flags
+contract UniversalSigHash {
+    PubKey pubKey;
+
+    // sig is with SIGHASH flag SIGHASH_NOINPUT
+    public function checkSigHashNoInput(Sig sig, SigHashPreimage sighash) {
+        // get sighash preimage using SIGHASH_ALL
+        require(Tx.checkPreimage(sighash));
+
+        /* reconstruct the new sighash being signed */
+        bytes sighash1 = sighash[: 4];
+        // set item 2, 3, and 4 to 0
+        bytes blankedSighash2to3 = b'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+        bytes sighash5to10 = sighash[104 : ];
+        bytes sighashNew = sighash1 + blankedSighash2to3 + sighash5to10;
+
+        // check signature against the new sighash using elliptic curve library
+        require(EC.verifySig(sighashNew, sig, this.pubKey));
+    }
+}
