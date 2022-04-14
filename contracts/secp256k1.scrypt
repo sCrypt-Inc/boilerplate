@@ -131,7 +131,7 @@ library SECP256K1 {
         bytes mask = reverseBytes(num2bin(1, S), S);
         bytes zero = reverseBytes(num2bin(0, S), S);
 
-        loop (curveBits) : i {
+        loop (CURVE_BITS) : i {
             if ((mb & (mask << i)) != zero) {
                 q = addPoints(q, doublingsG[i]);
             }
