@@ -133,7 +133,7 @@ library SECP256K1 {
 
         loop (CURVE_BITS) : i {
             if ((mb & (mask << i)) != zero) {
-                q = addPoints(q, doublingsG[i]);
+                q = addPoints(q, DOUBLINGS_G[i]);
             }
         }
 
