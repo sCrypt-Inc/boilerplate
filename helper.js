@@ -286,6 +286,12 @@ function serializeHeader(header) {
       + uint32Tobin(header.nonce)
 }
 
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+}
+
 module.exports = {
   inputIndex,
   inputSatoshis,
@@ -314,5 +320,6 @@ module.exports = {
   num2hex,
   toTarget,
   pdiff2Target,
-  serializeHeader
+  serializeHeader,
+  getRandomInt
 }
