@@ -1,12 +1,11 @@
-
 import "ec.scrypt";
 
 // a template to implement any new SIGHASH flags
 contract UniversalSigHash {
-    PubKey pubKey;
+    Point pubKey;
 
     // sig is with SIGHASH flag SIGHASH_NOINPUT
-    public function checkSigHashNoInput(Sig sig, SigHashPreimage sighash) {
+    public function checkSigHashNoInput(Signature sig, SigHashPreimage sighash) {
         // get sighash preimage using SIGHASH_ALL
         require(Tx.checkPreimage(sighash));
 

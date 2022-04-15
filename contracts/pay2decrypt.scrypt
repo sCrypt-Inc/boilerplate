@@ -1,4 +1,4 @@
-import "ecArithmeticOptimized.scrypt";
+import "ec.scrypt";
 
 contract Pay2Decrypt {
     // ciphertext: (K, C)

@@ -1,0 +1,24 @@
+import "ec.scrypt";
+
+
+contract P2GPK {
+
+    Point pk;
+
+    public function unlock(int e, int z, SigHashPreimage preimage) {
+        require(Tx.checkPreimage(preimage));
+
+        // Compute A = z*G - e*PK
+        Point zG = EC.multByScalar(EC.G, z);
+        Point ePK = EC.multByScalar(this.pk, e);
+        Point A = EC.addPoints(zG, EC.negatePoint(ePK));
+
+        // Compute e* = RO(preimage, st, A)
+        bytes st = EC.point2PubKey(EC.G) + EC.point2PubKey(this.pk);
+        bytes bA = EC.point2PubKey(A);
+        int _e = unpack(sha256(preimage + st + bA) + b'00') % 340282366920938463463374607431768211456;
+
+        require(e == _e);
+    }
+
+}

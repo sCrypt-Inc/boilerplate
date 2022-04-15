@@ -1,0 +1,106 @@
+
+struct Point {
+    int x;
+    int y;
+}
+
+// auxiliary data to verify point multiplication
+struct PointMulAux {
+    Point[ECVerify.N] pMultiples;
+    Point[ECVerify.N] qs;
+    int[ECVerify.N1] lambdas1;
+    int[ECVerify.N1] lambdas2;
+}
+
+// elliptic curve Secp256k1
+library ECVerify {
+    // prime modulus
+    static const int P = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
+    // group order
+    static const int n = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
+
+    // in product , should use N = 256, N1 = 255
+    // Here we use a smaller number to provide compilation speed
+    static const int N = 16;
+    static const int N1 = 15; // N - 1
+
+    static const Point ZERO = { 0, 0 };
+    static const Point G = { 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8 };
+
+    static function isSumHelper(Point p1, Point p2, int lambda, Point p) : bool {
+        // check lambda is indeed gradient
+        bool lambdaOK = (p1 == p2) ?
+            (2 * lambda * p1.y - 3 * p1.x * p1.x) % P == 0 :
+            (lambda * (p2.x - p1.x) - (p2.y - p1.y)) % P == 0;
+        // also check p = p1 + p2
+        return lambdaOK && (lambda * lambda - p1.x - p2.x - p.x) % P == 0 && 
+            (lambda * (p1.x - p.x) - p1.y - p.y) % P == 0;
+    }
+
+    // return true if lambda is the gradient of the line between p1 and p2
+    // and p = p1 + p2 
+    static function isSum(Point p1, Point p2, int lambda, Point p) : bool {
+        // special handling of point ZERO
+        // if no point equals to ZERO, call isSumHelper()
+        return p1 == ZERO ? p2 == p : (p2 == ZERO ? p1 == p : (p1.x == p2.x && (p1.y + p2.y) % P == 0) ? p == ZERO : isSumHelper(p1, p2, lambda, p));
+    }
+
+    // same as isSum(), but using type PubKey
+    static function isPubKeySum(PubKey p1, PubKey p2, int lambda, PubKey p) : bool {
+        return isSum(pubKey2Point(p1), pubKey2Point(p2), lambda, pubKey2Point(p));
+    }
+    
+    // return true iff p * x == r
+    static function isMul(Point p, int x, Point r, PointMulAux pma) : bool {
+
+        // validate pMultiples = [p, 2p, 4p, 8p, ...]
+        loop (N) : i {
+            require(i == 0 ? pma.pMultiples[i] == p : isSum(pma.pMultiples[i - 1], pma.pMultiples[i - 1], pma.lambdas1[i - 1], pma.pMultiples[i]));
+        }
+
+        // // x * p = x0 * p + x1 *(2p) + x2 * (4p) + x3 * (8p) + ...
+        // // xi is the i-th bit of x
+        Point P0 = ZERO;
+        loop (N) : i {
+            Point P = x % 2 ? pma.pMultiples[i] : ZERO;
+
+            // right shift by 1
+            x /= 2;
+
+            if (i == 0) {
+                P0 = P;
+            }
+            else if (i == 1) {
+                // first
+                require(isSum(P0, P, pma.lambdas2[i - 1], pma.qs[i - 1]));
+            }
+            else {
+                // rest
+                require(isSum(pma.qs[i - 1], P, pma.lambdas2[i - 1], i < N1 ? pma.qs[i] : r));
+            }
+        }
+
+        return true;
+    }
+
+    // convert a public key to a point, assuming it's uncompressed
+    static function pubKey2Point(PubKey pubKey) : Point {
+        require(pubKey[: 1] == b'04');
+        //convert signed little endian to unsigned big endian
+        int x = Utils.fromLEUnsigned(reverseBytes(pubKey[1 : 33], 32));
+        int y = Utils.fromLEUnsigned(reverseBytes(pubKey[33 : 65], 32));
+        return {x, y};
+    }
+
+    // convert a point to a uncompressed public key
+    static function point2PubKey(Point point) : PubKey {
+        //serializer point.x, point.y to unsigned big endian number
+        return PubKey(b'04' + toBEUnsigned(point.x, 32) + toBEUnsigned(point.y, 32));
+    }
+
+    // convert signed integer `n` to unsigned integer of `l` bytes, in big endian
+    static function toBEUnsigned(int n, static const  int l) : bytes {
+        bytes m = Utils.toLEUnsigned(n, l);
+        return reverseBytes(m,l);
+    }
+}

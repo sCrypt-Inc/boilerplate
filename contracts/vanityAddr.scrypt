@@ -1,4 +1,4 @@
-import "ec.scrypt";
+import "ecVerify.scrypt";
 
 // outsource a vanity address generation
 contract VanityAddr {
@@ -14,7 +14,7 @@ contract VanityAddr {
         require(Tx.checkPreimageAdvanced(txPreimage, x, X, Tx.invK, Tx.r, Tx.rBigEndian, SigHashType(SigHash.ALL | SigHash.FORKID)));
 
         // verify P' = P + X
-        require(EC.isPubKeySum(this.pubKey, X, lambda, derivedPubKey));
+        require(ECVerify.isPubKeySum(this.pubKey, X, lambda, derivedPubKey));
 
         // meet requirement
         require(matchPattern(derivedPubKey, this.pattern));

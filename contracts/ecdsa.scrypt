@@ -1,4 +1,4 @@
-import "ec.scrypt";
+import "ecVerify.scrypt";
 
 struct RSPair {
     int r;
@@ -15,29 +15,29 @@ contract ECDSA {
         int r = rs.r;
         int s = rs.s;
         // within range
-        require(r >= 1 && r < EC.n);
-        require(s >= 1 && s < EC.n);
+        require(r >= 1 && r < ECVerify.n);
+        require(s >= 1 && s < ECVerify.n);
 
         // verify invS
-        require((s * invS) % EC.n == 1);
+        require((s * invS) % ECVerify.n == 1);
         
         int e = unpack(sha256(msg));
-        int u1 = (e * invS) % EC.n;
-        int u2 = (r * invS) % EC.n;
+        int u1 = (e * invS) % ECVerify.n;
+        int u2 = (r * invS) % ECVerify.n;
 
         // U1 = u1 * G
-        require(EC.isMul(EC.G, u1, U1, u1Aux));
+        require(ECVerify.isMul(ECVerify.G, u1, U1, u1Aux));
 
-        Point Q = EC.pubKey2Point(pubKey);
+        Point Q = ECVerify.pubKey2Point(pubKey);
         // U2 = u2 * Q
-        require(EC.isMul(Q, u2, U2, u2Aux));
+        require(ECVerify.isMul(Q, u2, U2, u2Aux));
 
         // P == U1 + U2
-        require(EC.isSum(U1, U2, lambda, P));
+        require(ECVerify.isSum(U1, U2, lambda, P));
         // cannot be identify
-        require(P != EC.ZERO);
+        require(P != ECVerify.ZERO);
 
-        require((P.x - r) % EC.n == 0);
+        require((P.x - r) % ECVerify.n == 0);
     }
 
     // parse signature in DER format to get (r, s) pair

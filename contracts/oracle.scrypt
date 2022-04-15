@@ -1,4 +1,4 @@
-import "ec.scrypt";
+import "ecVerify.scrypt";
 
 // an oracle library signing any data using ECDSA
 library Oracle {
@@ -17,7 +17,7 @@ library Oracle {
         require(Tx.checkPreimageAdvanced(txPreimage, x, X, Tx.invK, Tx.r, Tx.rBigEndian, SigHashType(SigHash.NONE | SigHash.FORKID)));
 
         // verify P' = P + X
-        require(EC.isPubKeySum(oraclePubKey, X, lambda, derivedOraclePubKey));
+        require(ECVerify.isPubKeySum(oraclePubKey, X, lambda, derivedOraclePubKey));
 
         // verify signature is from oracle, who knows p' = p + x
         return checkSig(sig, derivedOraclePubKey);
