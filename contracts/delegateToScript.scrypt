@@ -1,0 +1,18 @@
+import "./oracle.scrypt";
+
+// delegate right to spend to a script, instead of a public key
+contract DelegateToScript {
+    PubKey owner;
+
+    public function delegate(Sig ownerSig, bytes delegatedScript, 
+            PubKey derivedPubKey, PubKey X, int lambda, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
+        
+        // ensure delegated script is signed by the owner
+        require(Oracle.verifyData(delegatedScript, ownerSig, this.owner, derivedPubKey, X, lambda, txPreimage));
+
+        // use delegated script as the new locking script, while maintaining value
+        bytes output = Utils.buildOutput(delegatedScript, SigHash.value(txPreimage));
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+    }
+}
