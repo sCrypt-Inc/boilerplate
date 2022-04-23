@@ -179,6 +179,12 @@ library EC {
         // Convert a point to a uncompressed public key.
         return PubKey(b'04' + toBEUnsigned(point.x, 32) + toBEUnsigned(point.y, 32));
     }
+    
+    static function toBEUnsigned(int n, static const  int l) : bytes {
+        // Convert signed integer `n` to unsigned integer of `l` bytes, in big endian.
+        bytes m = Utils.toLEUnsigned(n, l);
+        return reverseBytes(m,l);
+    }
 
 }
 
