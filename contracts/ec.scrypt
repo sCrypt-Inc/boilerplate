@@ -159,7 +159,7 @@ library EC {
     static function verifySig(bytes m, Signature sig, Point pubKey) : bool {
         // Hash message.
         Sha256 hash = hash256(m);
-        int hashInt = unpack(reverseBytes(hash, 32));
+        int hashInt = unpack(reverseBytes(hash, 32) + b'00');
 
         require(sig.r >= 1 && sig.r < n && sig.s >= 1 && sig.s < n);
 
@@ -167,7 +167,6 @@ library EC {
         int u1 = modReduce(hashInt * sInv, n);
         int u2 = modReduce(sig.r * sInv, n);
 
-        //Point U1 = multByScalar(G, u1);
         Point U1 = multGeneratorByScalar(u1);
         Point U2 = multByScalar(pubKey, u2);
         Point X = addPoints(U1, U2);
