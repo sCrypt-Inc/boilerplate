@@ -193,6 +193,47 @@ async function deployContract(contract, amount) {
   return tx
 }
 
+const metaFlag = '4d455441';
+async function createMetaNetRootNode(root) {
+  const { privateKey } = require('./privateKey');
+  const address = privateKey.toAddress()
+  const tx = new bsv.Transaction()
+  
+  tx.from(await fetchUtxos(address))
+  .addOutput(new bsv.Transaction.Output({
+    script: bsv.Script.fromASM(`OP_0 OP_RETURN ${metaFlag} ${root} 0000000000000000000000000000000000000000000000000000000000000000`),
+    satoshis: 0,
+  }))
+  .change(address)
+  .sign(privateKey)
+
+  await sendTx(tx)
+  return tx
+}
+
+
+async function createMetaNetNode(privateKey, node, txid, contract, contractAmount) {
+  const address = privateKey.toAddress()
+  const tx = new bsv.Transaction()
+  
+  tx.from(await fetchUtxos(address))
+  .addOutput(new bsv.Transaction.Output({
+    script: bsv.Script.fromASM(`OP_0 OP_RETURN ${metaFlag} ${node} ${txid}`),
+    satoshis: 0,
+  }))
+  .addOutput(
+    new bsv.Transaction.Output({
+      script: contract.lockingScript,
+      satoshis: contractAmount,
+    })
+  )
+  .change(address)
+  .sign(privateKey)
+
+  await sendTx(tx)
+  return tx
+}
+
 //create an input spending from prevTx's output, with empty script
 function createInputFromPrevTx(tx, outputIndex) {
   const outputIdx = outputIndex || 0
@@ -321,5 +362,8 @@ module.exports = {
   toTarget,
   pdiff2Target,
   serializeHeader,
-  getRandomInt
+  getRandomInt,
+  createMetaNetRootNode,
+  createMetaNetNode,
+  metaFlag
 }
