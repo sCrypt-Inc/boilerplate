@@ -57,7 +57,7 @@ async function getBsvfromFaucet(address) {
 const { privateKey } = require('./privateKey');
 const exclude = ['superAsset10.js', 'superAssetNFT.js', 'tokenSwap.js', 'bns.js', 'rps.js', 'tokenUtxo.js']
 
-const execute = async (tasks = []) => {
+const execute = async (tasks = [])=> {
 
     const res = []
     await new Promise((resolve, reject) => {
@@ -97,13 +97,20 @@ getBsvfromFaucet(privateKey.toAddress().toString()).then(async result => {
                             resolve(`run deployments ${file} succeeded`)
                         }
                     } catch (error) {
-                        resolve(`run deployments ${file} failed: ${error}`)
+                        console.error('error', error);
+                        resolve(`run deployments ${file} failed`)
                     }
                 })
             }
         });
 
-        execute(tasks)
+        const all = await execute(tasks);
+
+        all.forEach(log => {
+            if(log.endsWith("failed")) {
+                exit(-1);
+            }
+        })
     } else {
         console.log('getBsvfromFaucet failed', result);
         exit(-1);
