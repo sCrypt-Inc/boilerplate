@@ -17,7 +17,8 @@ const {
   deployContract,
   createInputFromPrevTx,
   fetchUtxos,
-  sleep
+  sleep,
+  compileContract
 } = require('../helper');
 const axios = require('axios')
 
@@ -123,7 +124,7 @@ async function runClose(prevTx, auction) {
       .sign(auctionerPrivKey)
       .seal()
 
-    
+
       const txid = await sendTx(unlockingTx);
       console.log('close txid: ', txid);
 
@@ -142,7 +143,7 @@ async function runClose(prevTx, auction) {
 (async () => {
 
   // get locking script
-  const Auction = buildContractClass(loadDesc('auction_debug_desc.json'))
+  const Auction = buildContractClass(compileContract('auction.scrypt'))
 
   const onedayAgo = new Date("2020-01-03");
   const auctionDeadline = Math.round( onedayAgo.valueOf() / 1000 );

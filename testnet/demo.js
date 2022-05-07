@@ -1,5 +1,5 @@
 const { buildContractClass, bsv } = require('scryptlib');
-const { loadDesc, showError, deployContract, sendTx, createInputFromPrevTx } = require('../helper');
+const { compileContract, showError, deployContract, sendTx, createInputFromPrevTx } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 (async() => {
@@ -7,7 +7,7 @@ const { privateKey } = require('../privateKey');
         const amount = 1000
 
         // get locking script
-        const Demo = buildContractClass(loadDesc('demo_debug_desc.json'));
+        const Demo = buildContractClass(compileContract('demo.scrypt'));
         demo = new Demo(4, 7);
         
         // lock fund to the script

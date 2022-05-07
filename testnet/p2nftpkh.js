@@ -5,7 +5,7 @@ const {
   createInputFromPrevTx,
   sendTx,
   showError,
-  loadDesc
+  compileContract
 } = require('../helper')
 
 const Signature = bsv.crypto.Signature;
@@ -55,7 +55,7 @@ async function main() {
 
     const woc = 'https://test.whatsonchain.com/tx/';
     // Initialize contract
-    const P2NFTPKH = buildContractClass(loadDesc('p2nftpkh_debug_desc.json'))
+    const P2NFTPKH = buildContractClass(compileContract('p2nftpkh.scrypt'))
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
     const nft = new P2NFTPKH()
     const asmVars = {
@@ -108,7 +108,6 @@ async function main() {
     })
     .seal()
 
-    console.log('mintTx', mintTx.toString());
     const mintTxid = await sendTx(mintTx)
     console.log('Mint txid: ', woc + mintTxid)
 
@@ -149,7 +148,6 @@ async function main() {
       })
       .seal()
 
-    console.log('transferTX', transferTX.toString());
     const transferTxid = await sendTx(transferTX)
     console.log('Transfer txid: ', woc + transferTxid)
 
@@ -183,7 +181,6 @@ async function main() {
       })
       .seal()
 
-    console.log('meltTx', meltTX.toString());
     const meltTxid = await sendTx(meltTX)
     console.log('Melt txid: ', woc + meltTxid)
   } catch (error) {

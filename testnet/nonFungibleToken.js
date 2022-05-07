@@ -15,7 +15,8 @@ const {
   createInputFromPrevTx,
   deployContract,
   sendTx,
-  showError
+  showError,
+  compileContract
 } = require('../helper');
 const {
   privateKey
@@ -32,7 +33,7 @@ const {
   const actionTransfer = '01'
 
   try {
-    const NonFungibleToken = buildContractClass(loadDesc('nonFungibleToken_debug_desc.json'))
+    const NonFungibleToken = buildContractClass(compileContract('nonFungibleToken.scrypt'))
     const token = new NonFungibleToken()
 
     // set token id start
@@ -41,7 +42,7 @@ const {
     // append state as passive data part, initial uniqTokenId
     token.setDataPart(num2bin(uniqTokenId, DataLen) + toHex(publicKeyIssuer) + actionIssue)
 
-    const amount = 16000
+    const amount = 18000
 
     // deploy contract on testnet
     const lockingTx = await deployContract(token, amount);

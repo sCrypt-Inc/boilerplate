@@ -12,7 +12,7 @@ const {
 } = require('scryptlib');
 const {
   DataLen,
-  loadDesc,
+  compileContract,
   sendTx,
   reverseEndian,
   showError,
@@ -29,7 +29,7 @@ const {
   const publicKey3 = bsv.PublicKey.fromPrivateKey(privateKey3)
 
   try {
-    const Token = buildContractClass(loadDesc('tokenUtxo_debug_desc.json'))
+    const Token = buildContractClass(compileContract('tokenUtxo.scrypt'))
     const token = new Token()
 
     // append state as passive data part

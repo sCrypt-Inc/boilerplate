@@ -12,7 +12,7 @@ const {
 } = require('scryptlib');
 const {
   DataLen,
-  loadDesc,
+  compileContract,
   createUnlockingTx,
   deployContract,
   sendTx,
@@ -30,7 +30,7 @@ const {
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
 
   try {
-    const desc = loadDesc('token_debug_desc.json');
+    const desc = compileContract('token.scrypt');
     const Token = buildContractClass(desc);
     const { Account } = buildTypeClasses(desc)
 
@@ -44,7 +44,7 @@ const {
     })])
 
 
-    let amount = 10000
+    let amount = 12000
 
     // deploy contract on testnet
     const lockingTx = await deployContract(token, amount);

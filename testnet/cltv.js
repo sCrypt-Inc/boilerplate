@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, SigHashPreimage } = require('scryptlib');
-const { loadDesc, showError, deployContract , sendTx, createInputFromPrevTx } = require('../helper');
+const { compileContract, showError, deployContract , sendTx, createInputFromPrevTx } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 (async () => {
@@ -7,7 +7,7 @@ const { privateKey } = require('../privateKey');
         const amount = 2000
 
         // get locking script
-        const CLTV = buildContractClass(loadDesc('cltv_debug_desc.json'));
+        const CLTV = buildContractClass(compileContract('cltv.scrypt'));
         cltv = new CLTV(1422674);
 
         // lock fund to the script

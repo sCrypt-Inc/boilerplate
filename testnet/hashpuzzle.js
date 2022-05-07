@@ -13,7 +13,8 @@ const {
   createInputFromPrevTx,
   deployContract,
   sendTx,
-  showError
+  showError,
+  compileContract
 } = require('../helper');
 const {
   privateKey
@@ -28,7 +29,7 @@ const sha256Data = bsv.crypto.Hash.sha256(dataBuffer);
   try {
     const amount = 1000
 
-    const HashPuzzle = buildContractClass(loadDesc('hashpuzzle_debug_desc.json'));
+    const HashPuzzle = buildContractClass(compileContract('hashpuzzle.scrypt'));
     const hashPuzzle = new HashPuzzle(new Sha256(toHex(sha256Data)))
 
     // deploy contract on testnet

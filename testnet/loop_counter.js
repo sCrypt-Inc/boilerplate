@@ -1,5 +1,5 @@
 const { buildContractClass, bsv, num2bin, getPreimage, SigHashPreimage, toHex } = require('scryptlib');
-const { DataLen, loadDesc, showError, sendTx, createInputFromPrevTx, deployContract } = require('../helper');
+const { DataLen, loadDesc, showError, sendTx, createInputFromPrevTx, deployContract, compileContract } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 function Memory(a, b) {
@@ -35,7 +35,7 @@ function log_state(f, state) {
 }
 
 async function create_contract(state, amount) {
-  const Loop = buildContractClass(loadDesc('final_loop_main_debug_desc.json'))
+  const Loop = buildContractClass(compileContract('final_loop_main.scrypt'))
   loop = new Loop()
   loop.setDataPart(tobin(state) + num2bin(0, DataLen) + tobin(state))
   // lock fund to the script

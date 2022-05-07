@@ -14,7 +14,8 @@ const {
   createInputFromPrevTx,
   sendTx,
   deployContract,
-  sleep
+  sleep,
+  compileContract
 } = require('../helper');
 const {
   privateKey
@@ -26,7 +27,7 @@ const {
   try {
 
     const Signature = bsv.crypto.Signature
-    const AdvancedCounter = buildContractClass(loadDesc('advancedCounter_debug_desc.json'))
+    const AdvancedCounter = buildContractClass(compileContract('advancedCounter.scrypt'))
     const advCounter = new AdvancedCounter(0)
 
 

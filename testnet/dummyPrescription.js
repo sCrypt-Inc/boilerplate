@@ -11,7 +11,7 @@ const {
   buildTypeClasses
 } = require("scryptlib");
 
-const { loadDesc, deployContract, createInputFromPrevTx, sendTx, showError } = require("../helper");
+const { loadDesc, deployContract, createInputFromPrevTx, sendTx, showError,compileContract } = require("../helper");
 const { generatePrivKey, privKeyToPubKey, sign } = require("rabinsig");
 const { privateKey } = require('../privateKey');
 // prescription details
@@ -63,7 +63,7 @@ const amount = patientReward + fee;
   try {
     // initialize contract
     const DummyPrescription = buildContractClass(
-      loadDesc("dummy_prescription_debug_desc.json")
+      compileContract("dummy_prescription.scrypt")
     );
 
     const { RabinSig, RabinPubKey } = buildTypeClasses(DummyPrescription);

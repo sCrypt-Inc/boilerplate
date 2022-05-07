@@ -10,11 +10,11 @@ const {
   SigHashPreimage,
 } = require('scryptlib');
 const {
-  loadDesc,
   createInputFromPrevTx,
   sendTx,
   showError,
-  deployContract
+  deployContract,
+  compileContract
 } = require('../helper');
 
 (async () => {
@@ -31,7 +31,7 @@ const {
 
   try {
     // initialize contract
-    const AnyoneCanSpend = buildContractClass(loadDesc('acs_debug_desc.json'));
+    const AnyoneCanSpend = buildContractClass(compileContract('acs.scrypt'));
     const acs = new AnyoneCanSpend(new Ripemd160(toHex(publicKeyHashX)));
 
     // deploy contract on testnet

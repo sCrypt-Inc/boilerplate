@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, signTx, Ripemd160, PubKey, Sig } = require("scryptlib");
-const { DataLen, loadDesc, deployContract,
+const { DataLen, compileContract, deployContract,
   createInputFromPrevTx, fetchUtxos, sendTx, showError, sleep } = require("../helper");
 const { privateKey } = require("../privateKey");
 
@@ -30,12 +30,12 @@ const { privateKey } = require("../privateKey");
   const PubKeyHashLen = 20
 
   try {
-    const RockPaperScissors = buildContractClass(loadDesc("rps_debug_desc.json"));
+    const RockPaperScissors = buildContractClass(compileContract("rps.scrypt"));
     const rps = new RockPaperScissors();
 
     rps.setDataPart(toHex(playerAdata) + num2bin(0, PubKeyHashLen) + num2bin(actionINIT, DataLen));
 
-    let amount = 10000;
+    let amount = 12000;
     let followSatoshis = 5000;
 
     // deploy contract on testnet

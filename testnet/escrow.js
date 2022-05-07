@@ -23,6 +23,7 @@ const {
   sendTx,
   showError,
   sleep,
+  compileContract
 } = require('../helper');
 
 const { privateKey } = require('../privateKey');
@@ -70,7 +71,7 @@ const { privateKey } = require('../privateKey');
 
   try {
     // initialize contract
-    const Escrow = buildContractClass(loadDesc('escrow_debug_desc.json'));
+    const Escrow = buildContractClass(compileContract('escrow.scrypt'));
     const escrow = new Escrow(new Ripemd160(toHex(publicKeyHashA)), new Ripemd160(toHex(publicKeyHashB)),
       new Ripemd160(toHex(publicKeyHashE)), new Sha256(toHex(hashSecret1)), new Sha256(toHex(hashSecret2)));
 

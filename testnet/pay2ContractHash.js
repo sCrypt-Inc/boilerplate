@@ -15,7 +15,8 @@ const {
   createInputFromPrevTx,
   sendTx,
   deployContract,
-  sleep
+  sleep,
+  compileContract
 } = require('../helper');
 const {
   privateKey
@@ -140,8 +141,8 @@ async function transferToPubKeyHash(pay2ContractHash, prevTx, advCounter, advCou
   try {
 
     const Signature = bsv.crypto.Signature
-    const Pay2ContractHash = buildContractClass(loadDesc('pay2ContractHash_debug_desc.json'))
-    const AdvancedCounter = buildContractClass(loadDesc('advancedCounter_debug_desc.json'))
+    const Pay2ContractHash = buildContractClass(compileContract('pay2ContractHash.scrypt'))
+    const AdvancedCounter = buildContractClass(compileContract('advancedCounter.scrypt'))
     const advCounter = new AdvancedCounter(0)
 
     const pay2ContractHash = new Pay2ContractHash(toHashedMap(map));

@@ -1,6 +1,6 @@
 const { resolve } = require('path');
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, bin2num, SigHashPreimage, Ripemd160 } = require('scryptlib');
-const { DataLen, loadDesc, deployContract , sleep, sendTx, showError, createInputFromPrevTx, fetchUtxos } = require('../helper');
+const { DataLen, compileContract, deployContract , sleep, sendTx, showError, createInputFromPrevTx, fetchUtxos } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 const publicKey = privateKey.publicKey;
@@ -15,6 +15,7 @@ const merchantPubKeyHash = p2pkh;
 const frequenceOfPayment = 0;
 
 const what_we_deposit = 8000;
+const result = compileContract('recurring.scrypt');
 
 class Parser {
     matureTimestamp;
@@ -35,7 +36,7 @@ class Parser {
 
 //Deploy contract
 async function deploy(deploySatoshis) {
-    const Contract = buildContractClass(loadDesc('recurring_debug_desc.json'));
+    const Contract = buildContractClass(result);
     const contract = new Contract(userPubKeyHash, merchantPayment, merchantPubKeyHash, frequenceOfPayment);
     const initMatureTimestamp = parseInt(new Date().getTime() / 1000) - 7200;
     contract.setDataPart(num2bin(initMatureTimestamp, 4));
@@ -66,7 +67,7 @@ class RecurringDepositUser {
     }
 
     _buildContract() {
-        const Contract = buildContractClass(loadDesc('recurring_debug_desc.json'));
+        const Contract = buildContractClass(result);
         this._contract = new Contract(userPubKeyHash, merchantPayment, merchantPubKeyHash, frequenceOfPayment);
         this._contract.setDataPart(num2bin(this._contractMatureTimestamp, 4));
     }
@@ -116,7 +117,7 @@ class RecurringWithdrawMerchant {
     }
 
     _buildContract() {
-        const Contract = buildContractClass(loadDesc('recurring_debug_desc.json'));
+        const Contract = buildContractClass(result);
         this._contract = new Contract(userPubKeyHash, merchantPayment, merchantPubKeyHash, frequenceOfPayment);
         this._contract.setDataPart(num2bin(this._lastMatureTimestamp, 4));
     }

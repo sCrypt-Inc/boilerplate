@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, Ripemd160, num2bin, Bytes, SigHashPreimage } = require('scryptlib');
-const { DataLen, loadDesc, deployContract , createInputFromPrevTx, sendTx, showError } = require('../helper');
+const { DataLen, compileContract, deployContract , createInputFromPrevTx, sendTx, showError } = require('../helper');
 const {
     privateKey,
     privateKey2
@@ -20,7 +20,7 @@ const {
         let pubKeyHashA = new Ripemd160(toHex(bsv.crypto.Hash.sha256ripemd160(publicKeyA.toBuffer())))
         let pubKeyHashB = new Ripemd160(toHex(bsv.crypto.Hash.sha256ripemd160(publicKeyB.toBuffer())))
 
-        const BinaryOption = buildContractClass(loadDesc('binaryOption_debug_desc.json'))
+        const BinaryOption = buildContractClass(compileContract('binaryOption.scrypt'))
         const binaryOption = new BinaryOption(betPrice, rabinPubKey, timestamp, pubKeyHashA, pubKeyHashB)
 
         let amount = 10000

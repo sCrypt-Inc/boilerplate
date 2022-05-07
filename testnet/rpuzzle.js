@@ -13,7 +13,7 @@ const {
 } = require('scryptlib');
 
 const {
-  loadDesc,
+  compileContract,
   deployContract,
   createInputFromPrevTx,
   sendTx,
@@ -50,7 +50,7 @@ const amount = 2000;
 (async () => {
   try {
     // initialize contract
-    const RPuzzle = buildContractClass(loadDesc('rpuzzle_debug_desc.json'));
+    const RPuzzle = buildContractClass(compileContract('rpuzzle.scrypt'));
     const rpuzzle = new RPuzzle(new Ripemd160(toHex(rhash)));
 
     // deploy contract on testnet

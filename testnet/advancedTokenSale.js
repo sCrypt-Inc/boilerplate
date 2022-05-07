@@ -17,7 +17,8 @@ const {
   deployContract,
   createInputFromPrevTx,
   fetchUtxos,
-  emptyPublicKey
+  emptyPublicKey,
+  compileContract
 } = require('../helper');
 const {
   privateKey,
@@ -54,7 +55,7 @@ function sleep(ms) {
     }
 
     // get locking script
-    const AdvancedTokenSale = buildContractClass(loadDesc('advancedTokenSale_debug_desc.json'))
+    const AdvancedTokenSale = buildContractClass(compileContract('advancedTokenSale.scrypt'))
     const advTokenSale = new AdvancedTokenSale(satsPerToken)
 
     // append state as passive data

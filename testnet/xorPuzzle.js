@@ -11,7 +11,7 @@ const {
   Bytes,
 } = require('scryptlib');
 const {
-  loadDesc,
+  compileContract,
   createInputFromPrevTx,
   sendTx,
   showError,
@@ -52,7 +52,7 @@ const addressB = privateKeyB.toAddress();
   try {
     const amount = 1000;
 
-    const XorPuzzle = buildContractClass(loadDesc('xorPuzzle_debug_desc.json'));
+    const XorPuzzle = buildContractClass(compileContract('xorPuzzle.scrypt'));
     const xorPuzzle = new XorPuzzle(new Bytes(xorResultHex));
 
     // lock fund to the script

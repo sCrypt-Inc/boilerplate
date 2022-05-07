@@ -1,5 +1,5 @@
 const { buildContractClass, getPreimage, toHex, bsv, SigHashPreimage, PubKey, PubKeyHash, signTx } = require('scryptlib')
-const { loadDesc, showError, fetchUtxos, createInputFromPrevTx, sendTx, deployContract, sleep, inputSatoshis } = require('../helper')
+const { compileContract, showError, fetchUtxos, createInputFromPrevTx, sendTx, deployContract, sleep, inputSatoshis } = require('../helper')
 const { privateKey } = require('../privateKey')
 
 const publicKey = privateKey.publicKey
@@ -7,7 +7,7 @@ const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 const address = privateKey.toAddress()
 
 const Signature = bsv.crypto.Signature
-const Faucet = buildContractClass(loadDesc('faucetV2_debug_desc.json'))
+const Faucet = buildContractClass(compileContract('faucetV2.scrypt'))
 // miner fee in satoshi per each withdraw
 const withdrawMinerFee = 6000
 // withdraw interval limit in seconds
@@ -84,11 +84,16 @@ async function destroy(prevTx, prevSatoshi) {
     const destroyTx = new bsv.Transaction()
     destroyTx
         .addInput(createInputFromPrevTx(prevTx))
+        .setOutput(0, (tx) => {
+            return new bsv.Transaction.Output({
+                script: bsv.Script.buildPublicKeyHashOut(address),
+                satoshis: prevSatoshi - tx.getEstimateFee(),
+              })
+        })
         .setInputScript(0, (tx, utxo) => {
             const sig = signTx(tx, privateKey, utxo.script, utxo.satoshis)
             return faucet.destroy(sig, new PubKey(toHex(publicKey))).toScript()
         })
-        .addOutput(new bsv.Transaction.Output({ script: bsv.Script.buildPublicKeyHashOut(address), satoshis: prevSatoshi - 150 }))
         .seal()
     const destroyTxid = await sendTx(destroyTx)
     console.log('destroy:', destroyTxid)

@@ -1,14 +1,13 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage } = require('scryptlib');
-const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showError  } = require('../helper');
+const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showError, compileContract } = require('../helper');
 
 (async() => {
     try {
-        const Counter = buildContractClass(loadDesc('counter_debug_desc.json'))
-        const counter = new Counter()
-        // append state as op_return data
-        counter.setDataPart(num2bin(0, DataLen))
-        
-        let amount = 6000
+
+        const Counter = buildContractClass(compileContract('counter.scrypt'))
+        const counter = new Counter(0)
+
+        let amount = 6500
         // lock fund to the script
         const lockingTx =  await deployContract(counter, amount)
         console.log('funding txid:      ', lockingTx.id);
@@ -18,9 +17,10 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
         // unlock
         for (i = 0; i < 3; i++) {
             
-            const newState = num2bin(i + 1, DataLen);
-
-            const newLockingScript = bsv.Script.fromASM([counter.codePart.toASM(), newState].join(' '))
+            const state = i + 1;
+            const newLockingScript = counter.getNewStateScript({
+                counter: state
+            })
 
             const unlockingTx = new bsv.Transaction();
             
@@ -43,7 +43,7 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
 
             amount = unlockingTx.outputs[0].satoshis
             // update state
-            counter.setDataPart(newState);
+            counter.counter = state;
             prevTx = unlockingTx;
         }
 

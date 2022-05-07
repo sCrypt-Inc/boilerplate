@@ -5,7 +5,7 @@ const {
   createInputFromPrevTx,
   sendTx,
   showError,
-  loadDesc
+  compileContract
 } = require('../helper')
 
 const { privateKey } = require('../privateKey');
@@ -15,7 +15,7 @@ async function main() {
     const publicKey = privateKey.publicKey
 
     // Initialize contract
-    const P2PKH = buildContractClass(loadDesc('p2pkh_debug_desc.json'))
+    const P2PKH = buildContractClass(compileContract('p2pkh.scrypt'))
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
     const p2pkh = new P2PKH(new Ripemd160(toHex(publicKeyHash)))
 

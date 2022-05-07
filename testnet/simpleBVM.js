@@ -3,7 +3,7 @@
  **/
 const { bsv, buildContractClass, toHex, Bytes } = require('scryptlib');
 const {
-  loadDesc,
+  compileContract,
   createInputFromPrevTx,
   deployContract,
   sendTx,
@@ -18,7 +18,7 @@ const inputScript = '525593569357936094539354935894';
   try {
     const amount = 1000;
 
-    const SimpleBVM = buildContractClass(loadDesc('simpleBVM_debug_desc.json'));
+    const SimpleBVM = buildContractClass(compileContract('simpleBVM.scrypt'));
     const simpleBVM = new SimpleBVM(3); // result = 3
 
     // deploy contract on testnet

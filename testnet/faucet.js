@@ -1,8 +1,8 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, bin2num, SigHashPreimage, Ripemd160 } = require('scryptlib');
-const { loadDesc,  sendTx, showError, sleep, deployContract, createInputFromPrevTx, fetchUtxos } = require('../helper');
+const { compileContract,  sendTx, showError, sleep, deployContract, createInputFromPrevTx, fetchUtxos } = require('../helper');
 const { privateKey } = require('../privateKey');
 
-
+const result = compileContract('faucet.scrypt');
 class FaucetTxParser {
     matureTimestamp;
     satoshis;
@@ -26,7 +26,7 @@ class FaucetDeploy {
     }
 
     async deploy() {
-        const Contract = buildContractClass(loadDesc('faucet_debug_desc.json'));
+        const Contract = buildContractClass(result);
         const contract = new Contract();
         const initMatureTimestamp = parseInt(new Date().getTime() / 1000) - 7200;
         contract.setDataPart(num2bin(initMatureTimestamp, 4));
@@ -57,7 +57,7 @@ class FaucetDeposit {
     }
 
     _buildContract() {
-        const Contract = buildContractClass(loadDesc('faucet_debug_desc.json'));
+        const Contract = buildContractClass(result);
         this._contract = new Contract();
         this._contract.setDataPart(num2bin(this._contractMatureTimestamp, 4));
     }
@@ -113,7 +113,7 @@ class FaucetWithdraw {
     }
 
     _buildContract() {
-        const Contract = buildContractClass(loadDesc('faucet_debug_desc.json'));
+        const Contract = buildContractClass(result);
         this._contract = new Contract();
         this._contract.setDataPart(num2bin(this._lastMatureTimestamp, 4));
     }

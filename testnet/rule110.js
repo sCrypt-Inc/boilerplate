@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Bytes } = require('scryptlib');
-const { loadDesc, deployContract, createInputFromPrevTx, sendTx, showError } = require('../helper');
+const { compileContract, deployContract, createInputFromPrevTx, sendTx, showError } = require('../helper');
 const { privateKey } = require('../privateKey');
 const axios = require('axios');
 
@@ -53,7 +53,7 @@ function newState(state) {
     console.log("Make sure to check the index.js file ! Enjoy :)")
     console.log("")
     //Getting the code of the contract from the file. You can also compile a .scrypt file
-    const Rule101 = buildContractClass(loadDesc('rule110_debug_desc.json'))
+    const Rule101 = buildContractClass(compileContract('rule110.scrypt'))
 
 
     //Parameters. Here playing rule101 with N=5, and the begin state 11010

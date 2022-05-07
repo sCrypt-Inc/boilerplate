@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Bytes, buildTypeClasses } = require('scryptlib');
-const { loadDesc, deployContract, createInputFromPrevTx, sendTx, showError, sleep, fetchUtxos } = require('../helper');
+const { compileContract, deployContract, createInputFromPrevTx, sendTx, showError, sleep, fetchUtxos } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 // Note: ANYONECANPAY
@@ -12,7 +12,7 @@ const { privateKey } = require('../privateKey');
     console.log("This is a demo that bitcoin is actually turing complete using a turing machine")
     const Signature = bsv.crypto.Signature
     const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_SINGLE | Signature.SIGHASH_FORKID;
-    const result = loadDesc('turingMachine_debug_desc.json');
+    const result = compileContract('turingMachine.scrypt');
     const TuringMachine = buildContractClass(result);
 
     const { StateStruct } = buildTypeClasses(result);
