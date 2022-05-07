@@ -92,15 +92,13 @@ getBsvfromFaucet(privateKey.toAddress().toString()).then(async result => {
                         const output = result.stdout.toString();
                         console.log(output);
                         if (output.indexOf('Failed') > -1) {
-                            console.log(`run deployments ${file} failed`)
-                            reject(`run deployments ${file} failed`)
+                            resolve(`run deployments ${file} failed`)
                         } else {
                             resolve(`run deployments ${file} succeeded`)
                         }
                     } catch (error) {
-                        reject(`run deployments ${file} failed: ${error}`)
+                        resolve(`run deployments ${file} failed: ${error}`)
                     }
-
                 })
             }
         });
