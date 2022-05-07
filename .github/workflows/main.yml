@@ -33,6 +33,8 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Update npm
         run: npm -g install npm
+      - name: npm install
+        run: npm install
       - name: Download Compiler
         run: npx scryptlib download
       - name: Deploy to testnet
