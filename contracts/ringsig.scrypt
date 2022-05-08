@@ -1,0 +1,46 @@
+import "ec.scrypt";
+
+// a ring signature
+struct RSig {
+    int c;
+    int[N] rs;
+}
+
+// ring signature
+contract RingSig {
+    // ring size
+    static const int N = 2;
+
+    // public keys
+    Point[N] pks;
+
+    // verification
+    public function verify(bytes m, RSig sig) {
+        bytes ringPubKey = this.calcRingPubKey();
+
+        int c = sig.c;
+        loop (N) : i {
+            // compute: r * G + c * PubKey
+            Point rG = EC.multByScalar(EC.G, sig.rs[i]);
+            Point cPK = EC.multByScalar(this.pks[i], c);
+            Point A = EC.addPoints(rG, cPK);
+            bytes A_ = EC.point2PubKey(A);
+
+            // update: c = H(R || m || A)
+            c = Utils.fromLEUnsigned(sha256(ringPubKey + m + A_));
+        }
+
+        // check if ring closes
+        require(c == sig.c);
+    }
+
+    // concatenate all public keys to form the ring public key
+    private function calcRingPubKey() : bytes {
+        bytes concatPks = b'';
+        loop (N) : i {
+            concatPks += EC.point2PubKey(this.pks[i]);
+        }
+
+        return concatPks;
+    }
+}
