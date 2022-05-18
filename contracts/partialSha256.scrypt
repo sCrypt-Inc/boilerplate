@@ -1,8 +1,8 @@
 import "serializer.scrypt";
-import "util.scrypt";
+
 
 // compute sha256 based on partial hash
-contract PartialSha256 {
+library PartialSha256 {
     // max number of chunks (512 bits) to be hashed
     static const int MAX_CHUNKS = 2;
 
@@ -17,19 +17,6 @@ contract PartialSha256 {
         b'748f82ee', b'78a5636f', b'84c87814', b'8cc70208', b'90befffa', b'a4506ceb', b'bef9a3f7', b'c67178f2'
     ];
 
-    public function main(bytes partialHash, bytes partialPreimage, bytes padding, SigHashPreimage txPreimage) {
-        // Note: SigHash_SINGLE is used
-        require(Tx.checkPreimageSigHashType(txPreimage, SigHash.SINGLE | SigHash.FORKID));
-
-        bytes result = partialSha256(partialHash, partialPreimage, padding);
-
-        // write arguments and return into the output
-        bytes data = Writer.writeBytes(partialHash) + Writer.writeBytes(partialPreimage) + Writer.writeBytes(padding) + Writer.writeBytes(result);
-
-        bytes outputScript = Utils.buildOpreturnScript(data);
-        bytes output = Utils.buildOutput(outputScript, 0);
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
-    }
 
     // compute the sha256 from current hash (@partial_hash) and the remaining preimage (@partial_preimage)
     static function partialSha256(bytes partial_hash, bytes partial_preimage, bytes padding) : bytes {

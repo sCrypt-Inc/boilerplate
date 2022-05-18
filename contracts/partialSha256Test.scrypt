@@ -1,0 +1,13 @@
+import "partialSha256.scrypt";
+
+
+// compute sha256 based on partial hash
+contract PartialSha256Test {
+    bytes fullmessage;
+
+    public function unlock(bytes partialHash, bytes partialPreimage, bytes padding) {
+        bytes result = PartialSha256.partialSha256(partialHash, partialPreimage, padding);
+        require(result == sha256(this.fullmessage));
+    }
+
+}
