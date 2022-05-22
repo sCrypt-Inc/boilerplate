@@ -4,6 +4,7 @@ const { expect } = require('chai');
 const { compileContract, newTx, createInputFromPrevTx} = require('../../helper');
 const {  buildContractClass, Bytes, Sig, SigHashPreimage,  bsv, toHex, getPreimage, buildTypeClasses, SigHash, PubKeyHash, PubKey } = require('scryptlib');
 const {  toHashedMap, findKeyIndex, hash160, signTx, buildOpreturnScript } = require('scryptlib/dist/utils');
+const { SortedItem } = require('scryptlib/dist/scryptTypes');
 
 const inputIndex = 0;
 const inputSatoshis = 100000;
@@ -66,7 +67,10 @@ describe('Pay2ContractHash', () => {
         }
 
         const result = pay2ContractHash.transferFrom(new PubKeyHash(toHex(pkh)), counterContractHash, fromSig, new PubKey(toHex(publicKey)), new Bytes(''),
-            new Bytes(''), 0, tokenId, findKeyIndex(map, tokenId), preimage).verify()
+            new Bytes(''), 0, new SortedItem({
+                item: tokenId,
+                idx: findKeyIndex(map, tokenId)
+            }), preimage).verify()
         expect(result.success, result.error).to.be.true
 
         pay2ContractHash.owners = toHashedMap(map)
@@ -112,7 +116,10 @@ describe('Pay2ContractHash', () => {
         }
 
         const result = pay2ContractHash.transferFrom(counterContractHash, new PubKeyHash(toHex(pkh)), new Sig('00'), new PubKey(toHex(publicKey)), new Bytes(tx3.prevouts()),
-            new Bytes(toHex(tx2)), 1 /**contractInputIndex */, tokenId, findKeyIndex(map, tokenId), preimage).verify()
+            new Bytes(toHex(tx2)), 1 /**contractInputIndex */, new SortedItem({
+                item: tokenId,
+                idx: findKeyIndex(map, tokenId)
+            }), preimage).verify()
         expect(result.success, result.error).to.be.true
 
     });
@@ -157,7 +164,10 @@ describe('Pay2ContractHash', () => {
         }
 
         const result = pay2ContractHash.transferFrom(counterContractHash, new PubKeyHash(toHex(pkh)), new Sig('00'), new PubKey(toHex(publicKey)), new Bytes(tx3.prevouts()),
-            new Bytes(toHex(tx2)), 1 /**contractInputIndex */, tokenId, findKeyIndex(map, tokenId), preimage).verify()
+            new Bytes(toHex(tx2)), 1 /**contractInputIndex */, new SortedItem({
+                item: tokenId,
+                idx: findKeyIndex(map, tokenId)
+            }), preimage).verify()
         expect(result.success, result.error).to.be.false
     });
 

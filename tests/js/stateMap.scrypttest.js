@@ -3,6 +3,7 @@ const { compileContract, newTx } = require('../../helper');
 
 const { buildContractClass, toData, Bytes, bsv, findKeyIndex, getPreimage, buildTypeClasses } = require('scryptlib');
 const { toHashedMap } = require('scryptlib/dist/utils');
+const { SortedItem } = require('scryptlib/dist/scryptTypes');
 
 const inputIndex = 0;
 const inputSatoshis = 100000;
@@ -52,9 +53,11 @@ describe('test.stateMap', () => {
 
                 const preimage = preHook(map);
                 const result = mapTest.insert(new MapEntry({
-                    key: key,
-                    val: val,
-                    keyIndex: findKeyIndex(map, key)
+                    key: new SortedItem({
+                        item: key,
+                        idx: findKeyIndex(map, key)
+                    }),
+                    val: val
                 }), preimage).verify()                
                 expect(result.success, result.error).to.be.true;
 
@@ -82,9 +85,11 @@ describe('test.stateMap', () => {
                 const preimage = preHook(map);
 
                 const result = mapTest.update(new MapEntry({
-                    key: key,
-                    val: val,
-                    keyIndex: findKeyIndex(map, key)
+                    key: new SortedItem({
+                        item: key,
+                        idx: findKeyIndex(map, key)
+                    }),
+                    val: val
                 }), preimage).verify()
                 expect(result.success, result.error).to.be.true;
 
@@ -110,7 +115,10 @@ describe('test.stateMap', () => {
 
                 const preimage = preHook(map);
 
-                const result = mapTest.delete(key, keyIndex, preimage).verify()
+                const result = mapTest.delete(new SortedItem({
+                    item: key,
+                    idx: keyIndex
+                }), preimage).verify()
                 expect(result.success, result.error).to.be.true;
 
                 mapTest.map = toHashedMap(map)
