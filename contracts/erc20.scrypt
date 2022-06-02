@@ -7,26 +7,26 @@ contract Coin {
     ERC20 liberc20;
 
     // mint new tokens to receiver
-    public function mint(PubKey receiver, Sig minterSig, int balance, int amount, int keyIndex, SigHashPreimage preimage) {
+    public function mint(SortedItem<PubKey> receiver, Sig minterSig, int balance, int amount, SigHashPreimage preimage) {
         // authenticate
         require(checkSig(minterSig, this.minter));
-        require(this.liberc20.mint(receiver, balance, amount, balance));
+        require(this.liberc20.mint(receiver, balance, amount));
         require(this.propagateState(preimage));
     }
 
     // transfer tokens from sender to receiver
-    public function transferFrom(PubKey sender, PubKey receiver, int amount, Sig senderSig, int senderBalance, int senderKeyIndex, int receiverBalance, int receiverKeyIndex, SigHashPreimage preimage) {
+    public function transferFrom(SortedItem<PubKey> sender, SortedItem<PubKey> receiver, int amount, Sig senderSig, int senderBalance, int receiverBalance, SigHashPreimage preimage) {
         // authenticate
-        require(checkSig(senderSig, sender));
-        require(this.liberc20.transferFrom(sender, receiver, amount, senderBalance, senderKeyIndex, receiverBalance, receiverKeyIndex));
+        require(checkSig(senderSig, sender.item));
+        require(this.liberc20.transferFrom(sender, receiver, amount, senderBalance, receiverBalance));
         require(this.propagateState(preimage));
     }
 
     // burn tokens of a receiver
-    public function burn(PubKey receiver, Sig minterSig, int balance, int amount, int keyIndex, SigHashPreimage preimage) {
+    public function burn(SortedItem<PubKey> receiver, Sig minterSig, int balance, int amount, SigHashPreimage preimage) {
         // authenticate
         require(checkSig(minterSig, this.minter));
-        require(this.liberc20.burn(receiver, balance, amount, keyIndex));
+        require(this.liberc20.burn(receiver, balance, amount));
         require(this.propagateState(preimage));
     }
 

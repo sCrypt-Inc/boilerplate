@@ -7,9 +7,9 @@ contract Pay2ContractHash {
     public function transferFrom(PubKeyHash from, PubKeyHash to,    // can be hash of a user's public key, or a contract
         Sig fromSig, PubKey fromPubKey,                             // only needed when token belongs to a user controlling a private key
         bytes prevouts, bytes contractTx, int contractInputIndex,   // only needed when token belongs to a contract
-        int tokenId, int keyIndex, SigHashPreimage preimage) {
+        SortedItem<int>  tokenId, SigHashPreimage preimage) {
         // verify ownership
-        require(this.owners.canGet(tokenId, from, keyIndex));
+        require(this.owners.canGet(tokenId, from));
         
         // authenticate
         if (hash160(fromPubKey) == from) {
@@ -25,7 +25,7 @@ contract Pay2ContractHash {
                         preimage));
         }
 
-        require(this.owners.set(tokenId, to, keyIndex));
+        require(this.owners.set(tokenId, to));
     
         require(this.propagateState(preimage));
     }

@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const { bsv, buildContractClass, getPreimage, toHex, signTx, SigHash, PubKey, buildTypeClasses, findKeyIndex } = require('scryptlib');
-const { HashedMap } = require('scryptlib/dist/scryptTypes');
+const { HashedMap, SortedItem } = require('scryptlib/dist/scryptTypes');
 const { toHashedMap } = require('scryptlib/dist/utils');
 
 const {
@@ -76,7 +76,10 @@ describe('Test sCrypt contract Erc20 In Javascript', () => {
 
     const keyIndex = findKeyIndex(map, sender);
 
-    result = coin.mint(sender, sigMinter, 0, FIRST_MINT, keyIndex, preimage).verify()
+    result = coin.mint(new SortedItem({
+      item: sender,
+      idx: keyIndex
+    }), sigMinter, 0, FIRST_MINT, preimage).verify()
     expect(result.success, result.error).to.be.true
 
     coin.liberc20 = erc20;
@@ -126,7 +129,13 @@ describe('Test sCrypt contract Erc20 In Javascript', () => {
 
 
 
-    result = coin.transferFrom(sender, receiver, amount, senderSig, senderBalance, senderKeyIndex, receiverBalance, receiverKeyIndex, preimage).verify()
+    result = coin.transferFrom(new SortedItem({
+      item: sender,
+      idx: senderKeyIndex
+    }), new SortedItem({
+      item: receiver,
+      idx: receiverKeyIndex
+    }), amount, senderSig, senderBalance, receiverBalance, preimage).verify()
     expect(result.success, result.error).to.be.true
 
     coin.liberc20 = erc20;
@@ -175,7 +184,13 @@ describe('Test sCrypt contract Erc20 In Javascript', () => {
 
 
 
-    result = coin.transferFrom(receiver, sender, amount, senderSig, senderBalance, senderKeyIndex, receiverBalance, receiverKeyIndex, preimage).verify()
+    result = coin.transferFrom(new SortedItem({
+      item: receiver,
+      idx: senderKeyIndex
+    }), new SortedItem({
+      item: sender,
+      idx: receiverKeyIndex
+    }), amount, senderSig, senderBalance, receiverBalance, preimage).verify()
     expect(result.success, result.error).to.be.true
 
     coin.liberc20 = erc20;
@@ -222,7 +237,13 @@ describe('Test sCrypt contract Erc20 In Javascript', () => {
       inputSatoshis
     }
 
-    result = coin.transferFrom(receiver, sender, amount, senderSig, senderBalance, senderKeyIndex, receiverBalance, receiverKeyIndex, preimage).verify()
+    result = coin.transferFrom(new SortedItem({
+      item: receiver,
+      idx: senderKeyIndex,
+    }), new SortedItem({
+      item: sender,
+      idx: receiverKeyIndex,
+    }), amount, senderSig, senderBalance, receiverBalance, preimage).verify()
     expect(result.success, result.error).to.be.false
   });
 
