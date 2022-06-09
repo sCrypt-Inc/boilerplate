@@ -6,18 +6,13 @@ struct Output {
 }
 
 library TxUtil {
-  static int OUTPOINT_LEN = 36; 
-  static int TX_ID_LEN = 32;
 
-  static function fromLEUnsigned(bytes b): int {
-    return unpack(b + b'00');
-  }
 
   static function readOutput(bytes tx, int outputIndex): Output {
     // first 4 bytes version
     // 1 byte input num, only support max 3
     int pos = 4;
-    int ninputs = TxUtil.fromLEUnsigned(tx[pos: pos + 1]);
+    int ninputs = Utils.fromLEUnsigned(tx[pos: pos + 1]);
     pos = pos + 1;
     bytes res = b'';
     int satoshis = 0;
@@ -30,45 +25,45 @@ library TxUtil {
         pos = pos + 36;
         // 1 byte var
         // script code + 4 bytes sequence
-        int varLen = TxUtil.fromLEUnsigned(tx[pos: pos + 1]);
+        int varLen = Utils.fromLEUnsigned(tx[pos: pos + 1]);
         if (varLen < 253) {
           int scriptLen = varLen;
           pos = pos + 1 + scriptLen + 4;
         } else if (varLen == 253) {
-          int scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 3]);
+          int scriptLen = Utils.fromLEUnsigned(tx[pos + 1: pos + 3]);
           pos = pos + 3 + scriptLen + 4;
         } else if (varLen == 254) {
-          int scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 5]);
+          int scriptLen = Utils.fromLEUnsigned(tx[pos + 1: pos + 5]);
           pos = pos + 5 + scriptLen + 4;
         } else {
-          int scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 9]);
+          int scriptLen = Utils.fromLEUnsigned(tx[pos + 1: pos + 9]);
           pos = pos + 9 + scriptLen + 4;
         }
       }
     }
 
-    int noutputs = TxUtil.fromLEUnsigned(tx[pos: pos + 1]);
+    int noutputs = Utils.fromLEUnsigned(tx[pos: pos + 1]);
     pos = pos + 1;
     require(noutputs <= 3);
     loop(3): i {
       if (i < noutputs) {
         // 8 bytes value
-        int sats = fromLEUnsigned(tx[pos : pos + 8]);
+        int sats = Utils.fromLEUnsigned(tx[pos : pos + 8]);
         pos = pos + 8;
         // script code
-        int varLen = TxUtil.fromLEUnsigned(tx[pos: pos + 1] + b'00');
+        int varLen = Utils.fromLEUnsigned(tx[pos: pos + 1] + b'00');
         int scriptLen = 0;
         if (varLen < 253) {
           scriptLen = varLen;
           pos = pos + 1 + scriptLen;
         } else if (varLen == 253) {
-          scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 3]);
+          scriptLen = Utils.fromLEUnsigned(tx[pos + 1: pos + 3]);
           pos = pos + 3 + scriptLen;
         } else if (varLen == 254) {
-          scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 5]);
+          scriptLen = Utils.fromLEUnsigned(tx[pos + 1: pos + 5]);
           pos = pos + 5 + scriptLen;
         } else {
-          scriptLen = TxUtil.fromLEUnsigned(tx[pos + 1: pos + 9]);
+          scriptLen = Utils.fromLEUnsigned(tx[pos + 1: pos + 9]);
           pos = pos + 9 + scriptLen;
         }
         if (i == outputIndex) {
@@ -121,14 +116,14 @@ library TxUtil {
 
   // get i-th outpoint's txid
   static function getPrevoutTxid(bytes prevouts, int i): bytes {
-    int offset = i * OUTPOINT_LEN;
-    return prevouts[offset : offset + TxUtil.TX_ID_LEN];
+    int offset = i * Constants.OutpointLen;
+    return prevouts[offset : offset + Constants.TxIdLen];
   }
 
   // get i-th outpoint's output index
   static function getPrevoutOutputIdx(bytes prevouts, int i): int {
-    int offset = i * OUTPOINT_LEN;
-    return Utils.fromLEUnsigned(prevouts[offset + TX_ID_LEN : offset + OUTPOINT_LEN]);
+    int offset = i * Constants.OutpointLen;
+    return Utils.fromLEUnsigned(prevouts[offset + Constants.TxIdLen : offset + Constants.OutpointLen]);
   }
 
   // verify a contract, called in another input, by its hash

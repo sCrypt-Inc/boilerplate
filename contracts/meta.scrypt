@@ -1,0 +1,53 @@
+import "txUtil.scrypt";
+// A contract that ensures that the metanet tree contains certain data,
+// this contract guarantees that automatically adding a metanet node contains as string `hello world` after the contract was called.
+// Through this contract, we can ensure that the specified event occurs in a metanet tree.
+// Through contract invocation technology, we can ensure that when the metanet tree triggers a specified event, the preset contract is executed. 
+// For example, when users vote for an option, they can get a certain amount of reward points.
+
+contract MetaNetHelloworld {
+
+    static const int META_PREFIX_LEN = 7;
+    static const bytes META_PREFIX = b'006a044d455441';
+    static const bytes PUBKEY_LEN = b'21';
+    static const bytes TX_ID_LEN = b'20';
+
+    //data that should be included
+    static const bytes includedData = "hello world";
+
+    //unlock the contract to add a `hello world` metanet node.
+    //parentTx may be a disguised meta transaction, which requires other traceability techniques to ensure its validity,
+    //such as sensible contract.
+    public function unlock(Sig sig, PubKey pubKey, PubKey node, bytes parentTx, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimageSigHashType(txPreimage, SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID));
+
+        // get id of previous tx
+        Sha256 prevTxId = Sha256(SigHash.outpoint(txPreimage)[:32]);
+
+        require(hash256(parentTx) == prevTxId);
+
+        //Suppose the 0th output is the metanet output
+        Output metaOutput = TxUtil.readOutput(parentTx, 0);
+
+        bytes metaPrefix = metaOutput.script[0:META_PREFIX_LEN];
+        require(metaPrefix == META_PREFIX);
+
+        PubKey pubKeyParent = PubKey(metaOutput.script[META_PREFIX_LEN + 1:41]);
+        require(pubKey == pubKeyParent);
+        require(checkSig(sig, pubKey));
+
+        // add metanet output that contains certain data
+        bytes output = createHelloworldNode(node, prevTxId, includedData);
+        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+    }
+
+
+    static function createHelloworldNode(PubKey node, bytes parentTxId, bytes data): bytes {
+        bytes outputScript = META_PREFIX
+            + num2bin(Constants.PubKeyLen, 1) + node
+            + num2bin(Constants.TxIdLen, 1) + reverseBytes(parentTxId, Constants.TxIdLen) 
+            + Utils.writeVarint(data);
+        bytes output = Utils.buildOutput(outputScript, 0);
+        return output;
+    }
+}
