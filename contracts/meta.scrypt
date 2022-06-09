@@ -16,14 +16,13 @@ contract MetaNetHelloworld {
     static const bytes includedData = "hello world";
 
     //unlock the contract to add a `hello world` metanet node.
-    //parentTx may be a disguised meta transaction, which requires other traceability techniques to ensure its validity,
-    //such as sensible contract.
     public function unlock(Sig sig, PubKey pubKey, PubKey node, bytes parentTx, SigHashPreimage txPreimage) {
         require(Tx.checkPreimageSigHashType(txPreimage, SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID));
 
         // get id of previous tx
         Sha256 prevTxId = Sha256(SigHash.outpoint(txPreimage)[:32]);
 
+        // prevTx happens to be the parent metanet node
         require(hash256(parentTx) == prevTxId);
 
         //Suppose the 0th output is the metanet output
