@@ -2,18 +2,17 @@ import "arrayUtil.scrypt";
 
 // Conway Game Of Life on a board of N * N
 contract GameOfLife {
-
-
-
     static const int N = 5;
     // effctively we play on a grid of (N+2) * (N+2) without handling boundary cells
     static const int BOARD_SIZE = GameOfLife.N + 2;
-    static bytes LIVE = b'01';
-    static bytes DEAD = b'00';
+    //static const int XY = BOARD_SIZE * BOARD_SIZE;  <- error: invalid array size when run #serializeState
+    static const int XY = 49; 
+    static int LIVE = 1;
+    static int DEAD = 0;
     static const int LOOP_NEIGHBORS = 3;
 
     @state
-    bytes board;
+    int[XY] board;
 
     public function play(int amount, SigHashPreimage txPreimage) {
         require(Tx.checkPreimage(txPreimage));
@@ -29,16 +28,16 @@ contract GameOfLife {
         require(hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 
-    static function evolve(bytes oldBoard) : bytes {
-        bytes newBoard = oldBoard;
+    static function evolve(int[XY] oldBoard) : int[XY] {
+        int[XY] newBoard = oldBoard;
 
         int i = 1;
         loop (GameOfLife.N) {
             int j = 1;
             loop (GameOfLife.N) {
-                bytes nextState = GameOfLife.next(oldBoard, i, j);
-                newBoard = ArrayUtil.setElemAt(newBoard, GameOfLife.index(i, j), nextState);
-
+                int nextState = GameOfLife.next(oldBoard, i, j);
+                newBoard[GameOfLife.index(i, j)] = nextState;
+                
                 j++;
             }
 
@@ -48,7 +47,7 @@ contract GameOfLife {
         return newBoard;
     }
 
-    static function next(bytes oldBoard, int row, int col) : bytes {
+    static function next(int[XY] oldBoard, int row, int col) : int {
         // number of neighbors alive
         int alive = 0;
 
@@ -58,7 +57,7 @@ contract GameOfLife {
 
             loop (LOOP_NEIGHBORS) {
                 if (!(i == 0 && j == 0)) {
-                    if (ArrayUtil.getElemAt(oldBoard, GameOfLife.index(row + i, col + j))) {
+                    if (oldBoard[GameOfLife.index(row + i, col + j)]) {
                         alive++;
                     }
                 }
@@ -68,7 +67,7 @@ contract GameOfLife {
             i++;
         }
 
-        bytes oldState = ArrayUtil.getElemAt(oldBoard, GameOfLife.index(row, col));
+        int oldState = oldBoard[GameOfLife.index(row, col)];
         /* rule
         1. Any live cell with two or three live neighbours survives.
         2. Any dead cell with three live neighbours becomes a live cell.

@@ -18,40 +18,30 @@ describe('Test sCrypt contract Conways GOL In Javascript', () => {
   before(() => {
     const GameOfLife = buildContractClass(compileContract('conwaygol.scrypt'))
 
-    // set initial gol value
-    // 00000000000000
-    // 00000000000000
-    // 00010101000000
-    // 00000001000000
-    // 00010101000000
-    // 00000000000000
-    // 00000000000000
-    let row1 = '00000000000000'
-    let row2 = '00000000000000'
-    let row3 = '00010101000000'
-    let row4 = '00000001000000'
-    let row5 = '00010101000000'
-    let row6 = '00000000000000'
-    let row7 = '00000000000000'
-
-    // new board results
-    //            '00000000000000'
-    let newRow2 = '00000100000000'
-    let newRow3 = '00000101000000'
-    let newRow4 = '00000000010000'
-    let newRow5 = '00000101000000'
-    let newRow6 = '00000100000000'
-    //            '00000000000000'
-
-
     // TODO: This is a dumb way to do it but easier to visualize
     // original board
-    let board = row1+row2+row3+row4+row5+row6+row7;
-    gol = new GameOfLife(new Bytes(board))
+    let board = [
+      0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0,
+      0, 1, 1, 1, 0, 0, 0,
+      0, 0, 0, 1, 0, 0, 0,
+      0, 1, 1, 1, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0
+    ];
+    gol = new GameOfLife(board)
     // new board
-    let newBoard = row1+newRow2+newRow3+newRow4+newRow5+newRow6+row1
+    let newBoard = [
+      0, 0, 0, 0, 0, 0, 0,
+      0, 0, 1, 0, 0, 0, 0,
+      0, 0, 1, 1, 0, 0, 0,
+      0, 0, 0, 0, 1, 0, 0,
+      0, 0, 1, 1, 0, 0, 0,
+      0, 0, 1, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0
+    ]
     const newLockingScript = gol.getNewStateScript({
-      board: new Bytes(newBoard)
+      board: newBoard
     })
 
     tx.addOutput(new bsv.Transaction.Output({
