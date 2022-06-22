@@ -1,0 +1,46 @@
+import "bn128.scrypt";
+import "pairing.scrypt";
+
+
+contract BN128CurveTest {
+
+    //public function testAddFQ(PointFQ a, PointFQ b, PointFQ sum) {
+    //   require(BN128.addPointsFQ(a, b) == sum);
+    //}
+
+    //public function testDoubleFQ(PointFQ a, PointFQ d) {
+    //   require(BN128.doublePointFQ(a) == d);
+    //}
+
+    //public function testMultPointByScalarFQ(PointFQ p, int scalar, PointFQ res) {
+    //   require(BN128.multPointByScalarFQ(p, scalar) == res);
+    //}
+
+    //------------------
+
+    //public function testFQ2modInv(int[2] x, int[2] res) {
+    //   int[2] _res = BN128.modInverseEGCD_FQ2(x);
+    //   require(_res == res);
+    //}
+ 
+    // TODO: test with same points!
+    //public function testAddFQ2(PointFQ2 a, PointFQ2 b, PointFQ2 sum) {
+    //   require(BN128.addPointsFQ2(a, b) == sum);
+    //}
+
+    //public function testDoubleFQ2(PointFQ2 a, PointFQ2 d) {
+    //   require(BN128.doublePointFQ2(a) == d);
+    //}
+
+    //public function testMultFQ2(PointFQ2 a, int scalar, PointFQ2 res) {
+    //    require(BN128.multPointByScalarFQ2(a, scalar) == res);
+    //    //BN128.multPointByScalarFQ2(a, scalar);
+    //    //require(true);
+    //}
+
+    public function testPairing(PointFQ12 a, PointFQ12 b, int[12] res) {
+        require(Pairing.pairing(a, b) == res);
+    }
+
+}
+

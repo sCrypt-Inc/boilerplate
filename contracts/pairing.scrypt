@@ -1,0 +1,66 @@
+import "bn128.scrypt";
+
+
+library Pairing {
+
+    // Log of ATE_LOOP_COUNT
+    static const int N = 63;
+    static const bytes mask = reverseBytes(num2bin(1, N), N);
+
+    static const int ATE_LOOP_COUNT = 29793968203157093288;
+    static const bytes ATE_LOOP_COUNT_BYTES = reverseBytes(num2bin(1, ATE_LOOP_COUNT), ATE_LOOP_COUNT);
+
+
+    // Compute the pairing e(Q, P)
+    static function pairing(PointFQ12 Q, PointFQ12 P): int[12] {
+        PointFQ12 R = Q;
+        int[12] f = BN128.oneFQ12;
+
+        // Main Miller loop
+        loop (N) : i {
+            int[12] fSqr = BN128._mulCoeffsFQ12(f, f);
+            f = BN128._mulCoeffsFQ12(fSqr, linefunc(R, R, P));
+            R = BN128.doublePointFQ12(R);
+
+            int j = N - 1 - i;
+            if (ATE_LOOP_COUNT_BYTES & (mask << j)) {
+                f = BN128._mulCoeffsFQ12(f, linefunc(R, Q, P));
+                R = BN128.addPointsFQ12(R, Q);
+            }
+        }
+        return f;
+    }
+
+    // Create a function representing the line between P1 and P2, and evaluate it at T
+    static function linefunc(PointFQ12 P1, PointFQ12 P2, PointFQ12 T): int[12] {
+	int[12] ret = BN128._subCoeffsFQ12(T.x, P1.x);
+
+        int[12] xDiff = BN128._subCoeffsFQ12(P2.x, P1.x);
+        int[12] yDiff = BN128._subCoeffsFQ12(P2.y, P1.y);
+        int[12] xDiffInv = BN128.modInverseEGCD_FQ12(xDiff);
+
+        int[12] xDiffT = BN128._subCoeffsFQ12(T.x, P1.x);
+        int[12] yDiffT = BN128._subCoeffsFQ12(T.y, P1.y);
+
+        int[12] xP1Sqr = BN128._mulCoeffsFQ12(P1.x, P1.x);
+        int[12] xP1Sqr3 = BN128._mulCoeffsWScalarFQ12(xP1Sqr, 3);
+        int[12] yP1Doubl = BN128._mulCoeffsWScalarFQ12(P1.y, 2);
+        int[12] yP1DoublInv = BN128.modInverseEGCD_FQ12(yP1Doubl);
+
+        if (P1.x != P2.x) {
+            int[12] prod0 = BN128._mulCoeffsFQ12(yDiff, xDiffInv);
+            int[12] prod1 = BN128._mulCoeffsFQ12(prod0, xDiffT);
+
+            ret = BN128._subCoeffsFQ12(prod1, yDiffT);
+        }
+        if (P1.y == P2.y) {
+            int[12] prod0 = BN128._mulCoeffsFQ12(xP1Sqr3, xDiffInv);
+            int[12] prod1 = BN128._mulCoeffsFQ12(prod0, xDiffT);
+
+            ret = BN128._subCoeffsFQ12(prod1, yDiffT);
+        }
+
+        return BN128.modReduceFQ12(ret, BN128.P);
+    }
+
+}
