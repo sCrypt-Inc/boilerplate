@@ -18,14 +18,13 @@ contract TokenSale {
 
         // read previous locking script
         bytes lockingScript = SigHash.scriptCode(txPreimage);
-        int scriptLen = len(lockingScript);
         int oldBalance = SigHash.value(txPreimage);
         int newBalance = oldBalance + numTokens * this.price;
 
         // write new locking script
 
         bytes dataPart = buyer + num2bin(numTokens, DataLen);
-        bytes codePart = lockingScript[: len(lockingScript) - 1];
+        bytes codePart = lockingScript[: len(lockingScript) - 2];
         bytes lockingScript_ = codePart + Utils.writeVarint(dataPart);
         bytes output = Utils.buildOutput(lockingScript_, newBalance);
         require(hash256(output) == SigHash.hashOutputs(txPreimage));

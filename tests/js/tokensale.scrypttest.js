@@ -17,11 +17,12 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
     tokenSale = new TokenSale(tokenPriceInSatoshis)
 
     // initial empty state
-    tokenSale.setDataPart('')
+    tokenSale.setDataPart('00')
 
     getPreimageAfterPurchase = (publicKey) => {
 
       const newLockingScript = [tokenSale.codePart.toASM(), toHex(publicKey) + num2bin(numTokens, DataLen)].join(' ')
+
       tx.addOutput(new bsv.Transaction.Output({
         script: bsv.Script.fromASM(newLockingScript),
         satoshis: inputSatoshis + numTokens * tokenPriceInSatoshis
