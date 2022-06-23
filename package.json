@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "mocha -r ts-node/register 'tests/**/*.scrypttest.*'  --reporter spec --timeout 600000 -g '' ",
-    "single-test": "mocha -r ts-node/register --reporter spec --timeout 120000",
+    "single-test": "cross-env NODE_OPTIONS=--max-old-space-size=8192 mocha -r ts-node/register --reporter spec --timeout 1200000000",
     "testnet": "node ./testnet.js",
     "watch": "node watcher.js",
     "gen-desc": "node watcher.js --gen-desc"
@@ -28,6 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.2",
+    "cross-env": "^7.0.3",
     "glob": "^7.1.6",
     "minimist": "^1.2.6",
     "rabinsig": "^1.0.0",
