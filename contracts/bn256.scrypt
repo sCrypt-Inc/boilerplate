@@ -1,0 +1,415 @@
+// TODO: Make as few variable balue reasignments as possible.
+
+type FQ = int;
+type FQ2 = int[2];
+
+struct FQ6 {
+    FQ2 x;
+    FQ2 y;
+    FQ2 z;
+}
+
+struct CurvePoint {
+    FQ x;
+    FQ y;
+    FQ z;
+    FQ t;
+}
+
+struct TwistPoint {
+    FQ2 x;
+    FQ2 y;
+    FQ2 z;
+    FQ2 t;
+}
+
+// FQ12Point implements the field of size p¹² as a quadratic extension of FQ6Point
+// where ω²=τ.
+struct FQ12Point {
+    FQ6 x;
+    FQ6 y;
+}
+
+library BN256 {
+
+    // Curve bits:
+    static const int CURVE_BITS = 256; 
+
+    // Key int size:
+    static const int S = 33;    // 32 bytes plus sign byte
+    static const bytes mask = b'000000000000000000000000000000000000000000000000000000000000000001';
+    static const bytes zero = b'000000000000000000000000000000000000000000000000000000000000000000';
+
+    // Curve field modulus:
+    static const int P = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
+
+    // Curve group modulus:
+    static const int n = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+
+    // P - 2
+    static const int Psub2 = 65000549695646603732796438742359905742825358107623003571877145026864184071781;
+
+    // rN1 is R^-1 where R = 2^256 mod P.
+    static const int rN1 = 0x1fc5c0956f92f8252eab68888ea1f5150cc65f3bcec8c91bcbb781e36236117d;
+
+    // r3 is R^3 where R = 2^256 mod P.
+    static const int r3 = 0x24ebbbb3a2529292df2ff66396b107a7388f899054f538a42af2dfb9324a5bb8;
+
+    // Upper bound of the eGCD mod inverse loop:
+    static const int UB = 368; 
+
+    static function modReduce(int k, int modulus) : int {
+        int res = k % modulus;
+        return (res < 0) ? res + modulus : res;
+    }
+
+    static function mulFQ2(FQ2 a, FQ2 b) : FQ2 {
+        int tx = a[0] * b[1];
+        int t =  b[0] * a[1];
+        tx += t;
+
+        int ty = a[1] * b[1];
+        t = a[0] * b[0];
+        ty -= t;
+        
+        return [modReduce(tx, P), modReduce(ty, P)];
+    }
+
+    static function mulScalarFQ2(FQ2 a, int scalar) : FQ2 {
+        return [
+            modReduce(a[0] * scalar, P),
+            modReduce(a[1] * scalar, P)
+        ];
+    }
+
+    static function addFQ2(FQ2 a, FQ2 b) : FQ2 {
+        return [
+            modReduce(a[0] + b[0], P), 
+            modReduce(a[1] + b[1], P)
+        ];
+    }
+
+    static function subFQ2(FQ2 a, FQ2 b) : FQ2 {
+        return [
+            modReduce(a[0] - b[0], P),
+            modReduce(a[1] - b[1], P)
+        ];
+    }
+
+    static function negFQ2(FQ2 a) : FQ2 {
+        return [
+            modReduce(a[0] * -1, P), 
+            modReduce(a[1] * -1, P)
+        ];
+    }
+
+    static function squareFQ2(FQ2 a) : FQ2 {
+        int tx = a[1] - a[0];
+        int ty = a[0] + a[1];
+        ty *= tx;
+
+        int tx2 = (a[0] * a[1]) * 2;
+
+        return [modReduce(tx2, P), modReduce(ty, P)];
+    }
+
+    static function expFQ(FQ a, int e) : FQ {
+        int sum = rN1;
+        int power = a;
+
+        bytes eb = reverseBytes(num2bin(e, S), S);
+
+        loop (CURVE_BITS) : i {
+            if ((eb & (mask << i)) != zero) {
+                sum *= power;
+            }
+            
+            power *= power;
+        }
+
+        return sum * r3;
+    }
+
+    static function modInverseEGCD(int x, int n) : int {
+        // The following script already does modular reduction at the start so there's no
+        // need to normalize x before function call.
+        asm {
+            OP_2DUP OP_MOD OP_DUP OP_0 OP_LESSTHAN OP_IF OP_DUP OP_2 OP_PICK OP_ADD OP_ELSE OP_DUP OP_ENDIF OP_NIP OP_2 OP_ROLL OP_DROP
+            OP_DUP OP_TOALTSTACK OP_TOALTSTACK OP_TOALTSTACK
+            OP_1 OP_0 OP_1
+            loop(UB) {
+                OP_FROMALTSTACK OP_FROMALTSTACK OP_2DUP OP_DUP OP_IF OP_TUCK OP_MOD OP_TOALTSTACK OP_TOALTSTACK OP_DIV OP_MUL OP_SUB OP_TUCK OP_ELSE OP_TOALTSTACK OP_TOALTSTACK OP_DROP OP_DROP OP_ENDIF
+            }
+            OP_FROMALTSTACK OP_FROMALTSTACK OP_DROP OP_DROP OP_DROP OP_FROMALTSTACK OP_SWAP OP_NIP
+        }
+    }
+
+    static function inverseFQ2(FQ2 a) : FQ2 {
+        int t2 = a[1] * a[1]; 
+        int t1 = (a[0] * a[0]) + t2;
+
+        int inv = modInverseEGCD(t1, P);
+
+        int axNeg = a[0] * -1;
+
+        return [
+            modReduce(axNeg * inv, P),
+            modReduce(a[1] * inv, P)
+        ];
+    }
+
+    // ----------------------------------------------------
+
+    // TODO: Implement makeAffine
+
+    static function doubleCurvePoint(CurvePoint a) : CurvePoint {
+        // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/doubling/dbl-2009-l.op3
+        CurvePoint res = {0, 0, 0, a.t};
+
+        int A = modReduce(a.x * a.x, P);
+        int B = modReduce(a.y * a.y, P);
+        int C = modReduce(B * B, P);
+
+        int t = a.x + B;
+        int t2 = modReduce(t * t, P);
+        t = t2 - A;
+        t2 = t - C;
+
+        int d = t2 * 2;
+        t = A * 2;
+        int e = t + A;
+        int f = modReduce(e * e, P);
+
+        t = d * 2;
+        res.x = f - t;
+
+        t = C * 2;
+        t2 = t * 2;
+        t = t2 * 2;
+        res.y = d - res.x;
+        t2 = modReduce(e * res.y, P);
+        res.y = t2 - t;
+
+        res.z = modReduce(res.y * a.z, P) * 2;
+
+        return res;
+    }
+
+    static function addCurvePoints(CurvePoint a, CurvePoint b) : CurvePoint {
+        // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2007-bl.op3
+        CurvePoint res = {0, 0, 0, a.t};
+        
+        if (a.z == 0) {
+            res = b;
+        } else if (b.z == 0) {
+            res = a;
+        } else {
+            // Normalize the points by replacing a = [x1:y1:z1] and b = [x2:y2:z2]
+            // by [u1:s1:z1·z2] and [u2:s2:z1·z2]
+            // where u1 = x1·z2², s1 = y1·z2³ and u1 = x2·z1², s2 = y2·z1³
+            
+            int z12 = modReduce(a.z * a.z, P);
+            int z22 = modReduce(b.z * b.z, P);
+            
+            int u1 = modReduce(a.x * z22, P);
+            int u2 = modReduce(b.x * z12, P);
+
+            int t = modReduce(b.z * z22, P);
+            int s1 = modReduce(a.y * t, P);
+
+            t = modReduce(a.z * z12, P);
+            int s2 = modReduce(b.y * t, P);
+
+            // Compute x = (2h)²(s²-u1-u2)
+            // where s = (s2-s1)/(u2-u1) is the slope of the line through
+            // (u1,s1) and (u2,s2). The extra factor 2h = 2(u2-u1) comes from the value of z below.
+            // This is also:
+            // 4(s2-s1)² - 4h²(u1+u2) = 4(s2-s1)² - 4h³ - 4h²(2u1)
+            //                        = r² - j - 2v
+            // with the notations below.
+
+            int h = u2 - u1;
+            bool xEqual = h == 0;
+
+            t = h * 2;
+            // i = 4h²
+            int i = modReduce(t * t, P);
+            // j = 4h³
+            int j = modReduce(h * i, P);
+
+            t = s2 - s1;
+            bool yEqual = t == 0;
+
+            if (xEqual && yEqual) {
+                res = doubleCurvePoint(a);
+            } else {
+                int r = t + t;
+                int v = modReduce(u1 * i, P);
+
+                // t4 = 4(s2-s1)²
+                int t4 = modReduce(r * r, P);
+                int t6 = t4 - j;
+                t = v * 2;
+
+                res.x = t6 - t;
+
+                // Set y = -(2h)³(s1 + s*(x/4h²-u1))
+                // This is also
+                // y = - 2·s1·j - (s2-s1)(2x - 2i·u1) = r(v-x) - 2·s1·j
+                t = v - res.x;
+                t4 = modReduce(s1 * j, P);
+                t6 = t4 * 2;
+                t4 = modReduce(r * t, P);
+                res.y = t4 - t6;
+                
+                // Set z = 2(u2-u1)·z1·z2 = 2h·z1·z2
+                t = a.z + b.z;
+                t4 = modReduce(t * t, P);
+                t = t4 - z12;
+                t4 = t - z22;
+                res.z = modReduce(t4 * h, P);
+            }
+        }
+
+        return res;
+    }
+        
+    static function mulCurvePoint(CurvePoint a, int m) : CurvePoint {
+        // Double and add method.
+        // Lowest bit to highest.
+        CurvePoint q = {0, 0, 0, 0};
+
+        bytes mb =   reverseBytes(num2bin(m, S), S);
+
+        loop (CURVE_BITS) : i {
+            if ((mb & (mask << i)) != zero) {
+                q = addCurvePoints(q, a);
+            }
+
+            a = doubleCurvePoint(a);
+        }
+
+        return q;
+    }
+
+    // ----------------------------------------------------
+
+    static function doubleTwistPoint(TwistPoint a) : TwistPoint {
+        // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/doubling/dbl-2009-l.op3
+        TwistPoint res = {[0, 0], [0, 0], [0, 0], a.t};
+
+        FQ2 A = squareFQ2(a.x);
+        FQ2 B = squareFQ2(a.y);
+        FQ2 C = squareFQ2(B);
+
+        FQ2 t = addFQ2(a.x, B);
+        FQ2 t2 = squareFQ2(t);
+        t = subFQ2(t2, A);
+        t2 = subFQ2(t, C);
+
+        FQ2 d = mulScalarFQ2(t2, 2);
+        t = mulScalarFQ2(A, 2);
+        FQ2 e = addFQ2(t, A);
+        FQ2 f = squareFQ2(e);
+
+        t = mulScalarFQ2(d, 2);
+        res.x = subFQ2(f, t);
+
+        t = mulScalarFQ2(C, 2);
+        t2 = mulScalarFQ2(t, 2);
+        t = mulScalarFQ2(t2, 2);
+        res.y = subFQ2(d, res.x);
+        t2 = mulFQ2(e, res.y);
+        res.y = subFQ2(t2, t);
+
+        res.z = mulScalarFQ2(mulFQ2(res.y, a.z), 2);
+
+        return res;
+    }
+
+
+    static function addTwistPoints(TwistPoint a, TwistPoint b) : TwistPoint {
+        TwistPoint res = {[0, 0], [0, 0], [0, 0], a.t};
+        
+        if (a.z == [0, 0]) {
+            res = b;
+        } else if (b.z == [0, 0]) {
+            res = a;
+        } else {
+            // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2007-bl.op3
+
+            // Normalize the points by replacing a = [x1:y1:z1] and b = [x2:y2:z2]
+            // by [u1:s1:z1·z2] and [u2:s2:z1·z2]
+            // where u1 = x1·z2², s1 = y1·z2³ and u1 = x2·z1², s2 = y2·z1³
+            
+            FQ2 z12 = squareFQ2(a.z);
+            FQ2 z22 = squareFQ2(b.z);
+            
+            FQ2 u1 = mulFQ2(a.x, z22);
+            FQ2 u2 = mulFQ2(b.x, z12);
+
+            FQ2 t = mulFQ2(b.z, z22);
+            FQ2 s1 = mulFQ2(a.y, t);
+
+            t = mulFQ2(a.z, z12);
+            FQ2 s2 = mulFQ2(b.y, t);
+
+            // Compute x = (2h)²(s²-u1-u2)
+            // where s = (s2-s1)/(u2-u1) is the slope of the line through
+            // (u1,s1) and (u2,s2). The extra factor 2h = 2(u2-u1) comes from the value of z below.
+            // This is also:
+            // 4(s2-s1)² - 4h²(u1+u2) = 4(s2-s1)² - 4h³ - 4h²(2u1)
+            //                        = r² - j - 2v
+            // with the notations below.
+
+            FQ2 h = subFQ2(u2, u1);
+            bool xEqual = h == [0, 0];
+
+            t = mulScalarFQ2(h, 2);
+            // i = 4h²
+            FQ2 i = squareFQ2(t);
+            // j = 4h³
+            FQ2 j = mulFQ2(h, i);
+
+            t = subFQ2(s2, s1);
+            bool yEqual = t == [0, 0];
+            if (xEqual && yEqual) {
+                res = doubleTwistPoint(a);
+            } else {
+                FQ2 r = mulScalarFQ2(t, 2);
+                FQ2 v = mulFQ2(u1, i);
+
+                // t4 = 4(s2-s1)²
+                FQ2 t4 = squareFQ2(r);
+                FQ2 t6 = subFQ2(t4, j);
+                t = mulScalarFQ2(v, 2);
+
+                res.x = subFQ2(t6, t);
+
+                // Set y = -(2h)³(s1 + s*(x/4h²-u1))
+                // This is also
+                // y = - 2·s1·j - (s2-s1)(2x - 2i·u1) = r(v-x) - 2·s1·j
+                t = subFQ2(v, res.x);
+                t4 = mulFQ2(s1, j);
+                t6 = mulScalarFQ2(t4, 2);
+                t4 = mulFQ2(r, t);
+                res.y = subFQ2(t4, t6);
+                
+                // Set z = 2(u2-u1)·z1·z2 = 2h·z1·z2
+                t = addFQ2(a.z, b.z);
+                t4 = squareFQ2(t);
+                t = subFQ2(t4, z12);
+                t4 = subFQ2(t, z22);
+                res.z = mulFQ2(t4, h);
+            }
+        }
+
+        return res;
+    }
+
+    static function makeAffineTwistPoint(TwistPoint a) : TwistPoint {
+
+    }
+
+}
+
