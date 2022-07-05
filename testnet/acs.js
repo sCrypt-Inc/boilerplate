@@ -31,7 +31,7 @@ const {
 
   try {
     // initialize contract
-    const AnyoneCanSpend = buildContractClass(loadDesc('acs_debug_desc.json'));
+    const AnyoneCanSpend = buildContractClass(loadDesc('acs'));
     const acs = new AnyoneCanSpend(new Ripemd160(toHex(publicKeyHashX)));
 
     // deploy contract on testnet

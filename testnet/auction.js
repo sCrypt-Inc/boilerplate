@@ -165,6 +165,7 @@ async function runClose(prevTx, auction) {
 
     await sleep(SLEEP_TIME)
     
+    console.log('runClose ...');
     await runClose(prevTx, auction);
 
     console.log('Succeeded on testnet');
