@@ -20,9 +20,9 @@ You can fund its address '${newPrivKey.toAddress()}' from sCrypt faucet https://
 
 const privateKey = new bsv.PrivateKey.fromWIF(key)
 
-const privateKey2 = new bsv.PrivateKey.fromWIF(key2)
+const privateKey2 = key2 ? new bsv.PrivateKey.fromWIF(key2) : privateKey
 
-const privateKey3 = new bsv.PrivateKey.fromWIF(key3)
+const privateKey3 = key3 ? new bsv.PrivateKey.fromWIF(key3) : privateKey
 
 //console.log('' + privateKey.toAddress())
 
