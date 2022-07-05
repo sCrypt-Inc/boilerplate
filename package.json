@@ -28,6 +28,7 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.2",
+    "circomlibjs": "^0.1.6",
     "cross-env": "^7.0.3",
     "glob": "^7.1.6",
     "minimist": "^1.2.6",
