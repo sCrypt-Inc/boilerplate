@@ -8,10 +8,10 @@ os:
   - osx
   - windows
 
-#before_install:
-#  - npm i -g npm@latest
+before_install:
+ - npm i -g npm@latest
 
 script:
-
+  - npm i
   - npx scryptlib download
   - npm t
