@@ -26,13 +26,10 @@ describe('Test sCrypt contract DemoP2PKH In Javascript', () => {
     sig = signTx(tx, privateKey, demo.lockingScript, inputSatoshis)
     result = demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify(context)
     expect(result.success, result.error).to.be.true
-    /*
-     * print out parameters used in debugger, see ""../.vscode/launch.json" for an example
-      console.log(toHex(pkh))
-      console.log(toHex(sig))
-      console.log(toHex(publicKey))
-      console.log(toHex(tx))
-    */
+    // got launch.json
+
+    const file = demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).genLaunchConfig()
+    console.log(file)
   });
 
   it('signature check should fail when wrong private key signs', () => {

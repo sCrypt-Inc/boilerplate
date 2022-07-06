@@ -29,13 +29,7 @@ async function main() {
     const unlockingTx = new bsv.Transaction();
 
     unlockingTx.addInput(createInputFromPrevTx(lockingTx))
-      .setOutput(0, (tx) => {
-        const newLockingScript = bsv.Script.buildPublicKeyHashOut(privateKey.toAddress())
-        return new bsv.Transaction.Output({
-          script: newLockingScript,
-          satoshis: amount - tx.getEstimateFee(),
-        })
-      })
+      .change(privateKey.toAddress())
       .setInputScript(0, (tx, output) => {
         const sig = signTx(unlockingTx, privateKey, output.script, output.satoshis)
         return p2pkh.unlock(sig, new PubKey(toHex(publicKey))).toScript()

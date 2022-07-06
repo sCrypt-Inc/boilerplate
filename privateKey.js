@@ -6,7 +6,7 @@ const privKey = ''
 const privKey2 = ''
 const privKey3 = ''
 
-if (!key) {
+if (!privKey) {
   genPrivKey()
 }
 
