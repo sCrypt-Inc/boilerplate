@@ -8,10 +8,17 @@ os:
   - osx
   - windows
 
-before_install:
- - npm i -g npm@latest
+# before_install:
+#  - npm i -g npm@latest
+
+
+install:
+  - |
+    if [ $TRAVIS_OS_NAME == "windows" ]; then
+      npm install -g node-gyp
+      npm install --global --production windows-build-tools
+    fi
 
 script:
-  - npm i
   - npx scryptlib download
   - npm t
