@@ -2,11 +2,11 @@ const { exit } = require('process')
 const { bsv } = require('scryptlib');
 
 // fill in private key on testnet in WIF here
-const key = ''
-const key2 = ''
-const key3 = ''
+const privKey = ''
+const privKey2 = ''
+const privKey3 = ''
 
-if (!key) {
+if (!privKey) {
   genPrivKey()
 }
 
@@ -18,11 +18,11 @@ You can fund its address '${newPrivKey.toAddress()}' from sCrypt faucet https://
   exit(-1)
 }
 
-const privateKey = new bsv.PrivateKey.fromWIF(key)
+const privateKey = new bsv.PrivateKey.fromWIF(privKey)
 
-const privateKey2 = new bsv.PrivateKey.fromWIF(key2)
+const privateKey2 = privKey2 ? new bsv.PrivateKey.fromWIF(privKey2) : privateKey
 
-const privateKey3 = new bsv.PrivateKey.fromWIF(key3)
+const privateKey3 = privKey3 ? new bsv.PrivateKey.fromWIF(privKey3) : privateKey
 
 //console.log('' + privateKey.toAddress())
 

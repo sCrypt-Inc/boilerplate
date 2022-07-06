@@ -1,4 +1,4 @@
-type Matrix = int[N][N];
+type Matrix = int[SVD.N][SVD.N];
 
 // a contract using Singular Value Decomposition
 // One use case could be: given a low-resolution picture, a higher-resolution picture is needed to unlock it.

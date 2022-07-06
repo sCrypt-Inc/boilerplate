@@ -6,36 +6,36 @@ contract ERC721 {
     HashedMap<int, PubKey> owners;
 
     // mint a new token to receiver
-    public function mint(PubKey to, int tokenId, Sig minterSig, int keyIndex, SigHashPreimage preimage) {
+    public function mint(PubKey to, SortedItem<int> tokenId, Sig minterSig, int keyIndex, SigHashPreimage preimage) {
         // token not minted
-        require(this.owners.has(tokenId, keyIndex));
+        require(this.owners.has(tokenId));
         // authenticate
         require(checkSig(minterSig, this.minter));
 
-        require(this.owners.set(tokenId, to, keyIndex));
+        require(this.owners.set(tokenId, to));
 
         require(this.propagateState(preimage));
     }
 
     // transfer a token from sender to receiver
-    public function burn(int tokenId, PubKey from, Sig fromSig, int keyIndex, SigHashPreimage preimage) {
+    public function burn(SortedItem<int> tokenId, PubKey from, Sig fromSig, int keyIndex, SigHashPreimage preimage) {
         // verify ownership
-        require(this.owners.canGet(tokenId, from, keyIndex));
+        require(this.owners.canGet(tokenId, from));
         // authenticate
         require(checkSig(fromSig, from));
 
-        require(this.owners.delete(tokenId, keyIndex));
+        require(this.owners.delete(tokenId));
 
         require(this.propagateState(preimage));
     }
 
-    public function transferFrom(PubKey from, PubKey to, Sig fromSig, int tokenId, int keyIndex, SigHashPreimage preimage) {
+    public function transferFrom(PubKey from, PubKey to, Sig fromSig, SortedItem<int> tokenId, int keyIndex, SigHashPreimage preimage) {
         // verify ownership
-        require(this.owners.canGet(tokenId, from, keyIndex));
+        require(this.owners.canGet(tokenId, from));
         // authenticate
         require(checkSig(fromSig, from));
 
-        require(this.owners.set(tokenId, to, keyIndex));
+        require(this.owners.set(tokenId, to));
     
         require(this.propagateState(preimage));
     }

@@ -49,7 +49,7 @@ function reverseEndian(hexStr) {
 async function sendTx(tx) {
   const hex = tx.toString();
 
-  if(!tx.checkFeeRate(500)) {
+  if(!tx.checkFeeRate(50)) {
     throw new Error(`checkFeeRate fail, transaction fee is too low`)
   }
 
@@ -107,7 +107,16 @@ function compileTestContract(fileName) {
 }
 
 function loadDesc(fileName) {
-  const filePath = path.join(__dirname, `out/${fileName}`);
+  let filePath = '';
+  if(!fileName.endsWith(".json")) {
+    filePath = path.join(__dirname, `out/${fileName}_desc.json`);
+    if (!existsSync(filePath)) {
+      filePath = path.join(__dirname, `out/${fileName}_debug_desc.json`);
+    }
+  } else {
+    filePath = path.join(__dirname, `out/${fileName}`);
+  }
+
   if (!existsSync(filePath)) {
     throw new Error(`Description file ${filePath} not exist!\nIf You already run 'npm run watch', maybe fix the compile error first!`)
   }
