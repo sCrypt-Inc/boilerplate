@@ -5,7 +5,6 @@ const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
 const { exit } = require('process');
-var sleep = require('sleep');
 
 const exclude = ['superAsset10.js', 'bns.js', 'superAssetNFT.js']
 fs.readdirSync(deploymentFolder).forEach( file => {
@@ -29,7 +28,5 @@ fs.readdirSync(deploymentFolder).forEach( file => {
         console.log(`run deployments ${file} succeeded`)
         console.log(output);
     }
-
-    sleep.sleep(10)
 
 });

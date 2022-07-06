@@ -34,7 +34,6 @@
     "minimist": "^1.2.6",
     "rabinsig": "^1.0.0",
     "scryptlib": "^0.16.2",
-    "sleep": "^6.3.0",
     "watch": "^1.0.2"
   },
   "devDependencies": {
