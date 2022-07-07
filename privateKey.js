@@ -3,6 +3,8 @@ const { bsv } = require('scryptlib');
 
 // fill in private key on testnet in WIF here
 const privKey = ''
+
+// be default, you do NOT fill in these two, since they are only needed when multiple keys are required
 const privKey2 = ''
 const privKey3 = ''
 
@@ -23,8 +25,6 @@ const privateKey = new bsv.PrivateKey.fromWIF(privKey)
 const privateKey2 = privKey2 ? new bsv.PrivateKey.fromWIF(privKey2) : privateKey
 
 const privateKey3 = privKey3 ? new bsv.PrivateKey.fromWIF(privKey3) : privateKey
-
-//console.log('' + privateKey.toAddress())
 
 module.exports = {
   privateKey,
