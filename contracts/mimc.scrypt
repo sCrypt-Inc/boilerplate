@@ -1,7 +1,6 @@
 // An implementation of https://eprint.iacr.org/2016/492.pdf
+// exponent of 7 is used, not 3
 library Mimc7 {
-
-    static const int EXPONENT = 7;
 
     static const int ROUNDS = 91;
 

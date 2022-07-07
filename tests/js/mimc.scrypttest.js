@@ -17,7 +17,6 @@ describe('Test sCrypt contract MimcTest In Javascript', () => {
       let x = getRandomInt(-9999999999, 9999999999)
       let k = getRandomInt(1, 9999999999)
       let h = BigInt(mimc7.F.toString(mimc7.hash(x, k)))
-      // console.log(`x:${x}, k:${k}, h:${h}`)
       result = test.unlock(x, k, h).verify()
       expect(result.success, result.error).to.be.true
     }
