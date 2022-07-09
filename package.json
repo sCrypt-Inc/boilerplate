@@ -28,6 +28,8 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.2",
+    "circom_tester": "0.0.14",
+    "circomlib": "^2.0.5",
     "circomlibjs": "^0.1.6",
     "cross-env": "^7.0.3",
     "glob": "^7.1.6",
@@ -37,6 +39,7 @@
     "watch": "^1.0.2"
   },
   "devDependencies": {
+    "@noble/secp256k1": "^1.6.0",
     "@types/chai": "^4.2.8",
     "@types/mocha": "^7.0.1",
     "@types/node": "^13.7.6",
