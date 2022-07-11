@@ -11,7 +11,7 @@ exports.p = Scalar.fromString("2188824287183927522224640574525727508854836440041
 type key_pair = {privkey: bigint, pubkey: Array<bigint>};
 
 function bigint_to_tuple(x: bigint) {
-    let mod: bigint = 2n ** 64n;
+    const mod: bigint = 2n ** 64n;
     let ret: [bigint, bigint, bigint, bigint] = [0n, 0n, 0n, 0n];
 
     var x_temp: bigint = x;
@@ -87,7 +87,7 @@ describe("Pubkey In Group", async function () {
 
             let input = { "privkey": priv_tuple, "pubKeyGroup": pubkey_group_tuples};
             let witness = await circuit.calculateWitness(input);
-            // output `1` means pubkey exists in group    
+            // output `1` means pubkey exists in group, output starts from witness[1]    
             expect(witness[1]).to.equal(1n);
             await circuit.checkConstraints(witness);
         });

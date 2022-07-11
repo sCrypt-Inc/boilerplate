@@ -11,7 +11,8 @@
     "single-test": "cross-env NODE_OPTIONS=--max-old-space-size=8192 mocha -r ts-node/register --reporter spec --timeout 1200000000",
     "testnet": "node ./testnet.js",
     "watch": "node watcher.js",
-    "gen-desc": "node watcher.js --gen-desc"
+    "gen-desc": "node watcher.js --gen-desc",
+    "download:circom": "node ./util/getCircomCompiler.js"
   },
   "repository": {
     "type": "git",
