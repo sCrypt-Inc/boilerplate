@@ -1,5 +1,3 @@
-// TODO: Make as few variable balue reasignments as possible.
-
 type FQ = int;
 type FQ2 = int[2];
 
@@ -23,9 +21,9 @@ struct TwistPoint {
     FQ2 t;
 }
 
-// FQ12Point implements the field of size p¹² as a quadratic extension of FQ6Point
+// FQ12 implements the field of size p¹² as a quadratic extension of FQ6
 // where ω²=τ.
-struct FQ12Point {
+struct FQ12 {
     FQ6 x;
     FQ6 y;
 }
@@ -58,6 +56,39 @@ library BN256 {
     // Upper bound of the eGCD mod inverse loop:
     static const int UB = 368; 
 
+    // xiToPMinus1Over6 is ξ^((p-1)/6) where ξ = i+9.
+    static const FQ2 xiToPMinus1Over6 = [
+        16469823323077808223889137241176536799009286646108169935659301613961712198316,
+        8376118865763821496583973867626364092589906065868298776909617916018768340080
+    ];
+
+    // xiTo2PMinus2Over3 is ξ^((2p-2)/3) where ξ = i+9.
+    static const FQ2 xiTo2PMinus2Over3 = [
+        19937756971775647987995932169929341994314640652964949448313374472400716661030,
+        2581911344467009335267311115468803099551665605076196740867805258568234346338
+    ];
+
+    // xiToPMinus1Over2 is ξ^((p-1)/2) where ξ = i+9.
+    static const FQ2 xiToPMinus1Over2 = [
+        3505843767911556378687030309984248845540243509899259641013678093033130930403,
+        2821565182194536844548159561693502659359617185244120367078079554186484126554
+    ];
+
+    // xiToPMinus1Over3 is ξ^((p-1)/3) where ξ = i+9.
+    static const FQ2 xiToPMinus1Over3 = [
+        10307601595873709700152284273816112264069230130616436755625194854815875713954,
+        21575463638280843010398324269430826099269044274347216827212613867836435027261
+    ];
+
+    // xiTo2PSquaredMinus2Over3 is ξ^((2p²-2)/3) where ξ = i+9 (a cubic root of unity, mod p).
+    static const FQ xiTo2PSquaredMinus2Over3 = 2203960485148121921418603742825762020974279258880205651966;
+    
+    // xiToPSquaredMinus1Over3 is ξ^((p²-1)/3) where ξ = i+9.
+    static const FQ xiToPSquaredMinus1Over3 = 21888242871839275220042445260109153167277707414472061641714758635765020556616;
+
+    // xiToPSquaredMinus1Over6 is ξ^((1p²-1)/6) where ξ = i+9 (a cubic root of -1, mod p).
+    static const FQ xiToPSquaredMinus1Over6 = 21888242871839275220042445260109153167277707414472061641714758635765020556617;
+
     static function modReduce(int k, int modulus) : int {
         int res = k % modulus;
         return (res < 0) ? res + modulus : res;
@@ -66,12 +97,19 @@ library BN256 {
     static function mulFQ2(FQ2 a, FQ2 b) : FQ2 {
         int tx = a[0] * b[1];
         int t =  b[0] * a[1];
-        tx += t;
+        int tx_2 = tx + t;
 
         int ty = a[1] * b[1];
-        t = a[0] * b[0];
-        ty -= t;
+        int t_2 = a[0] * b[0];
+        int ty_2 = ty - t_2;
         
+        return [modReduce(tx_2, P), modReduce(ty_2, P)];
+    }
+
+    static function mulXiFQ2(FQ2 a) : FQ2 {
+        // (xi+y)(i+3) = (9x+y)i+(9y-x)
+        FQ tx = (a[0] << 3) + a[0] + a[1];
+        FQ ty = (a[1] << 3) + a[1] - a[0];
         return [modReduce(tx, P), modReduce(ty, P)];
     }
 
@@ -103,14 +141,28 @@ library BN256 {
         ];
     }
 
+    static function conjugateFQ2(FQ2 a) : FQ2 {
+        return [
+            modReduce(a[0] * -1, P), 
+            modReduce(a[1], P)
+        ];
+    }
+
+    static function doubleFQ2(FQ2 a) : FQ2 {
+        return [
+            modReduce(a[0] * 2, P),
+            modReduce(a[1] * 2, P)
+        ];
+    }
+
     static function squareFQ2(FQ2 a) : FQ2 {
         int tx = a[1] - a[0];
         int ty = a[0] + a[1];
-        ty *= tx;
+        int ty_2 = ty * tx;
 
-        int tx2 = (a[0] * a[1]) * 2;
+        int tx_2 = (a[0] * a[1]) * 2;
 
-        return [modReduce(tx2, P), modReduce(ty, P)];
+        return [modReduce(tx_2, P), modReduce(ty_2, P)];
     }
 
     static function expFQ(FQ a, int e) : FQ {
@@ -158,9 +210,407 @@ library BN256 {
         ];
     }
 
-    // ----------------------------------------------------
+    static function mulFQ6(FQ6 a, FQ6 b) : FQ6 {
+        // "Multiplication and Squaring on Pairing-Friendly Fields"
+        // Section 4, Karatsuba method.
+        // http://eprint.iacr.org/2006/471.pdf
 
-    // TODO: Implement makeAffine
+        FQ2 v0 = mulFQ2(a.z, b.z);
+        FQ2 v1 = mulFQ2(a.y, b.y);
+        FQ2 v2 = mulFQ2(a.x, b.x);
+
+        FQ2 t0 = addFQ2(a.x, a.y);
+        FQ2 t1 = addFQ2(b.x, b.y);
+        FQ2 tz = mulFQ2(t0, t1);
+
+        tz = subFQ2(tz, v1);
+        tz = subFQ2(tz, v2);
+        tz = mulXiFQ2(tz);
+        tz = addFQ2(tz, v0);
+
+        t0 = addFQ2(a.y, a.z);
+        t1 = addFQ2(b.y, b.z);
+        
+        FQ2 ty = mulFQ2(t0, t1);
+        ty = subFQ2(ty, v0);
+        ty = subFQ2(ty, v1);
+        t0 = mulXiFQ2(v2);
+        ty = addFQ2(ty, t0);
+
+        t0 = addFQ2(a.x, a.z);
+        t1 = addFQ2(b.x, b.z);
+        FQ2 tx = mulFQ2(t0, t1);
+        tx = subFQ2(tx, v0);
+        tx = addFQ2(tx, v1);
+        tx = subFQ2(tx, v2);
+
+        return {tx, ty, tz};
+    }
+
+    static function doubleFQ6(FQ6 a) : FQ6 {
+        return {
+            doubleFQ2(a.x),
+            doubleFQ2(a.y),
+            doubleFQ2(a.z)
+        };
+    }
+
+    static function mulScalarFQ6(FQ6 a, FQ2 scalar) : FQ6 {
+        return {
+            mulFQ2(a.x, scalar),
+            mulFQ2(a.y, scalar),
+            mulFQ2(a.z, scalar)
+        };
+    }
+
+    static function addFQ6(FQ6 a, FQ6 b) : FQ6 {
+        return {
+            addFQ2(a.x, b.x),
+            addFQ2(a.y, b.y),
+            addFQ2(a.z, b.z)
+        };
+    }
+
+    static function subFQ6(FQ6 a, FQ6 b) : FQ6 {
+        return {
+            subFQ2(a.x, b.x),
+            subFQ2(a.y, b.y),
+            subFQ2(a.z, b.z)
+        };
+    }
+
+    static function negFQ6(FQ6 a) : FQ6 {
+        return {
+            negFQ2(a.x),
+            negFQ2(a.y),
+            negFQ2(a.z)
+        };
+    }
+
+    static function squareFQ6(FQ6 a) : FQ6 {
+        FQ2 v0 = squareFQ2(a.z);
+        FQ2 v1 = squareFQ2(a.y);
+        FQ2 v2 = squareFQ2(a.x);
+
+        FQ2 c0 = addFQ2(a.x, a.y);
+        c0 = squareFQ2(c0);
+        c0 = subFQ2(c0, v1);
+        c0 = subFQ2(c0, v2);
+        c0 = mulXiFQ2(c0);
+        c0 = addFQ2(c0, v0);
+
+        FQ2 c1 = addFQ2(a.y, a.z);
+        c1 = squareFQ2(c1);
+        c1 = subFQ2(c1, v0);
+        c1 = subFQ2(c1, v1);
+        FQ2 xiV2 = mulXiFQ2(v2);
+        c1 = addFQ2(c1, xiV2);
+
+        FQ2 c2 = addFQ2(a.x, a.z);
+        c2 = squareFQ2(c2);
+        c2 = subFQ2(c2, v0);
+        c2 = addFQ2(c2, v1);
+        c2 = subFQ2(c2, v2);
+
+        return {c2, c1, c0};
+    }
+
+    static function mulTauFQ6(FQ6 a) : FQ6 {
+        // MulTau computes τ·(aτ²+bτ+c) = bτ²+cτ+aξ
+        return {
+            a.y,
+            a.z,
+            mulXiFQ2(a.x)
+        };
+    }
+
+    static function inverseFQ6(FQ6 a) : FQ6 {
+        // See "Implementing cryptographic pairings", M. Scott, section 3.2.
+        // ftp://136.206.11.249/pub/crypto/pairings.pdf
+
+        // Here we can give a short explanation of how it works: let j be a cubic root of
+        // unity in GF(p²) so that 1+j+j²=0.
+        // Then (xτ² + yτ + z)(xj²τ² + yjτ + z)(xjτ² + yj²τ + z)
+        // = (xτ² + yτ + z)(Cτ²+Bτ+A)
+        // = (x³ξ²+y³ξ+z³-3ξxyz) = F is an element of the base field (the norm).
+        //
+        // On the other hand (xj²τ² + yjτ + z)(xjτ² + yj²τ + z)
+        // = τ²(y²-ξxz) + τ(ξx²-yz) + (z²-ξxy)
+        //
+        // So that's why A = (z²-ξxy), B = (ξx²-yz), C = (y²-ξxz)
+
+        FQ2 A = squareFQ2(a.z);
+        FQ2 t1 = mulFQ2(a.x, a.y);
+        t1 = mulXiFQ2(t1);
+        A = subFQ2(A, t1);
+        
+        FQ2 B = squareFQ2(a.x);
+        B = mulXiFQ2(B);
+        t1 = mulFQ2(a.y, a.z);
+        B = subFQ2(B, t1);
+
+        FQ2 C = squareFQ2(a.y);
+        t1 = mulFQ2(a.x, a.z);
+        C = subFQ2(C, t1);
+        
+        FQ2 F = mulFQ2(C, a.y);
+        F = mulXiFQ2(F);
+        t1 = mulFQ2(A, a.z);
+        F = addFQ2(F, t1);
+        t1 = mulFQ2(B, a.x);
+        t1 = mulXiFQ2(t1);
+        F = addFQ2(F, t1);
+
+        F = inverseFQ2(F);
+
+        return {
+            mulFQ2(C, F),
+            mulFQ2(B, F),
+            mulFQ2(A, F)
+        };
+    }
+
+    static function mulScalarFQ12(FQ12 a, FQ6 b) : FQ12 {
+        return {
+            mulFQ6(a.x, b),
+            mulFQ6(a.y, b)
+        };
+    }
+
+    static function inverseFQ12(FQ12 a) : FQ12 {
+        // See "Implementing cryptographic pairings", M. Scott, section 3.2.
+        // ftp://136.206.11.249/pub/crypto/pairings.pdf
+
+        FQ6 t1 = squareFQ6(a.x);
+        FQ6 t2 = squareFQ6(a.y);
+        FQ6 t1_2 = mulTauFQ6(t1);
+        FQ6 t1_3 = subFQ6(t2, t1_2);
+        FQ6 t2_2 = inverseFQ6(t1_3);
+
+        FQ12 e = {
+            negFQ6(a.x),
+            a.y
+        };
+        
+        return mulScalarFQ12(e, t2_2);
+    }
+
+    static function mulFQ12(FQ12 a, FQ12 b) : FQ12 {
+        FQ6 tx = mulFQ6(a.x, b.y);
+        FQ6 t = mulFQ6(b.x, a.y);
+        FQ6 tx2 = addFQ6(tx, t);
+
+        FQ6 ty = mulFQ6(a.y, b.y);
+        FQ6 t2 = mulFQ6(a.x, b.x);
+        FQ6 t3 = mulTauFQ6(t2);
+        
+        return {tx2, addFQ6(ty, t3)};
+    }
+
+    static function frobeniusFQ6(FQ6 a) : FQ6 {
+        return {
+            mulFQ2(conjugateFQ2(a.x), xiTo2PMinus2Over3),
+            mulFQ2(conjugateFQ2(a.y), xiToPMinus1Over3),
+            conjugateFQ2(a.z)
+        };
+    }
+
+    static function frobeniusP2FQ6(FQ6 a) : FQ6 {
+        // FrobeniusP2 computes (xτ²+yτ+z)^(p²) = xτ^(2p²) + yτ^(p²) + z
+        return {
+            // τ^(2p²) = τ²τ^(2p²-2) = τ²ξ^((2p²-2)/3)
+            mulScalarFQ2(a.x, xiTo2PSquaredMinus2Over3),
+            // τ^(p²) = ττ^(p²-1) = τξ^((p²-1)/3)
+            mulScalarFQ2(a.y, xiToPSquaredMinus1Over3),
+            a.z
+        };
+    }
+
+    static function mulGFP(FQ6 a, int b) : FQ6 {
+        return {
+            mulScalarFQ2(a.x, b),
+            mulScalarFQ2(a.y, b),
+            mulScalarFQ2(a.z, b)
+        };
+    }
+
+    static function conjugateFQ12(FQ12 a) : FQ12 {
+        return {
+            negFQ6(a.x),
+            a.y
+        };
+    }
+
+    static function frobeniusFQ12(FQ12 a) : FQ12 {
+        // Frobenius computes (xω+y)^p = x^p ω·ξ^((p-1)/6) + y^p
+        return {
+            mulScalarFQ6(frobeniusFQ6(a.x), xiToPMinus1Over6),
+            frobeniusFQ6(a.y)
+        };
+    }
+
+    static function frobeniusP2FQ12(FQ12 a) : FQ12 {
+        // FrobeniusP2 computes (xω+y)^p² = x^p² ω·ξ^((p²-1)/6) + y^p²
+        return {
+            mulGFP(frobeniusP2FQ6(a.x), xiToPSquaredMinus1Over6),
+            frobeniusP2FQ6(a.y)
+        };
+    }
+
+    static function squareFQ12(FQ12 a) : FQ12 {
+        // Complex squaring algorithm
+        FQ6 v0 = mulFQ6(a.x, a.y);
+
+        FQ6 t = mulTauFQ6(a.x);
+        FQ6 t2 = addFQ6(a.y, t);
+        FQ6 ty = addFQ6(a.x, a.y);
+        FQ6 ty2 = mulFQ6(ty, t2);
+        FQ6 ty3 = subFQ6(ty2, v0);
+        FQ6 t3 = mulTauFQ6(v0);
+
+        FQ6 ty4 = subFQ6(ty3, t3);
+
+        return {
+            doubleFQ6(v0),
+            ty4
+        };
+    }
+
+    static function expFQ12_u(FQ12 a) : FQ12 {
+        // u is the BN parameter that determines the prime.
+        // u = 4965661367192848881;
+
+        FQ12 sum = {
+            {[0, 0], [0, 0], [0, 0]},
+            {[0, 0], [0, 0], [0, 1]}
+        };
+
+        FQ12 sum0 = squareFQ12(sum);
+        FQ12 sum1 = mulFQ12(sum0, a);
+        FQ12 sum2 = squareFQ12(sum1);
+        FQ12 sum3 = squareFQ12(sum2);
+        FQ12 sum4 = squareFQ12(sum3);
+        FQ12 sum5 = squareFQ12(sum4);
+        FQ12 sum6 = mulFQ12(sum5, a);
+        FQ12 sum7 = squareFQ12(sum6);
+        FQ12 sum8 = squareFQ12(sum7);
+        FQ12 sum9 = squareFQ12(sum8);
+        FQ12 sum10 = mulFQ12(sum9, a);
+        FQ12 sum11 = squareFQ12(sum10);
+        FQ12 sum12 = mulFQ12(sum11, a);
+        FQ12 sum13 = squareFQ12(sum12);
+        FQ12 sum14 = mulFQ12(sum13, a);
+        FQ12 sum15 = squareFQ12(sum14);
+        FQ12 sum16 = squareFQ12(sum15);
+        FQ12 sum17 = mulFQ12(sum16, a);
+        FQ12 sum18 = squareFQ12(sum17);
+        FQ12 sum19 = squareFQ12(sum18);
+        FQ12 sum20 = squareFQ12(sum19);
+        FQ12 sum21 = mulFQ12(sum20, a);
+        FQ12 sum22 = squareFQ12(sum21);
+        FQ12 sum23 = mulFQ12(sum22, a);
+        FQ12 sum24 = squareFQ12(sum23);
+        FQ12 sum25 = squareFQ12(sum24);
+        FQ12 sum26 = squareFQ12(sum25);
+        FQ12 sum27 = mulFQ12(sum26, a);
+        FQ12 sum28 = squareFQ12(sum27);
+        FQ12 sum29 = squareFQ12(sum28);
+        FQ12 sum30 = squareFQ12(sum29);
+        FQ12 sum31 = mulFQ12(sum30, a);
+        FQ12 sum32 = squareFQ12(sum31);
+        FQ12 sum33 = squareFQ12(sum32);
+        FQ12 sum34 = mulFQ12(sum33, a);
+        FQ12 sum35 = squareFQ12(sum34);
+        FQ12 sum36 = squareFQ12(sum35);
+        FQ12 sum37 = mulFQ12(sum36, a);
+        FQ12 sum38 = squareFQ12(sum37);
+        FQ12 sum39 = mulFQ12(sum38, a);
+        FQ12 sum40 = squareFQ12(sum39);
+        FQ12 sum41 = squareFQ12(sum40);
+        FQ12 sum42 = mulFQ12(sum41, a);
+        FQ12 sum43 = squareFQ12(sum42);
+        FQ12 sum44 = squareFQ12(sum43);
+        FQ12 sum45 = squareFQ12(sum44);
+        FQ12 sum46 = squareFQ12(sum45);
+        FQ12 sum47 = mulFQ12(sum46, a);
+        FQ12 sum48 = squareFQ12(sum47);
+        FQ12 sum49 = squareFQ12(sum48);
+        FQ12 sum50 = squareFQ12(sum49);
+        FQ12 sum51 = mulFQ12(sum50, a);
+        FQ12 sum52 = squareFQ12(sum51);
+        FQ12 sum53 = squareFQ12(sum52);
+        FQ12 sum54 = mulFQ12(sum53, a);
+        FQ12 sum55 = squareFQ12(sum54);
+        FQ12 sum56 = squareFQ12(sum55);
+        FQ12 sum57 = squareFQ12(sum56);
+        FQ12 sum58 = mulFQ12(sum57, a);
+        FQ12 sum59 = squareFQ12(sum58);
+        FQ12 sum60 = mulFQ12(sum59, a);
+        FQ12 sum61 = squareFQ12(sum60);
+        FQ12 sum62 = squareFQ12(sum61);
+        FQ12 sum63 = mulFQ12(sum62, a);
+        FQ12 sum64 = squareFQ12(sum63);
+        FQ12 sum65 = squareFQ12(sum64);
+        FQ12 sum66 = squareFQ12(sum65);
+        FQ12 sum67 = mulFQ12(sum66, a);
+        FQ12 sum68 = squareFQ12(sum67);
+        FQ12 sum69 = squareFQ12(sum68);
+        FQ12 sum70 = squareFQ12(sum69);
+        FQ12 sum71 = squareFQ12(sum70);
+        FQ12 sum72 = squareFQ12(sum71);
+        FQ12 sum73 = mulFQ12(sum72, a);
+        FQ12 sum74 = squareFQ12(sum73);
+        FQ12 sum75 = squareFQ12(sum74);
+        FQ12 sum76 = squareFQ12(sum75);
+        FQ12 sum77 = mulFQ12(sum76, a);
+        FQ12 sum78 = squareFQ12(sum77);
+        FQ12 sum79 = mulFQ12(sum78, a);
+        FQ12 sum80 = squareFQ12(sum79);
+        FQ12 sum81 = mulFQ12(sum80, a);
+        FQ12 sum82 = squareFQ12(sum81);
+        FQ12 sum83 = mulFQ12(sum82, a);
+        FQ12 sum84 = squareFQ12(sum83);
+        FQ12 sum85 = mulFQ12(sum84, a);
+        FQ12 sum86 = squareFQ12(sum85);
+        FQ12 sum87 = squareFQ12(sum86);
+        FQ12 sum88 = squareFQ12(sum87);
+        FQ12 sum89 = squareFQ12(sum88);
+        FQ12 sum90 = mulFQ12(sum89, a);
+        
+        return sum90;
+
+    }
+
+    static function expFQ12(FQ12 a, int power) : FQ12 {
+        FQ12 sum = {
+            {[0, 0], [0, 0], [0, 0]},
+            {[0, 0], [0, 0], [0, 1]}
+        };
+        FQ12 t = sum;
+
+        bytes mb = reverseBytes(num2bin(power, S), S);
+
+        bool firstOne = false;
+
+        loop (63) : iNeg {
+            int i = 62 - iNeg;
+
+            if (firstOne == true) {
+                t = squareFQ12(sum);
+            }
+
+            if ((mb & (mask << i)) != zero) {
+                firstOne = true;
+                sum = mulFQ12(t, a);
+            } else if (firstOne) {
+                sum = t;
+            }
+        }
+
+        return sum;
+    }
+
+    // ----------------------------------------------------
 
     static function doubleCurvePoint(CurvePoint a) : CurvePoint {
         // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/doubling/dbl-2009-l.op3
@@ -292,6 +742,28 @@ library BN256 {
         return q;
     }
 
+    static function makeAffineCurvePoint(CurvePoint a) : CurvePoint {
+        // MakeAffine converts a to affine form. If c is ∞, then it sets
+        // a to 0 : 1 : 0.
+
+        CurvePoint res = a;
+        if (a.z != 1) {
+            if (a.z == 0) {
+                res = {0, 1, 0, 0};
+            } else {
+                FQ zInv = modInverseEGCD(a.z, P);
+                FQ t = modReduce(a.y * zInv, P);
+                FQ zInv2 = modReduce(zInv * zInv, P);
+                FQ ay = modReduce(t * zInv2, P);
+                FQ ax = modReduce(a.x * zInv2, P);
+                
+                res = {ax, ay, 1, 1};
+            }
+        }
+
+        return res;
+    }
+
     // ----------------------------------------------------
 
     static function doubleTwistPoint(TwistPoint a) : TwistPoint {
@@ -408,7 +880,37 @@ library BN256 {
     }
 
     static function makeAffineTwistPoint(TwistPoint a) : TwistPoint {
+        TwistPoint res = a; 
+        if (a.z != [0, 1]) {
+            if (a.z == [0, 0]) {
+                res = {
+                    [0, 0],
+                    [0, 1],
+                    [0, 0],
+                    [0, 0]
+                };
+            } else {
+                FQ2 zInv = inverseFQ2(a.z);
+                FQ2 t = mulFQ2(a.y, zInv);
+                FQ2 zInv2 = squareFQ2(zInv);
+                res.y = mulFQ2(t, zInv2);
+                t = mulFQ2(a.x, zInv2);
+                res.x = t;
+                res.z = [0, 1];
+                res.t = [0, 1];
+            }
+        }
 
+        return res;
+    }
+
+    static function negTwistPoint(TwistPoint a) : TwistPoint {
+        return {
+            a.x,
+            subFQ2([0, 0], a.y),
+            a.z,
+            [0, 0]
+        };
     }
 
 }
