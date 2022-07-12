@@ -7,6 +7,9 @@ os:
   - osx
   - windows
 
+node_js: 
+  - 14
+
 before_install:
 #  - npm i -g npm@latest
   # install dependency for circom
@@ -40,8 +43,6 @@ jobs:
           fi
         - npm run test:all
     - if: branch != master
-      node_js: 
-        - 14
       script:
         - npx scryptlib download
         - |
