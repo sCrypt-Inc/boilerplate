@@ -1,10 +1,6 @@
 dist: bionic
 language: node_js
 
-
-node_js: 
-  - 14
-
 before_install:
 #  - npm i -g npm@latest
   # install dependency for circom
@@ -26,7 +22,7 @@ before_install:
 
 jobs:
   include:
-    - if: branch = master
+    - if: branch = master AND type = push
       node_js: 
         - 14
         - 16
@@ -45,10 +41,8 @@ jobs:
       os:
         - linux
         - osx
+      node_js: 
+        - 14
       script:
         - npx scryptlib download
-        - |
-          if [ $TRAVIS_OS_NAME = "osx" ]; then
-            npm run download:circom
-          fi
         - npm t
