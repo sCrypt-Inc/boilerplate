@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "npm run test:withoutHeavy",
-    "test:withoutHeavy": "mocha -r ts-node/register 'tests/**/*.scrypttest.*'  --reporter spec --timeout 5000 -i -g 'Heavy'",
+    "test:withoutHeavy": "mocha -r ts-node/register 'tests/**/*.scrypttest.*'  --reporter spec --timeout 10000 -i -g 'Heavy'",
     "test:all": "mocha -r ts-node/register 'tests/**/*.scrypttest.*'  --reporter spec --timeout 1200000",
     "single-test": "cross-env NODE_OPTIONS=--max-old-space-size=8192 mocha -r ts-node/register --reporter spec --timeout 1200000000",
     "testnet": "node ./testnet.js",
