@@ -2,12 +2,12 @@ const { expect } = require('chai');
 const { buildContractClass } = require('scryptlib');
 const { compileContract } = require('../../helper');
 
-describe('Test sCrypt contract Demo In Javascript', () => {
+describe('Heavy: Test sCrypt contract Demo In Javascript', () => {
     let demo, result
 
     before(() => {
-        const Demo = buildContractClass(compileContract('matrix.scrypt'));
-        demo = new Demo();
+        const Matrix = buildContractClass(compileContract('matrix.scrypt'));
+        demo = new Matrix();
     });
 
     it('should return true', () => {

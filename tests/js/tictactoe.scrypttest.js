@@ -15,14 +15,15 @@ const publicKeyAlice = bsv.PublicKey.fromPrivateKey(privateKeyAlice)
 const privateKeyBob = new bsv.PrivateKey.fromRandom('testnet')
 const publicKeyBob = bsv.PublicKey.fromPrivateKey(privateKeyBob)
 
-const Tictactoe = buildContractClass(compileContract('tictactoe.scrypt'));
-
-let game = new Tictactoe(new PubKey(toHex(publicKeyAlice)), new PubKey(toHex(publicKeyBob)), true, [0,0,0,0,0,0,0,0,0]);
-
 
 
 describe('Test sCrypt contract Tictactoe In Javascript', () => {
-  let result, preimage, sig
+  let result, preimage, sig, game
+
+  before(() => {
+    const Tictactoe = buildContractClass(compileContract('tictactoe.scrypt'));
+    game = new Tictactoe(new PubKey(toHex(publicKeyAlice)), new PubKey(toHex(publicKeyBob)), true, [0,0,0,0,0,0,0,0,0]);
+  })
 
   function reset() {
     game.board = [0,0,0,0,0,0,0,0,0];

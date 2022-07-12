@@ -9,14 +9,14 @@ const {
   compileContract
 } = require('../../helper');
 
-let contract = compileContract('fixedPointTest.scrypt');
-const Test = buildContractClass(contract);
+
 const [ADD, SUB, MUL, DIV, ABS] = [0, 1, 2, 3, 4]
 
 describe("Test FixedPoint Library In Javascript", () => {
   let test, x, y, decimal, result
 
   before(() => {
+    const Test = buildContractClass(compileContract('fixedPointTest.scrypt'));
     test = new Test();
     decimal = 4;
   });

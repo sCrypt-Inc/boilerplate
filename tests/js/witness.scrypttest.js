@@ -5,7 +5,7 @@ const { compileContract, inputIndex, inputSatoshis, newTx } = require('../../hel
 const axios = require('axios')
 const witnessServer = 'https://witness.cercle.sg'
 
-describe('Test Witness Service Timestamp', () => {
+describe('Heavy: Test Witness Service Timestamp', () => {
   let result
 
   before(async () => {

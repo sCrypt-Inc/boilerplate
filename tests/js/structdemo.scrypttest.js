@@ -1,17 +1,18 @@
 const { expect } = require('chai');
-const { interfaces } = require('mocha');
 const { buildContractClass, buildTypeClasses, Bytes } = require('scryptlib');
 const { compileContract } = require('../../helper');
 
-let contract = compileContract('structdemo.scrypt');
-let StructDemo = buildContractClass(contract);
-let {Person} = buildTypeClasses(contract);
-
 
 describe('Test sCrypt contract StructDemo In Javascript', () => {
-  let structDemo, result
+  let structDemo, result, Person
 
   before(() => {
+
+    const StructDemo = buildContractClass(compileContract('structdemo.scrypt'));
+    const Types = buildTypeClasses(StructDemo);
+    Person = Types.Person;
+
+
     structDemo = new StructDemo(new Person({
       name: new Bytes("7361746f736869206e616b616d6f746f"),
       leftHanded: false,

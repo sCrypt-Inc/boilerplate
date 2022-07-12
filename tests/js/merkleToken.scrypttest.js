@@ -31,14 +31,18 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
   const payoutAddress = changeAddress
   const changeSats = 100
 
-  const Token = buildContractClass(compileContract("merkleToken.scrypt"))
 
-  let token, lockingScriptCodePart, tx
+  let token, lockingScriptCodePart, tx, Token
+
+
+  before(() => {
+    Token = buildContractClass(compileContract("merkleToken.scrypt"))
+  })
+
 
   beforeEach(() => {
     tx = new bsv.Transaction();
     token = new Token(satPrice)
-
     lockingScriptCodePart = token.codePart.toASM()
   })
 

@@ -96,7 +96,7 @@ function boardToHex(arr) {
 }
 
 
-describe('Test sCrypt contract sudoku In Javascript', () => {
+describe('Heavy: Test sCrypt contract sudoku In Javascript', () => {
   let sudoku, result
 
   before(() => {

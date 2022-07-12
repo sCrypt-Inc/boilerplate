@@ -1,21 +1,26 @@
 
 
 const { expect } = require('chai');
-const { compileContract, newTx} = require('../../helper');
-const {  buildContractClass, Bool, Bytes, Int, SigHashPreimage, bsv, toHex, getPreimage, buildTypeClasses } = require('scryptlib');
+const { compileContract, newTx } = require('../../helper');
+const { buildContractClass, Bool, Bytes, Int, SigHashPreimage, bsv, toHex, getPreimage, buildTypeClasses } = require('scryptlib');
 const inputIndex = 0;
 const inputSatoshis = 100000;
 
 const outputAmount = 222222
 
-const result = compileContract('counter.scrypt');
-const Counter = buildContractClass(result);
+
 
 
 describe('Counter', () => {
 
+    let counter, Counter
+
+    before(() => {
+        Counter = buildContractClass(compileContract('counter.scrypt'));
+        counter = new Counter(0);
+    });
+
     it('should call success', () => {
-        const counter = new Counter(0);
 
         let newLockingScript = counter.getNewStateScript({
             counter: 1
@@ -65,7 +70,7 @@ describe('Counter', () => {
     });
 
     it('should fail when pushing wrong amount', () => {
-        const counter = new Counter(0);
+        counter = new Counter(0);
 
         let newLockingScript = counter.getNewStateScript({
             counter: 1
@@ -86,11 +91,11 @@ describe('Counter', () => {
 
         const result1 = counter.increment(new SigHashPreimage(toHex(preimage1)), outputAmount - 1).verify()
         expect(result1.success, result1.error).to.be.false
-      });
+    });
 
 
-      it('should fail when pushing wrong new state', () => {
-        const counter = new Counter(0);
+    it('should fail when pushing wrong new state', () => {
+        counter = new Counter(0);
 
         let newLockingScript = counter.getNewStateScript({
             counter: 2
@@ -109,8 +114,8 @@ describe('Counter', () => {
             inputSatoshis
         }
 
-        const result1 = counter.increment(new SigHashPreimage(toHex(preimage1)), outputAmount ).verify()
+        const result1 = counter.increment(new SigHashPreimage(toHex(preimage1)), outputAmount).verify()
         expect(result1.success, result1.error).to.be.false
-      });
+    });
 
 })

@@ -17,12 +17,14 @@ const outputAmount = 222222
 
 
 describe('Test sCrypt contract BlockchainPRNG In Javascript', () => {
-    const BlockchainPRNG = buildContractClass(compileContract('blockPRNG.scrypt'))
 
-    const { BlockHeader, Node } = buildTypeClasses(BlockchainPRNG);
-
-
+    let blockchainPRNG, BlockHeader, Node
     before(() => {
+        const BlockchainPRNG = buildContractClass(compileContract('blockPRNG.scrypt'))
+
+        const Types = buildTypeClasses(BlockchainPRNG);
+        Node = Types.Node;
+        BlockHeader = Types.BlockHeader;
         //Normally, the difficulty of the current network should be used
         blockchainPRNG = new BlockchainPRNG(pdiff2Target(header.difficulty), new PubKey(toHex(alicePublicKey)), new PubKey(toHex(bobPublicKey)))
     })
