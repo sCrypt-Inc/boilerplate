@@ -4,3 +4,4 @@ out
 deployments/fixture/autoGen/*.json
 compiler
 tests/out/*.json
+circom
