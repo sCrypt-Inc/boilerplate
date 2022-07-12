@@ -1,4 +1,11 @@
 dist: bionic
+language: node_js
+
+
+os:
+  - linux
+  - osx
+  - windows
 
 before_install:
 #  - npm i -g npm@latest
@@ -19,25 +26,26 @@ before_install:
       fi
     fi
 
-install:
-
-script:
-  - npx scryptlib download
-  - |
-    if [ $TRAVIS_OS_NAME = "osx" ]; then
-      npm run download:circom
-    fi
-  - npm t
-
-
-  # include:
-  #   - language: python
-  #     sudo: required
-  #     #python:
-  #     #  - "3.10"
-  #     install:
-  #       - pip install scryptlib pytest
-  #     script:
-  #       - curl -Ls https://scrypt.io/setup | sudo sh -s -- -f 
-  #       - cd /home/travis/build/sCrypt-Inc/boilerplate/test/py/
-  #       - pytest
+jobs:
+  include:
+    - if: branch = master
+      node_js: 
+        - 14
+        - 16
+      script:
+        - npx scryptlib download
+        - |
+          if [ $TRAVIS_OS_NAME = "osx" ]; then
+            npm run download:circom
+          fi
+        - npm run test:all
+    - if: branch != master
+      node_js: 
+        - 14
+      script:
+        - npx scryptlib download
+        - |
+          if [ $TRAVIS_OS_NAME = "osx" ]; then
+            npm run download:circom
+          fi
+        - npm t
