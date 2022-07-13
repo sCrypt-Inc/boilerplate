@@ -1,4 +1,4 @@
-import "../../../contracts/bn256.scrypt";
+import "bn256.scrypt";
 
 
 contract BN256CurveTest {
@@ -13,10 +13,6 @@ contract BN256CurveTest {
 
     public function testInvFQ2(FQ2 a, FQ2 res) {
         require(BN256.inverseFQ2(a) == res);
-    }
-
-    public function testExpFQ(FQ a, int e, FQ res) {
-        require(BN256.expFQ(a, e) == res);
     }
 
     public function testMulFQ6(FQ6 a, FQ6 b, FQ6 res) {
