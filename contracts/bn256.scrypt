@@ -47,9 +47,6 @@ library BN256 {
     // P - 2
     static const int Psub2 = 65000549695646603732796438742359905742825358107623003571877145026864184071781;
 
-    // rN1 is R^-1 where R = 2^256 mod P.
-    static const int rN1 = 0x1fc5c0956f92f8252eab68888ea1f5150cc65f3bcec8c91bcbb781e36236117d;
-
     // r3 is R^3 where R = 2^256 mod P.
     static const int r3 = 0x24ebbbb3a2529292df2ff66396b107a7388f899054f538a42af2dfb9324a5bb8;
 
@@ -163,23 +160,6 @@ library BN256 {
         int tx_2 = (a[0] * a[1]) * 2;
 
         return [modReduce(tx_2, P), modReduce(ty_2, P)];
-    }
-
-    static function expFQ(FQ a, int e) : FQ {
-        int sum = rN1;
-        int power = a;
-
-        bytes eb = reverseBytes(num2bin(e, S), S);
-
-        loop (CURVE_BITS) : i {
-            if ((eb & (mask << i)) != zero) {
-                sum *= power;
-            }
-            
-            power *= power;
-        }
-
-        return sum * r3;
     }
 
     static function modInverseEGCD(int x, int n) : int {
@@ -485,6 +465,8 @@ library BN256 {
             {[0, 0], [0, 0], [0, 1]}
         };
 
+        // Unrolled loop. Reference impl.:
+        // https://github.com/ethereum/go-ethereum/blob/bd6879ac518431174a490ba42f7e6e822dcb3ee1/crypto/bn256/google/gfp12.go#L138
         FQ12 sum0 = squareFQ12(sum);
         FQ12 sum1 = mulFQ12(sum0, a);
         FQ12 sum2 = squareFQ12(sum1);
@@ -595,7 +577,7 @@ library BN256 {
         loop (63) : iNeg {
             int i = 62 - iNeg;
 
-            if (firstOne == true) {
+            if (firstOne) {
                 t = squareFQ12(sum);
             }
 

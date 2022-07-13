@@ -172,6 +172,8 @@ library BN256Pairing {
         FQ2 r2 = BN256.squareFQ2(aAffine.y);
 
         // sixuPlus2NAF is 6u+2 in non-adjacent form.
+        // Unrolled loop to get rid of in-loop branching. Reference impl.:
+        // https://github.com/ethereum/go-ethereum/blob/bd6879ac518431174a490ba42f7e6e822dcb3ee1/crypto/bn256/google/optate.go#L213
         // var sixuPlus2NAF = []int8{0, 0, 0, 1, 0, 1, 0, -1, 0, 0, 1, -1, 0, 0, 1, 0,
         //                           0, 1, 1, 0, -1, 0, 0, 1, 0, -1, 0, 0, 0, 0, 1, 1,
         //                           1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 1,
@@ -639,10 +641,7 @@ library BN256Pairing {
 
         r2 = BN256.squareFQ2(minusQ2.y);
         lfr = lineFuncAdd(r, minusQ2, bAffine, r2);
-        ret = mulLine(ret, lfr.a, lfr.b, lfr.c);
-        r = lfr.rOut;
-
-        return ret;
+        return mulLine(ret, lfr.a, lfr.b, lfr.c);
     }
 
     static function finalExponentiation(FQ12 in) : FQ12 {

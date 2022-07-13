@@ -11,7 +11,7 @@ from scryptlib import (
 # https://github.com/ethereum/go-ethereum/tree/master/crypto/bn256/google
 
 
-contract = 'testPairing.scrypt' 
+contract = 'res/testPairingBN256.scrypt'
 
 compiler_result = compile_contract(contract, debug=False)
 desc = compiler_result.to_desc()
