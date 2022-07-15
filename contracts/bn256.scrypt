@@ -1,5 +1,9 @@
 type FQ = int;
-type FQ2 = int[2];
+
+struct FQ2 {
+    FQ x;
+    FQ y;
+}
 
 struct FQ6 {
     FQ2 x;
@@ -54,28 +58,28 @@ library BN256 {
     static const int UB = 368; 
 
     // xiToPMinus1Over6 is ξ^((p-1)/6) where ξ = i+9.
-    static const FQ2 xiToPMinus1Over6 = [
+    static const FQ2 xiToPMinus1Over6 = {
         16469823323077808223889137241176536799009286646108169935659301613961712198316,
         8376118865763821496583973867626364092589906065868298776909617916018768340080
-    ];
+    };
 
     // xiTo2PMinus2Over3 is ξ^((2p-2)/3) where ξ = i+9.
-    static const FQ2 xiTo2PMinus2Over3 = [
+    static const FQ2 xiTo2PMinus2Over3 = {
         19937756971775647987995932169929341994314640652964949448313374472400716661030,
         2581911344467009335267311115468803099551665605076196740867805258568234346338
-    ];
+    };
 
     // xiToPMinus1Over2 is ξ^((p-1)/2) where ξ = i+9.
-    static const FQ2 xiToPMinus1Over2 = [
+    static const FQ2 xiToPMinus1Over2 = {
         3505843767911556378687030309984248845540243509899259641013678093033130930403,
         2821565182194536844548159561693502659359617185244120367078079554186484126554
-    ];
+    };
 
     // xiToPMinus1Over3 is ξ^((p-1)/3) where ξ = i+9.
-    static const FQ2 xiToPMinus1Over3 = [
+    static const FQ2 xiToPMinus1Over3 = {
         10307601595873709700152284273816112264069230130616436755625194854815875713954,
         21575463638280843010398324269430826099269044274347216827212613867836435027261
-    ];
+    };
 
     // xiTo2PSquaredMinus2Over3 is ξ^((2p²-2)/3) where ξ = i+9 (a cubic root of unity, mod p).
     static const FQ xiTo2PSquaredMinus2Over3 = 2203960485148121921418603742825762020974279258880205651966;
@@ -92,74 +96,74 @@ library BN256 {
     }
 
     static function mulFQ2(FQ2 a, FQ2 b) : FQ2 {
-        int tx = a[0] * b[1];
-        int t =  b[0] * a[1];
+        int tx = a.x * b.y;
+        int t =  b.x * a.y;
         int tx_2 = tx + t;
 
-        int ty = a[1] * b[1];
-        int t_2 = a[0] * b[0];
+        int ty = a.y * b.y;
+        int t_2 = a.x * b.x;
         int ty_2 = ty - t_2;
         
-        return [modReduce(tx_2, P), modReduce(ty_2, P)];
+        return {modReduce(tx_2, P), modReduce(ty_2, P)};
     }
 
     static function mulXiFQ2(FQ2 a) : FQ2 {
         // (xi+y)(i+3) = (9x+y)i+(9y-x)
-        FQ tx = (a[0] << 3) + a[0] + a[1];
-        FQ ty = (a[1] << 3) + a[1] - a[0];
-        return [modReduce(tx, P), modReduce(ty, P)];
+        FQ tx = (a.x << 3) + a.x + a.y;
+        FQ ty = (a.y << 3) + a.y - a.x;
+        return {modReduce(tx, P), modReduce(ty, P)};
     }
 
     static function mulScalarFQ2(FQ2 a, int scalar) : FQ2 {
-        return [
-            modReduce(a[0] * scalar, P),
-            modReduce(a[1] * scalar, P)
-        ];
+        return {
+            modReduce(a.x * scalar, P),
+            modReduce(a.y * scalar, P)
+        };
     }
 
     static function addFQ2(FQ2 a, FQ2 b) : FQ2 {
-        return [
-            modReduce(a[0] + b[0], P), 
-            modReduce(a[1] + b[1], P)
-        ];
+        return {
+            modReduce(a.x + b.x, P), 
+            modReduce(a.y + b.y, P)
+        };
     }
 
     static function subFQ2(FQ2 a, FQ2 b) : FQ2 {
-        return [
-            modReduce(a[0] - b[0], P),
-            modReduce(a[1] - b[1], P)
-        ];
+        return {
+            modReduce(a.x - b.x, P),
+            modReduce(a.y - b.y, P)
+        };
     }
 
     static function negFQ2(FQ2 a) : FQ2 {
-        return [
-            modReduce(a[0] * -1, P), 
-            modReduce(a[1] * -1, P)
-        ];
+        return {
+            modReduce(a.x * -1, P), 
+            modReduce(a.y * -1, P)
+        };
     }
 
     static function conjugateFQ2(FQ2 a) : FQ2 {
-        return [
-            modReduce(a[0] * -1, P), 
-            modReduce(a[1], P)
-        ];
+        return {
+            modReduce(a.x * -1, P), 
+            modReduce(a.y, P)
+        };
     }
 
     static function doubleFQ2(FQ2 a) : FQ2 {
-        return [
-            modReduce(a[0] * 2, P),
-            modReduce(a[1] * 2, P)
-        ];
+        return {
+            modReduce(a.x * 2, P),
+            modReduce(a.y * 2, P)
+        };
     }
 
     static function squareFQ2(FQ2 a) : FQ2 {
-        int tx = a[1] - a[0];
-        int ty = a[0] + a[1];
+        int tx = a.y - a.x;
+        int ty = a.x + a.y;
         int ty_2 = ty * tx;
 
-        int tx_2 = (a[0] * a[1]) * 2;
+        int tx_2 = (a.x * a.y) * 2;
 
-        return [modReduce(tx_2, P), modReduce(ty_2, P)];
+        return {modReduce(tx_2, P), modReduce(ty_2, P)};
     }
 
     static function modInverseEGCD(int x, int n) : int {
@@ -177,17 +181,17 @@ library BN256 {
     }
 
     static function inverseFQ2(FQ2 a) : FQ2 {
-        int t2 = a[1] * a[1]; 
-        int t1 = (a[0] * a[0]) + t2;
+        int t2 = a.y * a.y; 
+        int t1 = (a.x * a.x) + t2;
 
         int inv = modInverseEGCD(t1, P);
 
-        int axNeg = a[0] * -1;
+        int axNeg = a.x * -1;
 
-        return [
+        return {
             modReduce(axNeg * inv, P),
-            modReduce(a[1] * inv, P)
-        ];
+            modReduce(a.y * inv, P)
+        };
     }
 
     static function mulFQ6(FQ6 a, FQ6 b) : FQ6 {
@@ -461,8 +465,8 @@ library BN256 {
         // u = 4965661367192848881;
 
         FQ12 sum = {
-            {[0, 0], [0, 0], [0, 0]},
-            {[0, 0], [0, 0], [0, 1]}
+            {{0, 0}, {0, 0}, {0, 0}},
+            {{0, 0}, {0, 0}, {0, 1}}
         };
 
         // Unrolled loop. Reference impl.:
@@ -565,8 +569,8 @@ library BN256 {
 
     static function expFQ12(FQ12 a, int power) : FQ12 {
         FQ12 sum = {
-            {[0, 0], [0, 0], [0, 0]},
-            {[0, 0], [0, 0], [0, 1]}
+            {{0, 0}, {0, 0}, {0, 0}},
+            {{0, 0}, {0, 0}, {0, 1}}
         };
         FQ12 t = sum;
 
@@ -750,7 +754,7 @@ library BN256 {
 
     static function doubleTwistPoint(TwistPoint a) : TwistPoint {
         // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/doubling/dbl-2009-l.op3
-        TwistPoint res = {[0, 0], [0, 0], [0, 0], a.t};
+        TwistPoint res = {{0, 0}, {0, 0}, {0, 0}, a.t};
 
         FQ2 A = squareFQ2(a.x);
         FQ2 B = squareFQ2(a.y);
@@ -783,11 +787,11 @@ library BN256 {
 
 
     static function addTwistPoints(TwistPoint a, TwistPoint b) : TwistPoint {
-        TwistPoint res = {[0, 0], [0, 0], [0, 0], a.t};
+        TwistPoint res = {{0, 0}, {0, 0}, {0, 0}, a.t};
         
-        if (a.z == [0, 0]) {
+        if (a.z == {0, 0}) {
             res = b;
-        } else if (b.z == [0, 0]) {
+        } else if (b.z == {0, 0}) {
             res = a;
         } else {
             // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2007-bl.op3
@@ -817,7 +821,7 @@ library BN256 {
             // with the notations below.
 
             FQ2 h = subFQ2(u2, u1);
-            bool xEqual = h == [0, 0];
+            bool xEqual = h == {0, 0};
 
             t = mulScalarFQ2(h, 2);
             // i = 4h²
@@ -826,7 +830,7 @@ library BN256 {
             FQ2 j = mulFQ2(h, i);
 
             t = subFQ2(s2, s1);
-            bool yEqual = t == [0, 0];
+            bool yEqual = t == {0, 0};
             if (xEqual && yEqual) {
                 res = doubleTwistPoint(a);
             } else {
@@ -863,13 +867,13 @@ library BN256 {
 
     static function makeAffineTwistPoint(TwistPoint a) : TwistPoint {
         TwistPoint res = a; 
-        if (a.z != [0, 1]) {
-            if (a.z == [0, 0]) {
+        if (a.z != {0, 1}) {
+            if (a.z == {0, 0}) {
                 res = {
-                    [0, 0],
-                    [0, 1],
-                    [0, 0],
-                    [0, 0]
+                    {0, 0},
+                    {0, 1},
+                    {0, 0},
+                    {0, 0}
                 };
             } else {
                 FQ2 zInv = inverseFQ2(a.z);
@@ -878,8 +882,8 @@ library BN256 {
                 res.y = mulFQ2(t, zInv2);
                 t = mulFQ2(a.x, zInv2);
                 res.x = t;
-                res.z = [0, 1];
-                res.t = [0, 1];
+                res.z = {0, 1};
+                res.t = {0, 1};
             }
         }
 
@@ -889,9 +893,9 @@ library BN256 {
     static function negTwistPoint(TwistPoint a) : TwistPoint {
         return {
             a.x,
-            subFQ2([0, 0], a.y),
+            subFQ2({0, 0}, a.y),
             a.z,
-            [0, 0]
+            {0, 0}
         };
     }
 

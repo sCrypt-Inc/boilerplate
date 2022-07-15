@@ -65,7 +65,7 @@ library BN256Pairing {
         FQ2 c = BN256.mulScalarFQ2(rOutZ, q.y);
         c = BN256.addFQ2(c, c);
 
-        FQ2 b = BN256.subFQ2([0, 0], L1);
+        FQ2 b = BN256.subFQ2({0, 0}, L1);
         b = BN256.mulScalarFQ2(b, q.x);
         b = BN256.addFQ2(b, b);
 
@@ -114,7 +114,7 @@ library BN256Pairing {
 
         t = BN256.mulFQ2(E, r.t);
         t = BN256.addFQ2(t, t);
-        FQ2 b = BN256.subFQ2([0, 0], t);
+        FQ2 b = BN256.subFQ2({0, 0}, t);
         b = BN256.mulScalarFQ2(b, q.x);
 
         FQ2 a = BN256.addFQ2(r.x, E);
@@ -137,12 +137,12 @@ library BN256Pairing {
     }
 
     static function mulLine(FQ12 ret, FQ2 a, FQ2 b, FQ2 c) : FQ12 {
-        FQ6 a2 = {[0, 0], a, b};
+        FQ6 a2 = {{0, 0}, a, b};
         a2 = BN256.mulFQ6(a2, ret.x);
         FQ6 t3 = BN256.mulScalarFQ6(ret.y, c);
 
         FQ2 t = BN256.addFQ2(b, c);
-        FQ6 t2 = {[0, 0], a, t};
+        FQ6 t2 = {{0, 0}, a, t};
 
         FQ6 resX = BN256.addFQ6(ret.x, ret.y);
         FQ6 resY = t3;
@@ -158,8 +158,8 @@ library BN256Pairing {
 
     static function miller(TwistPoint q, CurvePoint p) : FQ12 {
         FQ12 ret = {
-            {[0, 0], [0, 0], [0, 0]},
-            {[0, 0], [0, 0], [0, 1]}
+            {{0, 0}, {0, 0}, {0, 0}},
+            {{0, 0}, {0, 0}, {0, 1}}
         };
 
         TwistPoint aAffine = BN256.makeAffineTwistPoint(q);
@@ -174,7 +174,7 @@ library BN256Pairing {
         // sixuPlus2NAF is 6u+2 in non-adjacent form.
         // Unrolled loop to get rid of in-loop branching. Reference impl.:
         // https://github.com/ethereum/go-ethereum/blob/bd6879ac518431174a490ba42f7e6e822dcb3ee1/crypto/bn256/google/optate.go#L213
-        // var sixuPlus2NAF = []int8{0, 0, 0, 1, 0, 1, 0, -1, 0, 0, 1, -1, 0, 0, 1, 0,
+        // var sixuPlus2NAF = {}int8{0, 0, 0, 1, 0, 1, 0, -1, 0, 0, 1, -1, 0, 0, 1, 0,
         //                           0, 1, 1, 0, -1, 0, 0, 1, 0, -1, 0, 0, 0, 0, 1, 1,
         //                           1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 1,
         //                           1, 0, 0, -1, 0, 0, 0, 1, 1, 0, -1, 0, 0, 1, 0, 1, 1}
@@ -620,7 +620,7 @@ library BN256Pairing {
         q1y = BN256.mulFQ2(q1y, BN256.xiToPMinus1Over2);
 
         TwistPoint q1 = {
-            q1x, q1y, [0, 1], [0, 1]
+            q1x, q1y, {0, 1}, {0, 1}
         };
 
         // For Q2 we are applying the p² Frobenius. The two conjugations cancel
@@ -631,7 +631,7 @@ library BN256Pairing {
 
         FQ2 minusQ2x = BN256.mulScalarFQ2(aAffine.x, BN256.xiToPSquaredMinus1Over3);
         TwistPoint minusQ2 = {
-            minusQ2x, aAffine.y, [0, 1], [0, 1]
+            minusQ2x, aAffine.y, {0, 1}, {0, 1}
         };
 
         r2 = BN256.squareFQ2(q1.y);
@@ -702,10 +702,10 @@ library BN256Pairing {
         FQ12 e = miller(g2, g1);
         FQ12 ret = finalExponentiation(e);
 
-        if (g2.z == [0, 0] || g1.z == 0) {
+        if (g2.z == {0, 0} || g1.z == 0) {
             ret = {
-                {[0, 0], [0, 0], [0, 0]},
-                {[0, 0], [0, 0], [0, 1]}
+                {{0, 0}, {0, 0}, {0, 0}},
+                {{0, 0}, {0, 0}, {0, 1}}
             };
         }
 

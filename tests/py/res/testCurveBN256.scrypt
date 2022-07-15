@@ -1,4 +1,4 @@
-import "bn256.scrypt";
+import "../../../contracts/bn256.scrypt";
 
 
 contract BN256CurveTest {
