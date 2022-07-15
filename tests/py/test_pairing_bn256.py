@@ -24,6 +24,7 @@ type_classes = build_type_classes(desc)
 LineFuncRes = type_classes['LineFuncRes']
 TwistPoint = type_classes['TwistPoint']
 CurvePoint = type_classes['CurvePoint']
+FQ2 = type_classes['FQ2']
 FQ6 = type_classes['FQ6']
 FQ12 = type_classes['FQ12']
 
