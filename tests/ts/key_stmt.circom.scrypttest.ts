@@ -56,4 +56,26 @@ describe("Key statement circom", async function () {
         await circuit.checkConstraints(witness);
     })
 
+    it('should fail given an incorret pubkey as input', async () => {
+        let privkey: bigint = toBigIntBE((new bsv.PrivateKey.fromRandom('testnet')).toBuffer());
+        let priv_tuple: [bigint, bigint, bigint, bigint] = bigint_to_tuple(privkey);
+
+        // random pubkey
+        let pubkey: Point = Point.fromPrivateKey(BigInt(Math.ceil(Math.random() * 1000)));
+        let pub0_tuple: [bigint, bigint, bigint, bigint] = bigint_to_tuple(pubkey.x);
+        let pub1_tuple: [bigint, bigint, bigint, bigint] = bigint_to_tuple(pubkey.y);
+
+        let input = { "privkey": priv_tuple, "pubkey": pub0_tuple.concat(pub1_tuple) }
+
+        let witnessCalcSucceeded = true;
+        try {
+            let witness = await circuit.calculateWitness(input);
+            await circuit.checkConstraints(witness);
+        } catch (e) {
+            witnessCalcSucceeded = false;
+        }
+
+        expect(witnessCalcSucceeded).to.equal(false);
+    })
+
 });
