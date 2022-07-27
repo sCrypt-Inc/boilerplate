@@ -37,7 +37,6 @@ struct G2Point {
     FQ2 y;
 }
 
-
 // FQ12 implements the field of size p¹² as a quadratic extension of FQ6
 // where ω²=τ.
 struct FQ12 {
@@ -634,6 +633,14 @@ library BN256 {
 
     // ----------------------------------------------------
 
+    static function doubleG1Point(G1Point a) : G1Point {
+        CurvePoint res = doubleCurvePoint(
+                createCurvePoint(a)
+        );
+        
+        return getG1Point(res);
+    }
+
     static function doubleCurvePoint(CurvePoint a) : CurvePoint {
         // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/doubling/dbl-2009-l.op3
         CurvePoint res = {0, 0, 0, 0};
@@ -672,6 +679,15 @@ library BN256 {
         res.z = modReduce(prod, P) * 2;
 
         return res;
+    }
+
+    static function addG1Points(G1Point a, G1Point b) : G1Point {
+        CurvePoint res = addCurvePoints(
+                createCurvePoint(a),
+                createCurvePoint(b)
+        );
+        
+        return getG1Point(res);
     }
 
     static function addCurvePoints(CurvePoint a, CurvePoint b) : CurvePoint {
@@ -752,6 +768,15 @@ library BN256 {
 
         return res;
     }
+
+    static function mulG1Point(G1Point a, int m) : G1Point {
+        CurvePoint res = mulCurvePoint(
+                createCurvePoint(a),
+                m
+        );
+        
+        return getG1Point(res);
+    }
         
     static function mulCurvePoint(CurvePoint a, int m) : CurvePoint {
         // Double and add method.
@@ -824,6 +849,14 @@ library BN256 {
 
     // ----------------------------------------------------
 
+    static function doubleG2Point(G2Point a) : G2Point {
+        TwistPoint res = doubleTwistPoint(
+                createTwistPoint(a)
+        );
+        
+        return getG2Point(res);
+    }
+
     static function doubleTwistPoint(TwistPoint a) : TwistPoint {
         // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/doubling/dbl-2009-l.op3
         TwistPoint res = {FQ2Zero, FQ2Zero, FQ2Zero, FQ2Zero};
@@ -855,6 +888,15 @@ library BN256 {
         res.z = mulScalarFQ2(mulFQ2(a.y, a.z), 2);
 
         return res;
+    }
+
+    static function addG2Points(G2Point a, G2Point b) : G2Point {
+        TwistPoint res = addTwistPoints(
+                createTwistPoint(a),
+                createTwistPoint(b)
+        );
+        
+        return getG2Point(res);
     }
 
     static function addTwistPoints(TwistPoint a, TwistPoint b) : TwistPoint {
@@ -934,6 +976,15 @@ library BN256 {
         }
 
         return res;
+    }
+
+    static function mulG2Point(G2Point a, int n) : G2Point {
+        TwistPoint res = mulTwistPoint(
+                createTwistPoint(a),
+                n
+        );
+        
+        return getG2Point(res);
     }
 
     static function mulTwistPoint(TwistPoint a, int m) : TwistPoint {

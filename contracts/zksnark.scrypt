@@ -23,20 +23,20 @@ library ZKSNARK {
     static const int N_1 = N + 1;
 
     static function verify(int[N] inputs, Proof proof, VerifyingKey vk) : bool {
-        CurvePoint vk_x = BN256.createCurvePoint(vk.gamma_abc[0]);
+        G1Point vk_x = vk.gamma_abc[0];
 
         loop (N) : i {
-            CurvePoint p = BN256.mulCurvePoint(
-                BN256.createCurvePoint(vk.gamma_abc[i + 1]),
+            G1Point p = BN256.mulG1Point(
+                vk.gamma_abc[i + 1],
                 inputs[i]
             );
-            vk_x = BN256.addCurvePoints(vk_x, p);
+            vk_x = BN256.addG1Points(vk_x, p);
         }
 
         return BN256Pairing.pairCheckP4(
                 {proof.a.x, -proof.a.y}, proof.b,
                 vk.alpha, vk.beta,
-                BN256.getG1Point(vk_x), vk.gamma,
+                vk_x, vk.gamma,
                 proof.c, vk.delta);
     }
 
