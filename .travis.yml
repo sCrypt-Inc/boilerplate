@@ -1,12 +1,4 @@
 dist: bionic
-language: node_js
-node_js:
- - 14
- - 16
-os:
-  - linux
-  - osx
-  - windows
 
 before_install:
 #  - npm i -g npm@latest
@@ -36,3 +28,16 @@ script:
       npm run download:circom
     fi
   - npm t
+
+
+  # include:
+  #   - language: python
+  #     sudo: required
+  #     #python:
+  #     #  - "3.10"
+  #     install:
+  #       - pip install scryptlib pytest
+  #     script:
+  #       - curl -Ls https://scrypt.io/setup | sudo sh -s -- -f 
+  #       - cd /home/travis/build/sCrypt-Inc/boilerplate/test/py/
+  #       - pytest

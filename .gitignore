@@ -5,3 +5,4 @@ deployments/fixture/autoGen/*.json
 compiler
 tests/out/*.json
 circom
+__pycache__/
