@@ -92,9 +92,6 @@ library BN256 {
     // Curve group modulus:
     static const int n = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
-    // P - 2
-    static const int Psub2 = 65000549695646603732796438742359905742825358107623003571877145026864184071781;
-
     // r3 is R^3 where R = 2^256 mod P.
     static const int r3 = 0x24ebbbb3a2529292df2ff66396b107a7388f899054f538a42af2dfb9324a5bb8;
 
@@ -1051,7 +1048,8 @@ library BN256 {
     }
 
     static function createTwistPoint(G2Point ctp) : TwistPoint {
-        return {ctp.x, ctp.y, {0, 1}, {0, 1}}; 
+        // Output x and y coords from ZoKrates need to be swaped to work correctly.
+        return {{ctp.x.y, ctp.x.x}, {ctp.y.y, ctp.y.x}, {0, 1}, {0, 1}}; 
     }
 
     static function getG2Point(TwistPoint tp) : G2Point {

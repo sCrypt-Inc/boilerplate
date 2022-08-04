@@ -36,12 +36,12 @@ def test_verify_0():
             }),
         'b': G2Point({
                 'x': FQ2({
-                    'x': 0x170f10bcf9027f85e49eddd8c05d031d26b4113c81cf0520a2f8a2e09f1db366,
-                    'y': 0x2edcfd2963a9ffe420b220b81a25ef5c5335666ca8ebac6ff463229695ad177d
+                    'x': 0x2edcfd2963a9ffe420b220b81a25ef5c5335666ca8ebac6ff463229695ad177d,
+                    'y': 0x170f10bcf9027f85e49eddd8c05d031d26b4113c81cf0520a2f8a2e09f1db366,
                     }),
                 'y': FQ2({
-                    'x': 0x0d2bb553fd9d6f8a10e88b44f2d112ec54c5d826a1f0bf503cc4281f87b9c296,
-                    'y': 0x08c709a8ceeffdd2d37e10972fa7ed8996d2379dd8d6a2f535baa44a722e738f
+                    'x': 0x08c709a8ceeffdd2d37e10972fa7ed8996d2379dd8d6a2f535baa44a722e738f,
+                    'y': 0x0d2bb553fd9d6f8a10e88b44f2d112ec54c5d826a1f0bf503cc4281f87b9c296,
                     })
              }),
         'c': G1Point({
@@ -57,32 +57,32 @@ def test_verify_0():
             }),
         'beta': G2Point({
                 'x': FQ2({
-                    'x': 0x19cff9b2a05f8021a886f823568bfc7d7e922ecee84c58ef01a137b9db02bbc2,
-                    'y': 0x053ec4111e7e517f74dc5390924f7dea7aa9fdaac58bbbd7da760e910c818e1b
+                    'x': 0x053ec4111e7e517f74dc5390924f7dea7aa9fdaac58bbbd7da760e910c818e1b,
+                    'y': 0x19cff9b2a05f8021a886f823568bfc7d7e922ecee84c58ef01a137b9db02bbc2,
                     }),
                 'y': FQ2({
-                    'x': 0x1084da893bc292a042ec1a3157b821fde2afeef3e3c00b5c0db451b69de30ba0,
-                    'y': 0x2058b656478123da378f96f53f24c9f5fb1575b9dc5293755cb40714195a0041
+                    'x': 0x2058b656478123da378f96f53f24c9f5fb1575b9dc5293755cb40714195a0041,
+                    'y': 0x1084da893bc292a042ec1a3157b821fde2afeef3e3c00b5c0db451b69de30ba0,
                     })
              }),
         'gamma': G2Point({
                 'x': FQ2({
-                    'x': 0x0d10ef6ab4a85a76bbfb2a6533d6578410b9b2a7838e9c90a62e736a7a0088de,
-                    'y': 0x2884c87723d2ecd87481d41d499f8fa619582e412e4df8db01b9e9a3c5a86adc
+                    'x': 0x2884c87723d2ecd87481d41d499f8fa619582e412e4df8db01b9e9a3c5a86adc,
+                    'y': 0x0d10ef6ab4a85a76bbfb2a6533d6578410b9b2a7838e9c90a62e736a7a0088de,
                     }),
                 'y': FQ2({
-                    'x': 0x253945a6ba0ab7cea8d9ae5bdb62acb9d0f63bb425d3f455edd374a244ff0e53,
-                    'y': 0x1fc49ca89d4d7cef807b236df011edafa53359a883f30e90c166259be326a92e
+                    'x': 0x1fc49ca89d4d7cef807b236df011edafa53359a883f30e90c166259be326a92e,
+                    'y': 0x253945a6ba0ab7cea8d9ae5bdb62acb9d0f63bb425d3f455edd374a244ff0e53,
                     })
              }),
         'delta': G2Point({
                 'x': FQ2({
-                    'x': 0x0b595fd69cabe8e9bf40c2e51062c42b02324f3c455f5a47243d8b8cad9d65c3,
-                    'y': 0x0d2ee5f27576f780626213279802429523653b4c6acea74c52c607e0908bd706
+                    'x': 0x0d2ee5f27576f780626213279802429523653b4c6acea74c52c607e0908bd706,
+                    'y': 0x0b595fd69cabe8e9bf40c2e51062c42b02324f3c455f5a47243d8b8cad9d65c3,
                     }),
                 'y': FQ2({
-                    'x': 0x1f96a653e4c54c62e38e4382a5b854d8ed2fa8e4ad7b2f2d0fcccb631f131403,
-                    'y': 0x00001b3a51239eefd1e552fff8d854edd9afbc322657964b328168ffcaf7aa8e
+                    'x': 0x00001b3a51239eefd1e552fff8d854edd9afbc322657964b328168ffcaf7aa8e,
+                    'y': 0x1f96a653e4c54c62e38e4382a5b854d8ed2fa8e4ad7b2f2d0fcccb631f131403,
                     })
              }),
         'gamma_abc': [
