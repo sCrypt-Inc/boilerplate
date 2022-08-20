@@ -15,17 +15,11 @@ contract GameOfLife {
     int[XY] board;
 
     public function play(int amount, SigHashPreimage txPreimage) {
-        require(Tx.checkPreimage(txPreimage));
-
         // make the move
         this.board = GameOfLife.evolve(this.board);
 
         // update state: next turn & next board
-        bytes scriptCode_ = this.getStateScript();
-        bytes output = Utils.buildOutput(scriptCode_, amount);
-        bytes outputs = output;
-
-        require(hash256(outputs) == SigHash.hashOutputs(txPreimage));
+        require(this.propagateState(txPreimage, amount));
     }
 
     static function evolve(int[XY] oldBoard) : int[XY] {
@@ -78,5 +72,12 @@ contract GameOfLife {
 
     static function index(int i, int j) : int {
         return i * GameOfLife.BOARD_SIZE + j;
+    }
+
+    function propagateState(SigHashPreimage txPreimage, int value) : bool {
+        require(Tx.checkPreimage(txPreimage));
+        bytes outputScript = this.getStateScript();
+        bytes output = Utils.buildOutput(outputScript, value);
+        return hash256(output) == SigHash.hashOutputs(txPreimage);
     }
 }

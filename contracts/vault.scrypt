@@ -21,9 +21,7 @@ contract Vault {
         require(!this.unvaulted);
         this.unvaulted = true;
 
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, SigHash.value(txPreimage));
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        require(this.propagateState(txPreimage, SigHash.value(txPreimage)));
     }
 
     // step 2
@@ -59,5 +57,12 @@ contract Vault {
         require(Blockchain.isBlockHeaderValid(latestBh, this.blockchainTarget));
 
         return true;
+    }
+
+    function propagateState(SigHashPreimage txPreimage, int value) : bool {
+        require(Tx.checkPreimage(txPreimage));
+        bytes outputScript = this.getStateScript();
+        bytes output = Utils.buildOutput(outputScript, value);
+        return hash256(output) == SigHash.hashOutputs(txPreimage);
     }
 }

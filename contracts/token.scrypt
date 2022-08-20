@@ -13,9 +13,6 @@ contract Token {
     Account[2] accounts;
 
     public function transfer(PubKey sender, Sig senderSig, PubKey receiver, int value /* amount to be transferred */, SigHashPreimage txPreimage, int amount) {
-        // this ensures the preimage is for the current tx
-        require(Tx.checkPreimage(txPreimage));
-
         // authorize
         require(checkSig(senderSig, sender));
 
@@ -34,9 +31,13 @@ contract Token {
             this.accounts[0].balance += value;
         }
 
-        // write new locking script
-        bytes stateScript = this.getStateScript();
-        bytes output = Utils.buildOutput(stateScript, amount);
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        require(this.propagateState(txPreimage, amount));
+    }
+
+    function propagateState(SigHashPreimage txPreimage, int value) : bool {
+        require(Tx.checkPreimage(txPreimage));
+        bytes outputScript = this.getStateScript();
+        bytes output = Utils.buildOutput(outputScript, value);
+        return hash256(output) == SigHash.hashOutputs(txPreimage);
     }
 }

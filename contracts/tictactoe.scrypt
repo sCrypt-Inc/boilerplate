@@ -19,8 +19,6 @@ contract TicTacToe {
     static const int BOB = 2;
 
     public function move(int n, Sig sig, int amount, SigHashPreimage txPreimage) {
-
-        require(Tx.checkPreimage(txPreimage));
         require(n >= 0 && n < BOARDLEN);
 
         // not filled
@@ -56,7 +54,7 @@ contract TicTacToe {
             outputs = output;
         }
 
-        require(hash256(outputs) == SigHash.hashOutputs(txPreimage));
+        require(this.propagateState(txPreimage, outputs));
     }
 
     function won(int play) : bool {
@@ -84,5 +82,10 @@ contract TicTacToe {
         }
 
         return full;
+    }
+
+    function propagateState(SigHashPreimage txPreimage, bytes outputs) : bool {
+        require(Tx.checkPreimage(txPreimage));
+        return (hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 }
