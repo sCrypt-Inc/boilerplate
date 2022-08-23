@@ -727,7 +727,7 @@ library BN256Pairing {
         if (!BN256.isInfCurvePoint(a2) && !BN256.isInfTwistPoint(b2)) {
             acc = BN256.mulFQ12(acc, miller(b2, a2));
         }
-        if (!BN256.isInfCurvePoint(a3) && !BN256.isInfTwistPoint(b3)) {
+        if (!BN256.isInfCurvePoint(a2) && !BN256.isInfTwistPoint(b2)) {
             acc = BN256.mulFQ12(acc, miller(b3, a3));
         }
 
@@ -744,7 +744,7 @@ library BN256Pairing {
     }
 
     // Check four pairs.
-    // e(a0, b0) * ... * e(a3, b3) == 1
+    // A * B + inputs * (-gamma) + C * (-delta) == alpha * beta
     static function pairCheckP4(
             G1Point a0, G2Point b0,
             G1Point a1, G2Point b1,
@@ -757,7 +757,50 @@ library BN256Pairing {
                 BN256.createCurvePoint(a3), BN256.createTwistPoint(b3)
             );
     }
-            
+
+    static function pairCheckP4PrecalcInternal(
+            CurvePoint a0, TwistPoint b0,
+    	    FQ12 millerBetaAlpha,
+            CurvePoint a2, TwistPoint b2,
+            CurvePoint a3, TwistPoint b3
+            ) : bool {
+        FQ12 acc = BN256.FQ12One;
+
+        a0 = BN256.makeAffineCurvePoint(a0);
+        a2 = BN256.makeAffineCurvePoint(a2);
+        a3 = BN256.makeAffineCurvePoint(a3);
+
+        if (!BN256.isInfCurvePoint(a0) && !BN256.isInfTwistPoint(b0)) {
+            acc = BN256.mulFQ12(acc, miller(b0, a0));
+        }
+        acc = BN256.mulFQ12(acc, millerBetaAlpha);
+        if (!BN256.isInfCurvePoint(a2) && !BN256.isInfTwistPoint(b2)) {
+            acc = BN256.mulFQ12(acc, miller(b2, a2));
+        }
+        if (!BN256.isInfCurvePoint(a3) && !BN256.isInfTwistPoint(b3)) {
+            acc = BN256.mulFQ12(acc, miller(b3, a3));
+        }
+
+        acc = finalExponentiation(acc);
+
+        return acc == BN256.FQ12One;
+    }
+
+    // Check four pairs.
+    // A * B + inputs * (-gamma) + C * (-delta) == alpha * beta
+    // where alpha * beta is precalculated.
+    static function pairCheckP4Precalc(
+            G1Point a0, G2Point b0,
+            FQ12 millerBetaAlpha,
+            G1Point a2, G2Point b2,
+            G1Point a3, G2Point b3) : bool {
+        return pairCheckP4PrecalcInternal(
+                BN256.createCurvePoint(a0), BN256.createTwistPoint(b0),
+                millerBetaAlpha,
+                BN256.createCurvePoint(a2), BN256.createTwistPoint(b2),
+                BN256.createCurvePoint(a3), BN256.createTwistPoint(b3)
+            );
+    }
 
 }
 

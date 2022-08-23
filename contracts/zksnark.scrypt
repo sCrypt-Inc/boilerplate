@@ -7,7 +7,7 @@ struct VerifyingKey {
     G2Point beta;
     G2Point gamma;
     G2Point delta;
-    G1Point[2] gamma_abc;   // N + 1
+    G1Point[2] gamma_abc;    // Size of array should be N + 1
 }
 
 struct Proof {
@@ -20,22 +20,36 @@ library ZKSNARK {
 
     // Number of inputs.
     static const int N = 1;
-    static const int N_1 = N + 1;
+    static const int N_1 = 2;   // N + 1
 
-    static function verify(int[N] inputs, Proof proof, VerifyingKey vk) : bool {
-        G1Point vk_x = vk.gamma_abc[0];
-
+    static function vkXSetup(int[N] inputs, VerifyingKey vk) : G1Point {
+	    G1Point vk_x = vk.gamma_abc[0];
         loop (N) : i {
             G1Point p = BN256.mulG1Point(
-                vk.gamma_abc[i + 1],
-                inputs[i]
-            );
+                    vk.gamma_abc[i + 1],
+                    inputs[i]
+                );
             vk_x = BN256.addG1Points(vk_x, p);
         }
+	    return vk_x;
+    }
+
+    static function verify(int[N] inputs, Proof proof, VerifyingKey vk) : bool {
+        G1Point vk_x = vkXSetup(inputs, vk);
 
         return BN256Pairing.pairCheckP4(
                 {proof.a.x, -proof.a.y}, proof.b,
                 vk.alpha, vk.beta,
+                vk_x, vk.gamma,
+                proof.c, vk.delta);
+    }
+
+    static function verifyOptimized(int[N] inputs, Proof proof, VerifyingKey vk, FQ12 millerb1a1) : bool {
+        G1Point vk_x = vkXSetup(inputs, vk);
+
+        return BN256Pairing.pairCheckP4Precalc(
+                {proof.a.x, -proof.a.y}, proof.b,
+                millerb1a1,
                 vk_x, vk.gamma,
                 proof.c, vk.delta);
     }

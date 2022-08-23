@@ -2,8 +2,13 @@ import "../../../contracts/zksnark.scrypt";
 
 contract ZKSNARKTest {
 
-    public function testVerify(int[1] inputs, Proof proof, VerifyingKey vk) {
+    public function testVerify(int[ZKSNARK.N] inputs, Proof proof, VerifyingKey vk) {
         require(ZKSNARK.verify(inputs, proof, vk));
     }
 
+    public function testVerifyOptimized(int[ZKSNARK.N] inputs, Proof proof, VerifyingKey vk, FQ12 millera1b1) {
+        require(ZKSNARK.verifyOptimized(inputs, proof, vk, millera1b1));
+    }
+
 }
+
