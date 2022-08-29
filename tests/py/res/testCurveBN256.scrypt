@@ -74,10 +74,6 @@ contract BN256CurveTest {
         require(BN256.addTwistPoints(a, b) == res);
     }
 
-    public function testMulTwistPoint(TwistPoint a, int scalar, TwistPoint res) {
-        require(BN256.mulTwistPoint(a, scalar) == res);
-    }
-
     public function testMakeAffineTwistPoint(TwistPoint a, TwistPoint res) {
         require(BN256.makeAffineTwistPoint(a) == res);
     }

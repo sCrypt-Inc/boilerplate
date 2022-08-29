@@ -3,8 +3,7 @@ import "bn256pairing.scrypt";
 
 
 struct VerifyingKey {
-    G1Point alpha;
-    G2Point beta;
+    FQ12 millerb1a1;
     G2Point gamma;
     G2Point delta;
     G1Point[2] gamma_abc;    // Size of array should be N + 1
@@ -18,8 +17,7 @@ struct Proof {
 
 library ZKSNARK {
 
-    // Number of inputs.
-    static const int N = 1;
+    static const int N = 1;     // Number of public inputs.
     static const int N_1 = 2;   // N + 1
 
     static function vkXSetup(int[N] inputs, VerifyingKey vk) : G1Point {
@@ -34,22 +32,12 @@ library ZKSNARK {
 	    return vk_x;
     }
 
-    static function verify(int[N] inputs, Proof proof, VerifyingKey vk) : bool {
-        G1Point vk_x = vkXSetup(inputs, vk);
-
-        return BN256Pairing.pairCheckP4(
-                {proof.a.x, -proof.a.y}, proof.b,
-                vk.alpha, vk.beta,
-                vk_x, vk.gamma,
-                proof.c, vk.delta);
-    }
-
-    static function verifyOptimized(int[N] inputs, Proof proof, VerifyingKey vk, FQ12 millerb1a1) : bool {
+    static function verifyOptimized(int[N] inputs, Proof proof, VerifyingKey vk) : bool {
         G1Point vk_x = vkXSetup(inputs, vk);
 
         return BN256Pairing.pairCheckP4Precalc(
                 {proof.a.x, -proof.a.y}, proof.b,
-                millerb1a1,
+                vk.millerb1a1,
                 vk_x, vk.gamma,
                 proof.c, vk.delta);
     }
