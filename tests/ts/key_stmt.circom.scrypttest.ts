@@ -24,7 +24,7 @@ function bigint_to_tuple(x: bigint) {
     return ret;
 }
 
-describe("Key statement circom", async function () {
+describe("Heavy: Key statement circom", async function () {
     // runs circom compilation
     let circuit: any;
     before(async function () {

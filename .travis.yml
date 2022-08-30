@@ -13,28 +13,11 @@ jobs:
         - osx
         - windows
       before_install:
-        # install dependency for circom
-        - |
-          if [ $TRAVIS_OS_NAME != "osx" ]; then
-            # build circom from source bcoz the official binary was built with a higher version of libc6(2.8) than the one in CI env(2.7).
-            curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
-            git clone https://github.com/iden3/circom.git
-            cd circom
-            $HOME/.cargo/bin/cargo build --release
-            $HOME/.cargo/bin/cargo install --path circom
-            cd ..
-            if [ $TRAVIS_OS_NAME = "windows" ]; then
-              export PATH=$PATH:$HOME/.cargo/bin
-            else
-              source $HOME/.cargo/env
-            fi
-          fi
+        
       script:
         - npx scryptlib download
         - |
-          if [ $TRAVIS_OS_NAME = "osx" ]; then
-            npm run download:circom
-          fi
+          npm run download:circom
         - npm run test:all
     - if: branch != master
       os:

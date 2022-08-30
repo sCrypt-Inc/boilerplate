@@ -8,13 +8,13 @@
   },
   "scripts": {
     "test": "npm run test:withoutHeavy",
-    "test:withoutHeavy": "mocha -r ts-node/register 'tests/**/*.scrypttest.*'  --reporter spec --timeout 10000 -i -g 'Heavy'",
+    "test:withoutHeavy": "mocha -r ts-node/register 'tests/**/*.scrypttest.*'  --reporter spec --timeout 10000 -i -f 'Heavy'",
     "test:all": "mocha -r ts-node/register 'tests/**/*.scrypttest.*'  --reporter spec --timeout 1200000",
     "single-test": "cross-env NODE_OPTIONS=--max-old-space-size=8192 mocha -r ts-node/register --reporter spec --timeout 1200000000",
     "testnet": "node ./testnet.js",
     "watch": "node watcher.js",
     "gen-desc": "node watcher.js --gen-desc",
-    "download:circom": "node ./util/getCircomCompiler.js"
+    "download:circom": "sh ./scripts/setup-circom.sh"
   },
   "repository": {
     "type": "git",
