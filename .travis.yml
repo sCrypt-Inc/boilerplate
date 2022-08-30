@@ -4,7 +4,7 @@ language: node_js
 node_js: 
   - 14
 
-before_install:
+before_script:
   - npx scryptlib download
 
 jobs:
@@ -16,7 +16,6 @@ jobs:
     - 
       ox: windows
     - if: branch = master AND type = push
-      before_install:
       script:
         - npm run download:circom
         - npm run test:all
