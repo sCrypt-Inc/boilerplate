@@ -1,30 +1,24 @@
 dist: focal
 language: node_js
 
+os:
+  - linux
+  - osx
+  - windows
 
+node_js: 
+  - 14
 
 jobs:
   include:
     - if: branch = master AND type = push
-      node_js: 
-        - 14
-      os:
-        - linux
-        - osx
-        - windows
       before_install:
-        
       script:
         - npx scryptlib download
         - |
           npm run download:circom
         - npm run test:all
     - if: branch != master OR type = pull_request 
-      os:
-        - linux
-        - osx
-      node_js: 
-        - 14
       script:
         - npx scryptlib download
         - npm t
