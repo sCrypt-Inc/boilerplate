@@ -1,12 +1,16 @@
+
+dist: focal
 language: node_js
 node_js: 
   - 14
+
+before_install:
+  - npx scryptlib download
 
 jobs:
   include:
     - 
       os: linux
-      dist: focal
     - 
       os: osx
     - 
@@ -14,11 +18,8 @@ jobs:
     - if: branch = master AND type = push
       before_install:
       script:
-        - npx scryptlib download
-        - |
-          npm run download:circom
+        - npm run download:circom
         - npm run test:all
     - if: branch != master OR type = pull_request 
       script:
-        - npx scryptlib download
         - npm t
