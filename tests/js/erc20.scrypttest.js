@@ -28,10 +28,12 @@ const sender = new PubKey(toHex(publicKeyMinter));
 describe('Test sCrypt contract Erc20 In Javascript', () => {
   
 
-  let coin, preimage, result, map, erc20
-  const Coin = buildContractClass(compileContract('erc20.scrypt'))
-  const { ERC20 } = buildTypeClasses(Coin)
+  let coin, preimage, result, map, erc20, ERC20
+
   before(() => {
+    const Coin = buildContractClass(compileContract('erc20.scrypt'))
+    const Types = buildTypeClasses(Coin)
+    ERC20 = Types.ERC20;
     map = new Map();
     erc20 = new ERC20(0, toHashedMap(map));
     erc20._totalSupply = 0

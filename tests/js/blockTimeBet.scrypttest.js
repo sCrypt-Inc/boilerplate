@@ -7,7 +7,6 @@ const { newTxInBlock, header, wrongMerklePath, merklePath,
     headers, toBlockHeader, buildMerkleProof } = require('./blockchainhelper');
 
 
-
 const alicePrivateKey = new bsv.PrivateKey.fromRandom('testnet')
 const alicePublicKey = bsv.PublicKey.fromPrivateKey(alicePrivateKey)
 
@@ -19,11 +18,16 @@ const outputAmount = 222222
 
 
 describe('Test sCrypt contract blockTimeBet In Javascript', () => {
-    const BlockTimeBet = buildContractClass(compileContract('blockTimeBet.scrypt'))
 
-    const { BlockHeader, Node } = buildTypeClasses(BlockTimeBet);
-
+    let blockTimeBet, BlockHeader, Node
     before(() => {
+
+        const BlockTimeBet = buildContractClass(compileContract('blockTimeBet.scrypt'))
+
+        const Types = buildTypeClasses(BlockTimeBet);
+        BlockHeader = Types.BlockHeader;
+        Node = Types.Node
+    
         //Normally, the difficulty of the current network should be used
         blockTimeBet = new BlockTimeBet(pdiff2Target(headers[1].difficulty), new PubKey(toHex(alicePublicKey)), new PubKey(toHex(bobPublicKey)))
     })

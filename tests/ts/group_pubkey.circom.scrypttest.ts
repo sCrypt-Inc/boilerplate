@@ -36,7 +36,7 @@ function get_strided_bigint(stride: bigint, small_stride: bigint, x: bigint) {
     return ret;
 }
 
-describe("Pubkey In Group", async function () {
+describe("Heavy: Pubkey In Group", async function () {
     this.timeout(1000 * 1000);
 
     const GROUP_SIZE = 3;

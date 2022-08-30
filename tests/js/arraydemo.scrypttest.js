@@ -2,15 +2,16 @@ const { expect, assert } = require('chai');
 const { buildContractClass, Ripemd160, Sig, Bytes, buildTypeClasses } = require('scryptlib');
 const { compileContract } = require('../../helper');
 
-const compileResult = compileContract('arraydemo.scrypt');
-const ArrayDemo = buildContractClass(compileResult);
-const { ST1, ST2, ST3, MDArrayST1, AliasST2 } = buildTypeClasses(compileResult);
 
 describe('Test sCrypt contract ArrayDemo In Javascript', () => {
-    let arraydemo, result
+    let arraydemo, result,Types
 
     before(() => {
 
+        const ArrayDemo = buildContractClass(compileContract('arraydemo.scrypt'));
+        Types = buildTypeClasses(ArrayDemo);
+
+        const {ST1} = Types;
         arraydemo = new ArrayDemo(33, [
             true,
             false
@@ -102,6 +103,7 @@ describe('Test sCrypt contract ArrayDemo In Javascript', () => {
 
 
     it('test public function unlockST2', () => {
+        const {ST1, ST2, ST3} = Types;
         result = arraydemo.unlockST2(new ST2(
             {
                 x: true,
@@ -160,6 +162,7 @@ describe('Test sCrypt contract ArrayDemo In Javascript', () => {
 
 
     it('test public function unlockST1', () => {
+        const {ST1} = Types;
         result = arraydemo.unlockST1([new ST1({
             "x": false,
             "y": new Bytes("68656c6c6f20776f726c6421"),
@@ -174,6 +177,7 @@ describe('Test sCrypt contract ArrayDemo In Javascript', () => {
     });
 
     it('test public function unlockAliasST2', () => {
+        const {ST1, ST2, ST3} = Types;
         result = arraydemo.unlockAliasST2([new ST2({
             x: false,
             y: new Bytes("68656c6c6f20776f726c6421"),
@@ -206,6 +210,7 @@ describe('Test sCrypt contract ArrayDemo In Javascript', () => {
 
 
     it('test public function unlockMDArrayST1', () => {
+        const {ST1, ST2, ST3} = Types;
         result = arraydemo.unlockMDArrayST1([
             [[
                 new ST1({
