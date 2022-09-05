@@ -6,9 +6,10 @@ contract rule110 {
 
     @state
     bytes board;
+    
     public function play(int amount, SigHashPreimage txPreimage) {
         this.board = this.computeNewBoard(this.board);
-        require(this.propagateState(txPreimage, SigHash.value(txPreimage)));
+        require(this.propagateState(txPreimage, amount));
     }
 
     function computeNewBoard(bytes board) : bytes {
