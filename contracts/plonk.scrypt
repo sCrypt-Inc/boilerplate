@@ -202,7 +202,6 @@ library Plonk {
         transcript += toBEUnsigned(proof.eval_zw, 32);
         transcript += toBEUnsigned(proof.eval_r, 32);
 
-
         hash = sha256(transcript);
 
         int v1 = fromBEUnsigned(hash, 32) % q;
@@ -227,40 +226,14 @@ library Plonk {
         Challanges challanges = { beta, gamma, alpha, xi, xin, zh, zhInv, u, [0, v1, v2, v3, v4, v5, v6] };
 
         return challanges;
-
     }
 
-
-
-    static function calculateLagrange(Challanges challanges) : int[nLagrange] {
-
-        
-        int eval_l1 = 0;
-        
-        int w = 1;
-
-        
-        eval_l1 = mulmod(n, (challanges.xi - w + q) % q, q);
-        
-        
-
-        // inverse
-        
+    static function calculateLagrange(Challanges challanges) : int[nLagrange] {     
+        int  eval_l1 = mulmod(n, (challanges.xi - 1 + q) % q, q);
+        // inverse        
         eval_l1 = modReduce(inverse(eval_l1), q);
-            
-
-        int zh = challanges.zh;
-
-        w = 1;
-
-        
-        
-        eval_l1 = mulmod(eval_l1, zh, q);
-        
-        
-        
         return [ 0,
-            eval_l1
+            mulmod(eval_l1, challanges.zh, q)
         ];
     }
 
@@ -312,7 +285,6 @@ library Plonk {
         t = mulmod(t, challanges.zhInv, q);
 
         return t;
-
     }
 
 
