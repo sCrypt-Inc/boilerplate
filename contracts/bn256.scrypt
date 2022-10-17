@@ -825,12 +825,12 @@ library BN256 {
     }
 
     static function createCurvePoint(G1Point ccp) : CurvePoint {
-        return (ccp == {0, 1} ||  ccp == {0, 0}) ? {0, 1, 0, 0} : {ccp.x, ccp.y, 1, 1};
+        return ccp == {0, 0} ? {0, 1, 0, 0} : {ccp.x, ccp.y, 1, 1};
     }
 
     static function getG1Point(CurvePoint cp) : G1Point {
         CurvePoint acp = makeAffineCurvePoint(cp);
-        return {acp.x, acp.y};
+        return acp == {0, 1, 0, 0} ? {0, 0} : {acp.x, acp.y};
     }
 
     // ----------------------------------------------------
