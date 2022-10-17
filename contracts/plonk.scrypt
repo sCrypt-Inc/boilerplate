@@ -87,11 +87,7 @@ library Plonk {
     }
 
     static function checkField(int field) : bool {
-        bool ret = false;
-        if (field < q) {
-            ret = true;
-        }
-        return ret;
+        return field < q;
     }
 
     static function checkInput(Proof proof) : bool {
