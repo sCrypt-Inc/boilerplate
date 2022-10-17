@@ -1006,14 +1006,16 @@ library BN256 {
         // Output x and y coords from ZoKrates need to be swaped to work correctly.
         FQ2 x = {ctp.x.y, ctp.x.x};
         FQ2 y = {ctp.y.y, ctp.y.x};
-        return ctp == {FQ2Zero, FQ2One} ? 
+        return ctp == {FQ2Zero, FQ2Zero} ? 
                       {FQ2Zero, FQ2One, FQ2Zero, FQ2Zero} : 
                       {x, y, FQ2One, FQ2One};
     }
 
     static function getG2Point(TwistPoint tp) : G2Point {
         TwistPoint atp = makeAffineTwistPoint(tp);
-        return {atp.x, atp.y};
+        return atp == {FQ2Zero, FQ2One, FQ2Zero, FQ2Zero} ?
+                      {FQ2Zero, FQ2Zero} :
+                      {atp.x, atp.y};
     }
 
 }
