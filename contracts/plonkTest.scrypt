@@ -1,0 +1,8 @@
+import "plonk.scrypt";
+
+contract PlonkVerifier {
+
+    public function unlock(Proof proof, int[1] pubSignals) {
+        require(Plonk.verifyProof(proof, pubSignals));
+    }
+}

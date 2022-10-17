@@ -1,0 +1,485 @@
+import "bn256.scrypt";
+import "bn256pairing.scrypt";
+
+
+
+struct Challanges {
+    int beta;
+    int gamma;
+    int alpha;
+    int xi;
+    int xin;
+    int zh;
+    int zhInv;
+    int u;
+    int[7] v;
+}
+
+
+struct Proof {
+    G1Point a;
+    G1Point b;
+    G1Point c;
+    G1Point z;
+    G1Point t1;
+    G1Point t2;
+    G1Point t3;
+
+    int eval_a;
+    int eval_b;
+    int eval_c;
+    int eval_s1;
+    int eval_s2;
+    int eval_zw;
+    int eval_r;
+
+    G1Point wxi;
+    G1Point wxiw;
+    
+}
+
+library Plonk {
+    
+    static const int n = 2048;
+    static const int nPower = 11;
+    static const int nPublic = 1;
+    static const int nLagrange = 2;
+
+    static const int Qmx = 117108160951636898232274853645676483109951040971003980404302157752905705151;
+    static const int Qmy = 3827898973859455535661549284409746093968573887308276749338597343402188962210;
+    static const int Qlx = 6482018612998334059032165935781622128765583271447272962179941473687609314244;
+    static const int Qly = 19070753200206441228550814832641766319632112590196903026598897548656758683722;
+    static const int Qrx = 17808597718511740896523496812047716031224925662438392148592428448956404666488;
+    static const int Qry = 10452589695973592547251072578391012847824003706905875533772555045608167338207;
+    static const int Qox = 12074950525283752908674242831553661650635640387520567857639914651614533455299;
+    static const int Qoy = 10111592618891878232819486599912975967102162778468389341172797571218994293718;
+    static const int Qcx = 0;
+    static const int Qcy = 0;
+    static const int S1x = 12363089306071914949426981790562303491819163633035271560032297290003584881374;
+    static const int S1y = 19340912220999629701317459317165052874005310108189357638085490927365637379062;
+    static const int S2x = 8787634068860400563848932377499396514415551026883985954096705927908294002554;
+    static const int S2y = 9022840635684676720204367868595838183679878815804390693616515078467031345032;
+    static const int S3x = 7997874191176353348054780174591567276413525867270124547647438882465507261695;
+    static const int S3y = 5154805758873038608769081279510952786012143457951016057214208953188758469290;
+    static const int k1 = 2;
+    static const int k2 = 3;
+    static const int X2x1 = 10255418711536307632241957640947103013889520068510602589108756007722823999469;
+    static const int X2x2 = 6128701704003730792015982003605618403661647243600279794972659209134665764169;
+    static const int X2y1 = 11808381199912828635959856181030667297289018543446235098371152777678749269826;
+    static const int X2y2 = 106401797484898478510411829379894194323287974118854282000254742916651973178;
+
+    static const int q = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    static const int qf = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
+    static const int w1 = 1120550406532664055539694724667294622065367841900378087843176726913374367458;
+
+    static const int G1x = 1;
+    static const int G1y = 2;
+    static const int G2x1 = 10857046999023057135944570762232829481370756359578518086990519993285655852781;
+    static const int G2x2 = 11559732032986387107991004021392285783925812861821192530917403151452391805634;
+    static const int G2y1 = 8495653923123431417604973247489272438418190587263600148770280649306958101930;
+    static const int G2y2 = 4082367875863433681332203403145435568316851327593401208105741076214120093531;
+ 
+
+    static function inverse(int x) : int {
+        asm{
+            010000f093f5e1439170b97948e833285d588181b64550b829a031e1724e6430 OP_SWAP OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_MUL OP_OVER OP_MOD OP_DUP OP_TOALTSTACK OP_DUP OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_FROMALTSTACK OP_MUL OP_OVER OP_MOD OP_NIP
+        }
+    }
+
+    static function checkField(int field) : bool {
+        bool ret = false;
+        if (field < q) {
+            ret = true;
+        }
+        return ret;
+    }
+
+    static function checkInput(Proof proof) : bool {
+        return checkField(proof.eval_a) 
+            && checkField(proof.eval_b)
+            && checkField(proof.eval_c) 
+            && checkField(proof.eval_s1) 
+            && checkField(proof.eval_s2)
+            && checkField(proof.eval_zw) 
+            && checkField(proof.eval_r);
+    }
+
+    static function mulmod(int x, int y, int k) : int {
+
+        return x * y % k;
+    }
+
+    static function addmod(int x, int y, int k) : int {
+        return (x + y) % k;
+    }
+
+    static function fromBEUnsigned(bytes x, static const int len) : int {
+        return Utils.fromLEUnsigned(reverseBytes(x, len));
+    }
+
+    static function toBEUnsigned(int x, static const int len) : bytes {
+        return reverseBytes(Utils.toLEUnsigned(x, len), len);
+    }
+
+    static function modReduce(int k, int modulus) : int {
+        int res = k % modulus;
+        return (res < 0) ? res + modulus : res;
+    }
+
+    static function g1_mulAcc(G1Point p1, G1Point p2, int s) : G1Point {
+        G1Point point = BN256.mulG1Point(p2, s);
+        return BN256.addG1Points(point, p1);
+    }
+    
+    static function g1_mulSetC(int x, int y, int s) : G1Point {
+        return BN256.mulG1Point({x,y}, s);
+    }
+
+    static function g1_addSetC(G1Point g1, int x, int y) : G1Point {
+        return BN256.addG1Points(g1, {x,y});
+    }
+
+    static function calculateChallanges(Proof proof, int[nPublic] pubSignals) : Challanges {
+
+        bytes transcript = b'';
+
+        loop(nPublic) : i {
+            transcript += toBEUnsigned(pubSignals[i], 32);
+        }
+
+        transcript += toBEUnsigned(proof.a.x, 32);
+        transcript += toBEUnsigned(proof.a.y, 32);
+        transcript += toBEUnsigned(proof.b.x, 32);
+        transcript += toBEUnsigned(proof.b.y, 32);
+        transcript += toBEUnsigned(proof.c.x, 32);
+        transcript += toBEUnsigned(proof.c.y, 32);
+        bytes hash = sha256(transcript);
+
+        int b = fromBEUnsigned(hash, 32) % q;
+
+        int beta = b;
+
+        transcript = toBEUnsigned(b, 32);
+
+        hash = sha256(transcript);
+        int gamma = fromBEUnsigned(hash, 32) % q;
+
+        transcript = toBEUnsigned(proof.z.x, 32) + toBEUnsigned(proof.z.y, 32);
+
+        hash = sha256(transcript);
+
+        int alpha = fromBEUnsigned(hash, 32) % q;
+
+        transcript = b'';
+        transcript += toBEUnsigned(proof.t1.x, 32);
+        transcript += toBEUnsigned(proof.t1.y, 32);
+        transcript += toBEUnsigned(proof.t2.x, 32);
+        transcript += toBEUnsigned(proof.t2.y, 32);
+        transcript += toBEUnsigned(proof.t3.x, 32);
+        transcript += toBEUnsigned(proof.t3.y, 32);
+
+        hash = sha256(transcript);
+
+        int a = fromBEUnsigned(hash, 32) % q;
+
+        int xi = a;
+
+        loop(nPower) {
+            a = mulmod(a, a, q);
+        }
+
+        int xin = a;
+
+        a = (a - 1 + q) % q;
+
+        int zh = a;
+
+        int zhInv = modReduce(inverse(zh),q);
+
+        transcript = b'';
+
+        transcript += toBEUnsigned(proof.eval_a, 32);
+        transcript += toBEUnsigned(proof.eval_b, 32);
+        transcript += toBEUnsigned(proof.eval_c, 32);
+        transcript += toBEUnsigned(proof.eval_s1, 32);
+        transcript += toBEUnsigned(proof.eval_s2, 32);
+        transcript += toBEUnsigned(proof.eval_zw, 32);
+        transcript += toBEUnsigned(proof.eval_r, 32);
+
+
+        hash = sha256(transcript);
+
+        int v1 = fromBEUnsigned(hash, 32) % q;
+
+        int v2 = mulmod(v1, v1, q);
+
+        int v3 = mulmod(v2, v1, q);
+
+        int v4 = mulmod(v3, v1, q);
+
+        int v5 = mulmod(v4, v1, q);
+
+        int v6 = mulmod(v5, v1, q);
+
+        transcript = toBEUnsigned(proof.wxi.x, 32) + toBEUnsigned(proof.wxi.y, 32);
+        transcript += toBEUnsigned(proof.wxiw.x, 32) + toBEUnsigned(proof.wxiw.y, 32);
+
+        hash = sha256(transcript);
+
+        int u = fromBEUnsigned(hash, 32) % q;
+
+        Challanges challanges = { beta, gamma, alpha, xi, xin, zh, zhInv, u, [0, v1, v2, v3, v4, v5, v6] };
+
+        return challanges;
+
+    }
+
+
+
+    static function calculateLagrange(Challanges challanges) : int[nLagrange] {
+
+        
+        int eval_l1 = 0;
+        
+        int w = 1;
+
+        
+        eval_l1 = mulmod(n, (challanges.xi - w + q) % q, q);
+        
+        
+
+        // inverse
+        
+        eval_l1 = modReduce(inverse(eval_l1), q);
+            
+
+        int zh = challanges.zh;
+
+        w = 1;
+
+        
+        
+        eval_l1 = mulmod(eval_l1, zh, q);
+        
+        
+        
+        return [ 0,
+            eval_l1
+        ];
+    }
+
+    static function calculatePl(int[nLagrange] l, int[nPublic] pubSignals) : int {
+
+        int pl = 0;
+
+        loop (nPublic) : i {
+            pl = ((pl - mulmod(l[i+1], pubSignals[i], q)) + q) % q;
+        }
+
+        return pl;
+    }
+
+    static function calculateT(Proof proof, Challanges challanges, int pl, int eval_l1) : int {
+
+        int t = addmod(proof.eval_r, pl, q);
+
+        int t1 = mulmod(proof.eval_s1, challanges.beta, q);
+
+        t1 = addmod(t1, proof.eval_a, q);
+
+        t1 = addmod(t1, challanges.gamma, q);
+
+        int t2 = mulmod(proof.eval_s2, challanges.beta, q);
+
+        t2 = addmod(t2, proof.eval_b, q);
+
+        t2 = addmod(t2, challanges.gamma, q);
+
+        t1 = mulmod(t1, t2, q);
+
+        t2 = addmod(proof.eval_c, challanges.gamma, q);
+
+        t1 = mulmod(t1, t2, q);
+
+        t1 = mulmod(t1, proof.eval_zw, q);
+
+        t1 = mulmod(t1, challanges.alpha, q);
+
+        t2 = mulmod(eval_l1, challanges.alpha, q);
+
+        t2 = mulmod(t2, challanges.alpha, q);
+
+        t1 = addmod(t1, t2, q);
+
+        t = (t + q - t1) % q;
+
+        t = mulmod(t, challanges.zhInv, q);
+
+        return t;
+
+    }
+
+
+
+    static function calculateD(Proof proof, Challanges challanges, int l1) : G1Point {
+        int v1 = challanges.v[1];
+        int s = mulmod(proof.eval_a, v1, q);
+        G1Point g1 = g1_mulSetC( Qlx, Qly, s);
+
+        s = mulmod(s, proof.eval_b, q);                
+        G1Point g2 = g1_mulAcc(g1, {Qmx, Qmy}, s);
+  
+        s = mulmod(proof.eval_b, v1, q);
+        G1Point g3 = g1_mulAcc(g2, {Qrx, Qry}, s);
+
+
+        s = mulmod(proof.eval_c, v1, q);
+        G1Point g4 = g1_mulAcc(g3, {Qox, Qoy}, s);
+
+        s = v1;
+        G1Point g5 =  g4;
+        int betaXi = mulmod(challanges.beta, challanges.xi, q);
+
+
+        s = addmod(proof.eval_a, betaXi, q);
+        s = addmod(s, challanges.gamma, q);
+        int s1 = mulmod(k1, betaXi, q);
+        s1 = addmod(s1, proof.eval_b, q);
+        s1 = addmod(s1, challanges.gamma, q);
+
+        s = mulmod(s, s1, q);
+        s1 = mulmod(k2, betaXi, q);
+        s1 = addmod(s1, proof.eval_c, q);
+        s1 = addmod(s1, challanges.gamma, q);
+        s = mulmod(s, s1, q);
+        s = mulmod(s, challanges.alpha, q);
+        s = mulmod(s, v1, q);
+        s1 = mulmod(l1, challanges.alpha, q);
+        s1 = mulmod(s1, challanges.alpha, q);
+        s1 = mulmod(s1, v1, q);
+        s = addmod(s, s1, q);
+        s = addmod(s, challanges.u, q);
+
+        G1Point g6 = g1_mulAcc(g5, {proof.z.x, proof.z.y}, s);
+
+
+        s = mulmod(challanges.beta, proof.eval_s1, q);
+        s = addmod(s, proof.eval_a, q);
+        s = addmod(s, challanges.gamma, q);
+        s1 = mulmod(challanges.beta, proof.eval_s2, q);
+        s1 = addmod(s1, proof.eval_b, q);
+        s1 = addmod(s1, challanges.gamma, q);
+        s = mulmod(s, s1, q);
+        s = mulmod(s, challanges.alpha, q);
+        s = mulmod(s, v1, q);
+        s = mulmod(s, challanges.beta, q);
+        s = mulmod(s, proof.eval_zw, q);
+        s = (q - s) % q;
+        return  g1_mulAcc(g6, {S3x, S3y}, s);
+    }
+
+     
+    static function calculateF(Proof proof, Challanges challanges, G1Point d) : G1Point {
+
+        int v2 = challanges.v[2];
+        int v3 = challanges.v[3];
+        int v4 = challanges.v[4];
+        int v5 = challanges.v[5];
+        int v6 = challanges.v[6];
+        
+
+        G1Point g1 = BN256.addG1Points(d, proof.t1);
+
+        int s = challanges.xin;
+        G1Point g2 = g1_mulAcc(g1, proof.t2, s);
+        
+        s = mulmod(s, s, q);
+        G1Point g3 = g1_mulAcc(g2, proof.t3, s);
+
+
+        G1Point g4 = g1_mulAcc(g3, proof.a, v2);
+
+        G1Point g5 = g1_mulAcc(g4, proof.b, v3);
+
+        G1Point g6 = g1_mulAcc(g5, proof.c, v4);
+
+        G1Point g7 = g1_mulAcc(g6, {S1x, S1y}, v5);
+
+        return g1_mulAcc(g7, {S2x, S2y}, v6);
+    }
+
+
+    static function calculateE(Proof proof, Challanges challanges, G1Point d, int t) : G1Point {
+        int v1 = challanges.v[1];
+        int v2 = challanges.v[2];
+        int v3 = challanges.v[3];
+        int v4 = challanges.v[4];
+        int v5 = challanges.v[5];
+        int v6 = challanges.v[6];
+
+        int s = t;
+        s = addmod(s, mulmod(proof.eval_r, v1, q), q);
+        s = addmod(s, mulmod(proof.eval_a, v2, q), q);
+        s = addmod(s, mulmod(proof.eval_b, v3, q), q);
+        s = addmod(s, mulmod(proof.eval_c, v4, q), q);
+        s = addmod(s, mulmod(proof.eval_s1, v5, q), q);
+        s = addmod(s, mulmod(proof.eval_s2, v6, q), q);
+        s = addmod(s, mulmod(proof.eval_zw, challanges.u, q), q);
+        s = (q - s) % q;
+        return g1_mulAcc(d, {G1x, G1y}, s);
+    }
+
+    
+
+    static function calculateA1(Proof proof, Challanges challanges) : G1Point {
+        return g1_mulAcc({ proof.wxi.x, proof.wxi.y }, { proof.wxiw.x, proof.wxiw.y }, challanges.u);
+    }
+
+    static function calculateB1(Proof proof, Challanges challanges, int l1, int t) : G1Point {
+        G1Point d = calculateD(proof, challanges, l1);
+        G1Point f = calculateF(proof, challanges, d);
+
+        G1Point e = calculateE(proof, challanges, f, t);
+
+        int s = challanges.xi;
+
+        G1Point B1 = g1_mulAcc(e, proof.wxi, s);
+
+        s = mulmod(challanges.u, challanges.xi, q);
+        s = mulmod(s, w1, q);
+
+        return g1_mulAcc(B1, proof.wxiw, s);
+    }
+   
+    static function verifyProof(Proof proof, int[nPublic] pubSignals) : bool {
+
+        require(checkInput(proof));
+
+        Challanges challanges = calculateChallanges(proof, pubSignals);
+
+        int[nLagrange] eval_l = calculateLagrange(challanges);
+
+        int pl = calculatePl(eval_l, pubSignals);
+
+        int t = calculateT(proof, challanges, pl, eval_l[1]);
+
+        G1Point a1 = calculateA1(proof, challanges);
+
+        G1Point b1 = calculateB1(proof, challanges, eval_l[1], t);
+
+        int s = a1.y;
+        s = (qf - s) % qf;
+
+        return BN256Pairing.pairCheckP2Precalc({
+            a1.x,
+            s
+        }, {
+            {X2x1, X2x2},
+            {X2y1, X2y2}
+        }, b1, {
+            {G2x1, G2x2},
+            {G2y1, G2y2}
+        });
+    }
+   
+}

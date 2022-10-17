@@ -1,0 +1,9 @@
+*.ptau
+*.zkey
+*.r1cs
+circuits/*.json
+*.wtns
+*.sol
+*.scrypt
+*_js/
+!*.input.json

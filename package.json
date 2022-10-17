@@ -14,6 +14,7 @@
     "testnet": "node ./testnet.js",
     "watch": "node watcher.js",
     "gen-desc": "node watcher.js --gen-desc",
+    "setup:circuits": "sh ./scripts/setup-circuits.sh",
     "download:circom": "sh ./scripts/setup-circom.sh"
   },
   "repository": {
@@ -38,7 +39,8 @@
     "glob": "^7.1.6",
     "minimist": "^1.2.6",
     "rabinsig": "^1.0.0",
-    "scryptlib": "^0.16.2",
+    "scryptlib": "^1.0.8",
+    "snarkjs-scrypt": "^0.4.26",
     "watch": "^1.0.2"
   },
   "devDependencies": {
