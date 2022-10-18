@@ -719,16 +719,16 @@ library BN256Pairing {
             CurvePoint a2, TwistPoint b2,
             CurvePoint a3, TwistPoint b3
             ) : bool {
-        FQ12 acc = BN256.FQ12One;
 
         a0 = BN256.makeAffineCurvePoint(a0);
         a2 = BN256.makeAffineCurvePoint(a2);
         a3 = BN256.makeAffineCurvePoint(a3);
+        
+        FQ12 acc = millerBetaAlpha;
 
         if (!BN256.isInfCurvePoint(a0) && !BN256.isInfTwistPoint(b0)) {
             acc = BN256.mulFQ12(acc, miller(b0, a0));
         }
-        acc = BN256.mulFQ12(acc, millerBetaAlpha);
         if (!BN256.isInfCurvePoint(a2) && !BN256.isInfTwistPoint(b2)) {
             acc = BN256.mulFQ12(acc, miller(b2, a2));
         }
