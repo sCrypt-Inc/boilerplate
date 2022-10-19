@@ -69,7 +69,7 @@ describe('Heavy: Test sCrypt contract PlonkVerifier In Javascript', () => {
   let plonkVerifier, result, Proof,G1Point
   /* timeout on ci now
   before(() => {
-    const PlonkVerifier = buildContractClass(compileContract('plonkTest.scrypt'));
+    const PlonkVerifier = buildContractClass(loadDesc('plonk'));
     const Types = buildTypeClasses(PlonkVerifier);
     G1Point = Types.G1Point;
     Proof = Types.Proof;
