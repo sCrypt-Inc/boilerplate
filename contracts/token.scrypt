@@ -31,13 +31,6 @@ contract Token {
             this.accounts[0].balance += value;
         }
 
-        require(this.propagateState(txPreimage, amount));
-    }
-
-    function propagateState(SigHashPreimage txPreimage, int value) : bool {
-        require(Tx.checkPreimage(txPreimage));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, value);
-        return hash256(output) == SigHash.hashOutputs(txPreimage);
+        require(this.updateState(txPreimage, amount));
     }
 }

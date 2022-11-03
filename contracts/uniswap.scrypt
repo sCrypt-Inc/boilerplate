@@ -43,7 +43,7 @@ contract Uniswap {
         // transfer tokens to the pool
         require(this.token.transferFrom(sender, {this.poolPubkey, senderKeyIndex} , tokenAmount, senderBalance, oldTokenBalance));
         
-        require(this.propagateState(newBitcoinBalance, txPreimage));
+        require(this.updateStateSigHashType(txPreimage, newBitcoinBalance, SigHash.SINGLE | SigHash.FORKID));
     }
 
     // remove bitcoin and token from liquidity pool
@@ -65,7 +65,7 @@ contract Uniswap {
         // transfer bitcoins to the sender
         int newBitcoinBalance = oldBitcoinBalance - bitcoinAmount;
         
-        require(this.propagateState(newBitcoinBalance, txPreimage));
+        require(this.updateStateSigHashType(txPreimage, newBitcoinBalance, SigHash.SINGLE | SigHash.FORKID));
     }
 
     // swap tokens for bitcoins
@@ -82,7 +82,7 @@ contract Uniswap {
         // transfer tokens to the pool
         require(this.token.transferFrom(sender, {this.poolPubkey, senderKeyIndex} , tokenAmount, senderBalance, oldTokenBalance));        
         
-        require(this.propagateState(newBitcoinBalance, txPreimage));
+        require(this.updateStateSigHashType(txPreimage, newBitcoinBalance, SigHash.SINGLE | SigHash.FORKID));
     }
 
     // swap bitcoins for tokens
@@ -99,7 +99,7 @@ contract Uniswap {
         // transfer tokens from pool to the sender
         require(this.token.transferFrom({this.poolPubkey,senderKeyIndex}, sender, tokensAmount, oldTokenBalance, senderBalance));
 
-        require(this.propagateState(newBitcoinBalance, txPreimage));
+        require(this.updateStateSigHashType(txPreimage, newBitcoinBalance, SigHash.SINGLE | SigHash.FORKID));
     }
 
     // use reserve ratio as price
@@ -107,11 +107,4 @@ contract Uniswap {
         return outputReserve * input / inputReserve;
     }
 
-    // propagate state to the next UTXO, containing specified satoshis
-    function propagateState(int satoshis, SigHashPreimage preimage): bool {
-        require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, satoshis);
-        return hash256(output) == SigHash.hashOutputs(preimage);
-    }
 }

@@ -11,26 +11,19 @@ contract StateMap {
     // Add key-value pairs to the map
     public function insert(MapEntry entry, SigHashPreimage preimage) {
         require(this.map.set(entry.key, entry.val));
-        require(this.propagateState(preimage, SigHash.value(preimage)));
+        require(this.updateState(preimage, SigHash.value(preimage)));
     }
 
     // update key-value pairs in the map
     public function update(MapEntry entry, SigHashPreimage preimage) {
         require(this.map.set(entry.key, entry.val));
-        require(this.propagateState(preimage, SigHash.value(preimage)));
+        require(this.updateState(preimage, SigHash.value(preimage)));
     }
 
     // delete key-value pairs in the map
     public function delete(SortedItem<int> key, SigHashPreimage preimage) {
         require(this.map.delete(key));
         // Serialize map, update state
-        require(this.propagateState(preimage, SigHash.value(preimage)));
-    }
-
-    function propagateState(SigHashPreimage preimage, int amount) : bool {
-        require(Tx.checkPreimage(preimage));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, amount);
-        return (hash256(output) == SigHash.hashOutputs(preimage));
+        require(this.updateState(preimage, SigHash.value(preimage)));
     }
 }

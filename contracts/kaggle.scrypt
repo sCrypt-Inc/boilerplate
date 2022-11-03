@@ -134,6 +134,6 @@ contract Kaggle {
 
     function propagateState(SigHashPreimage txPreimage, bytes outputs) : bool {
         require(Tx.checkPreimage(txPreimage));
-        return (hash256(outputs) == SigHash.hashOutputs(preimage));
+        return (hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 }
