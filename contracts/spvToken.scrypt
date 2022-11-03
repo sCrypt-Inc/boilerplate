@@ -53,14 +53,8 @@ contract SPVToken {
 
         this.owner = receiver;
 
-        require(this.propagateState(txPreimage, satoshiAmount));
+        require(this.updateStateSigHashType(txPreimage, satoshiAmount, SigHash.SINGLE | SigHash.FORKID));
     }
 
-    // propagate state to the next UTXO
-    function propagateState(SigHashPreimage preimage, int amount) : bool {
-        require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, amount);
-        return hash256(output) == SigHash.hashOutputs(preimage);
-    }
+    
 }

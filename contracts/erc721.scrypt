@@ -14,7 +14,7 @@ contract ERC721 {
 
         require(this.owners.set(tokenId, to));
 
-        require(this.propagateState(preimage));
+        require(this.updateStateSigHashType(preimage, SigHash.value(preimage), SigHash.SINGLE | SigHash.FORKID));
     }
 
     // transfer a token from sender to receiver
@@ -26,7 +26,7 @@ contract ERC721 {
 
         require(this.owners.delete(tokenId));
 
-        require(this.propagateState(preimage));
+        require(this.updateStateSigHashType(preimage, SigHash.value(preimage), SigHash.SINGLE | SigHash.FORKID));
     }
 
     public function transferFrom(PubKey from, PubKey to, Sig fromSig, SortedItem<int> tokenId, int keyIndex, SigHashPreimage preimage) {
@@ -37,13 +37,6 @@ contract ERC721 {
 
         require(this.owners.set(tokenId, to));
     
-        require(this.propagateState(preimage));
-    }
-
-    function propagateState(SigHashPreimage preimage): bool {
-        require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, SigHash.value(preimage));
-        return hash256(output) == SigHash.hashOutputs(preimage);
+        require(this.updateStateSigHashType(preimage, SigHash.value(preimage), SigHash.SINGLE | SigHash.FORKID));
     }
 }

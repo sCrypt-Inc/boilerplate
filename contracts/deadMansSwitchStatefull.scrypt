@@ -31,7 +31,7 @@ contract DeadMansSwitch {
 
         // Ensure the next output will contain the same contract in case the refresh key
         // gets stolen.
-        require(this.propagateState(txPreimage, this.inheritanceSats));
+        require(this.updateState(txPreimage, this.inheritanceSats));
     }
   
     // The controler of the funds can cancel the contract at any time.
@@ -69,13 +69,6 @@ contract DeadMansSwitch {
 
         // Ensure, that MIN_N_BLOCKS_PASSED blocks have passed since the UTXO block.
         require(latestBlockHeight - utxoBlockHeight >= MIN_N_BLOCKS_PASSED);
-    }
-
-    function propagateState(SigHashPreimage txPreimage, int value) : bool {
-        require(Tx.checkPreimage(txPreimage));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, value);
-        return hash256(output) == SigHash.hashOutputs(txPreimage);
     }
 
  }

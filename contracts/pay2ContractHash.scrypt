@@ -27,13 +27,6 @@ contract Pay2ContractHash {
 
         require(this.owners.set(tokenId, to));
     
-        require(this.propagateState(preimage));
-    }
-
-    function propagateState(SigHashPreimage preimage): bool {
-        require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, SigHash.value(preimage));
-        return hash256(output) == SigHash.hashOutputs(preimage);
+        require(this.updateStateSigHashType(preimage, SigHash.value(preimage), SigHash.SINGLE | SigHash.FORKID));
     }
 }

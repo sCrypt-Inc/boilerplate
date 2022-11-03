@@ -9,7 +9,8 @@ contract rule110 {
     
     public function play(int amount, SigHashPreimage txPreimage) {
         this.board = this.computeNewBoard(this.board);
-        require(this.propagateState(txPreimage, amount));
+        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
+        require(this.updateStateSigHashType(txPreimage, amount, sigHashType));
     }
 
     function computeNewBoard(bytes board) : bytes {
@@ -41,14 +42,5 @@ contract rule110 {
             res = DEAD;
         }
         return res;
-    }
-
-    function propagateState(SigHashPreimage txPreimage, int value) : bool {
-        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
-        // this ensures the preimage is for the current tx
-        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, value);
-        return hash256(output) == SigHash.hashOutputs(txPreimage);
     }
 }

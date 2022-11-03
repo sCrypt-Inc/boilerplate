@@ -11,7 +11,7 @@ contract Coin {
         // authenticate
         require(checkSig(minterSig, this.minter));
         require(this.liberc20.mint(receiver, balance, amount));
-        require(this.propagateState(preimage));
+        require(this.updateStateSigHashType(preimage, SigHash.value(preimage), SigHash.SINGLE | SigHash.FORKID));
     }
 
     // transfer tokens from sender to receiver
@@ -19,7 +19,7 @@ contract Coin {
         // authenticate
         require(checkSig(senderSig, sender.item));
         require(this.liberc20.transferFrom(sender, receiver, amount, senderBalance, receiverBalance));
-        require(this.propagateState(preimage));
+        require(this.updateStateSigHashType(preimage, SigHash.value(preimage), SigHash.SINGLE | SigHash.FORKID));
     }
 
     // burn tokens of a receiver
@@ -27,14 +27,6 @@ contract Coin {
         // authenticate
         require(checkSig(minterSig, this.minter));
         require(this.liberc20.burn(receiver, balance, amount));
-        require(this.propagateState(preimage));
-    }
-
-    // propagate state to the next UTXO
-    function propagateState(SigHashPreimage preimage) : bool {
-        require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, SigHash.value(preimage));
-        return hash256(output) == SigHash.hashOutputs(preimage);
+        require(this.updateStateSigHashType(preimage, SigHash.value(preimage), SigHash.SINGLE | SigHash.FORKID));
     }
 }
