@@ -4,7 +4,7 @@ import "txUtil.scrypt";
 // Through this contract, we can ensure that the specified event occurs in a metanet tree.
 // Through contract invocation technology, we can ensure that when the metanet tree triggers a specified event, the preset contract is executed. 
 // For example, when users vote for an option, they can get a certain amount of reward points.
-
+// only support create child node, not suppport create brothers node.
 contract MetaNetHelloworld {
 
     static const int META_PREFIX_LEN = 7;
@@ -16,8 +16,8 @@ contract MetaNetHelloworld {
     static const bytes includedData = "hello world";
 
     //unlock the contract to add a `hello world` metanet node.
-    public function unlock(Sig sig, PubKey pubKey, PubKey node, bytes parentTx, SigHashPreimage txPreimage) {
-        require(Tx.checkPreimageSigHashType(txPreimage, SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID));
+    public function unlock(Sig sig, PubKey node, bytes parentTx, Ripemd160 changePKH, int changeSats, SigHashPreimage txPreimage) {
+        require(Tx.checkPreimage(txPreimage));
 
         // get id of previous tx
         Sha256 prevTxId = Sha256(SigHash.outpoint(txPreimage)[:32]);
@@ -31,21 +31,30 @@ contract MetaNetHelloworld {
         bytes metaPrefix = metaOutput.script[0:META_PREFIX_LEN];
         require(metaPrefix == META_PREFIX);
 
-        PubKey pubKeyParent = PubKey(metaOutput.script[META_PREFIX_LEN + 1:41]);
-        require(pubKey == pubKeyParent);
-        require(checkSig(sig, pubKey));
+        PubKey parentNode = PubKey(metaOutput.script[META_PREFIX_LEN + 1:41]);
+        require(checkSig(sig, parentNode));
 
         // add metanet output that contains certain data
-        bytes output = createHelloworldNode(node, prevTxId, includedData);
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        bytes metaoutput = createHelloworldNode(node, prevTxId, includedData);
+
+        // clone contract
+        bytes contractOutput = Utils.buildOutput(SigHash.scriptCode(txPreimage), SigHash.value(txPreimage));
+
+        // CHANGE output
+        bytes changeOutput = Utils.buildOutput(Utils.buildPublicKeyHashScript(changePKH), changeSats);
+
+        bytes outputs = metaoutput + contractOutput + changeOutput;
+
+        require(hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 
 
     static function createHelloworldNode(PubKey node, bytes parentTxId, bytes data): bytes {
+        bytes a = Utils.writeVarint(data);
         bytes outputScript = META_PREFIX
             + num2bin(Constants.PubKeyLen, 1) + node
             + num2bin(Constants.TxIdLen, 1) + reverseBytes(parentTxId, Constants.TxIdLen) 
-            + Utils.writeVarint(data);
+            + a;
         bytes output = Utils.buildOutput(outputScript, 0);
         return output;
     }
