@@ -3,7 +3,7 @@ import "bn256pairing.scrypt";
 
 
 struct VerifyingKey {
-    FQ12 millerb1a1;
+    FQ12 millerb1a1;         // Precalculated miller(alpha, beta)
     G2Point gamma;
     G2Point delta;
     G1Point[2] gamma_abc;    // Size of array should be N + 1
@@ -32,7 +32,7 @@ library ZKSNARK {
 	    return vk_x;
     }
 
-    static function verifyOptimized(int[N] inputs, Proof proof, VerifyingKey vk) : bool {
+    static function verify(int[N] inputs, Proof proof, VerifyingKey vk) : bool {
         G1Point vk_x = vkXSetup(inputs, vk);
 
         return BN256Pairing.pairCheckP4Precalc(

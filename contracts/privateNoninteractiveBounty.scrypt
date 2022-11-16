@@ -47,7 +47,7 @@ contract InformationBounty {
                    unpack(reverseBytes(Hpub[:16], 16) + b'00'),  // Hpub is BE by default, hence the reverseBytes.
                    unpack(reverseBytes(Hpub[16:], 16) + b'00')
                ];
-        bool proofCorrect = ZKSNARK.verifyOptimized(pubInputs, pi, this.vk);
+        bool proofCorrect = ZKSNARK.verify(pubInputs, pi, this.vk);
         require(proofCorrect);
 
         //// Ensure next output will pay Qb. //////////////////////////////////////////////////////////////

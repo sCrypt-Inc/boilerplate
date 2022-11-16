@@ -119,7 +119,7 @@ def test_verify_0():
     inputs = [0x000000000000000000000000000000000000000000000000000000000001bba1]
 
 
-    assert zksnark_test.testVerifyOptimized(
+    assert zksnark_test.testVerify(
         inputs,
         proof,
         vk
@@ -216,7 +216,7 @@ def test_verify_1():
 
     inputs = [0x000000000000000000000000000000000000000000000000000000000001bba1]
 
-    assert zksnark_test.testVerifyOptimized(
+    assert zksnark_test.testVerify(
         inputs,
         proof,
         vk
