@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+  
+    /* Language and Environment */
+    "target": "es2021",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+     "lib": ["es2021"],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+    "experimentalDecorators": true,                   /* Enable experimental support for TC39 stage 2 draft decorators. */
+
+    /* Modules */
+    "module": "commonjs",                                /* Specify what module code is generated. */
+    "rootDir": "./",                                  /* Specify the root folder within your source files. */
+    "moduleResolution": "node",                       /* Specify how TypeScript looks up a file from a given module specifier. */
+    "outDir": "./dist",                                   /* Specify an output folder for all emitted files. */
+    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    /* Type Checking */
+    /* "strict": true,                                       Enable all strict type-checking options. */
+  
+    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */,
+    "plugins": [
+			{
+        "transform": "scrypt-ts/dist/transformer",
+				"outDir": "./scrypts",
+        "transformProgram": true,
+				"debug": true
+			}
+		]
+  },
+  "include": [
+    "contracts/**/*.ts",
+    "tests/**/*.ts"
+  ]
+}

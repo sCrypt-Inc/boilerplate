@@ -1,0 +1,7 @@
+node_modules/
+dist/
+out/
+.vscode/
+scrypts/
+.env
+scrypt.index.json
