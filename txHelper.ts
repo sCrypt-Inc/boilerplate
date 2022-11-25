@@ -1,7 +1,6 @@
 
-import { bsv, getPreimage, SigHashPreimage, SigHashType } from 'scryptlib';
+import { bsv} from 'scryptlib';
 import { randomBytes } from 'crypto';
-import { SmartContract } from 'scrypt-ts'
 import { privateKey } from './privateKey'
 import axios from 'axios';
 
@@ -58,9 +57,7 @@ export async function sendTx(tx: bsv.Transaction): Promise<string> {
     return txid
   } catch (error) {
     if(axios.isAxiosError(error)) {
-      if (error.response && error.response.data === '66: insufficient priority') {
-        throw new Error(`Rejected by miner. Transaction with fee is too low`)
-      }
+      console.log("sendTx error", error.response.data)
     }
 
     throw error
@@ -101,76 +98,4 @@ export async function signAndSend(tx: bsv.Transaction, privKey: bsv.PrivateKey =
     }
 
   return tx;
-}
-
-export async function buildDeployTx(contract: SmartContract, initBalance: number, fromDummyUTXO = true) {
-  let utxos = fromDummyUTXO ? [dummyUTXO] : await fetchUtxos();
-
-  const tx = newTx(utxos)
-    .addOutput(new bsv.Transaction.Output({
-      script: contract.lockingScript,
-      satoshis: initBalance,
-    }));
-
-  contract.markAsGenesis();
-  contract.lockingTo = {
-    tx,
-    outputIndex: 0
-  };
-
-  return tx;
-}
-
-// build a typical one-input-one-output tx for contract calling
-export function buildCallTxAndNextInstance(
-  prevTx: bsv.Transaction,
-  prevInstance: SmartContract,
-  // call public method for the previous instance to get the unlocking script.
-  contractMethodInvoking: (prevInstance: SmartContract, preimage: SigHashPreimage, newBalance: number) => void,
-  // apply states updateing logic for the next instance to get the new locking script.
-  updateStates?: (nextInstance: SmartContract) => void
-) {
-  const inputIndex = 0;
-  const outputIndex = 0;
-  const prevContractBalance = prevTx.outputs[0].satoshis;
-
-  // get a copy of previous instance as a start
-  let newInstance = prevInstance.clone();
-
-  // update contract instance logic
-  if (updateStates !== undefined) {
-    updateStates(newInstance);
-  }
-
-  // build tx that includes the contract's method call
-  let callTx: bsv.Transaction = new bsv.Transaction()
-    .addInput(createInputFromPrevTx(prevTx))
-    .setOutput(outputIndex, (tx: bsv.Transaction) => {
-      // bind contract & tx locking relation
-      newInstance.lockingTo = { tx, outputIndex };
-      const newAmount = prevContractBalance - tx.getEstimateFee();
-      return new bsv.Transaction.Output({
-        // use newInstance's lockingscript as the new UTXO's lockingscript
-        script: newInstance.lockingScript,
-        satoshis: newAmount,
-      })
-    })
-    .setInputScript(inputIndex, (tx: bsv.Transaction, prevOutput: bsv.Transaction.Output) => {
-      // bind contract & tx unlocking relation
-      prevInstance.unlockingFrom = { tx, inputIndex };
-      // use the cloned version bcoz this callback may be executed multiple times during tx building process,
-      // and calling contract method may have side effects on its properties.  
-      const prevInstance_ = prevInstance.clone();
-      const preimage = getPreimage(tx, prevOutput.script, prevOutput.satoshis)
-      const newBalance = prevContractBalance - tx.getEstimateFee();
-      return prevInstance_.getUnlockingScript(() => {
-        // call previous counter's public method to get the unlocking script.
-        contractMethodInvoking(prevInstance_, preimage, newBalance);
-      })
-    });
-
-  return {
-    tx: callTx,
-    nextInstance: newInstance
-  }
 }

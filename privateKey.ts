@@ -18,7 +18,8 @@ export function genPrivKey() {
 Private key generated: '${newPrivKey.toWIF()}'
 You can fund its address '${newPrivKey.toAddress()}' from sCrypt faucet https://scrypt.io/#faucet`);
   // auto generate .env file with new generated key
-  fs.writeFileSync(dotenvConfigPath, `PRIVATE_KEY="${newPrivKey}"`);
+  fs.writeFileSync(dotenvConfigPath, `# You can fund its address '${newPrivKey.toAddress()}' from sCrypt faucet https://scrypt.io/#faucet
+  PRIVATE_KEY="${newPrivKey}"`);
   exit(-1)
 }
 

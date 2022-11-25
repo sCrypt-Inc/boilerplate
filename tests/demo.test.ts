@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Demo } from '../contracts/demo';
-import { buildCallTxAndNextInstance, buildDeployTx, signAndSend } from '../txHelper';
+import { privateKey } from '../privateKey';
 
 describe('Test SmartContract `Demo`', () => {
 
@@ -19,25 +19,17 @@ describe('Test SmartContract `Demo`', () => {
 
   })
 
-  it('should be deployed and called successfully.', async () => {
-    const demo = new Demo(1n, 2n);
-    const balance = 1000;
 
-    // deploy
-    const unsignedDeployTx = await buildDeployTx(demo, balance, false);
-    const deployTx = await signAndSend(unsignedDeployTx);
+  it('should deploy and call successfully.', async () => {
+    let demo = new Demo(1n, 2n);
+
+    const deployTx = await demo.deploy(1000);
+
     console.log('contract deployed: ', deployTx.id)
 
-    //call
-    const { tx: unsignedCallTx } = buildCallTxAndNextInstance(
-      deployTx, demo, 
-      (demoInst: Demo) => {
-        demoInst.add(3n);
-      }
-    );
+    const calledTx = await demo.call(3n, deployTx);
 
-    const callTx = await signAndSend(unsignedCallTx);
-    console.log('contract called: ', callTx.id)
+    console.log('contract called: ', calledTx.id)
 
   })
 })
