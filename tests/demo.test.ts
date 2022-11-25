@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { Demo } from '../contracts/demo';
-import { privateKey } from '../privateKey';
 
 describe('Test SmartContract `Demo`', () => {
 
