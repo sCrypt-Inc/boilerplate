@@ -27,14 +27,11 @@ contract DeadMansSwitch {
     // with an exact copy in a newer block.
     // This efectively extends the duration of the inheritance lock by MIN_N_BLOCKS_PASSED.
     public function refresh(SigHashPreimage txPreimage, Sig sig) {
-        require(Tx.checkPreimage(txPreimage));
         require(checkSig(sig, this.pubKeyRefresh));
 
         // Ensure the next output will contain the same contract in case the refresh key
         // gets stolen.
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, this.inheritanceSats);
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        require(this.updateState(txPreimage, this.inheritanceSats));
     }
   
     // The controler of the funds can cancel the contract at any time.

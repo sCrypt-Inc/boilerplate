@@ -16,7 +16,6 @@ contract FaucetV2 {
     int lastWithdrawTimestamp;
 
     public function withdraw(SigHashPreimage txPreimage, PubKeyHash pkh) {
-        require(Tx.checkPreimage(txPreimage));
         // require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
         require(SigHash.nSequence(txPreimage) < 0xffffffff);
         // require meets the call interval limits
@@ -29,7 +28,8 @@ contract FaucetV2 {
         bytes withdrawOutput = Utils.buildOutput(Utils.buildPublicKeyHashScript(pkh), this.withdrawAmount);
         // require 2 outputs
         bytes expectedOutputs = contractOutput + withdrawOutput;
-        require(SigHash.hashOutputs(txPreimage) == hash256(expectedOutputs));
+
+        require(this.propagateState(txPreimage, expectedOutputs));
     }
 
     public function deposit(SigHashPreimage txPreimage, int depositAmount) {
@@ -46,5 +46,10 @@ contract FaucetV2 {
         // only the creator can destroy
         require(hash160(pk) == this.creatorPkh);
         require(checkSig(sig, pk));
+    }
+
+    function propagateState(SigHashPreimage txPreimage, bytes outputs) : bool {
+        require(Tx.checkPreimage(txPreimage));
+        return (hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 }

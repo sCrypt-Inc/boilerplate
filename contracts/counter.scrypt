@@ -3,27 +3,12 @@ contract Counter {
     @state
     int counter;
 
-    public function get(int retVal, SigHashPreimage txPreimage) {
-        require(this.counter == retVal);
-        require(this.propagateState(txPreimage, SigHash.value(txPreimage)));
-    }
+    public function increment(SigHashPreimage txPreimage, int amount) {
+        // Increment counter value.
+        this.counter++;
 
-    public function inc(SigHashPreimage txPreimage, int amount) {
-        this.counter += 1;
-        require(this.propagateState(txPreimage, amount));
-    }
-
-    public function set(int _count, SigHashPreimage txPreimage) {
-        this.counter = _count;
-        require(this.propagateState(txPreimage, SigHash.value(txPreimage)));
-    }
-
-    function propagateState(SigHashPreimage txPreimage, int value) : bool {
-        require(Tx.checkPreimage(txPreimage));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, value);
-
-        return hash256(output) == SigHash.hashOutputs(txPreimage);
+        // Ensure next output contains script with updated counter value.
+        require(this.updateState(txPreimage, amount));
     }
 }
 

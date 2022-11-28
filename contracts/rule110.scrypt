@@ -6,17 +6,11 @@ contract rule110 {
 
     @state
     bytes board;
+    
     public function play(int amount, SigHashPreimage txPreimage) {
-        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
-        // this ensures the preimage is for the current tx
-        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
-
         this.board = this.computeNewBoard(this.board);
-
-        bytes newScriptCode = this.getStateScript();
-        bytes output = Utils.buildOutput(newScriptCode, amount);
-
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
+        require(this.updateStateSigHashType(txPreimage, amount, sigHashType));
     }
 
     function computeNewBoard(bytes board) : bytes {

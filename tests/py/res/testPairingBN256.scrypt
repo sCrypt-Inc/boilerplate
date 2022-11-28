@@ -1,0 +1,31 @@
+import "../../../contracts/bn256.scrypt";
+import "../../../contracts/bn256pairing.scrypt";
+
+
+contract BN256PairingTest {
+
+    public function testLineFuncAdd(TwistPoint r, TwistPoint p, CurvePoint q, FQ2 r2, LineFuncRes res) {
+        require(BN256Pairing.lineFuncAdd(r, p, q, r2) == res);
+    }
+
+    public function testLineFuncDouble(TwistPoint r, CurvePoint q, LineFuncRes res) {
+        require(BN256Pairing.lineFuncDouble(r, q) == res);
+    }
+
+    public function testMulLine(FQ12 ret, FQ2 a, FQ2 b, FQ2 c, FQ12 res) {
+        require(BN256Pairing.mulLine(ret, a, b, c) == res);
+    }
+
+    public function testMiller(TwistPoint a, CurvePoint b, FQ12 res) {
+        require(BN256Pairing.miller(a, b) == res);
+    }
+
+    public function testFinalExp(FQ12 a, FQ12 res) {
+        require(BN256Pairing.finalExponentiation(a) == res);
+    }
+
+    public function testPair(CurvePoint g1, TwistPoint g2, FQ12 res) {
+        require(BN256Pairing.pairInternal(g1, g2) == res); 
+    }
+
+}

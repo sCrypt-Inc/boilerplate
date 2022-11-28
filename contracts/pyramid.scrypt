@@ -11,10 +11,6 @@ contract Pyramid {
 
     // recruite two members to get double payout
     public function recruit(PubKeyHash recruit0, PubKeyHash recruit1, SigHashPreimage txPreimage) {
-        // use ANYONECANPAY so recruits can deposit
-        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
-        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
-
         // commission payout: double the original entry fee
         bytes commissionScript = Utils.buildPublicKeyHashScript(this.schemer);
         bytes commissionOutput = Utils.buildOutput(commissionScript, 2 * this.entryFee);
@@ -30,6 +26,13 @@ contract Pyramid {
         bytes recruitOutput1 = Utils.buildOutput(recruitScript1, DUST);
 
         bytes output = commissionOutput + recruitOutput0 + recruitOutput1;
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        require(this.propagateState(txPreimage, output));
+    }
+
+    function propagateState(SigHashPreimage txPreimage, bytes output) : bool {
+        // use ANYONECANPAY so recruits can deposit
+        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
+        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
+        return hash256(output) == SigHash.hashOutputs(txPreimage);
     }
 }

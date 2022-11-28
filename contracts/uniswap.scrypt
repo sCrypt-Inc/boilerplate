@@ -13,9 +13,9 @@ contract Uniswap {
     ERC20 lpToken;
 
     // add bitcoin and token to liquidity pool
-    public function addLiquidity(PubKey sender, Sig senderSig, int tokenAmount, int senderBalance, int senderKeyIndex, int oldTokenBalance,
-                                int lpSenderBalance, int lpSenderKeyIndex, int newBitcoinBalance, SigHashPreimage txPreimage) {
-        require(checkSig(senderSig, sender));
+    public function addLiquidity(SortedItem<PubKey> sender, Sig senderSig, int tokenAmount, int senderBalance, int senderKeyIndex, int oldTokenBalance,
+                                int lpSenderBalance, int newBitcoinBalance, SigHashPreimage txPreimage) {
+        require(checkSig(senderSig, sender.item));
 
         int oldBitcoinBalance = SigHash.value(txPreimage);
         
@@ -25,7 +25,7 @@ contract Uniswap {
             
             // initially, just mint new lp tokens per the amount of new bitcoins deposited
             int lpMint = newBitcoinBalance;
-            require(this.lpToken.mint(sender, lpSenderBalance, lpMint, lpSenderKeyIndex));
+            require(this.lpToken.mint(sender, lpSenderBalance, lpMint));
         } else {
             // add more liquidity
 
@@ -37,19 +37,19 @@ contract Uniswap {
 
             // mint new lp tokens, proportinal to the amount of new bitcoins deposited
             int lpMint = this.lpToken.totalSupply() * bitcoinAmount / oldBitcoinBalance;
-            require(this.lpToken.mint(sender, lpSenderBalance, lpMint, lpSenderKeyIndex));
+            require(this.lpToken.mint(sender, lpSenderBalance, lpMint));
         }
 
         // transfer tokens to the pool
-        require(this.token.transferFrom(sender, this.poolPubkey, tokenAmount, senderBalance, senderKeyIndex, oldTokenBalance, senderKeyIndex));
+        require(this.token.transferFrom(sender, {this.poolPubkey, senderKeyIndex} , tokenAmount, senderBalance, oldTokenBalance));
         
-        require(this.propagateState(newBitcoinBalance, txPreimage));
+        require(this.updateStateSigHashType(txPreimage, newBitcoinBalance, SigHash.SINGLE | SigHash.FORKID));
     }
 
     // remove bitcoin and token from liquidity pool
-    public function removeLiquidity(PubKey sender, int lpAmount, Sig senderSig, int oldTokenBalance, int senderKeyIndex, int senderBalance,
+    public function removeLiquidity(SortedItem<PubKey> sender, int lpAmount, Sig senderSig, int oldTokenBalance, int senderKeyIndex, int senderBalance,
                                     int lpSenderBalance, int lpSenderKeyIndex, SigHashPreimage txPreimage) {
-        require(checkSig(senderSig, sender));
+        require(checkSig(senderSig, sender.item));
 
         int oldBitcoinBalance = SigHash.value(txPreimage);
         
@@ -58,20 +58,20 @@ contract Uniswap {
         int tokenAmount = oldTokenBalance * lpAmount / this.lpToken.totalSupply();
 
         // burn the lp tokens
-        require(this.lpToken.burn(sender, lpSenderBalance, lpAmount, lpSenderKeyIndex));
+        require(this.lpToken.burn(sender, lpSenderBalance, lpAmount));
 
         // transfer tokens from pool to the sender
-        require(this.token.transferFrom(this.poolPubkey, sender, tokenAmount, oldTokenBalance, senderKeyIndex, senderBalance, senderKeyIndex));
+        require(this.token.transferFrom({this.poolPubkey, senderKeyIndex} , sender, tokenAmount, oldTokenBalance,  senderBalance));
         // transfer bitcoins to the sender
         int newBitcoinBalance = oldBitcoinBalance - bitcoinAmount;
         
-        require(this.propagateState(newBitcoinBalance, txPreimage));
+        require(this.updateStateSigHashType(txPreimage, newBitcoinBalance, SigHash.SINGLE | SigHash.FORKID));
     }
 
     // swap tokens for bitcoins
-    public function swapTokenToBitcoin(PubKey sender, int tokenAmount, Sig senderSig, int senderBalance, int senderKeyIndex, int oldTokenBalance,
+    public function swapTokenToBitcoin(SortedItem<PubKey> sender, int tokenAmount, Sig senderSig, int senderBalance, int senderKeyIndex, int oldTokenBalance,
                                 int lpSenderBalance, SigHashPreimage txPreimage) {
-        require(checkSig(senderSig, sender));
+        require(checkSig(senderSig, sender.item));
 
         int oldBitcoinBalance = SigHash.value(txPreimage);
 
@@ -80,15 +80,15 @@ contract Uniswap {
         int newBitcoinBalance = oldBitcoinBalance - bitcoinsAmount;
 
         // transfer tokens to the pool
-        require(this.token.transferFrom(sender, this.poolPubkey, tokenAmount, senderBalance, senderKeyIndex, oldTokenBalance, senderKeyIndex));        
+        require(this.token.transferFrom(sender, {this.poolPubkey, senderKeyIndex} , tokenAmount, senderBalance, oldTokenBalance));        
         
-        require(this.propagateState(newBitcoinBalance, txPreimage));
+        require(this.updateStateSigHashType(txPreimage, newBitcoinBalance, SigHash.SINGLE | SigHash.FORKID));
     }
 
     // swap bitcoins for tokens
-    public function swapBitcoinToToken(PubKey sender, int tokenAmount, Sig senderSig, int oldTokenBalance, int senderKeyIndex, int senderBalance,
+    public function swapBitcoinToToken(SortedItem<PubKey> sender, int tokenAmount, Sig senderSig, int oldTokenBalance, int senderKeyIndex, int senderBalance,
                                         int newBitcoinBalance, SigHashPreimage txPreimage) {
-        require(checkSig(senderSig, sender));
+        require(checkSig(senderSig, sender.item));
 
         int oldBitcoinBalance = SigHash.value(txPreimage);
         int bitcoinAmount = newBitcoinBalance - oldBitcoinBalance;
@@ -97,9 +97,9 @@ contract Uniswap {
         int tokensAmount = this.getAmount(bitcoinAmount, oldBitcoinBalance, oldTokenBalance);
 
         // transfer tokens from pool to the sender
-        require(this.token.transferFrom(this.poolPubkey, sender, tokensAmount, oldTokenBalance, senderKeyIndex, senderBalance, senderKeyIndex));
+        require(this.token.transferFrom({this.poolPubkey,senderKeyIndex}, sender, tokensAmount, oldTokenBalance, senderBalance));
 
-        require(this.propagateState(newBitcoinBalance, txPreimage));
+        require(this.updateStateSigHashType(txPreimage, newBitcoinBalance, SigHash.SINGLE | SigHash.FORKID));
     }
 
     // use reserve ratio as price
@@ -107,11 +107,4 @@ contract Uniswap {
         return outputReserve * input / inputReserve;
     }
 
-    // propagate state to the next UTXO, containing specified satoshis
-    function propagateState(int satoshis, SigHashPreimage preimage): bool {
-        require(Tx.checkPreimageSigHashType(preimage, SigHash.SINGLE | SigHash.FORKID));
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, satoshis);
-        return hash256(output) == SigHash.hashOutputs(preimage);
-    }
 }

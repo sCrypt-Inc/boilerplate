@@ -7,21 +7,13 @@ contract AdvancedCounter {
     int counter;
 
     public function increment(SigHashPreimage txPreimage) {
-        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
-        // this ensures the preimage is for the current tx
-        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
-
         // update counter state
         this.counter++;
         
-        bytes outputScript = this.getStateScript();
-        int amount = SigHash.value(txPreimage);
-
-        bytes counterOutput = Utils.buildOutput(outputScript, amount);
-
         // ensure output matches what we expect:
         // - amount is same as specified
         // - output script is the same as scriptCode except the counter was incremented
-        require(hash256(counterOutput) == SigHash.hashOutputs(txPreimage));
+        int amount = SigHash.value(txPreimage);
+        require(this.updateStateSigHashType(txPreimage, amount, SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID));
     }
 }

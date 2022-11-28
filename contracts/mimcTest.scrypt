@@ -1,0 +1,16 @@
+import "mimc.scrypt";
+
+contract MimcTest {
+    public function unlock(int x, int k, int h) {
+        require(Mimc7.hash(x, k) == h);
+    }
+
+    public function unlock1() {
+        require(Mimc7.multiHash(1, [1]) == 
+            12240136457100152345096610842396488822128317434453048685489891202497829360468);
+        require(Mimc7.multiHash(2, [1, 2]) == 
+            5233261170300319370386085858846328736737478911451874673953613863492170606314);
+        require(Mimc7.multiHash(5, [1, 2, 3, 4, 5]) == 
+            17621438162695188549606678516952906437431967350680662625762328731607611920982);
+    }
+}

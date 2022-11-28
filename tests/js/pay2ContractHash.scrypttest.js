@@ -16,10 +16,6 @@ const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 
 
-const Counter = buildContractClass(compileContract('advancedCounter.scrypt'));
-
-const Pay2ContractHash = buildContractClass(compileContract('pay2ContractHash.scrypt'));
-
 
 let map = new Map();
 
@@ -32,6 +28,12 @@ const tx1 = newTx(inputSatoshis);
 describe('Pay2ContractHash', () => {
     let counter, pay2ContractHash, counterContractHash
     before(() => {
+
+        const Counter = buildContractClass(compileContract('advancedCounter.scrypt'));
+
+        const Pay2ContractHash = buildContractClass(compileContract('pay2ContractHash.scrypt'));
+
+
         counter = new Counter(0);
 
         pay2ContractHash = new Pay2ContractHash(toHashedMap(map));

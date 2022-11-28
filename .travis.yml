@@ -1,17 +1,24 @@
-dist: bionic
+
+dist: focal
 language: node_js
-node_js:
- - 14
- - 16
-os:
-  - linux
-  - osx
-  - windows
+node_js: 
+  - 14
 
-#before_install:
-#  - npm i -g npm@latest
-
-script:
-
+before_script:
   - npx scryptlib download
-  - npm t
+
+jobs:
+  include:
+    - 
+      os: linux
+    - 
+      os: osx
+    - 
+      ox: windows
+    - if: branch = master AND type = push
+      script:
+        - npm run download:circom
+        - npm run test:all
+    - if: branch != master OR type = pull_request 
+      script:
+        - npm t

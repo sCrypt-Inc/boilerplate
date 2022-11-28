@@ -12,7 +12,7 @@ const {
 const tx = newTx();
 const outputAmount = 222222
 
-describe('Test sCrypt contract Conways GOL In Javascript', () => {
+describe('Heavy: Test sCrypt contract Conways GOL In Javascript', () => {
   let gol, preimage, result
 
   before(() => {

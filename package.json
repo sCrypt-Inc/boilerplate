@@ -7,11 +7,15 @@
     "node": ">=12.0.0"
   },
   "scripts": {
-    "test": "mocha -r ts-node/register 'tests/**/*.scrypttest.*'  --reporter spec --timeout 600000 -g '' ",
-    "single-test": "mocha -r ts-node/register --reporter spec --timeout 120000",
+    "test": "npm run test:withoutHeavy",
+    "test:withoutHeavy": "mocha -r ts-node/register 'tests/**/*.scrypttest.*'  --reporter spec --timeout 10000 -i -f 'Heavy'",
+    "test:all": "mocha -r ts-node/register 'tests/**/*.scrypttest.*'  --reporter spec --timeout 1200000",
+    "single-test": "cross-env NODE_OPTIONS=--max-old-space-size=8192 mocha -r ts-node/register --reporter spec --timeout 1200000000",
     "testnet": "node ./testnet.js",
     "watch": "node watcher.js",
-    "gen-desc": "node watcher.js --gen-desc"
+    "gen-desc": "node watcher.js --gen-desc",
+    "setup:circuits": "sh ./scripts/setup-circuits.sh",
+    "download:circom": "sh ./scripts/setup-circom.sh"
   },
   "repository": {
     "type": "git",
@@ -28,13 +32,19 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.2",
+    "circom_tester": "0.0.14",
+    "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.6",
+    "cross-env": "^7.0.3",
     "glob": "^7.1.6",
     "minimist": "^1.2.6",
     "rabinsig": "^1.0.0",
-    "scryptlib": "^0.16.0",
+    "scryptlib": "=1.0.9",
+    "snarkjs-scrypt": "^0.4.26",
     "watch": "^1.0.2"
   },
   "devDependencies": {
+    "@noble/secp256k1": "^1.6.0",
     "@types/chai": "^4.2.8",
     "@types/mocha": "^7.0.1",
     "@types/node": "^13.7.6",

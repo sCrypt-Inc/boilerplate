@@ -1,0 +1,45 @@
+import "bn256.scrypt";
+import "bn256pairing.scrypt";
+
+
+struct VerifyingKey {
+    FQ12 millerb1a1;         // Precalculated miller(alpha, beta)
+    G2Point gamma;
+    G2Point delta;
+    G1Point[2] gamma_abc;    // Size of array should be N + 1
+}
+
+struct Proof {
+    G1Point a;
+    G2Point b;
+    G1Point c;
+}
+
+library ZKSNARK {
+
+    static const int N = 1;     // Number of public inputs.
+    static const int N_1 = 2;   // N + 1
+
+    static function vkXSetup(int[N] inputs, VerifyingKey vk) : G1Point {
+	    G1Point vk_x = vk.gamma_abc[0];
+        loop (N) : i {
+            G1Point p = BN256.mulG1Point(
+                    vk.gamma_abc[i + 1],
+                    inputs[i]
+                );
+            vk_x = BN256.addG1Points(vk_x, p);
+        }
+	    return vk_x;
+    }
+
+    static function verify(int[N] inputs, Proof proof, VerifyingKey vk) : bool {
+        G1Point vk_x = vkXSetup(inputs, vk);
+
+        return BN256Pairing.pairCheckP4Precalc(
+                {proof.a.x, -proof.a.y}, proof.b,
+                vk.millerb1a1,
+                vk_x, vk.gamma,
+                proof.c, vk.delta);
+    }
+
+}

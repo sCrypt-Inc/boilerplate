@@ -4,3 +4,9 @@ out
 deployments/fixture/autoGen/*.json
 compiler
 tests/out/*.json
+circom
+__pycache__/
+*.ptau
+*.zkey
+*.r1cs
+circuits/*.json

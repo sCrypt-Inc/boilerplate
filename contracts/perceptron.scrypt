@@ -70,16 +70,10 @@ contract Perceptron {
     }
 
     public function main(SigHashPreimage txPreimage, int amount) {
-        require(Tx.checkPreimage(txPreimage));
-        bytes scriptCode = SigHash.scriptCode(txPreimage);
-
         // train the perceptron
         this.states = this.train(this.states);
 
         // write/serialize state
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, amount);
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        require(this.updateState(txPreimage, amount));
     }
-
 }

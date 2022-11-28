@@ -16,6 +16,8 @@ library SECP521R1 {
     // TODO: First byte seems to be always 00 or 01 for the secp521r1 curve. Optimize?
     // Key int size:
     static const int S = 67;    // 66 bytes plus sign byte
+    static const bytes mask = b'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001';
+    static const bytes zero = b'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
 
     // Curve coefficients:
     static const int a = 0x01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc;
@@ -110,8 +112,6 @@ library SECP521R1 {
         Point q = {0, 0};
 
         bytes mb =   reverseBytes(num2bin(m, S), S);
-        bytes mask = reverseBytes(num2bin(1, S), S);
-        bytes zero = reverseBytes(num2bin(0, S), S);
 
         loop (CURVE_BITS) : i {
             if ((mb & (mask << i)) != zero) {
@@ -129,8 +129,6 @@ library SECP521R1 {
         Point q = {0, 0};
 
         bytes mb =   reverseBytes(num2bin(m, S), S);
-        bytes mask = reverseBytes(num2bin(1, S), S);
-        bytes zero = reverseBytes(num2bin(0, S), S);
 
         loop (CURVE_BITS) : i {
             if ((mb & (mask << i)) != zero) {

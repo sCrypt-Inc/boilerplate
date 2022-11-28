@@ -21,9 +21,7 @@ contract Vault {
         require(!this.unvaulted);
         this.unvaulted = true;
 
-        bytes outputScript = this.getStateScript();
-        bytes output = Utils.buildOutput(outputScript, SigHash.value(txPreimage));
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        require(this.updateState(txPreimage, SigHash.value(txPreimage)));
     }
 
     // step 2

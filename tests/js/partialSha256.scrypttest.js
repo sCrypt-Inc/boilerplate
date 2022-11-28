@@ -4,9 +4,12 @@ const { buildContractClass, Bytes, String, partialSha256 } = require('scryptlib'
 const { compileContract, getRandomInt } = require('../../helper');
 
 
-describe('Test sCrypt contract PartialSha256 In Javascript', () => {
-  let instance, result;
-  const PartialSha256Test = buildContractClass(compileContract('partialSha256Test.scrypt'));
+describe('Heavy: Test sCrypt contract PartialSha256 In Javascript', () => {
+  let instance, result, PartialSha256Test;
+
+  before(() => {
+    PartialSha256Test = buildContractClass(compileContract('partialSha256Test.scrypt'));
+  })
 
 
   it('test string: 2 chuck', () => {
@@ -56,7 +59,6 @@ describe('Test sCrypt contract PartialSha256 In Javascript', () => {
           new Bytes(partialPreimage),
           new Bytes(padding)).verify()
         expect(result.success, result.error).to.be.true
-
     }
   });
 

@@ -49,9 +49,9 @@ function reverseEndian(hexStr) {
 async function sendTx(tx) {
   const hex = tx.toString();
 
-  if(!tx.checkFeeRate(500)) {
-    throw new Error(`checkFeeRate fail, transaction fee is too low`)
-  }
+  // if(!tx.checkFeeRate(50)) {
+  //   throw new Error(`checkFeeRate fail, transaction fee:${tx.getFee()} is too low`)
+  // }
 
   try {
     const {
@@ -107,7 +107,16 @@ function compileTestContract(fileName) {
 }
 
 function loadDesc(fileName) {
-  const filePath = path.join(__dirname, `out/${fileName}`);
+  let filePath = '';
+  if(!fileName.endsWith(".json")) {
+    filePath = path.join(__dirname, `out/${fileName}_desc.json`);
+    if (!existsSync(filePath)) {
+      filePath = path.join(__dirname, `out/${fileName}_debug_desc.json`);
+    }
+  } else {
+    filePath = path.join(__dirname, `out/${fileName}`);
+  }
+
   if (!existsSync(filePath)) {
     throw new Error(`Description file ${filePath} not exist!\nIf You already run 'npm run watch', maybe fix the compile error first!`)
   }
@@ -194,7 +203,7 @@ async function deployContract(contract, amount) {
 }
 
 const metaFlag = '4d455441';
-async function createMetaNetRootNode(root) {
+async function createMetaNetRootNode(root, contract, contractAmount) {
   const { privateKey } = require('./privateKey');
   const address = privateKey.toAddress()
   const tx = new bsv.Transaction()
@@ -202,23 +211,6 @@ async function createMetaNetRootNode(root) {
   tx.from(await fetchUtxos(address))
   .addOutput(new bsv.Transaction.Output({
     script: bsv.Script.fromASM(`OP_0 OP_RETURN ${metaFlag} ${root} 0000000000000000000000000000000000000000000000000000000000000000`),
-    satoshis: 0,
-  }))
-  .change(address)
-  .sign(privateKey)
-
-  await sendTx(tx)
-  return tx
-}
-
-
-async function createMetaNetNode(privateKey, node, txid, contract, contractAmount) {
-  const address = privateKey.toAddress()
-  const tx = new bsv.Transaction()
-  
-  tx.from(await fetchUtxos(address))
-  .addOutput(new bsv.Transaction.Output({
-    script: bsv.Script.fromASM(`OP_0 OP_RETURN ${metaFlag} ${node} ${txid}`),
     satoshis: 0,
   }))
   .addOutput(
@@ -229,6 +221,34 @@ async function createMetaNetNode(privateKey, node, txid, contract, contractAmoun
   )
   .change(address)
   .sign(privateKey)
+
+  await sendTx(tx)
+  return tx
+}
+
+
+async function createMetaNetChildNode(node, prevtx, metaData, lockingScript, contractAmount, callback ) {
+  const { privateKey } = require('./privateKey');
+  const address = privateKey.toAddress()
+  const tx = new bsv.Transaction()
+  tx.addInput(createInputFromPrevTx(prevtx, 1))
+  .from(await fetchUtxos(address))
+  .addOutput(new bsv.Transaction.Output({
+    script: bsv.Script.fromASM(`OP_0 OP_RETURN ${metaFlag} ${node} ${prevtx.id} ${metaData}`),
+    satoshis: 0,
+  }))
+  .addOutput(
+    new bsv.Transaction.Output({
+      script: lockingScript,
+      satoshis: contractAmount,
+    })
+  )
+  .setInputScript(0, (tx, output) => {
+      return callback(tx, output);
+  })
+  .change(address)
+  .sign(privateKey)
+  .seal()
 
   await sendTx(tx)
   return tx
@@ -364,6 +384,6 @@ module.exports = {
   serializeHeader,
   getRandomInt,
   createMetaNetRootNode,
-  createMetaNetNode,
+  createMetaNetChildNode,
   metaFlag
 }

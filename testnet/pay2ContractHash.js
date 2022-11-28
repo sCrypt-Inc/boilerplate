@@ -1,5 +1,5 @@
 const {
-  buildContractClass, Bytes, Sig, SigHashPreimage, bsv, toHex, getPreimage, buildTypeClasses, SigHash, PubKeyHash, PubKey
+  buildContractClass, Bytes, Sig, SigHashPreimage, SortedItem, bsv, toHex, getPreimage, buildTypeClasses, SigHash, PubKeyHash, PubKey
 } = require('scryptlib');
 
 const {
@@ -54,7 +54,10 @@ async function transferToContractHash(pay2ContractHash, prevTx, contractHash) {
       const fromSig = signTx(tx, privateKey, output.script, output.satoshis, 0, SigHash.SINGLE_FORKID);
 
       return pay2ContractHash.transferFrom(pkh, contractHash, fromSig, pubKey, new Bytes(''),
-        new Bytes(''), 0, tokenId, findKeyIndex(map, tokenId), preimage)
+        new Bytes(''), 0, new SortedItem({
+          item: tokenId,
+          idx: findKeyIndex(map, tokenId)
+        }), preimage)
         .toScript();
     })
     .from(await fetchUtxos(privateKey.toAddress()))
@@ -106,7 +109,10 @@ async function transferToPubKeyHash(pay2ContractHash, prevTx, advCounter, advCou
       const fromSig = new Sig('00');
 
       return pay2ContractHash.transferFrom(contractHash, pkh, fromSig, pubKey, new Bytes(tx.prevouts()),
-        new Bytes(toHex(advCounterTx)), 1 /**contractInputIndex */, tokenId, findKeyIndex(map, tokenId), preimage)
+        new Bytes(toHex(advCounterTx)), 1 /**contractInputIndex */, new SortedItem({
+          item: tokenId,
+          idx: findKeyIndex(map, tokenId)
+        }), preimage)
         .toScript();
 
     })

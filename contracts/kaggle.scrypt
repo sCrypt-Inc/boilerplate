@@ -57,7 +57,6 @@ contract Kaggle {
 
     // submit a solution
     public function submit(SigHashPreimage txPreimage, Submission subm) {
-        require(Tx.checkPreimage(txPreimage));
         // append the submission to the candidates
         if (++this.states.count < S) {
             loop (S) : i {
@@ -67,15 +66,12 @@ contract Kaggle {
         }
 
         bytes outputScript = this.getStateScript();
-
         bytes output = Utils.buildOutput(outputScript, SigHash.value(txPreimage));
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        require(this.propagateState(txPreimage, output));
     }
 
     // reveal the testing dataset and pay the winner with smallest error
     public function evaluate(SigHashPreimage txPreimage, DataPoint[T] testingDataset) {
-        require(Tx.checkPreimage(txPreimage));
-
         // validate testing dataset is what was committed
         require(this.validateTestData(testingDataset));
 
@@ -94,7 +90,7 @@ contract Kaggle {
         }
         
         bytes output = Utils.buildOutput(Utils.buildPublicKeyHashScript(winner), SigHash.value(txPreimage));
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
+        require(this.propagateState(txPreimage, output));
     }
 
     // calculate error
@@ -136,4 +132,8 @@ contract Kaggle {
         return sBuf;
     }
 
+    function propagateState(SigHashPreimage txPreimage, bytes outputs) : bool {
+        require(Tx.checkPreimage(txPreimage));
+        return (hash256(outputs) == SigHash.hashOutputs(txPreimage));
+    }
 }

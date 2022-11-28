@@ -4,11 +4,9 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
 (async() => {
     try {
         const Counter = buildContractClass(loadDesc('counter_debug_desc.json'))
-        const counter = new Counter()
-        // append state as op_return data
-        counter.setDataPart(num2bin(0, DataLen))
-        
-        let amount = 6000
+        const counter = new Counter(0)
+
+        let amount = 8000
         // lock fund to the script
         const lockingTx =  await deployContract(counter, amount)
         console.log('funding txid:      ', lockingTx.id);
@@ -17,10 +15,10 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
 
         // unlock
         for (i = 0; i < 3; i++) {
-            
-            const newState = num2bin(i + 1, DataLen);
 
-            const newLockingScript = bsv.Script.fromASM([counter.codePart.toASM(), newState].join(' '))
+            const newLockingScript = counter.getNewStateScript({
+                counter : i + 1
+            })
 
             const unlockingTx = new bsv.Transaction();
             
@@ -43,7 +41,7 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
 
             amount = unlockingTx.outputs[0].satoshis
             // update state
-            counter.setDataPart(newState);
+            counter.counter = i + 1
             prevTx = unlockingTx;
         }
 

@@ -1,0 +1,100 @@
+import "zksnark.scrypt";
+
+// Point coordinates on secp256k1 are repesentat as 4 field elements
+// inside our Circom code. That's why we use 4 integers here.
+struct ECPoint {
+    int[4] x;
+    int[4] y;
+}
+
+contract InformationBounty {
+
+    ECPoint Qa;         // Buyers (Alice) public key.
+    VerifyingKey vk;    // Verifying key from the circuits setup.
+
+    int satsReward;         // Amount of satoshis to be handed as a reward for the solution.
+    int expirationBlockN;   // nLocktime of deadline when Alice can reclaim the reward.
+                            // Can be timestamp or block height but in our case we use block height.
+                            // (see deadline() public function)
+
+    public function unlock(
+                        ECPoint Qb,    // Bobs public key.
+                        int[82] ew,    // Solution of puzzle, encrypted with shared key k.
+                        Sha256 Hpub,   // Hash of public inputs.
+                        int nonce,     // Nonce for encryption with shared key. Can be timestamp.
+                        Proof pi,      // Proof of solution for the whole circuit C.
+                        SigHashPreimage preimage
+                    ) {
+        
+        //// Concatinate the public inputs to the circuit as a byte array and hash them. //////////////////
+        // Compare the result with the hash value passed by Bob.
+        // This ensures the seller included the correct public inputs.
+        bytes pubInputBytes = b'';
+        pubInputBytes += point2PubKey(this.Qa)[1:];
+        pubInputBytes += point2PubKey(Qb)[1:];
+        pubInputBytes += toBEUnsigned(nonce, 32);
+        loop (82) : i {
+            pubInputBytes += toBEUnsigned(ew[i], 32);
+        }
+        require(sha256(pubInputBytes) == Hpub);   
+         
+        //// Verify the proof. ////////////////////////////////////////////////////////////////////////////
+        // As we can see, the only actual real public input to the circuit is the hash of the supposed 
+        // public inputs.
+        // This is done soley to reduce the size of the verifier as each additional public input value would
+        // add a EC scalar multiplication to the script.
+        int[] pubInputs = [
+                   unpack(reverseBytes(Hpub[:16], 16) + b'00'),  // Hpub is BE by default, hence the reverseBytes.
+                   unpack(reverseBytes(Hpub[16:], 16) + b'00')
+               ];
+        bool proofCorrect = ZKSNARK.verify(pubInputs, pi, this.vk);
+        require(proofCorrect);
+
+        //// Ensure next output will pay Qb. //////////////////////////////////////////////////////////////
+        require(Tx.checkPreimage(preimage));
+        Ripemd160 pkh = hash160(point2PubKey(Qb));
+        bytes outputScript0 = Utils.buildPublicKeyHashScript(pkh);       // TODO: this could just be P2PK because the PK is revealed beforehand anyway
+        bytes output0 = Utils.buildOutput(outputScript0, this.satsReward);
+        
+        // Ensure the seller adds another output with just OP_FLASE + OP_RETURN + Qb + nonce + ew
+        // to make it easier for the buyer to parse the values.
+        bytes outputScript1 = b'006a' + pubInputBytes;
+        bytes output1 = Utils.buildOutput(outputScript1, 0);
+
+        require(hash256(output0 + output1) == SigHash.hashOutputs(preimage));
+    }
+
+
+    public function deadline(Sig sig, SigHashPreimage preimage) {
+        // Check if signature by Qa.
+        require(checkSig(sig, point2PubKey(this.Qa)));
+
+        // Ensure the unlocking TX actually has a valid nLocktime and nSequence.
+        require(Tx.checkPreimage(preimage));
+        require(SigHash.nSequence(preimage) < 0xFFFFFFFF);   // Lower than UINT_MAX. Check https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
+        require(SigHash.nLocktime(preimage) >= this.expirationBlockN && 
+                SigHash.nLocktime(preimage) < 500000000);
+    }
+
+    static function point2PubKey(ECPoint point) : PubKey {
+        // Convert a point to a uncompressed public key. Coordinates are encoded as BE values.
+        // point.x[0] are the least significant bytes (also in BE format),
+        // point.x[3] are the most significant bytes (also in BE format)
+        return PubKey(b'04' + 
+                toBEUnsigned(point.x[3], 8) +
+                toBEUnsigned(point.x[2], 8) + 
+                toBEUnsigned(point.x[1], 8) + 
+                toBEUnsigned(point.x[0], 8) + 
+                toBEUnsigned(point.y[3], 8) + 
+                toBEUnsigned(point.y[2], 8) + 
+                toBEUnsigned(point.y[1], 8) + 
+                toBEUnsigned(point.y[0], 8));
+    }
+
+    static function toBEUnsigned(int n, static const  int l) : bytes {
+        // Convert signed integer `n` to unsigned integer of `l` bytes, in big endian.
+        bytes m = Utils.toLEUnsigned(n, l);
+        return reverseBytes(m,l);
+    }
+
+}

@@ -15,6 +15,8 @@ library EC {
 
     // Key int size:
     static const int S = 33;    // 32 bytes plus sign byte
+    static const bytes mask = b'000000000000000000000000000000000000000000000000000000000000000001';
+    static const bytes zero = b'000000000000000000000000000000000000000000000000000000000000000000';
 
     // Curve coefficients:
     static const int a = 0;
@@ -124,8 +126,6 @@ library EC {
         Point q = {0, 0};
 
         bytes mb =   reverseBytes(num2bin(m, S), S);
-        bytes mask = reverseBytes(num2bin(1, S), S);
-        bytes zero = reverseBytes(num2bin(0, S), S);
 
         loop (CURVE_BITS) : i {
             if ((mb & (mask << i)) != zero) {
@@ -143,8 +143,6 @@ library EC {
         Point q = {0, 0};
 
         bytes mb =   reverseBytes(num2bin(m, S), S);
-        bytes mask = reverseBytes(num2bin(1, S), S);
-        bytes zero = reverseBytes(num2bin(0, S), S);
 
         loop (CURVE_BITS) : i {
             if ((mb & (mask << i)) != zero) {

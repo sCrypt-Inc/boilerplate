@@ -6,13 +6,16 @@ const { COINBASETX, header, COINBASETX_FAKE_HEIGHT, merklePathOfNotLastTx, Last_
 
 
 describe('Test sCrypt contract blockchainTest In Javascript', () => {
-    const BlockchainTest = buildContractClass(compileContract('blockchainTest.scrypt'))
 
-    const { BlockHeader, Node } = buildTypeClasses(BlockchainTest);
 
+    let blockchainTest, BlockHeader, Node
     before(() => {
         //Normally, the difficulty of the current network should be used
-        blockchainTest = new BlockchainTest()
+        const BlockchainTest = buildContractClass(compileContract('blockchainTest.scrypt'))
+        const Types = buildTypeClasses(BlockchainTest);
+        Node = Types.Node;
+        BlockHeader = Types.BlockHeader;
+        blockchainTest = new BlockchainTest();
     })
 
     it('blockchainTest should succeed when using right block header', () => {

@@ -14,12 +14,11 @@ describe('Test sCrypt contract Clone In Javascript', () => {
   let clone, preimage, context
 
   before(() => {
-
+    const Clone = buildContractClass(compileContract('clone.scrypt'))
+    clone = new Clone()
   });
 
   it('clone should succeed', () => {
-    const Clone = buildContractClass(compileContract('clone.scrypt'))
-    clone = new Clone()
 
     const newLockingScript = clone.lockingScript.toASM()
 

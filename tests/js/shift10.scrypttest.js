@@ -10,15 +10,14 @@ const {
   compileContract
 } = require('../../helper');
 
-let contract = compileContract('shift10Test.scrypt');
-const Test = buildContractClass(contract);
-//
+
 const s2b = str => new Bytes(toHex(Buffer.from(str)));
 
 describe("Test Shift10 Library In Javascript", () => {
   let test, result;
 
   before(() => {
+    const Test = buildContractClass(compileContract('shift10Test.scrypt'));
     test = new Test();
   });
 

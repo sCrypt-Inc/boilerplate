@@ -10,7 +10,7 @@ const p = ec.curve.p;
 const G = bsvPoint.getG();
 const N = bsvPoint.getN();
 
-describe('Test sCrypt contract Schnorr In Javascript', () => {
+describe('Heavy: Test sCrypt contract Schnorr In Javascript', () => {
   const pk = new bsv.PrivateKey.fromRandom('testnet');
   const publicKey = new bsv.PublicKey(Object.assign(
     pk.publicKey.toJSON(), { compressed: false, network: 'testnet' }))

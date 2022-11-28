@@ -70,9 +70,6 @@ contract TuringMachine {
     ];
     
     public function transit(SigHashPreimage txPreimage) {
-        // read/deserialize contract state
-        SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID;
-        require(Tx.checkPreimageSigHashType(txPreimage, sigHashType));
         // transition
         Symbol head = ArrayUtil.getElemAt(this.states.tape, this.states.headPos);
         // look up in transition table
@@ -112,9 +109,6 @@ contract TuringMachine {
         require(found);
 
         // otherwise machine goes to the next step
-        bytes stateScript = this.getStateScript();
-        bytes output = Utils.buildOutput(stateScript, SigHash.value(txPreimage));
-        require(hash256(output) == SigHash.hashOutputs(txPreimage));
-
+        require(this.updateStateSigHashType(txPreimage, SigHash.value(txPreimage),  SigHash.ANYONECANPAY | SigHash.SINGLE | SigHash.FORKID));
     }
 }
