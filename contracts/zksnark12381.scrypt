@@ -1,0 +1,169 @@
+import "bls12381.scrypt";
+import "bls12381pairing.scrypt";
+
+struct VerifyingKey4Point {
+    PointG1 alpha;
+    PointG2 beta;
+    PointG2 gamma;
+    PointG2 delta;
+    PointG1[2] ic; // Size of array should be N + 1
+}
+
+struct VerifyingKey3Point {
+    fe12 millerb1a1;
+    PointG2 gamma;
+    PointG2 delta;
+    PointG1[2] ic; // Size of array should be N + 1
+}
+
+struct Proof {
+    PointG1 a;
+    PointG2 b;
+    PointG1 c;
+}
+
+library ZKSNARK12381 {
+    static const int N = 1;    // Number of public inputs.
+    static const int N_1 = 2;  // N + 1
+
+    static function vkXSetup(int[N] inputs, PointG1[N_1] ic) : PointG1 {
+	    PointG1 vk_x = ic[0];
+        loop (N) : i {
+            PointG1 p = BLS12381.MulScalarG1(ic[i + 1], inputs[i]);
+            vk_x = BLS12381.AddG1(vk_x, p);
+        }
+	    return vk_x;
+    }
+
+    static function verify3Point(int[N] inputs, Proof proof, VerifyingKey3Point vk) : bool {
+        loop(3) : k {
+            proof.a[k] = BLS12381.toMont(proof.a[k]);
+            proof.c[k] = BLS12381.toMont(proof.c[k]);
+            loop(N_1) : m {
+                vk.ic[m][k] = BLS12381.toMont(vk.ic[m][k]);
+            }
+        }
+        loop(3) : j {
+            loop(2) : k {
+                proof.b[j][k] = BLS12381.toMont(proof.b[j][k]);
+                vk.gamma[j][k] = BLS12381.toMont(vk.gamma[j][k]);
+                vk.delta[j][k] = BLS12381.toMont(vk.delta[j][k]);
+            }
+        }
+
+        PointG1 vk_x = vkXSetup(inputs, vk.ic);
+
+        return BLS12381Pairing.pairCheck3Point(
+                proof.a, proof.b,
+                vk.millerb1a1,
+                vk_x, vk.gamma,
+                proof.c, vk.delta);
+    }
+
+    static function verify4Point(int[N] inputs, Proof proof, VerifyingKey4Point vk) : bool {
+        loop(3) : k {
+            proof.a[k] = BLS12381.toMont(proof.a[k]);
+            proof.c[k] = BLS12381.toMont(proof.c[k]);
+            vk.alpha[k] = BLS12381.toMont(vk.alpha[k]);
+            loop(N_1) : m {
+                vk.ic[m][k] = BLS12381.toMont(vk.ic[m][k]);
+            }
+        }
+        loop(3) : j {
+            loop(2) : k {
+                proof.b[j][k] = BLS12381.toMont(proof.b[j][k]);
+                vk.beta[j][k] = BLS12381.toMont(vk.beta[j][k]);
+                vk.gamma[j][k] = BLS12381.toMont(vk.gamma[j][k]);
+                vk.delta[j][k] = BLS12381.toMont(vk.delta[j][k]);
+            }
+        }
+
+        PointG1 vk_x = vkXSetup(inputs, vk.ic);
+
+        return BLS12381Pairing.pairCheck4Point(
+                proof.a, proof.b,
+                vk.alpha, vk.beta,
+                vk_x, vk.gamma,
+                proof.c, vk.delta);
+    }
+}
+
+contract ZKSNARK12381Test {
+    public function testVerifyOptimized(int[ZKSNARK12381.N] inputs, Proof proof, VerifyingKey3Point vk) {
+        require(ZKSNARK12381.verify3Point(inputs, proof, vk));
+    }
+    
+    public function testVerify4Point() {
+        PointG1 A = [
+            0x191af7d0c883fe030c906df756e6538d4f0104402c68afed5fb1b9b025c2c0a38d8b0e5dc6fe2c3c8f10e5a6c9cec277,
+            0x15cd9c312c4cda1a439629576d5139e626215c8c2c955ff5089cf117d7737bae37a6eb833ae6f8351e7c7ac65be77961,
+            0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
+        ];
+        PointG2 B = [[
+                0x12cc7c42224139677e8312fa2acab21834862fc55a1c704fabb0122e0f7809650cb2a4ab89d167ae578fb1a47a6a7dbf,
+                0x18e1e8f0f6a48e3043a9e7361f23b9e237af76c4ebaccd62dcada05bd363792793500058034acdcfeec1facb3354a019
+            ],[
+                0x1786dd3b7da42766bb90b4be72e4216c45fdb6ec76a015cee60860c26f40e7d79a96d80a5bbd9d36052c992d696b5ec0,
+                0x044d35423508f64859766ccdda5559406723344c12be67cb4e4d1274d78621625f35d1bbb3a2b26578832d3557117e58      
+            ],[
+                0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001,
+                0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            ]];
+        PointG1 C = [
+            0x13aed2b52101ea4644cc5aaf3e69f8f0aeb6fe6d5d8a193cd4c386f24976227e80ca4624473b33cfee1a51b64cbf1e5a,
+            0x19f4437e994afa583729ed9c1892b9203185a595e8accf20e0055884988788a76436c63f3cbba4e7a33c2b96c6b9842c,
+            0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
+        ];
+        PointG1 Alpha = [
+            0x02698743af02d982bdf4b35fb784b7d3468e77073beb59396d59d929396a9232751529a81083c5c3b0b463c63cc2b9bc,
+            0x13749d1a69d681cfe2e862ed371b2bb40626b8d12138099176fc80e0d90d0dafe8e698f871222fa009e01157ac90de84,
+            0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
+        ];
+        PointG2 Beta = [[
+                0x0a388af26428525f9a3983e435c1700863605119e72b36772a4ad741030279434969bec2f403a8cc97d3ac641b8695f4,
+                0x05d0525d9e940eda8fb80e11e855581224e7d0de22d1c77b11690af3f75961daa1b11152b9cbb7460f44994b5d91a0ad
+            ],[
+                0x01182c8c4a0999be93758eb34a5b671836cc880132c8cca4c2ae4cd2a0e4c2201951f7594584408105831e4c8e0200d6,
+                0x0c59ce5873a67fc720b68cd68fc993027e6f5e13b3bd2d4a10b568a6f647a951df3b80e4f4f97f6e639d60c2fda567f5      
+            ],[
+                0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001,
+                0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            ]];
+        PointG2 Gamma = [[
+                0x024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8,
+                0x13e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e
+            ],[
+                0x0ce5d527727d6e118cc9cdc6da2e351aadfd9baa8cbdd3a76d429a695160d12c923ac9cc3baca289e193548608b82801,
+                0x0606c4a02ea734cc32acd2b02bc28b99cb3e287e85a763af267492ab572e99ab3f370d275cec1da1aaa9075ff05f79be      
+            ],[
+                0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001,
+                0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            ]];
+        PointG2 Delta = [[
+                0x04bc7d1740524cf2a035fb09e83ec6a84c10b96425518359c2badaf6b4d7b0b90c0964d07639753c339f8a4921964c54,
+                0x0b14086412fc04a481a603cb24e2927ee428c8d2aec822323644bafb07e712795cde53bce0fa399f64917926556c36a0
+            ],[
+                0x1447994273c0b3e466b1e6c2f629a93895c7250662434e63a7d81fc41ceb6b4906799aab9a8239b2a81a7eda0a2b69fd,
+                0x003c7b001f8745c755e51ab0520f772f78eaf62ceea30d2cee0e374c9549b68cc0db165e63fa2818b3bd95c8840732c8      
+            ],[
+                0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001,
+                0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            ]];
+        PointG1 [2]IC = [
+            [0x14aa1710533f1edeba1e570ae85090e80014871923a1e2b2e8cfb2f6386cb994931d9343804edf6dcceed4779ce4a7b2,
+            0x10d82a3617faa093037522674c51e8f402c3dd396f0d44d4fd4aaf0ab03523da73d794613ff8ba1312e1ba34cfcba927,
+            0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001],
+            [0x199b3ae3fde2b046ba57f0c1d258fcc453709c73d43323c92800fff978af09d7be2cc0b85a69277ed3550befca991df0,
+            0x15792bbcb518a4bdccdae4713986c4b8ae95d762db92aa36af2ba1cdd3faecd0e665d1fd36ff34824e8eb23d66cc84b7,
+            0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001]
+        ];
+
+        fe [1]inputs = [0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005b];
+
+        Proof proof = {A, B, C};
+        VerifyingKey4Point vk = {Alpha, Beta, Gamma, Delta, IC};
+
+        require(ZKSNARK12381.verify4Point(inputs, proof, vk));
+    }
+}
+

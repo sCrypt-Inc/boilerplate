@@ -1,0 +1,934 @@
+import "bls12381.scrypt";
+
+struct Pair {PointG1 g1; PointG2 g2;}
+
+library BLS12381Pairing {
+    // 2 ^ (-1)
+    static const fe twoInv = 0x17fbb8571a006596d3916126f2d14ca26e22d1ec31ebb502633cb57c253c276f855000053ab000011804000000015554;
+
+    static const int x = 0xd201000000010000;
+    static const bytes X = b'd201000000010000';
+    static const bytes MASK = b'0000000000000001';
+    static const bytes ZERO = b'0000000000000000';
+
+    static const fe2 [10]Fe2_10Zero = repeat(BLS12381.Fe2Zero, 10);
+
+    static function affinePair(PointG1 g1, PointG2 g2) : Pair {
+        Pair pr = {BLS12381.PtG1Zero, BLS12381.Fe6Zero};
+        if((BLS12381.IsZeroG1(g1) || BLS12381.IsZeroG2(g2)) == false) {
+            pr = {BLS12381.AffineG1(g1), BLS12381.AffineG2(g2)};
+        }
+        return pr;
+    }
+
+    // Adaptation of Formula 3 in https://eprint.iacr.org/2010/526.pdf
+    static function doublingStep(fe2 [3]coeff, PointG2 r) : fe12 {
+        fe2 [10]t = Fe2_10Zero;
+        fe6 rr = BLS12381.Fe6Zero;
+
+        t[0] = BLS12381.mulFe2(r[0], r[1]);
+        t[0] = BLS12381.mulByFqFe2(t[0], twoInv);
+        t[1] = BLS12381.squareFe2(r[1]);
+        t[2] = BLS12381.squareFe2(r[2]);
+        t[7] = BLS12381.doubleFe2(t[2]);
+        t[7] = BLS12381.addFe2(t[7], t[2]);
+        t[3] = BLS12381.mulByBFe2(t[7]);
+        t[4] = BLS12381.doubleFe2(t[3]);
+        t[4] = BLS12381.addFe2(t[4], t[3]);
+        t[5] = BLS12381.addFe2(t[1], t[4]);
+        t[5] = BLS12381.mulByFqFe2(t[5], twoInv);
+        t[6] = BLS12381.addFe2(r[1], r[2]);
+        t[6] = BLS12381.squareFe2(t[6]);
+        t[7] = BLS12381.addFe2(t[2], t[1]);
+        t[6] = BLS12381.subFe2(t[6], t[7]);
+        coeff[0] = BLS12381.subFe2(t[3], t[1]);
+        t[7] = BLS12381.squareFe2(r[0]);
+        t[4] = BLS12381.subFe2(t[1], t[4]);
+
+        rr[0] = BLS12381.mulFe2(t[4], t[0]);
+
+        t[2] = BLS12381.squareFe2(t[3]);
+        t[3] = BLS12381.doubleFe2(t[2]);
+        t[3] = BLS12381.addFe2(t[3], t[2]);
+        t[5] = BLS12381.squareFe2(t[5]);
+        rr[1] = BLS12381.subFe2(t[5], t[3]);
+        rr[2] = BLS12381.mulFe2(t[1], t[6]);
+        t[0] = BLS12381.doubleFe2(t[7]);
+        coeff[1] = BLS12381.addFe2(t[0], t[7]);
+        coeff[2] = BLS12381.negFe2(t[6]);
+
+        return [coeff, rr];
+    }
+
+    // Algorithm 12 in https://eprint.iacr.org/2010/526.pdf
+    static function additionStep(fe2[3] coeff, PointG2 r, PointG2 q) : fe12 {
+        fe2 [10]t = Fe2_10Zero;
+
+        t[0] = BLS12381.mulFe2(q[1], r[2]);
+        t[0] = BLS12381.negFe2(t[0]);
+        t[0] = BLS12381.addFe2(t[0], r[1]);
+        t[1] = BLS12381.mulFe2(q[0], r[2]);
+        t[1] = BLS12381.negFe2(t[1]);
+        t[1] = BLS12381.addFe2(t[1], r[0]);
+        t[2] = BLS12381.squareFe2(t[0]);
+        t[3] = BLS12381.squareFe2(t[1]);
+        t[4] = BLS12381.mulFe2(t[1], t[3]);
+        t[2] = BLS12381.mulFe2(r[2], t[2]);
+        t[3] = BLS12381.mulFe2(r[0], t[3]);
+        t[5] = BLS12381.doubleFe2(t[3]);
+        t[5] = BLS12381.subFe2(t[4], t[5]);
+        t[5] = BLS12381.addFe2(t[5], t[2]);
+
+        r[0] = BLS12381.mulFe2(t[1], t[5]);
+        t[2] = BLS12381.subFe2(t[3], t[5]);
+        t[2] = BLS12381.mulFe2(t[2], t[0]);
+        t[3] = BLS12381.mulFe2(r[1], t[4]);
+        r[1] = BLS12381.subFe2(t[2], t[3]);
+        r[2] = BLS12381.mulFe2(r[2], t[4]);
+        t[2] = BLS12381.mulFe2(t[1], q[1]);
+        t[3] = BLS12381.mulFe2(t[0], q[0]);
+        coeff[0] = BLS12381.subFe2(t[3], t[2]);
+        coeff[1] = BLS12381.negFe2(t[0]);
+        coeff[2] = t[1];
+
+        return [coeff, r];
+    }
+
+    // Algorithm 5 in  https://eprint.iacr.org/2019/077.pdf
+    // 101 0010 0000 0001 0000 0000 0000 0000 0000 0000 0000 0001 0000 0000 0000 0000;
+    static function preCompute(fe6[68] ellCoeffs, PointG2 twistPoint) : fe6[68] {
+        if(BLS12381.IsZeroG2(twistPoint) == false) {
+            PointG2 r = twistPoint;
+            int j = 0;
+
+            fe12 rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+            rtn = additionStep(ellCoeffs[j], r, twistPoint);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+            rtn = additionStep(ellCoeffs[j], r, twistPoint);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+            rtn = additionStep(ellCoeffs[j], r, twistPoint);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+            rtn = additionStep(ellCoeffs[j], r, twistPoint);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+            rtn = additionStep(ellCoeffs[j], r, twistPoint);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+            r = rtn[1];
+            j++;
+
+            rtn = doublingStep(ellCoeffs[j], r);
+            ellCoeffs[j] = rtn[0];
+        }
+
+        return ellCoeffs;
+    }
+
+    // 101 0010 0000 0001 0000 0000 0000 0000 0000 0000 0000 0001 0000 0000 0000 0000;
+    static function millerLoop(PointG1 g1, PointG2 g2) : fe12 {
+        fe6[68] ellCoeffs = repeat(BLS12381.Fe6Zero, 68);
+        
+        ellCoeffs = preCompute(ellCoeffs, g2);
+
+        fe12 f = BLS12381.oneFe12();
+        fe2 [2]t2 = repeat(BLS12381.Fe2Zero, 2);
+        int j = 0;
+
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        j++;
+
+        f = BLS12381.squareFe12(f);
+        t2[0] = BLS12381.mulByFqFe2(ellCoeffs[j][2], g1[1]);
+        t2[1] = BLS12381.mulByFqFe2(ellCoeffs[j][1], g1[0]);
+        f = BLS12381.mulBy014AssignFe12(f, ellCoeffs[j][0], t2[1], t2[0]);
+        // j++;
+
+        f = BLS12381.conjugateFe12(f);
+        return f;
+    }
+
+
+    static function expPair(fe12 a) : fe12 {
+        // fe12 c = BLS12381.cyclotomicExp(a, x);
+        fe12 c = BLS12381.cyclotomicExp2(a);
+        c = BLS12381.conjugateFe12(c);
+        return c;
+    }
+
+    static function finalExp(fe12 f) : fe12 {
+        fe12 [9]t = repeat(BLS12381.Fe12Zero, 9);
+
+        t[0] = BLS12381.frobeniusMapFe12(f, 6);
+
+        t[1] = BLS12381.inverseFe12(f);
+
+        t[2] = BLS12381.mulFe12(t[0], t[1]);
+        t[1] = t[2];
+        t[2] = BLS12381.frobeniusMapFe12(t[2], 2);
+        t[2] = BLS12381.mulFe12(t[2], t[1]);
+        t[1] = BLS12381.cyclotomicSquare(t[2]);
+        t[1] = BLS12381.conjugateFe12(t[1]);
+
+        // hard part
+        t[3] = expPair(t[2]);
+
+        t[4] = BLS12381.cyclotomicSquare(t[3]);
+        t[5] = BLS12381.mulFe12(t[1], t[3]);
+        t[1] = expPair(t[5]);
+        t[0] = expPair(t[1]);
+        t[6] = expPair(t[0]);
+
+        t[6] = BLS12381.mulFe12(t[6], t[4]);
+        t[4] = expPair(t[6]);
+        t[5] = BLS12381.conjugateFe12(t[5]);
+        t[4] = BLS12381.mulFe12(t[4], t[5]);
+        t[4] = BLS12381.mulFe12(t[4], t[2]);
+        
+        t[5] = BLS12381.conjugateFe12(t[2]);
+        t[1] = BLS12381.mulFe12(t[1], t[2]);
+        t[1] = BLS12381.frobeniusMapFe12(t[1], 3);
+        t[6] = BLS12381.mulFe12(t[6], t[5]);
+        t[6] = BLS12381.frobeniusMapFe12(t[6], 1);
+
+        t[3] = BLS12381.mulFe12(t[3], t[0]);
+        t[3] = BLS12381.frobeniusMapFe12(t[3], 2);
+        t[3] = BLS12381.mulFe12(t[3], t[1]);
+        t[3] = BLS12381.mulFe12(t[3], t[6]);
+        f = BLS12381.mulFe12(t[3], t[4]);
+        return f;
+    }
+
+    // Check three pairs.
+    // millerb1a1 + A * B + inputs * (-gamma) + C * (-delta) == 1
+    static function pairCheck3Point(
+            PointG1 a0, PointG2 b0,
+            fe12 millerb1a1,
+            PointG1 a2, PointG2 b2,
+            PointG1 a3, PointG2 b3) : bool {
+
+        fe12 f2 = BLS12381.Fe12Zero;
+        fe12 f3 = BLS12381.Fe12Zero;
+        fe12 f0 = BLS12381.Fe12Zero;
+        fe12 acc = BLS12381.Fe12Zero;
+
+        Pair pair = affinePair(a2, b2);
+        f2 = millerLoop(pair.g1, pair.g2);
+
+        pair = affinePair(a3, b3);
+        f3 = millerLoop(pair.g1, pair.g2);
+
+        pair = affinePair(a0, b0);
+        f0 = millerLoop(BLS12381.NegG1(pair.g1), pair.g2);
+
+        acc = BLS12381.mulFe12(millerb1a1, f2);
+        acc = BLS12381.mulFe12(acc, f3);
+        acc = BLS12381.mulFe12(acc, f0);
+
+        acc = finalExp(acc);
+
+        return BLS12381.isOneFe12(acc);
+    }
+}
+
