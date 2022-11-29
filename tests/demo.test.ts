@@ -26,7 +26,7 @@ describe('Test SmartContract `Demo`', () => {
 
     console.log('contract deployed: ', deployTx.id)
 
-    const calledTx = await demo.call(3n, deployTx);
+    const calledTx = await demo.callAdd(3n, deployTx);
 
     console.log('contract called: ', calledTx.id)
 
