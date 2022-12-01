@@ -27,6 +27,7 @@
   },
   "include": [
     "contracts/**/*.ts",
-    "tests/**/*.ts"
+    "tests/**/*.ts",
+    "testnet/**/*.ts"
   ]
 }

@@ -7,7 +7,8 @@
     "build": "tsc",
     "clean-test-out": "rimraf scrypt.index.json && rimraf out && rimraf scrypts",
     "pretest": "npm run clean-test-out && cross-env TS_NODE_PROJECT=tsconfig.json NODE_ENV=test tsc",
-    "test": "mocha 'dist/**/*.test.js' --timeout 1200000"
+    "test": "mocha 'dist/**/*.test.js' --timeout 1200000",
+    "testnet": "npm run build && node dist/testnet/demo.js"
   },
   "author": "",
   "license": "ISC",
