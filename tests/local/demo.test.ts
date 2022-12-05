@@ -16,5 +16,8 @@ describe('Test SmartContract `Demo`', () => {
     result = demo.verify(() => demo.sub(-1n));
     expect(result.success, result.error).to.eq(true);
 
+    expect(() => {
+      demo.add(4n);
+    }).to.throw(/Execution failed/)
   })
 })

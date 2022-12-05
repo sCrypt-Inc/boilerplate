@@ -38,7 +38,7 @@ export class Demo extends SmartContract {
             }))
     }
 
-    getCallTx(z: bigint, prevTx: bsv.Transaction): bsv.Transaction {
+    getCallTxForAdd(z: bigint, prevTx: bsv.Transaction): bsv.Transaction {
         return new bsv.Transaction()
             .addInputFromPrevTx(prevTx)
             .setInputScript(0, () => {

@@ -19,7 +19,7 @@ async function main() {
 
     // contract call
     // 1. construct a transaction for call
-    const unsignedCallTx = demo.getCallTx(3n, deployTx);
+    const unsignedCallTx = demo.getCallTxForAdd(3n, deployTx);
     // 2. sign and broadcast the transaction
     const callTx = await signAndSend(unsignedCallTx);
     console.log('Demo contract called: ', callTx.id);
