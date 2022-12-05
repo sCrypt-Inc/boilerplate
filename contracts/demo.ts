@@ -1,6 +1,7 @@
 import { method, prop, SmartContract, assert } from "scrypt-ts";
 import { bsv } from 'scryptlib';
 import { createInputFromPrevTx, fetchUtxos, newTx, signAndSend } from '../txHelper';
+import { UtxoManager } from '../utxoManager'
 
 export class Demo extends SmartContract {
 
@@ -31,10 +32,11 @@ export class Demo extends SmartContract {
         assert(z == this.x - this.y);
     }
 
-    async deploy(satoshis: number) {
+    async deploy(satoshis: number, utxoMgr: UtxoManager) {
 
         // 1. Get the available utxos for the privatekey
-        const utxos = await fetchUtxos();
+        // const utxos = await fetchUtxos();
+        const utxos = await utxoMgr.getUtxos();
 
         // 2. Construct a transaction: the input of which is the acquired utxos, and the first output of the transaction contains the lockingScript corresponding to the Demo contract
         const tx = newTx(utxos);
@@ -44,11 +46,16 @@ export class Demo extends SmartContract {
         }));
 
         // 3. Sign and broadcast transaction with privatekey
-        return signAndSend(tx);
+        const signedTx = await signAndSend(tx);
+
+        // Collect the new p2pkh utxo if it exists
+        utxoMgr.collectUtxoFrom(signedTx);
+
+        return signedTx;
     }
 
 
-    async callAdd(z: bigint, prevTx: bsv.Transaction) {
+    async callAdd(z: bigint, prevTx: bsv.Transaction, utxoMgr: UtxoManager) {
 
         let tx: bsv.Transaction = new bsv.Transaction()
             .addInput(createInputFromPrevTx(prevTx))
@@ -59,6 +66,11 @@ export class Demo extends SmartContract {
                 })
             })
 
-        return signAndSend(tx);
+        const signedTx = await signAndSend(tx);
+
+        // Collect the new p2pkh utxo if it exists
+        utxoMgr.collectUtxoFrom(signedTx);
+
+        return signedTx;
     }
 }

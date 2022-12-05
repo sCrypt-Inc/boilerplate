@@ -1,8 +1,10 @@
 
-import { bsv} from 'scryptlib';
+import { bsv } from 'scryptlib';
 import { randomBytes } from 'crypto';
 import { privateKey } from './privateKey'
 import axios from 'axios';
+
+export { bsv };
 
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
 
@@ -25,10 +27,7 @@ export type UTXO = {
 }
 
 export async function fetchUtxos(address: string = privateKey.toAddress().toString()): Promise<UTXO[]> {
-  // step 1: fetch utxos
-
   const url = `${API_PREFIX}/address/${address}/unspent`;
-
   let {
     data: utxos
   } = await axios.get(url)
@@ -56,7 +55,7 @@ export async function sendTx(tx: bsv.Transaction): Promise<string> {
     });
     return txid
   } catch (error) {
-    if(axios.isAxiosError(error)) {
+    if (axios.isAxiosError(error)) {
       console.log("sendTx error", error.response.data)
     }
 
@@ -83,19 +82,21 @@ export const sleep = async (seconds: number) => {
   })
 }
 
-export async function signAndSend(tx: bsv.Transaction, privKey: bsv.PrivateKey = privateKey): Promise<bsv.Transaction> {
-  tx.change(privKey.toAddress())
-    .sign(privKey)
-    .seal();
+export async function signAndSend(tx: bsv.Transaction, privKey: bsv.PrivateKey = privateKey, autoChange = true): Promise<bsv.Transaction> {
+  if (autoChange) {
+    tx.change(privKey.toAddress());
+  }
 
-    try {
-      await sendTx(tx);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log('\x1B[31sendTx error: ', error.response?.data)
-      }
-      throw error
+  tx.sign(privKey).seal();
+
+  try {
+    await sendTx(tx);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log('\x1B[31sendTx error: ', error.response?.data)
     }
+    throw error
+  }
 
   return tx;
 }

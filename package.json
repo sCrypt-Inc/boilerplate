@@ -6,9 +6,10 @@
   "scripts": {
     "build": "tsc",
     "clean-test-out": "rimraf scrypt.index.json && rimraf out && rimraf scrypts",
-    "pretest": "npm run clean-test-out && cross-env TS_NODE_PROJECT=tsconfig.json NODE_ENV=test tsc",
-    "test": "mocha 'dist/**/*.test.js' --timeout 1200000",
-    "testnet": "npm run build && node dist/testnet/demo.js"
+    "pretest": "npm run clean-test-out && npm run build",
+    "test": "mocha 'dist/tests/*.test.js' --timeout 1200000",
+    "pretestnet": "npm run pretest",
+    "testnet": "mocha 'dist/testnet/*.js' --timeout 1200000"
   },
   "author": "",
   "license": "ISC",
