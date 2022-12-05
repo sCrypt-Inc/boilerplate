@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import { Demo } from '../contracts/demo';
+import { Demo } from '../../src/contracts/demo';
 
 describe('Test SmartContract `Demo`', () => {
 
   before(async () => {
-    await Demo.compile(); // asm 
+    await Demo.compile();
   })
 
   it('should pass the public method unit test successfully.', async () => {

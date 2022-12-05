@@ -1,5 +1,5 @@
 import { exit } from 'process';
-import { bsv } from 'scryptlib';
+import { bsv } from 'scrypt-ts';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 

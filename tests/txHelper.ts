@@ -1,10 +1,9 @@
 
-import { bsv } from 'scryptlib';
+import { bsv } from 'scrypt-ts';
 import { randomBytes } from 'crypto';
 import { privateKey } from './privateKey'
 import axios from 'axios';
-
-export { bsv };
+import { UTXO } from '../src/types';
 
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
 
@@ -18,13 +17,6 @@ export const dummyUTXO = {
   script: '',   // placeholder
   satoshis: 100000
 };
-
-export type UTXO = {
-  txId: string,
-  outputIndex: number,
-  satoshis: number,
-  script: string
-}
 
 export async function fetchUtxos(address: string = privateKey.toAddress().toString()): Promise<UTXO[]> {
   const url = `${API_PREFIX}/address/${address}/unspent`;

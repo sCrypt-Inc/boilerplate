@@ -4,18 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prebuild": "npm run clean",
     "build": "tsc",
-    "clean-test-out": "rimraf scrypt.index.json && rimraf out && rimraf scrypts",
-    "pretest": "npm run clean-test-out && npm run build",
-    "test": "mocha 'dist/tests/*.test.js' --timeout 1200000",
-    "pretestnet": "npm run pretest",
-    "testnet": "mocha 'dist/testnet/*.js' --timeout 1200000"
+    "clean": "rimraf scrypt.index.json && rimraf dist && rimraf scrypts",
+    "test": "npm run build && mocha 'dist/tests/**/*.test.js' --timeout 1200000",
+    "testnet": "npm run build && mocha 'dist/tests/testnet/**/*.js' --timeout 1200000"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "axios": "=1.1.3",
-    "scrypt-ts": "=0.1.3-alpha.5"
+    "scrypt-ts": "^0.1.4-alpha"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",
@@ -26,7 +25,6 @@
     "dotenv": "^16.0.3",
     "mocha": "^10.1.0",
     "rimraf": "^3.0.2",
-    "ts-patch": "^2.0.2",
     "typescript": "=4.8.4"
   }
 }

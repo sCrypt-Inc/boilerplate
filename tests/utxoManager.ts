@@ -1,6 +1,7 @@
-import { bsv } from 'scryptlib';
+import { bsv } from 'scrypt-ts';
 import { privateKey } from './privateKey';
-import { UTXO, fetchUtxos, sendTx, sleep } from './txHelper';
+import { fetchUtxos, sendTx, sleep } from './txHelper';
+import { UTXO } from '../src/types';
 
 enum UtxoMgrInitState {
   UNINITIALIZED,
@@ -13,7 +14,7 @@ export class UtxoManager {
   privKey: bsv.PrivateKey;
   address: string;
   private availableUtxos: UTXO[] = [];
-  private initStates : UtxoMgrInitState = UtxoMgrInitState.UNINITIALIZED;
+  private initStates: UtxoMgrInitState = UtxoMgrInitState.UNINITIALIZED;
   private initUtxoCnt: number = 0;
 
   constructor(privKey = privateKey) {
@@ -32,7 +33,7 @@ export class UtxoManager {
       this.initUtxoCnt = this.availableUtxos.length;
       console.log(`current balance of address ${this.address} is ${this.availableUtxos.reduce((r, utxo) => r + utxo.satoshis, 0)} satoshis`);
     }
-    while(this.initStates === UtxoMgrInitState.INITIALIZING) {
+    while (this.initStates === UtxoMgrInitState.INITIALIZING) {
       await sleep(1);
     }
     return this;
@@ -56,16 +57,16 @@ export class UtxoManager {
     if (this.initStates === UtxoMgrInitState.INITIALIZED
       && this.initUtxoCnt > 0
       && this.availableUtxos.length === 0
-      ) {
-        const timeoutSec = 30;
-        for(let i = 0; i < timeoutSec; i ++) {
-          console.log('waiting for available utxos')
-          await sleep(1);
-          if (this.availableUtxos.length > 0) {
-            break;
-          }
+    ) {
+      const timeoutSec = 30;
+      for (let i = 0; i < timeoutSec; i++) {
+        console.log('waiting for available utxos')
+        await sleep(1);
+        if (this.availableUtxos.length > 0) {
+          break;
         }
       }
+    }
 
     if (targetSatoshis === undefined) {
       const allUtxos = this.availableUtxos;
@@ -92,7 +93,7 @@ export class UtxoManager {
     const usedUtxos = sortedUtxos.slice(0, idx + 1);
 
     // update the available utxos, remove used ones
-    this.availableUtxos = sortedUtxos.slice(idx+1);
+    this.availableUtxos = sortedUtxos.slice(idx + 1);
 
     const dustLimit = 1;
     if (accAmt > targetSatoshis + dustLimit) {
@@ -132,13 +133,13 @@ export class UtxoManager {
     }
   }
 
-  get utxoScriptHex() : string {
+  get utxoScriptHex(): string {
     // all managed utxos should have the same P2PKH script for `this.address`
     return bsv.Script.buildPublicKeyHashOut(this.address).toHex();
   }
 }
 
-export async function getUtxoManager() {
+export async function getUtxoManager() : Promise<UtxoManager> {
   if (global.utxoManager === undefined) {
     global.utxoManager = new UtxoManager();
   }
