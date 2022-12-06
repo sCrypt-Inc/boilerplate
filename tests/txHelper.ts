@@ -15,7 +15,7 @@ export const dummyUTXO = {
   txId: randomBytes(32).toString('hex'),
   outputIndex: 0,
   script: '',   // placeholder
-  satoshis: 100000
+  satoshis: inputSatoshis
 };
 
 export async function fetchUtxos(address: string = privateKey.toAddress().toString()): Promise<UTXO[]> {
@@ -55,16 +55,6 @@ export async function sendTx(tx: bsv.Transaction): Promise<string> {
   }
 }
 
-//create an input spending from prevTx's output, with empty script
-export function createInputFromPrevTx(tx: bsv.Transaction, outputIndex: number = 0): bsv.Transaction.Input {
-  const outputIdx = outputIndex || 0
-  return new bsv.Transaction.Input({
-    prevTxId: tx.id,
-    outputIndex: outputIdx,
-    script: new bsv.Script(''), // placeholder
-    output: tx.outputs[outputIdx]
-  })
-}
 
 export const sleep = async (seconds: number) => {
   return new Promise((resolve) => {
