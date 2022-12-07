@@ -112,12 +112,14 @@ export class UtxoManager {
       const txId = await sendTx(splitTx);
 
       // update the available utxos, add the new created on as the change
-      this.availableUtxos = this.availableUtxos.concat({
-        txId,
-        outputIndex: 1,
-        script: splitTx.outputs[1].script.toHex(),
-        satoshis: splitTx.outputs[1].satoshis
-      });
+      if(splitTx.outputs.length === 2) {
+        this.availableUtxos = this.availableUtxos.concat({
+          txId,
+          outputIndex: 1,
+          script: splitTx.outputs[1].script.toHex(),
+          satoshis: splitTx.outputs[1].satoshis
+        });
+      }
 
       // return the new created utxo which has value of `targetSatoshis`
       return [
