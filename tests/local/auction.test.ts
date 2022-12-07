@@ -36,7 +36,7 @@ describe('Transpiler', () => {
     const onedayAgo = new Date("2020-01-03");
     const auctionDeadline = BigInt(Math.round(onedayAgo.valueOf() / 1000));
 
-    const auction = new Auction(new PubKeyHash(toHex(publicKeyHashHighestBid)), new PubKey(toHex(publicKeyAuctioner)), auctionDeadline);
+    const auction = new Auction(new PubKeyHash(toHex(publicKeyHashHighestBid)), new PubKey(toHex(publicKeyAuctioner)), auctionDeadline).markAsGenesis();
 
 
     let initBalance = 10000;
