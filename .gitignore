@@ -1,7 +1,8 @@
 node_modules/
 dist/
 out/
-.vscode/
+.vscode/*
+!.vscode/launch.json
 scrypts/
 .env
 scrypt.index.json
