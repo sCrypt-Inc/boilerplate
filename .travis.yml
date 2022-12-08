@@ -1,0 +1,18 @@
+
+dist: focal
+language: node_js
+node_js: 
+  - 16
+
+jobs:
+  include:
+    - 
+      os: linux
+    - 
+      os: osx
+    - 
+      ox: windows
+    script:
+        - npm i && npx scryptlib download
+        - echo "PRIVATE_KEY="cRAqDHuaVerhDwmcx6CyimbEJvPhGjMEKeMKr6N1osD79PnbTYQm"" > .env
+        - npm run build && npm t
