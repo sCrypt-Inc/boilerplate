@@ -24,7 +24,7 @@ export class AdvancedCounter extends SmartContract {
         // - amount is same as specified
         // - output script is the same as scriptCode except the counter was incremented
         let amount: bigint = SigHash.value(txPreimage);
-        assert(this.updateStateSigHashType(txPreimage, amount, SigHash.ANYONECANPAY_SINGLE_FORKID));
+        assert(this.updateStateSigHashType(txPreimage, amount, SigHash.ANYONECANPAY_SINGLE));
 
     }
 

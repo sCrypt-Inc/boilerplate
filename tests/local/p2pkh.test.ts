@@ -45,7 +45,7 @@ describe('Test SmartContract `P2PKH`', () => {
       }, (tx: bsv.Transaction) => {
         return p2pkh.getUnlockingScript((cloned) => {
           cloned.unlockFrom = { tx, inputIndex }
-          cloned.unlock(new Sig(tx.getSignature(0)), new PubKey(toHex(publicKey)))
+          cloned.unlock(new Sig(tx.getSignature(0) as string), new PubKey(toHex(publicKey)))
         })
       })
       .seal();
