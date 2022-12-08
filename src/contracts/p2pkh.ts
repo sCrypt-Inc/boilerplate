@@ -42,7 +42,7 @@ export class P2PKH extends SmartContract {
                 this.unlockFrom = {tx, inputIndex};
                 
                 return this.getUnlockingScript(self => {
-                    self.unlock(new Sig(sig), new PubKey(toHex(pubKey)))
+                    self.unlock(new Sig(sig as string), new PubKey(toHex(pubKey)))
                 });
             })
     }
