@@ -6,9 +6,9 @@ contract ERC721 {
     HashedMap<int, PubKey> owners;
 
     // mint a new token to receiver
-    public function mint(PubKey to, SortedItem<int> tokenId, Sig minterSig, int keyIndex, SigHashPreimage preimage) {
+    public function mint(PubKey to, SortedItem<int> tokenId, Sig minterSig, SigHashPreimage preimage) {
         // token not minted
-        require(this.owners.has(tokenId));
+        require(!this.owners.has(tokenId));
         // authenticate
         require(checkSig(minterSig, this.minter));
 
@@ -18,7 +18,7 @@ contract ERC721 {
     }
 
     // transfer a token from sender to receiver
-    public function burn(SortedItem<int> tokenId, PubKey from, Sig fromSig, int keyIndex, SigHashPreimage preimage) {
+    public function burn(SortedItem<int> tokenId, PubKey from, Sig fromSig, SigHashPreimage preimage) {
         // verify ownership
         require(this.owners.canGet(tokenId, from));
         // authenticate
@@ -29,7 +29,7 @@ contract ERC721 {
         require(this.updateStateSigHashType(preimage, SigHash.value(preimage), SigHash.SINGLE | SigHash.FORKID));
     }
 
-    public function transferFrom(PubKey from, PubKey to, Sig fromSig, SortedItem<int> tokenId, int keyIndex, SigHashPreimage preimage) {
+    public function transferFrom(PubKey from, PubKey to, Sig fromSig, SortedItem<int> tokenId, SigHashPreimage preimage) {
         // verify ownership
         require(this.owners.canGet(tokenId, from));
         // authenticate
