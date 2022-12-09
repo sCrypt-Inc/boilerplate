@@ -3,7 +3,7 @@ import { compileContract, newTx } from "../../helper"
 import { AbstractContract, buildContractClass, getLowSPreimage, SigHashPreimage, Ripemd160, bsv, toHex, getPreimage, buildOpreturnScript, num2bin } from 'scryptlib'
 
 
-const privateKey = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey = bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pubKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 const inputSatoshis = 100000

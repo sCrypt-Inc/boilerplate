@@ -6,10 +6,10 @@ import { buildContractClass, signTx, toHex, bsv, PubKey, Sig, Bytes, Sha256, Rip
 import { inputIndex, inputSatoshis, newTx, compileContract } from '../../helper';
 
 // Test keys
-const privateKey = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey = bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
-const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
 
 // NIST Test Vector(s) (https://www.nist.gov/itl/ssd/software-quality-group/nsrl-test-data)
 const dataBuffer = Buffer.from("abc");
