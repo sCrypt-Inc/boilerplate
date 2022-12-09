@@ -12,7 +12,6 @@ const {
   loadDesc,
   showError,
   fetchUtxos,
-  createInputFromPrevTx,
   sendTx,
   deployContract,
   sleep
@@ -42,7 +41,7 @@ async function transferToContractHash(pay2ContractHash, prevTx, contractHash) {
   const unlockingTx = new bsv.Transaction();
 
   unlockingTx
-    .addInput(createInputFromPrevTx(prevTx))
+    .addInputFromPrevTx(prevTx)
     .addOutput(new bsv.Transaction.Output({
       script: newLockingScript,
       satoshis: amount,
@@ -90,8 +89,8 @@ async function transferToPubKeyHash(pay2ContractHash, prevTx, advCounter, advCou
   const unlockingTx = new bsv.Transaction();
 
   unlockingTx
-    .addInput(createInputFromPrevTx(prevTx))
-    .addInput(createInputFromPrevTx(advCounterTx))
+    .addInputFromPrevTx(prevTx)
+    .addInputFromPrevTx(advCounterTx)
     .from(await fetchUtxos(privateKey.toAddress()))
     .change(privateKey.toAddress())
     .addOutput(new bsv.Transaction.Output({

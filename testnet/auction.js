@@ -3,27 +3,19 @@ const {
   buildContractClass,
   getPreimage,
   toHex,
-  num2bin,
-  Bytes,
-  signTx,
   SigHashPreimage,
   Ripemd160,
-  PubKey
+  PubKey,
+  Sig
 } = require('scryptlib');
 const {
   loadDesc,
   sendTx,
   showError,
   deployContract,
-  createInputFromPrevTx,
   fetchUtxos,
   sleep
 } = require('../helper');
-const axios = require('axios')
-
-const Signature = bsv.crypto.Signature
-//const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
-const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
 
 const {
   privateKey
@@ -52,7 +44,7 @@ async function runBid(prevTx, auction, amountInContract, refundPubKey) {
 
       const unlockingTx = new bsv.Transaction()
 
-      unlockingTx.addInput(createInputFromPrevTx(prevTx))
+      unlockingTx.addInputFromPrevTx(prevTx)
       .from(await fetchUtxos(bidderPrivKey.toAddress()))
       .setOutput(0, (tx) => {
         const newLockingScript = auction.getNewStateScript({
@@ -70,13 +62,13 @@ async function runBid(prevTx, auction, amountInContract, refundPubKey) {
         })
       })
       .change(bidderPubKey.toAddress())
-      .setInputScript(0, (tx, output) => {
-        const preimage = getPreimage(tx, output.script, output.satoshis, 0, sighashType);
+      .setInputScript(0, (tx) => {
+
         return auction.bid(
           new Ripemd160(toHex(bidderPKH)), // bidderPKH
           (amountInContract + BID_INCREASE),
           tx.getChangeAmount(),
-          new SigHashPreimage(toHex(preimage)) // sighashPreimage
+          new SigHashPreimage(tx.getPreimage(0)) // sighashPreimage
         ).toScript();
       })
       .sign(bidderPrivKey)
@@ -110,14 +102,15 @@ async function runClose(prevTx, auction) {
 
       const unlockingTx = new bsv.Transaction()
       const today = Math.round( new Date().valueOf() / 1000 );
-      unlockingTx.addInput(createInputFromPrevTx(prevTx))
+      unlockingTx.addInputFromPrevTx(prevtx)
       .from(await fetchUtxos(auctionerPrivKey.toAddress()))
       .change(auctionerPrivKey.toAddress())
-      .setInputScript(0, (tx, output) => {
-        const preimage = getPreimage(tx, output.script, output.satoshis);
+      .setInputScript({
+        inputIndex: 0,
+        privateKey: auctionerPrivKey
+      }, (tx) => {
 
-        const sig = signTx(tx, auctionerPrivKey, output.script, output.satoshis)
-        return auction.close(sig, preimage).toScript();
+        return auction.close(new Sig(tx.getSignature(0)), new SigHashPreimage(tx.getPreimage(0))).toScript();
       })
       .setLockTime(today)
       .sign(auctionerPrivKey)

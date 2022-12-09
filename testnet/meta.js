@@ -1,4 +1,4 @@
-const { buildContractClass, bsv, toHex, Bytes, String, PubKey, signTx, getPreimage, Ripemd160 } = require('scryptlib');
+const { buildContractClass, bsv, toHex, Bytes, Sig, String, PubKey, signTx, getPreimage, Ripemd160, SigHashPreimage } = require('scryptlib');
 const { loadDesc, showError, createMetaNetChildNode, createMetaNetRootNode, sleep } = require('../helper');
 const { privateKey } = require('../privateKey');
 
@@ -40,11 +40,14 @@ console.log(`NodeAA: '${toHex(nodeAA)}'`);
 
         // create a child node of root node
 
-        const txNodeA = await createMetaNetChildNode(toHex(nodeA), txRoot, hello_worldZ_str.toASM(), meta.lockingScript, 1, (tx, output) => {
-            const sig = signTx(tx, privateKeyRoot, output.script, output.satoshis)
-            const preimage = getPreimage(tx, output.script, output.satoshis)
+        const txNodeA = await createMetaNetChildNode({
+            inputIndex: 0,
+            privateKey: privateKeyRoot
+        }, toHex(nodeA), txRoot, hello_worldZ_str.toASM(), meta.lockingScript, 1, (tx, output) => {
 
-            return meta.unlock(sig, new PubKey(toHex(nodeA)), new Bytes(txRoot.toString()), new Ripemd160(toHex(changePKH)), tx.getChangeAmount(), preimage).toScript();
+
+            return meta.unlock(new Sig(tx.getSignature(0)), new PubKey(toHex(nodeA)), new Bytes(txRoot.toString()),
+                new Ripemd160(toHex(changePKH)), tx.getChangeAmount(), new SigHashPreimage(tx.getPreimage(0))).toScript();
         })
 
 
@@ -53,10 +56,11 @@ console.log(`NodeAA: '${toHex(nodeAA)}'`);
         await sleep(10)
 
         // create a child node of root nodeA
-        const txNodeAA = await createMetaNetChildNode(toHex(nodeAA), txNodeA, hello_worldZ_str.toASM(), meta.lockingScript, 1, (tx, output) => {
-            const sig = signTx(tx, privateKeyNodeA, output.script, output.satoshis)
-            const preimage = getPreimage(tx, output.script, output.satoshis)
-
+        const txNodeAA = await createMetaNetChildNode({
+            inputIndex: 0,
+            privateKey: privateKeyNodeA
+        }, toHex(nodeAA), txNodeA, hello_worldZ_str.toASM(), meta.lockingScript, 1, (tx, output) => {
+ 
             // for debugging
             // meta.txContext = {
             //     tx,
@@ -67,7 +71,7 @@ console.log(`NodeAA: '${toHex(nodeAA)}'`);
             // const result = meta.unlock(sig, new PubKey(toHex(nodeAA)), new Bytes(txNodeA.toString()), new Ripemd160(toHex(changePKH)), tx.getChangeAmount(), preimage).verify();
 
             // console.log(result)
-            return meta.unlock(sig, new PubKey(toHex(nodeAA)), new Bytes(txNodeA.toString()), new Ripemd160(toHex(changePKH)), tx.getChangeAmount(), preimage).toScript();
+            return meta.unlock(new Sig(tx.getSignature(0)), new PubKey(toHex(nodeAA)), new Bytes(txNodeA.toString()), new Ripemd160(toHex(changePKH)), tx.getChangeAmount(), new SigHashPreimage(tx.getPreimage(0))).toScript();
         })
 
 

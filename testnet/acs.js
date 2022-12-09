@@ -11,7 +11,6 @@ const {
 } = require('scryptlib');
 const {
   loadDesc,
-  createInputFromPrevTx,
   sendTx,
   showError,
   deployContract
@@ -42,26 +41,21 @@ const {
     const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressX);
 
     const unlockingTx = new bsv.Transaction();
-    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+    unlockingTx.addInputFromPrevTx(lockingTx)
       .setOutput(0, (tx) => {
         return new bsv.Transaction.Output({
           script: newLockingScript,
           satoshis: amount - tx.getEstimateFee(),
         })
       })
-      .setInputScript(0, (tx, _) => {
-        const preimage = getPreimage(
-          tx,
-          acs.lockingScript,
-          amount,
-          0,
-          Signature.SIGHASH_ANYONECANPAY |
-          Signature.SIGHASH_ALL |
-          Signature.SIGHASH_FORKID
-        );
-        const outputAmount = amount - tx.getEstimateFee();
+      .setInputScript({
+        inputIndex: 0,
+        sigtype: Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
+      }, (tx) => {
+        const outputAmount = tx.outputs[0].satoshis;
+
         return acs
-          .unlock(new SigHashPreimage(toHex(preimage)), outputAmount)
+          .unlock(new SigHashPreimage(tx.getPreimage(0)), outputAmount)
           .toScript();
       })
       .seal()

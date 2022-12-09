@@ -11,22 +11,17 @@ const {
   buildTypeClasses
 } = require('scryptlib');
 const {
-  DataLen,
   loadDesc,
-  createUnlockingTx,
   deployContract,
   sendTx,
-  createInputFromPrevTx,
   showError
 } = require('../helper');
-const {
-  privateKey
-} = require('../privateKey');
+
 
 (async () => {
-  const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey1 = bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
-  const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
 
   try {
@@ -54,7 +49,7 @@ const {
 
     const transferTx1 = new bsv.Transaction();
 
-    transferTx1.addInput(createInputFromPrevTx(lockingTx))
+    transferTx1.addInputFromPrevTx(lockingTx)
       .setOutput(0, (tx) => {
         const newLockingScript = token.getNewStateScript({
           accounts: [new Account({
@@ -105,7 +100,7 @@ const {
     // transfer 10 tokens from publicKey2 to publicKey1
     const transferTx2 = new bsv.Transaction();
 
-    transferTx2.addInput(createInputFromPrevTx(transferTx1))
+    transferTx2.addInputFromPrevTx(transferTx1)
       .setOutput(0, (tx) => {
         const newLockingScript = token.getNewStateScript({
           accounts: [new Account({

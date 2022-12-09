@@ -16,8 +16,7 @@ const {
   sendTx,
   reverseEndian,
   showError,
-  deployContract,
-  createInputFromPrevTx
+  deployContract
 } = require('../helper');
 
 (async () => {
@@ -44,7 +43,7 @@ const {
     // split one UTXO of 100 tokens into one with 70 tokens and one with 30
     const splitTx = new bsv.Transaction();
 
-    splitTx.addInput(createInputFromPrevTx(lockingTx))
+    splitTx.addInputFromPrevTx(lockingTx)
       .setOutput(0, (tx) => {
         const newLockingScript = [token.codePart.toASM(), toHex(publicKey2) + num2bin(0, DataLen) + num2bin(70, DataLen)].join(' ')
         const newAmount = Math.floor((amount - tx.getEstimateFee()) /2)
@@ -86,8 +85,8 @@ const {
 
     const mergeTx = new bsv.Transaction();
 
-    mergeTx.addInput(createInputFromPrevTx(splitTx, 0))
-      .addInput(createInputFromPrevTx(splitTx, 1))
+    mergeTx.addInputFromPrevTx(splitTx, 0)
+      .addInputFromPrevTx(splitTx, 1)
       .setOutput(0, (tx) => {
         const newLockingScript = [token.codePart.toASM(), toHex(publicKey1) + num2bin(70, DataLen) + num2bin(30, DataLen)].join(' ')
         const newAmount = tx.inputAmount - tx.getEstimateFee()

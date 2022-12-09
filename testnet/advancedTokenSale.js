@@ -15,7 +15,6 @@ const {
   sendTx,
   showError,
   deployContract,
-  createInputFromPrevTx,
   fetchUtxos,
   emptyPublicKey
 } = require('../helper');
@@ -93,24 +92,20 @@ function sleep(ms) {
 
       const unlockingTx = new bsv.Transaction();
 
-      unlockingTx.addInput(createInputFromPrevTx(prevTx))
+      unlockingTx.addInputFromPrevTx(prevtx, 1)
         .from(await fetchUtxos(privateKey.toAddress()))
         .addOutput(new bsv.Transaction.Output({
           script: newLockingScript,
           satoshis: newAmount,
         }))
         .change(privateKey.toAddress())
-        .setInputScript(0, (tx, output) => {
-          let preimage = getPreimage(
-            tx,
-            output.script,
-            output.satoshis,
-            0,
-            sighashType
-          );
+        .setInputScript({
+          inputIndex: 0,
+          sigtype: sighashType
+        }, (tx) => {
 
           return advTokenSale.buy(
-            new SigHashPreimage(toHex(preimage)), // sighashPreimage
+            new SigHashPreimage(tx.getPreimage(0)), // sighashPreimage
             new Ripemd160(toHex(pkh)), // changePKH
             tx.getChangeAmount(), // changeSats
             new Bytes(toHex(publicKeys[i])), // buyer's public key

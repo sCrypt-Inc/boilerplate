@@ -33,7 +33,7 @@ describe("Heavy: Key statement circom", async function () {
 
 
     it('should pass given the correct sha256 hash result of the private key', async () => {
-        let privkey: bigint = toBigIntBE((new bsv.PrivateKey.fromRandom('testnet')).toBuffer());
+        let privkey: bigint = toBigIntBE((bsv.PrivateKey.fromRandom('testnet')).toBuffer());
         let priv_tuple: [bigint, bigint, bigint, bigint] = bigint_to_tuple(privkey);
 
         let pubkey: Point = Point.fromPrivateKey(privkey);
@@ -57,7 +57,7 @@ describe("Heavy: Key statement circom", async function () {
     })
 
     it('should fail given an incorret pubkey as input', async () => {
-        let privkey: bigint = toBigIntBE((new bsv.PrivateKey.fromRandom('testnet')).toBuffer());
+        let privkey: bigint = toBigIntBE((bsv.PrivateKey.fromRandom('testnet')).toBuffer());
         let priv_tuple: [bigint, bigint, bigint, bigint] = bigint_to_tuple(privkey);
 
         // random pubkey

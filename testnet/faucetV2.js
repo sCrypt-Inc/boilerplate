@@ -1,5 +1,5 @@
 const { buildContractClass, getPreimage, toHex, bsv, SigHashPreimage, PubKey, PubKeyHash, signTx } = require('scryptlib')
-const { loadDesc, showError, fetchUtxos, createInputFromPrevTx, sendTx, deployContract, sleep, inputSatoshis } = require('../helper')
+const { loadDesc, showError, fetchUtxos, sendTx, deployContract, sleep, inputSatoshis } = require('../helper')
 const { privateKey } = require('../privateKey')
 
 const publicKey = privateKey.publicKey
@@ -36,7 +36,7 @@ async function withdraw(prevTx, prevSatoshi, prevTimestamp) {
         const newOutputAmount = prevSatoshi - withdrawAmount - withdrawMinerFee
         const withdrawTx = new bsv.Transaction()
         withdrawTx
-            .addInput(createInputFromPrevTx(prevTx))
+            .addInputFromPrevTx(prevTx)
             .setInputScript(0, (tx, utxo) => {
                 const preimage = getPreimage(tx, utxo.script, utxo.satoshis)
                 return faucet.withdraw(new SigHashPreimage(toHex(preimage)), new PubKeyHash(toHex(publicKeyHash))).toScript()
@@ -62,7 +62,7 @@ async function deposit(prevTx, prevSatoshi, prevTimestamp) {
     const depositLockingScript = faucet.getNewStateScript({ lastWithdrawTimestamp: prevTimestamp })
     const depositTx = new bsv.Transaction()
     depositTx
-        .addInput(createInputFromPrevTx(prevTx))
+        .addInputFromPrevTx(prevTx)
         .setInputScript(0, (tx, utxo) => {
             const sighashType = Signature.SIGHASH_SINGLE | Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_FORKID
             const preimage = getPreimage(tx, utxo.script, utxo.satoshis, 0, sighashType)
@@ -83,7 +83,7 @@ async function deposit(prevTx, prevSatoshi, prevTimestamp) {
 async function destroy(prevTx, prevSatoshi) {
     const destroyTx = new bsv.Transaction()
     destroyTx
-        .addInput(createInputFromPrevTx(prevTx))
+        .addInputFromPrevTx(prevTx)
         .setInputScript(0, (tx, utxo) => {
             const sig = signTx(tx, privateKey, utxo.script, utxo.satoshis)
             return faucet.destroy(sig, new PubKey(toHex(publicKey))).toScript()

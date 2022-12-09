@@ -29,7 +29,6 @@ const {
   sendTx,
   sleep,
   deployContract,
-  createInputFromPrevTx,
   fetchUtxos,
   showError
 } = require('../helper');
@@ -84,7 +83,7 @@ const { privateKey, privateKey2 } = require('../privateKey');
     const transferTx = new bsv.Transaction()
     // Add input is the NFT
 
-    transferTx.addInput(createInputFromPrevTx(lockingTx))
+    transferTx.addInputFromPrevTx(lockingTx)
       // Add funding input
       .from(await fetchUtxos(privateKey.toAddress()))
       .setOutput(0, (_) => {
@@ -129,7 +128,7 @@ const { privateKey, privateKey2 } = require('../privateKey');
     const meltTx = new bsv.Transaction()
     // Add input is the NFT
 
-    meltTx.addInput(createInputFromPrevTx(transferTx))
+    meltTx.addInputFromPrevTx(transferTx)
       // Add funding input
       .from(await fetchUtxos(privateKey.toAddress()))
       .setOutput(0, (_) => {

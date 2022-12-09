@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Bytes } = require('scryptlib');
-const { loadDesc, deployContract, createInputFromPrevTx, sendTx, showError } = require('../helper');
+const { loadDesc, deployContract, sendTx, showError } = require('../helper');
 const { privateKey } = require('../privateKey');
 const axios = require('axios');
 
@@ -94,7 +94,7 @@ function newState(state) {
 
       const unlockingTx = new bsv.Transaction();
 
-      unlockingTx.addInput(createInputFromPrevTx(prevTx))
+      unlockingTx.addInputFromPrevTx(prevTx)
         .setOutput(0, (tx) => {
           return new bsv.Transaction.Output({
             script: newLockingScript,

@@ -1,6 +1,6 @@
 const { resolve } = require('path');
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, bin2num, SigHashPreimage, Ripemd160 } = require('scryptlib');
-const { DataLen, loadDesc, deployContract , sleep, sendTx, showError, createInputFromPrevTx, fetchUtxos } = require('../helper');
+const { DataLen, loadDesc, deployContract , sleep, sendTx, showError, fetchUtxos } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 const publicKey = privateKey.publicKey;
@@ -76,7 +76,7 @@ class RecurringDepositUser {
 
         const unlockingTx = new bsv.Transaction();
 
-        unlockingTx.addInput(createInputFromPrevTx(this._tx))
+        unlockingTx.addInputFromPrevTx(this._tx)
             .from(await fetchUtxos(privateKey.toAddress()))
             .addOutput(new bsv.Transaction.Output({
                 script: this._contract.lockingScript,
@@ -140,7 +140,7 @@ class RecurringWithdrawMerchant {
 
         const unlockingTx = new bsv.Transaction();
 
-        unlockingTx.addInput(createInputFromPrevTx(this._tx))
+        unlockingTx.addInputFromPrevTx(this._tx)
             .setOutput(0, (tx) => {
                 const newAmount = this._oldContractSatoshis - merchantPayment - tx.getEstimateFee();
                 return new bsv.Transaction.Output({

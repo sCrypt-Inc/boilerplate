@@ -16,7 +16,6 @@ const {
   DataLen,
   loadDesc,
   deployContract,
-  createInputFromPrevTx,
   sendTx,
   showError
 } = require('../helper');
@@ -47,7 +46,7 @@ const sha256Data = bsv.crypto.Hash.sha256(dataBuffer);
     // unlock
     const unlockingTx = new bsv.Transaction();
 
-    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+    unlockingTx.addInputFromPrevTx(lockingTx)
       .setOutput(0, (tx) => {
         const newLockingScript = bsv.Script.buildPublicKeyHashOut(privateKey.toAddress())
         return new bsv.Transaction.Output({

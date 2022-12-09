@@ -1,7 +1,7 @@
 
 
 const { expect } = require('chai');
-const { compileContract, newTx, createInputFromPrevTx} = require('../../helper');
+const { compileContract, newTx} = require('../../helper');
 const {  buildContractClass, Bytes, Sig, SigHashPreimage,  bsv, toHex, getPreimage, buildTypeClasses, SigHash, PubKeyHash, PubKey } = require('scryptlib');
 const {  toHashedMap, findKeyIndex, hash160, signTx, buildOpreturnScript } = require('scryptlib/dist/utils');
 const { SortedItem } = require('scryptlib/dist/scryptTypes');
@@ -100,8 +100,8 @@ describe('Pay2ContractHash', () => {
 
         // tx that transfering token from Counter ContractHash to PubKeyHash
         const tx3 = new bsv.Transaction();
-        tx3.addInput(createInputFromPrevTx(tx1))
-        .addInput(createInputFromPrevTx(tx2))
+        tx3.addInputFromPrevTx(tx1)
+        .addInputFromPrevTx(tx2)
 
 
         tx3.addOutput(new bsv.Transaction.Output({
@@ -148,8 +148,8 @@ describe('Pay2ContractHash', () => {
 
         // tx that transferstoken from Counter ContractHash to PubKeyHash
         const tx3 = new bsv.Transaction();
-        tx3.addInput(createInputFromPrevTx(tx1))
-        .addInput(createInputFromPrevTx(tx2))
+        tx3.addInputFromPrevTx(tx1)
+        .addInputFromPrevTx(tx2)
 
 
         tx3.addOutput(new bsv.Transaction.Output({

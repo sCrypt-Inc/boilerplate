@@ -5,10 +5,10 @@ const crypto = require('crypto');
 /**
  * an example SuperAssetNFT test for contract containing signature verification
  */
-const privateKey = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey = bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
-const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
 
 const MSB_THRESHOLD = 0x7e;
 const Signature = bsv.crypto.Signature;

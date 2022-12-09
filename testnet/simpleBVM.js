@@ -4,7 +4,6 @@
 const { bsv, buildContractClass, toHex, Bytes } = require('scryptlib');
 const {
   loadDesc,
-  createInputFromPrevTx,
   deployContract,
   sendTx,
   showError,
@@ -30,7 +29,7 @@ const inputScript = '525593569357936094539354935894';
 
     const unlockingTx = new bsv.Transaction();
 
-    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+    unlockingTx.addInputFromPrevTx(lockingTx)
       .setOutput(0, (tx) => {
         const newLockingScript = bsv.Script.buildPublicKeyHashOut(privateKey.toAddress())
         return new bsv.Transaction.Output({

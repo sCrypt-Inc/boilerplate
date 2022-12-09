@@ -2,7 +2,6 @@ const { buildContractClass, toHex, signTx, Ripemd160, Sig, PubKey, bsv } = requi
 
 const {
   deployContract,
-  createInputFromPrevTx,
   sendTx,
   showError,
   loadDesc
@@ -80,7 +79,7 @@ async function main() {
     // mint the asset
     console.log('About to mint nft...')
     await sleeper(1);
-    mintTx.addInput(createInputFromPrevTx(deployTx))
+    mintTx.addInputFromPrevTx(deployTx)
     .setOutput(0, (tx) => {
       // Set the ASM vars manually
       const asmVars = {
@@ -117,7 +116,7 @@ async function main() {
     await sleeper(1);
     // call contract method on testnet
     const transferTX = new bsv.Transaction();
-    transferTX.addInput(createInputFromPrevTx(mintTx, 0))
+    transferTX.addInputFromPrevTx(mintTx, 0)
       .setOutput(0, (tx) => {
         // Set the ASM vars manually
         const asmVars = {
@@ -158,7 +157,7 @@ async function main() {
     await sleeper(1);
     // call contract method on testnet
     const meltTX = new bsv.Transaction();
-    meltTX.addInput(createInputFromPrevTx(transferTX, 0))
+    meltTX.addInputFromPrevTx(transferTX, 0)
       .setOutput(0, (tx) => {
         // Set the ASM vars manually
         const asmVars = {

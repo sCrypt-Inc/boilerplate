@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, SigHashPreimage } = require('scryptlib');
-const { loadDesc, showError, deployContract , sendTx, createInputFromPrevTx } = require('../helper');
+const { loadDesc, showError, deployContract , sendTx } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 (async () => {
@@ -17,7 +17,7 @@ const { privateKey } = require('../privateKey');
         // unlock
         const unlockingTx = new bsv.Transaction();
 
-        unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+        unlockingTx.addInputFromPrevTx(lockingTx)
             .setLockTime(1422674 + 1)
             .change(privateKey.toAddress())
             .setInputScript(0, (tx, output) => {

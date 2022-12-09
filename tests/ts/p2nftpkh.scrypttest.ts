@@ -7,10 +7,10 @@ import { compileContract, newTx } from "../../helper";
  */
 import { inputIndex, inputSatoshis, tx } from '../../helper';
 
-const privateKey = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey = bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
-const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
 
 describe('Test sCrypt contract P2NFTPKH In Typescript', () => {
   let demo: any;

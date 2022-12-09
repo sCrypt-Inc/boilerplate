@@ -227,11 +227,11 @@ async function createMetaNetRootNode(root, contract, contractAmount) {
 }
 
 
-async function createMetaNetChildNode(node, prevtx, metaData, lockingScript, contractAmount, callback ) {
+async function createMetaNetChildNode(options, node, prevtx, metaData, lockingScript, contractAmount, callback ) {
   const { privateKey } = require('./privateKey');
   const address = privateKey.toAddress()
   const tx = new bsv.Transaction()
-  tx.addInput(createInputFromPrevTx(prevtx, 1))
+  tx.addInputFromPrevTx(prevtx, 1)
   .from(await fetchUtxos(address))
   .addOutput(new bsv.Transaction.Output({
     script: bsv.Script.fromASM(`OP_0 OP_RETURN ${metaFlag} ${node} ${prevtx.id} ${metaData}`),
@@ -243,7 +243,7 @@ async function createMetaNetChildNode(node, prevtx, metaData, lockingScript, con
       satoshis: contractAmount,
     })
   )
-  .setInputScript(0, (tx, output) => {
+  .setInputScript(options, (tx, output) => {
       return callback(tx, output);
   })
   .change(address)
@@ -252,17 +252,6 @@ async function createMetaNetChildNode(node, prevtx, metaData, lockingScript, con
 
   await sendTx(tx)
   return tx
-}
-
-//create an input spending from prevTx's output, with empty script
-function createInputFromPrevTx(tx, outputIndex) {
-  const outputIdx = outputIndex || 0
-  return new bsv.Transaction.Input({
-    prevTxId: tx.id,
-    outputIndex: outputIdx,
-    script: new bsv.Script(), // placeholder
-    output: tx.outputs[outputIdx]
-  })
 }
 
 
@@ -373,7 +362,6 @@ module.exports = {
   fixLowS,
   checkLowS,
   deployContract,
-  createInputFromPrevTx,
   fetchUtxos,
   toLittleIndian,
   toBigIndian,

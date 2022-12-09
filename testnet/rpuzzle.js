@@ -15,7 +15,6 @@ const {
 const {
   loadDesc,
   deployContract,
-  createInputFromPrevTx,
   sendTx,
   showError,
   inputIndex,
@@ -60,7 +59,7 @@ const amount = 2000;
     // call contract method on testnet
 
     const unlockingTx = new bsv.Transaction();
-    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+    unlockingTx.addInputFromPrevTx(lockingTx)
       .setOutput(0, (tx) => {
         const newLockingScript = bsv.Script.buildPublicKeyHashOut(
           privateKeyX.toAddress()

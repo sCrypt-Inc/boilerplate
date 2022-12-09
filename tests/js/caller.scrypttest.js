@@ -16,8 +16,7 @@ const {
   compileContract,
   inputIndex,
   inputSatoshis,
-  newTx,
-  createInputFromPrevTx
+  newTx  
 } = require('../../helper');
 
 // Create a forged transaction which the input of transaction tx does not 
@@ -64,7 +63,7 @@ describe('Test sCrypt contract Callee in Javascript', () => {
 
     newLockingScript = bsv.Script.fromASM(['OP_FALSE', 'OP_RETURN', num2bin(a, 2) + num2bin(b, 2) + num2bin(c, 2) + num2bin(x, 2)].join(' '))
     // The first input of tx is the first output point of the transaction calleeContractTx
-    tx.addInput(createInputFromPrevTx(calleeContractTx))
+    tx.addInputFromPrevTx(calleeContractTx)
       .addOutput(
         new bsv.Transaction.Output({
           script: newLockingScript,
@@ -128,7 +127,7 @@ describe('Test sCrypt contract Callee in Javascript', () => {
   it('should fail with fake prevouts', () => {
 
     const fakeTx = newFakeTx();
-    fakeTx.addInput(createInputFromPrevTx(calleeContractTx))
+    fakeTx.addInputFromPrevTx(calleeContractTx)
     result = caller.call(new Coeff({
       a: a,
       b: b,

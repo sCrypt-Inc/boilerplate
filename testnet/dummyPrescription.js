@@ -11,7 +11,7 @@ const {
   buildTypeClasses
 } = require("scryptlib");
 
-const { loadDesc, deployContract, createInputFromPrevTx, sendTx, showError } = require("../helper");
+const { loadDesc, deployContract, sendTx, showError } = require("../helper");
 const { generatePrivKey, privKeyToPubKey, sign } = require("rabinsig");
 const { privateKey } = require('../privateKey');
 // prescription details
@@ -91,7 +91,7 @@ const amount = patientReward + fee;
 
     // build tx that fills prescription
     let unlockingTx = new bsv.Transaction();
-    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+    unlockingTx.addInputFromPrevTx(lockingTx)
       .addOutput(
         new bsv.Transaction.Output({
           script: bsv.Script.buildPublicKeyHashOut(privateKeyPatient.toAddress()),
