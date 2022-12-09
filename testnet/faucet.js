@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, bin2num, SigHashPreimage, Ripemd160 } = require('scryptlib');
-const { loadDesc,  sendTx, showError, sleep, deployContract, createInputFromPrevTx, fetchUtxos } = require('../helper');
+const { loadDesc,  sendTx, showError, sleep, deployContract, fetchUtxos } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 
@@ -67,7 +67,7 @@ class FaucetDeposit {
 
         const unlockingTx = new bsv.Transaction();
 
-        unlockingTx.addInput(createInputFromPrevTx(this._tx))
+        unlockingTx.addInputFromPrevTx(this._tx)
             .from(await fetchUtxos(privateKey.toAddress()))
             .addOutput(new bsv.Transaction.Output({
                 script: this._contract.lockingScript,
@@ -134,7 +134,7 @@ class FaucetWithdraw {
 
         const unlockingTx = new bsv.Transaction();
 
-        unlockingTx.addInput(createInputFromPrevTx(this._tx))
+        unlockingTx.addInputFromPrevTx(this._tx)
             .setOutput(0, (tx) => {
                 const newLockingScript = bsv.Script.fromASM(this._contract.codePart.toASM() + ' ' + num2bin(this._calcNewMatureTimestamp(), 4));
 

@@ -11,7 +11,6 @@ const {
   loadDesc,
   showError,
   fetchUtxos,
-  createInputFromPrevTx,
   sendTx,
   deployContract,
   sleep
@@ -53,23 +52,18 @@ const {
       const unlockingTx = new bsv.Transaction();
 
       unlockingTx
-        .addInput(createInputFromPrevTx(prevTx))
+        .addInputFromPrevTx(prevTx)
         .addOutput(new bsv.Transaction.Output({
           script: newLockingScript,
           satoshis: amount,
         }))
-        .setInputScript(0, (tx, output) => {
-          const preimage = getPreimage(
-            tx,
-            output.script,
-            output.satoshis,
-            0,
-            Signature.SIGHASH_ANYONECANPAY |
-            Signature.SIGHASH_SINGLE |
-            Signature.SIGHASH_FORKID
-          );
+        .setInputScript({
+          inputIndex: 0,
+          sigtype: Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_SINGLE | Signature.SIGHASH_FORKID,
+        }, (tx) => {
+
           return advCounter
-            .increment(new SigHashPreimage(toHex(preimage)))
+            .increment(new SigHashPreimage(tx.getPreimage(0)))
             .toScript();
         })
         .from(await fetchUtxos(privateKey.toAddress()))

@@ -12,7 +12,6 @@ const {
 } = require('scryptlib');
 const {
   loadDesc,
-  createInputFromPrevTx,
   sendTx,
   showError,
   padLeadingZero,
@@ -61,7 +60,7 @@ const addressB = privateKeyB.toAddress();
 
     // unlock
     const unlockingTx = new bsv.Transaction();
-    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+    unlockingTx.addInputFromPrevTx(lockingTx)
       .setOutput(0, (tx) => {
         const newLockingScript = bsv.Script.buildPublicKeyHashOut(addressB)
         return new bsv.Transaction.Output({

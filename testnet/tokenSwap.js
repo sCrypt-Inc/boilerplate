@@ -17,8 +17,7 @@ const {
     sendTx,
     showError,
     sleep,
-    deployContract,
-    createInputFromPrevTx
+    deployContract,    
 } = require('../helper');
 const {
     privateKey,
@@ -117,7 +116,7 @@ async function createAddTokenUserTx(prevTx, tokenSwap) {
 
     const unlockingTx = new bsv.Transaction();
 
-    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+    unlockingTx.addInputFromPrevTx(prevTx)
         .from(await fetchUtxos(privateKey.toAddress()))
         .addOutput(new bsv.Transaction.Output({
             script: newLockingScript,
@@ -160,7 +159,7 @@ async function createTransferTx(prevTx, tokenSwap) {
 
     const unlockingTx = new bsv.Transaction();
 
-    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+    unlockingTx.addInputFromPrevTx(prevTx)
         .from(await fetchUtxos(privateKey.toAddress()))
         .addOutput(new bsv.Transaction.Output({
             script: newLockingScript,
@@ -225,7 +224,7 @@ async function createAddLiqTx(prevTx, tokenSwap) {
     const unlockingTx = new bsv.Transaction();
 
     const newAmount = prevTx.outputs[0].satoshis + addBsvAmount;
-    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+    unlockingTx.addInputFromPrevTx(prevTx)
         .from(await fetchUtxos(privateKey.toAddress()))
         .addOutput(new bsv.Transaction.Output({
             script: newLockingScript,
@@ -285,7 +284,7 @@ async function createSwapBsvToTokenTx(prevTx, tokenSwap) {
     const unlockingTx = new bsv.Transaction();
 
     const newAmount = prevTx.outputs[0].satoshis + swapBsvAmount;
-    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+    unlockingTx.addInputFromPrevTx(prevTx)
         .from(await fetchUtxos(privateKey.toAddress()))
         .addOutput(new bsv.Transaction.Output({
             script: newLockingScript,
@@ -346,7 +345,7 @@ async function createSwapTokenToBsvTx(prevTx, tokenSwap) {
     const unlockingTx = new bsv.Transaction();
 
     const newAmount = prevTx.outputs[0].satoshis - swapBsvAmount;
-    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+    unlockingTx.addInputFromPrevTx(prevTx)
         .from(await fetchUtxos(privateKey.toAddress()))
         .addOutput(new bsv.Transaction.Output({
             script: newLockingScript,
@@ -412,7 +411,7 @@ async function createRemoveLiquidityTx(prevTx, tokenSwap) {
     const unlockingTx = new bsv.Transaction();
 
     const newAmount = prevTx.outputs[0].satoshis - addBsvAmount;
-    unlockingTx.addInput(createInputFromPrevTx(prevTx))
+    unlockingTx.addInputFromPrevTx(prevTx)
         .from(await fetchUtxos(privateKey.toAddress()))
         .addOutput(new bsv.Transaction.Output({
             script: newLockingScript,

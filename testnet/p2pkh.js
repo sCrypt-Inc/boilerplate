@@ -2,7 +2,6 @@ const { buildContractClass, toHex, signTx, Ripemd160, Sig, PubKey, bsv } = requi
 
 const {
   deployContract,
-  createInputFromPrevTx,
   sendTx,
   showError,
   loadDesc
@@ -28,11 +27,13 @@ async function main() {
     // call contract method on testnet
     const unlockingTx = new bsv.Transaction();
 
-    unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+    unlockingTx.addInputFromPrevTx(lockingTx)
       .change(privateKey.toAddress())
-      .setInputScript(0, (tx, output) => {
-        const sig = signTx(unlockingTx, privateKey, output.script, output.satoshis)
-        return p2pkh.unlock(sig, new PubKey(toHex(publicKey))).toScript()
+      .setInputScript({
+        inputIndex: 0,
+        privateKey
+      }, (tx) => {
+        return p2pkh.unlock(new Sig(tx.getSignature(0)), new PubKey(toHex(publicKey))).toScript()
       })
       .seal()
 

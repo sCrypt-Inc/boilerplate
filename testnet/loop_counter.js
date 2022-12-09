@@ -1,5 +1,5 @@
 const { buildContractClass, bsv, num2bin, getPreimage, SigHashPreimage, toHex } = require('scryptlib');
-const { DataLen, loadDesc, showError, sendTx, createInputFromPrevTx, deployContract } = require('../helper');
+const { DataLen, loadDesc, showError, sendTx, deployContract } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 function Memory(a, b) {
@@ -53,7 +53,7 @@ async function begin_loop(state) {
 
 
   const unlockingTx = new bsv.Transaction();
-  unlockingTx.addInput(createInputFromPrevTx(prevTx))
+  unlockingTx.addInputFromPrevTx(prevTx)
     .setOutput(0, (tx) => {
       const newAmount = amount - tx.getEstimateFee()
       return new bsv.Transaction.Output({
@@ -87,7 +87,7 @@ async function iter_loop(mem_n, state) {
 
   
   const unlockingTx = new bsv.Transaction();
-  unlockingTx.addInput(createInputFromPrevTx(prevTx))
+  unlockingTx.addInputFromPrevTx(prevTx)
     .setOutput(0, (tx) => {
       const newAmount = amount - tx.getEstimateFee()
       return new bsv.Transaction.Output({
@@ -119,7 +119,7 @@ async function end_loop(mem_n, state) {
 
   
   const unlockingTx = new bsv.Transaction();
-  unlockingTx.addInput(createInputFromPrevTx(prevTx))
+  unlockingTx.addInputFromPrevTx(prevTx)
     .setOutput(0, (tx) => {
       const newAmount = amount - tx.getEstimateFee()
       return new bsv.Transaction.Output({
@@ -148,7 +148,7 @@ async function unlock_utxo(first_state, state) {
   const newLockingScript = bsv.Script.buildPublicKeyHashOut(privateKey.toAddress())
 
   const unlockingTx = new bsv.Transaction();
-  unlockingTx.addInput(createInputFromPrevTx(prevTx))
+  unlockingTx.addInputFromPrevTx(prevTx)
     .setOutput(0, (tx) => {
       const newAmount = amount - tx.getEstimateFee()
       return new bsv.Transaction.Output({

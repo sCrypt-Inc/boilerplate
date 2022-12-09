@@ -12,7 +12,6 @@ const {
 const {
   DataLen,
   loadDesc,
-  createInputFromPrevTx,
   deployContract,
   sendTx,
   showError
@@ -49,7 +48,7 @@ const {
 
     const issueTx = new bsv.Transaction()
 
-    issueTx.addInput(createInputFromPrevTx(lockingTx))
+    issueTx.addInputFromPrevTx(lockingTx)
       .setOutput(0, (tx) => {
 
         // issue new token
@@ -94,7 +93,7 @@ const {
 
     const transferTx = new bsv.Transaction()
 
-    transferTx.addInput(createInputFromPrevTx(issueTx, 1))
+    transferTx.addInputFromPrevTx(issueTx, 1)
     .setOutput(0, (tx) => {
 
       // transfer token to publicKeyReceiver2

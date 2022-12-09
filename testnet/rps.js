@@ -1,6 +1,6 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, signTx, Ripemd160, PubKey, Sig } = require("scryptlib");
 const { DataLen, loadDesc, deployContract,
-  createInputFromPrevTx, fetchUtxos, sendTx, showError, sleep } = require("../helper");
+  fetchUtxos, sendTx, showError, sleep } = require("../helper");
 const { privateKey } = require("../privateKey");
 
 (async () => {
@@ -45,7 +45,7 @@ const { privateKey } = require("../privateKey");
 
     const txFollow = new bsv.Transaction();
 
-    txFollow.addInput(createInputFromPrevTx(lockingTx))
+    txFollow.addInputFromPrevTx(lockingTx)
       .from(await fetchUtxos(privateKey.toAddress()))
       .setOutput(0, (tx) => {
         // player B follow the game
@@ -79,7 +79,7 @@ const { privateKey } = require("../privateKey");
     const txFinish = new bsv.Transaction();
     const newAmount = txFollow.outputs[0].satoshis;
     const amountPlayerB = amount;
-    txFinish.addInput(createInputFromPrevTx(txFollow))
+    txFinish.addInputFromPrevTx(txFollow)
       .change(privateKeyA.toAddress())
       .setOutput(0, (tx) => {
         const amountPlayerA = newAmount - amountPlayerB - tx.getEstimateFee();

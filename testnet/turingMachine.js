@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Bytes, buildTypeClasses } = require('scryptlib');
-const { loadDesc, deployContract, createInputFromPrevTx, sendTx, showError, sleep, fetchUtxos } = require('../helper');
+const { loadDesc, deployContract, sendTx, showError, sleep, fetchUtxos } = require('../helper');
 const { privateKey } = require('../privateKey');
 
 // Note: ANYONECANPAY
@@ -156,7 +156,7 @@ const { privateKey } = require('../privateKey');
 
       const unlockingTx = new bsv.Transaction();
       //Building the new transaction
-      unlockingTx.addInput(createInputFromPrevTx(prevTx))
+      unlockingTx.addInputFromPrevTx(prevTx)
         .setOutput(0, (tx) => {
 
           const newLockingScript = new_state.toJSON().curState === "b'03'" ? bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()) : contract.getNewStateScript({

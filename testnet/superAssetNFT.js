@@ -2,7 +2,6 @@ const { buildContractClass, toHex, signTx, Ripemd160, Sig, PubKey, bsv, Bool, By
 
 const {
   deployContract,
-  createInputFromPrevTx,
   sendTx,
   showError,
   loadDesc,
@@ -133,7 +132,7 @@ async function main() {
     await sleeper(1);
 
     const newLockingScript = replaceAssetAndPkh(nft.lockingScript, mintAssetId, privateKey.toAddress().toHex().substring(2));  
-    mintTx.addInput(createInputFromPrevTx(deployTx))
+    mintTx.addInputFromPrevTx(deployTx)
     .setOutput(0, (tx) => {
       nftAmount = nftAmount - tx.getEstimateFee();
       return new bsv.Transaction.Output({
@@ -177,7 +176,7 @@ async function main() {
     await sleeper(1);
     // call contract method on testnet
     const transferTX = new bsv.Transaction();
-    transferTX.addInput(createInputFromPrevTx(mintTx, 0))
+    transferTX.addInputFromPrevTx(mintTx, 0)
       .setOutput(0, (tx) => {
         nftAmount = nftAmount - tx.getEstimateFee();
         return new bsv.Transaction.Output({
@@ -219,7 +218,7 @@ async function main() {
     await sleeper(1);
     // call contract method on testnet
     const meltTX = new bsv.Transaction();
-    meltTX.addInput(createInputFromPrevTx(transferTX, 0))
+    meltTX.addInputFromPrevTx(transferTX, 0)
       .setOutput(0, (tx) => {
         const newLockingScript = bsv.Script.buildPublicKeyHashOut(privateKey.toAddress());
         nftAmount = nftAmount - tx.getEstimateFee();

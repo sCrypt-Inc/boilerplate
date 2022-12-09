@@ -18,7 +18,6 @@ const {
 const {
   loadDesc,
   deployContract,
-  createInputFromPrevTx,
   fetchUtxos,
   sendTx,
   showError,
@@ -86,7 +85,7 @@ const { privateKey } = require('../privateKey');
 
     switch (scenario) {
       case 1:
-        unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+        unlockingTx.addInputFromPrevTx(lockingTx)
           .from(await fetchUtxos(privateKey.toAddress()))
           .addOutput(new bsv.Transaction.Output({
             script: bsv.Script.buildPublicKeyHashOut(privateKeyA.toAddress()),
@@ -128,7 +127,7 @@ const { privateKey } = require('../privateKey');
         break;
       case 2:
 
-        unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+        unlockingTx.addInput(lockingTx)
           .from(await fetchUtxos(privateKey.toAddress()))
           .addOutput(new bsv.Transaction.Output({
             script: bsv.Script.buildPublicKeyHashOut(privateKeyA.toAddress()),
@@ -166,7 +165,7 @@ const { privateKey } = require('../privateKey');
         break;
       case 3:
 
-        unlockingTx.addInput(createInputFromPrevTx(lockingTx))
+        unlockingTx.addInputFromPrevTx(lockingTx)
           .from(await fetchUtxos(privateKey.toAddress()))
           .addOutput(new bsv.Transaction.Output({
             script: bsv.Script.buildPublicKeyHashOut(privateKeyB.toAddress()),

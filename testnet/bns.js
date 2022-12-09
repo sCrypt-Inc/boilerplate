@@ -2,7 +2,6 @@ const { buildContractClass, toHex, signTx, Ripemd160, Sig, PubKey, bsv, Bool, By
 
 const {
   deployContract,
-  createInputFromPrevTx,
   sendTx,
   showError,
   loadDesc,
@@ -240,7 +239,7 @@ async function main() {
     // Add funding input
     const utxo = await fetchUtxoLargeThan(privateKey.toAddress(), 300000);
 
-    extendRootTx.addInput(createInputFromPrevTx(deployTx))
+    extendRootTx.addInputFromPrevTx(deployTx)
     .from(await fetchUtxos(privateKey.toAddress()))
 
     extendRootTx.setInputScript(0, (tx, output) => {

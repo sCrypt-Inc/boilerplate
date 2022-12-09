@@ -1,5 +1,5 @@
 const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage } = require('scryptlib');
-const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showError  } = require('../helper');
+const { DataLen, loadDesc, deployContract, sendTx, showError  } = require('../helper');
 
 (async() => {
     try {
@@ -22,17 +22,16 @@ const { DataLen, loadDesc, deployContract, sendTx, createInputFromPrevTx, showEr
 
             const unlockingTx = new bsv.Transaction();
             
-            unlockingTx.addInput(createInputFromPrevTx(prevTx))
+            unlockingTx.addInputFromPrevTx(prevTx)
             .setOutput(0, (tx) => {
                 return new bsv.Transaction.Output({
                     script: newLockingScript,
                     satoshis: amount - tx.getEstimateFee(),
                   })
             })
-            .setInputScript(0, (tx, output) => {
-                const preimage = getPreimage(tx, output.script, output.satoshis)
-                const newAmount = unlockingTx.outputs[0].satoshis;
-                return counter.increment(new SigHashPreimage(toHex(preimage)), newAmount).toScript()
+            .setInputScript(0, (tx) => {
+                const newAmount = tx.outputs[0].satoshis;
+                return counter.increment(new SigHashPreimage(tx.getPreimage(0)), newAmount).toScript()
             })
             .seal()
 
