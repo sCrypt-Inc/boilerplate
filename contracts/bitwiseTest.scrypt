@@ -1,0 +1,14 @@
+import "bitwise.scrypt";
+
+contract BitwiseTest {
+    
+ 
+    public function bitwise(int x, int y, int val_and, int val_or, int val_xor, int x_invert) {
+        require(Bitwise.and(x, y) == val_and);
+        require(Bitwise.or(x, y) == val_or);
+        require(Bitwise.xor(x, y) == val_xor);
+        require(Bitwise.invert(x) == x_invert);
+        require(true);
+    }
+
+}
