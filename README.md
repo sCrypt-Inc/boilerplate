@@ -1,5 +1,5 @@
 # sCrypt Project Boilerplate
-[![Build Status](https://travis-ci.com/sCrypt-Inc/boilerplate.svg?branch=master)](https://travis-ci.com/sCrypt-Inc/boilerplate)
+[![Build Status](https://travis-ci.com/sCrypt-Inc/boilerplate.svg?branch=master)](https://app.travis-ci.com/sCrypt-Inc/boilerplate)
 ## Prerequisites
 Make sure you have the [sCrypt IDE](https://scrypt-ide.readthedocs.io/en/latest/index.html) installed. **sCrypt IDE** is a tool for developers to write, test, deploy, call, and debug sCrypt smart contracts.
 
