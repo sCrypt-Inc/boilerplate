@@ -11,8 +11,8 @@ jobs:
     - 
       os: osx
     - 
-      ox: windows
-    script:
+      os: windows
+      script:
         - npm i && npx scryptlib download
         - echo "PRIVATE_KEY="cRAqDHuaVerhDwmcx6CyimbEJvPhGjMEKeMKr6N1osD79PnbTYQm"" > .env
         - npm run build && npm t
