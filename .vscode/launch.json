@@ -10,11 +10,16 @@
             "name": "Launch demo",
             "skipFiles": [
                 "<node_internals>/**",
-                "${workspaceFolder}/node_modules/**/*.js",
+                "**/node_modules/**",
+            ],
+            "resolveSourceMapLocations": [
+                "!**/node_modules/**",
             ],
             "program": "${workspaceRoot}/src/contracts/demo.ts",
             "preLaunchTask": "tsc: build - tsconfig.json",
-            "outFiles": ["${workspaceRoot}/dist/**/*.js"]
+            "outFiles": [
+                "${workspaceRoot}/dist/**/*.js"
+            ]
         },
         {
             "type": "node",
@@ -22,7 +27,10 @@
             "name": "Launch demo test",
             "skipFiles": [
                 "<node_internals>/**",
-                "${workspaceFolder}/node_modules/**/*.js",
+                "**/node_modules/**",
+            ],
+            "resolveSourceMapLocations": [
+                "!**/node_modules/**",
             ],
             "program": "${workspaceRoot}/node_modules/.bin/_mocha",
             "args": [
