@@ -4,16 +4,16 @@ language: node_js
 node_js: 
   - 16
 
+
+before_install:
+- echo -e "PRIVATE_KEY="cRAqDHuaVerhDwmcx6CyimbEJvPhGjMEKeMKr6N1osD79PnbTYQm"" > .env
+
 jobs:
   include:
     - 
       os: linux
     - 
       os: osx
-    - 
-      os: windows
       script:
         - npm i
-        - echo "PRIVATE_KEY="cRAqDHuaVerhDwmcx6CyimbEJvPhGjMEKeMKr6N1osD79PnbTYQm"" > .env
-        - cat .env
         - npm t
