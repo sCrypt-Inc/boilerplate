@@ -13,9 +13,8 @@ os:
   - linux
   - osx
 
-
-  script:
-    - npm i
-    - npm run build
-    - npm run ci
-    - npm t
+script:
+  - npm i
+  - npm run build
+  - npm run ci
+  - npm t
