@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-
-TRAVIS_OS_NAME='osx'
-
 if [ "$TRAVIS_OS_NAME" = 'osx' ]; then
     echo "osx"
     sed -i '' 's/process.env.PRIVATE_KEY/scrypt_ts_1.bsv.PrivateKey.fromRandom("testnet").toWIF()/' dist/tests/privateKey.js
