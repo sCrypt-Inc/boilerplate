@@ -3,10 +3,10 @@ dist: focal
 language: node_js
 node_js: 
   - 16
+  - 18
 
 
 before_install:
-- echo -e "PRIVATE_KEY="cRAqDHuaVerhDwmcx6CyimbEJvPhGjMEKeMKr6N1osD79PnbTYQm"" > .env
 
 jobs:
   include:
@@ -16,4 +16,6 @@ jobs:
       os: osx
       script:
         - npm i
+        - npm run build
+        - sed -i 's/process.env.PRIVATE_KEY/scrypt_ts_1.bsv.PrivateKey.fromRandom("testnet").toWIF()/' dist/tests/privateKey.js
         - npm t
