@@ -8,14 +8,14 @@ node_js:
 
 before_install:
 
-jobs:
-  include:
-    - 
-      os: linux
-    - 
-      os: osx
-      script:
-        - npm i
-        - npm run build
-        - sed -i 's/process.env.PRIVATE_KEY/scrypt_ts_1.bsv.PrivateKey.fromRandom("testnet").toWIF()/' dist/tests/privateKey.js
-        - npm t
+
+os:
+  - linux
+  - osx
+
+
+  script:
+    - npm i
+    - npm run build
+    - npm run ci
+    - npm t
