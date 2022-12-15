@@ -10,7 +10,7 @@ async function main() {
   // contract deployment
   // 1. create a genesis instance
   const counter = new AdvancedCounter(0n).markAsGenesis();
-  // 2. get the available utxos for the privatekey
+  // 2. get the available utxos for the private key
   const utxos = await utxoMgr.getUtxos();
   // 3. construct a transaction for deployment
   const unsignedDeployTx = counter.getDeployTx(utxos, 1);
@@ -32,7 +32,7 @@ async function main() {
     const newCounter = prevInstance.next();
     // 2. apply the updates on the new instance.
     newCounter.counter++;
-    // 3. get the available utxos for the privatekey
+    // 3. get the available utxos for the private key
     const utxos = await utxoMgr.getUtxos(fee);
     // 4. construct a transaction for contract call
     const unsignedCallTx = prevInstance.getCallTx(utxos, prevTx, newCounter);

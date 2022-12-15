@@ -33,7 +33,7 @@ async function main() {
     const highestBid = 1000;
     const newBid = highestBid * 2;
     // contract deployment
-    // 1. get the available utxos for the privatekey
+    // 1. get the available utxos for the private key
     const utxos = await utxoMgr.getUtxos();
     // 2. construct a transaction for deployment
     const unsignedDeployTx = auction.getDeployTx(utxos, 1000);

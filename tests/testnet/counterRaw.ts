@@ -11,7 +11,7 @@ async function main() {
   // contract deployment
   // 1. create a genesis instance
   const counter = new Counter()
-  // 2. get the available utxos for the privatekey
+  // 2. get the available utxos for the private key
   const utxos = await utxoMgr.getUtxos();
   // 3. construct a transaction for deployment
   const unsignedDeployTx = counter.getDeployTx(utxos, 1000);

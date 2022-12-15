@@ -9,7 +9,7 @@ async function main() {
     let demo = new Demo(1n, 2n);
 
     // contract deployment
-    // 1. get the available utxos for the privatekey
+    // 1. get the available utxos for the private key
     const utxos = await utxoMgr.getUtxos();
     // 2. construct a transaction for deployment
     const unsignedDeployTx = demo.getDeployTx(utxos, 1000);

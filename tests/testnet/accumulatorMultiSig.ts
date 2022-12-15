@@ -27,7 +27,7 @@ async function main() {
   
 
     // contract deployment
-    // 1. get the available utxos for the privatekey
+    // 1. get the available utxos for the private key
     const utxos = await utxoMgr.getUtxos();
     // 2. construct a transaction for deployment
     const unsignedDeployTx = accumulatorMultiSig.getDeployTx(utxos, 1000);
