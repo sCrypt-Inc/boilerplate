@@ -14,7 +14,7 @@ jobs:
     - 
       os: osx
     - 
-      ox: windows
+      os: windows
     - if: branch = master AND type = push
       script:
         - npm run download:circom
