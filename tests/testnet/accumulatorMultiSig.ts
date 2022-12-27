@@ -23,7 +23,7 @@ async function main() {
 
 
     const accumulatorMultiSig = new AccumulatorMultiSig(2n,
-        [new Ripemd160(toHex(publicKeyHash1)), new Ripemd160(toHex(publicKeyHash2)), new Ripemd160(toHex(publicKeyHash3))]);
+        [Ripemd160(toHex(publicKeyHash1)), Ripemd160(toHex(publicKeyHash2)), Ripemd160(toHex(publicKeyHash3))]);
   
 
     // contract deployment

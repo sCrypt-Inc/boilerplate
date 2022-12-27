@@ -56,7 +56,7 @@ export class AnyoneCanSpend extends SmartContract {
                 this.unlockFrom = { tx, inputIndex };
 
                 return this.getUnlockingScript(self => {
-                    self.unlock(new SigHashPreimage(tx.getPreimage(inputIndex)), BigInt(tx.getOutputAmount(0)))
+                    self.unlock(SigHashPreimage(tx.getPreimage(inputIndex)), BigInt(tx.getOutputAmount(0)))
                 });
             })
     }

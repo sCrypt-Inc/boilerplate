@@ -36,7 +36,7 @@ describe('Transpiler', () => {
     const onedayAgo = new Date("2020-01-03");
     const auctionDeadline = BigInt(Math.round(onedayAgo.valueOf() / 1000));
 
-    const auction = new Auction(new PubKeyHash(toHex(publicKeyHashHighestBid)), new PubKey(toHex(publicKeyAuctioner)), auctionDeadline).markAsGenesis();
+    const auction = new Auction(PubKeyHash(toHex(publicKeyHashHighestBid)), PubKey(toHex(publicKeyAuctioner)), auctionDeadline).markAsGenesis();
 
 
     let initBalance = 10000;
@@ -45,7 +45,7 @@ describe('Transpiler', () => {
 
     const outputIndex = 0;
     const inputIndex = 0;
-    newInstance.bidder = new PubKeyHash(toHex(publicKeyHashNewBid));
+    newInstance.bidder = PubKeyHash(toHex(publicKeyHashNewBid));
 
     let callTx: bsv.Transaction = new bsv.Transaction()
       .addDummyInput(auction.lockingScript, initBalance)
@@ -72,7 +72,7 @@ describe('Transpiler', () => {
         return auction.getUnlockingScript((cloned) => {
           // call previous counter's public method to get the unlocking script.
           cloned.unlockFrom = {tx, inputIndex}
-          cloned.bid(new PubKeyHash(toHex(publicKeyHashNewBid)), BigInt(bid), BigInt(changeSats), new SigHashPreimage(tx.getPreimage(0)))
+          cloned.bid(PubKeyHash(toHex(publicKeyHashNewBid)), BigInt(bid), BigInt(changeSats), SigHashPreimage(tx.getPreimage(0)))
         })
       })
       .seal();

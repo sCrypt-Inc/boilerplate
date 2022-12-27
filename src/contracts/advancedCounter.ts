@@ -61,7 +61,7 @@ export class AdvancedCounter extends SmartContract {
             }, (tx: bsv.Transaction) => {
                 this.unlockFrom = { tx, inputIndex };
                 return this.getUnlockingScript(self => {
-                    self.increment(new SigHashPreimage(tx.getPreimage(inputIndex)));
+                    self.increment(SigHashPreimage(tx.getPreimage(inputIndex)));
                 })
             });
     }

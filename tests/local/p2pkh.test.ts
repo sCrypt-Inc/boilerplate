@@ -20,12 +20,12 @@ describe('Test SmartContract `P2PKH`', () => {
 
   it('should pass if use right privateKey', async () => {
     const tx = newTx();
-    let demo = new P2PKH(new PubKeyHash(toHex(pkh)))
+    let demo = new P2PKH(PubKeyHash(toHex(pkh)))
     demo.unlockFrom = { tx, inputIndex }
 
     let result = demo.verify(() => {
       const sig = signTx(tx, privateKey, demo.lockingScript, inputSatoshis)
-      demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey)));
+      demo.unlock(Sig(toHex(sig)), PubKey(toHex(publicKey)));
     });
 
     expect(result.success).to.be.true
@@ -35,7 +35,7 @@ describe('Test SmartContract `P2PKH`', () => {
 
   it('should pass if use right privateKey', async () => {
     const inputIndex = 0;
-    let p2pkh = new P2PKH(new PubKeyHash(toHex(pkh)))
+    let p2pkh = new P2PKH(PubKeyHash(toHex(pkh)))
     let callTx: bsv.Transaction = new bsv.Transaction()
       .addDummyInput(p2pkh.lockingScript, inputSatoshis)
       .change(privateKey.toAddress())
@@ -45,7 +45,7 @@ describe('Test SmartContract `P2PKH`', () => {
       }, (tx: bsv.Transaction) => {
         return p2pkh.getUnlockingScript((cloned) => {
           cloned.unlockFrom = { tx, inputIndex }
-          cloned.unlock(new Sig(tx.getSignature(0) as string), new PubKey(toHex(publicKey)))
+          cloned.unlock(Sig(tx.getSignature(0) as string), PubKey(toHex(publicKey)))
         })
       })
       .seal();
@@ -58,14 +58,14 @@ describe('Test SmartContract `P2PKH`', () => {
 
   it('should fail if use wrong privateKey', async () => {
     const tx = newTx();
-    let demo = new P2PKH(new PubKeyHash(toHex(pkh)))
+    let demo = new P2PKH(PubKeyHash(toHex(pkh)))
     demo.unlockFrom = { tx, inputIndex }
 
     expect(() => {
       demo.verify(() => {
 
         const sig = signTx(tx, privateKey2, demo.lockingScript, inputSatoshis)
-        demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey)));
+        demo.unlock(Sig(toHex(sig)), PubKey(toHex(publicKey)));
       });
 
     }).to.throw(/Execution failed/);

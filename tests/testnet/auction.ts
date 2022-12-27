@@ -25,7 +25,7 @@ async function main() {
     const onedayAgo = new Date("2020-01-03");
     const auctionDeadline = BigInt(Math.round(onedayAgo.valueOf() / 1000));
 
-    const auction = new Auction(new PubKeyHash(toHex(publicKeyHashHighestBid)), new PubKey(toHex(publicKeyAuctioner)), auctionDeadline)
+    const auction = new Auction(PubKeyHash(toHex(publicKeyHashHighestBid)), PubKey(toHex(publicKeyAuctioner)), auctionDeadline)
         .markAsGenesis();
 
 
@@ -47,10 +47,10 @@ async function main() {
     // contract call
     // 1. build a new contract instance
     const newInstance = auction.next();
-    newInstance.bidder = new PubKeyHash(toHex(publicKeyHashNewBid))
+    newInstance.bidder = PubKeyHash(toHex(publicKeyHashNewBid))
     // 1. construct a transaction for call
     const unsignedCallTx = auction.getCallTxForBid(await utxoMgr.getUtxos(), deployTx, newInstance, 
-        new Ripemd160(toHex(publicKeyHashNewBid)), newBid);
+        Ripemd160(toHex(publicKeyHashNewBid)), newBid);
 
     // 2. sign and broadcast the transaction
     const callTx = await signAndSend(unsignedCallTx, privateKey, false);

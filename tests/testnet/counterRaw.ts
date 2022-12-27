@@ -2,7 +2,7 @@ import { Counter } from '../../src/contracts/counterRaw';
 import { signAndSend } from '../txHelper';
 import { privateKey } from '../privateKey';
 import { getUtxoManager } from '../utxoManager';
-import { num2bin } from 'scrypt-ts';
+import { int2str } from 'scrypt-ts';
 
 async function main() {
   await Counter.compile();
@@ -30,7 +30,7 @@ async function main() {
     // 1. build a new contract instance
     const newCounter = prevInstance.next();
     // 2. apply the updates on the new instance.
-    newCounter.setDataPartInASM(num2bin(BigInt(i + 1), 1n))
+    newCounter.setDataPartInASM(int2str(BigInt(i + 1), 1n))
     // 3. construct a transaction for contract call
     const unsignedCallTx = prevInstance.getCallTx(prevTx, newCounter);
     // 4. sign and broadcast the transaction

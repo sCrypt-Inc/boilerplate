@@ -31,7 +31,7 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
   it('should successfully with all three right.', () => {
 
     const accumulatorMultiSig = new AccumulatorMultiSig(2n,
-      [new Ripemd160(toHex(publicKeyHash1)), new Ripemd160(toHex(publicKeyHash2)), new Ripemd160(toHex(publicKeyHash3))]);
+      [Ripemd160(toHex(publicKeyHash1)), Ripemd160(toHex(publicKeyHash2)), Ripemd160(toHex(publicKeyHash3))]);
 
     const tx = newTx();
 
@@ -44,8 +44,8 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
 
       const sig3 = signTx(tx, privateKey3, self.lockingScript, inputSatoshis);
 
-      self.main([new PubKey(toHex(publicKey1)), new PubKey(toHex(publicKey2)), new PubKey(toHex(publicKey3))],
-        [new Sig(toHex(sig1)), new Sig(toHex(sig2)), new Sig(toHex(sig3))], [true, true, true]);
+      self.main([PubKey(toHex(publicKey1)), PubKey(toHex(publicKey2)), PubKey(toHex(publicKey3))],
+        [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))], [true, true, true]);
     });
 
     expect(result.success, result.error).to.eq(true);
@@ -56,7 +56,7 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
   it('should successfully with two right.', () => {
 
     const accumulatorMultiSig = new AccumulatorMultiSig(2n,
-      [new Ripemd160(toHex(publicKeyHash1)), new Ripemd160(toHex(publicKeyHash2)), new Ripemd160(toHex(publicKeyHash3))]);
+      [Ripemd160(toHex(publicKeyHash1)), Ripemd160(toHex(publicKeyHash2)), Ripemd160(toHex(publicKeyHash3))]);
 
     const tx = newTx();
 
@@ -69,8 +69,8 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
 
       const sig3 = signTx(tx, privateKeyWrong, self.lockingScript, inputSatoshis);
 
-      self.main([new PubKey(toHex(publicKey1)), new PubKey(toHex(publicKey2)), new PubKey(toHex(publicKey3))],
-        [new Sig(toHex(sig1)), new Sig(toHex(sig2)), new Sig(toHex(sig3))], [true, true, false]);
+      self.main([PubKey(toHex(publicKey1)), PubKey(toHex(publicKey2)), PubKey(toHex(publicKey3))],
+        [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))], [true, true, false]);
     });
 
     expect(result.success, result.error).to.eq(true);
@@ -80,7 +80,7 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
   it('should throw with only one right.', () => {
 
     const accumulatorMultiSig = new AccumulatorMultiSig(2n,
-      [new Ripemd160(toHex(publicKeyHash1)), new Ripemd160(toHex(publicKeyHash2)), new Ripemd160(toHex(publicKeyHash3))]);
+      [Ripemd160(toHex(publicKeyHash1)), Ripemd160(toHex(publicKeyHash2)), Ripemd160(toHex(publicKeyHash3))]);
 
     const tx = newTx();
 
@@ -94,8 +94,8 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
 
         const sig3 = signTx(tx, privateKeyWrong, self.lockingScript, inputSatoshis);
 
-        self.main([new PubKey(toHex(publicKey1)), new PubKey(toHex(publicKey2)), new PubKey(toHex(publicKey3))],
-          [new Sig(toHex(sig1)), new Sig(toHex(sig2)), new Sig(toHex(sig3))], [true, false, false]);
+        self.main([PubKey(toHex(publicKey1)), PubKey(toHex(publicKey2)), PubKey(toHex(publicKey3))],
+          [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))], [true, false, false]);
       });
     }).to.throw(/Execution failed/)
 

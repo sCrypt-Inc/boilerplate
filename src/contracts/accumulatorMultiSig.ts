@@ -25,7 +25,7 @@ export class AccumulatorMultiSig extends SmartContract {
 
         for (let i = 0; i < AccumulatorMultiSig.N; i++) {
             if (masks[i]) {
-                if (hash160(pubKeys[i].toString()) == this.pubKeyHashs[i].toString() && this.checkSig(sigs[i], pubKeys[i])) {
+                if (hash160(pubKeys[i]) == this.pubKeyHashs[i] && this.checkSig(sigs[i], pubKeys[i])) {
                     total++;
                 }
             }
@@ -57,8 +57,8 @@ export class AccumulatorMultiSig extends SmartContract {
                 this.unlockFrom = {tx, inputIndex};
                 
                 return this.getUnlockingScript(self => {
-                    self.main([new PubKey(toHex(pubKeys[0])), new PubKey(toHex(pubKeys[1])), new PubKey(toHex(pubKeys[2]))],
-                        [new Sig(sigs[0]), new Sig(sigs[1]), new Sig(sigs[2])],
+                    self.main([PubKey(toHex(pubKeys[0])), PubKey(toHex(pubKeys[1])), PubKey(toHex(pubKeys[2]))],
+                        [Sig(sigs[0]), Sig(sigs[1]), Sig(sigs[2])],
                         [true, true, true])
                 });
             })

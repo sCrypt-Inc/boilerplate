@@ -12,7 +12,7 @@ async function main() {
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer());
 
 
-    const p2pkh = new P2PKH(new Ripemd160(toHex(publicKeyHash)));
+    const p2pkh = new P2PKH(Ripemd160(toHex(publicKeyHash)));
   
 
     // contract deployment

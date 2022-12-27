@@ -12,7 +12,7 @@ async function main() {
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer());
 
 
-    const acs = new AnyoneCanSpend(new Ripemd160(toHex(publicKeyHash)));
+    const acs = new AnyoneCanSpend(Ripemd160(toHex(publicKeyHash)));
   
 
     // contract deployment
@@ -29,7 +29,7 @@ async function main() {
 
     // contract call
     // 1. construct a transaction for call
-    const unsignedCallTx = acs.getCallTx(deployTx, new Ripemd160(toHex(publicKeyHash)));
+    const unsignedCallTx = acs.getCallTx(deployTx, Ripemd160(toHex(publicKeyHash)));
 
     // 2. sign and broadcast the transaction
     const callTx = await signAndSend(unsignedCallTx);

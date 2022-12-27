@@ -9,7 +9,7 @@ async function main() {
 
     const data = toHex(Buffer.from("abc"))
     const sha256Data = sha256(data);
-    let hashPuzzle = new HashPuzzle(new Sha256(sha256Data));
+    let hashPuzzle = new HashPuzzle(Sha256(sha256Data));
 
     // contract deployment
     // 1. get the available utxos for the private key

@@ -110,7 +110,7 @@ export class Auction extends SmartContract {
             }, (tx: bsv.Transaction) => {
                 this.unlockFrom = { tx, inputIndex };
                 return this.getUnlockingScript(self => {
-                    self.bid(bidder, BigInt(bid), BigInt(tx.getOutputAmount(2)), new SigHashPreimage(tx.getPreimage(inputIndex)));
+                    self.bid(bidder, BigInt(bid), BigInt(tx.getOutputAmount(2)), SigHashPreimage(tx.getPreimage(inputIndex)));
                 })
             });
     }

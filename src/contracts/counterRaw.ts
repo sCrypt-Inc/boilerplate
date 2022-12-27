@@ -1,4 +1,4 @@
-import { method, SmartContract, assert, SigHashPreimage, bsv, SigHash, len, unpack, num2bin, Utils, hash256, prop } from "scrypt-ts";
+import { method, SmartContract, assert, SigHashPreimage, bsv, SigHash, len, unpack, int2str, Utils, hash256, prop, ByteString } from "scrypt-ts";
 import { UTXO } from "../types";
 
 export class Counter extends SmartContract {
@@ -13,7 +13,7 @@ export class Counter extends SmartContract {
         assert(this.checkPreimage(txPreimage));
 
         // deserialize state (i.e., counter value)
-        let scriptCode: string = SigHash.scriptCode(txPreimage);
+        let scriptCode: ByteString = SigHash.scriptCode(txPreimage);
 
         //console.log("txPreimage", txPreimage.toJSONObject())
         let scriptLen: number = len(scriptCode);
@@ -24,17 +24,17 @@ export class Counter extends SmartContract {
         counter++;
 
         // serialize state
-        let outputScript: string = scriptCode.slice(0, (scriptLen - Counter.DataLen) * 2) + num2bin(counter, BigInt(Counter.DataLen));
+        let outputScript: ByteString = scriptCode.slice(0, (scriptLen - Counter.DataLen) * 2) + int2str(counter, BigInt(Counter.DataLen));
 
 
-        let output: string = Utils.buildOutput(outputScript, amount);
+        let output: ByteString = Utils.buildOutput(outputScript, amount);
 
         assert(hash256(output) == SigHash.hashOutputs(txPreimage));
 
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
-        this.setDataPartInASM(num2bin(BigInt(0), 1n));
+        this.setDataPartInASM(int2str(BigInt(0), 1n));
         const tx = new bsv.Transaction().from(utxos)
             .addOutput(new bsv.Transaction.Output({
                 script: this.lockingScript,
@@ -59,7 +59,7 @@ export class Counter extends SmartContract {
             .setInputScript(inputIndex, (tx: bsv.Transaction) => {
                 this.unlockFrom = { tx, inputIndex };
                 return this.getUnlockingScript(self => {
-                    self.increment(new SigHashPreimage(tx.getPreimage(inputIndex)), BigInt(tx.getOutputAmount(0)));
+                    self.increment(SigHashPreimage(tx.getPreimage(inputIndex)), BigInt(tx.getOutputAmount(0)));
                 })
             });
     }

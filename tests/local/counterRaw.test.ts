@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Counter } from '../../src/contracts/counterRaw';
-import { num2bin, SigHashPreimage } from 'scrypt-ts';
+import { int2str, SigHashPreimage } from 'scrypt-ts';
 import { dummyUTXO } from '../txHelper';
 
 
@@ -26,12 +26,12 @@ describe('Test SmartContract `Counter`', () => {
       // 1. build a new contract instance
       const newCounter = prevInstance.next();
       // 2. apply the updates on the new instance.
-      newCounter.setDataPartInASM(num2bin(BigInt(i + 1), 1n))
+      newCounter.setDataPartInASM(int2str(BigInt(i + 1), 1n))
       // 3. construct a transaction for contract call
       const callTx = prevInstance.getCallTx(prevTx, newCounter);
       // 4. run `verify` method on `prevInstance`
       const result = prevInstance.verify(self => {
-        self.increment(new SigHashPreimage(callTx.getPreimage(0)), BigInt(callTx.getOutputAmount(0)));
+        self.increment(SigHashPreimage(callTx.getPreimage(0)), BigInt(callTx.getOutputAmount(0)));
       });
 
       expect(result.success, result.error).to.be.true;

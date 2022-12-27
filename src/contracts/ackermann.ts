@@ -1,4 +1,4 @@
-import { method, prop, SmartContract, assert, num2bin, len, unpack, bsv } from "scrypt-ts";
+import { method, prop, SmartContract, assert, int2str, len, unpack, bsv } from "scrypt-ts";
 import { UTXO } from "../types";
 
 
@@ -22,7 +22,7 @@ export class Ackermann extends SmartContract {
     @method
     ackermann(m: bigint, n: bigint): bigint {
 
-        let stk: string = num2bin(m, 1n);
+        let stk: string = int2str(m, 1n);
 
         for (let i = 0; i < Ackermann.LOOPCOUNT; i++) {
             if (len(stk) > 0) {
@@ -39,11 +39,11 @@ export class Ackermann extends SmartContract {
                     n++;
                     m--;
                     // push
-                    stk = num2bin(m, 1n) + stk;
+                    stk = int2str(m, 1n) + stk;
                 }
                 else {
-                    stk = num2bin(m - 1n, 1n) + stk;
-                    stk = num2bin(m, 1n) + stk;
+                    stk = int2str(m - 1n, 1n) + stk;
+                    stk = int2str(m, 1n) + stk;
                     n--;
                 }
             }

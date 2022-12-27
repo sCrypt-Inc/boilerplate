@@ -23,7 +23,7 @@ describe('Test SmartContract `AnyoneCanSpend`', () => {
     const publicKeyAlice = bsv.PublicKey.fromPrivateKey(privateKeyAlice);
     const publicKeyHashAlice = bsv.crypto.Hash.sha256ripemd160(publicKeyAlice.toBuffer());
 
-    let anyoneCanSpend = new AnyoneCanSpend(new PubKeyHash(toHex(publicKeyHashAlice)));
+    let anyoneCanSpend = new AnyoneCanSpend(PubKeyHash(toHex(publicKeyHashAlice)));
 
     const initBalance = 1000;
 
@@ -34,7 +34,7 @@ describe('Test SmartContract `AnyoneCanSpend`', () => {
       // bind contract & tx locking relation
       return new bsv.Transaction.Output({
         // use newInstance's lockingscript as the new UTXO's lockingscript
-        script: buildPublicKeyHashScript(new PubKeyHash(toHex(publicKeyHashAlice))),
+        script: buildPublicKeyHashScript(PubKeyHash(toHex(publicKeyHashAlice))),
         satoshis: 1,
       })
     })
@@ -48,7 +48,7 @@ describe('Test SmartContract `AnyoneCanSpend`', () => {
       return anyoneCanSpend.getUnlockingScript((cloned) => {
         // call previous counter's public method to get the unlocking script.
         cloned.unlockFrom = {tx, inputIndex}
-        cloned.unlock(new SigHashPreimage(tx.getPreimage(inputIndex)), 1n);
+        cloned.unlock(SigHashPreimage(tx.getPreimage(inputIndex)), 1n);
       })
     })
     .seal()
