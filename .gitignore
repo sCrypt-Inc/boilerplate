@@ -3,6 +3,7 @@ dist/
 out/
 .vscode/*
 !.vscode/launch.json
+!.vscode/tasks.json
 scrypts/
 .env
 scrypt.index.json
