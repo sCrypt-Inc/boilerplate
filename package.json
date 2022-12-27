@@ -7,10 +7,7 @@
     "prebuild": "npm run clean",
     "build": "tsc",
     "clean": "rimraf scrypt.index.json && rimraf dist && rimraf scrypts",
-    "ci": "sh ci-setup.sh",
     "pretest": "npm run build",
-    "precitest": "npm run build && npm run ci",
-    "citest": "mocha 'dist/tests/**/*.test.js' --timeout 1200000",
     "test": "mocha 'dist/tests/**/*.test.js' --timeout 1200000",
     "testnet": "npm run build && mocha 'dist/tests/testnet/**/*.js' --timeout 1200000"
   },
