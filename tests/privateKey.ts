@@ -8,7 +8,6 @@ dotenv.config({path: dotenvConfigPath});
 
 // fill in private key on testnet in WIF here
 const privKey : string = process.env.PRIVATE_KEY || '';
-console.log('privKey', privKey)
 if (!privKey) {
   genPrivKey();
 }
