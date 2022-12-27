@@ -14,5 +14,5 @@ os:
   - windows
 
 script:
-  - npm i
-  - npm run citest
+  - echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
+  - npm t
