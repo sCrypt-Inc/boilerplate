@@ -6,10 +6,15 @@
       "detail": "Build the project which includes `scrypt-ts` smart contracts.",
       "type": "typescript",
       "tsconfig": "./tsconfig.json",
+      "option": "watch",
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
       "problemMatcher": [
         "$tsc",
+        "$tsc-watch",
         {
-          "owner": "scrypt-ts",
+          "owner": "scrypt-ts", // the last problem may not be removed from problems view due to this bug: https://github.com/microsoft/vscode/issues/164751, restart the task is a temp solution.
           "fileLocation": "autoDetect",
           "pattern": {
             "regexp": "^scrypt-ts (ERROR|WARNING) - (.*):(\\d+):(\\d+):(\\d+):(\\d+) -\\s+(.*)$",
@@ -20,7 +25,7 @@
             "endLine": 5,
             "endColumn": 6,
             "message": 7
-          }
+          },
         }
       ],
       "group": {
