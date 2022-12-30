@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { PubKey, PubKeyHash, Sig, SigHashPreimage, bsv, getPreimage, signTx, toHex } from 'scrypt-ts';
 import { P2PKH } from '../../src/contracts/p2pkh';
-import { newTx, inputIndex, inputSatoshis } from '../txHelper';
+import { newTx, inputIndex, inputSatoshis } from './util/txHelper';
 
 
 const privateKey = bsv.PrivateKey.fromRandom('testnet');

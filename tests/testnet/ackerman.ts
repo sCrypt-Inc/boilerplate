@@ -1,5 +1,5 @@
-import { getUtxoManager } from '../utxoManager';
-import { signAndSend } from '../txHelper';
+import { getUtxoManager } from './util/utxoManager';
+import { signAndSend } from './util/txHelper';
 import { Ackermann } from '../../src/contracts/ackermann';
 
 async function main() {

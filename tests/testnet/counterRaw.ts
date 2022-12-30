@@ -1,7 +1,7 @@
 import { Counter } from '../../src/contracts/counterRaw';
-import { signAndSend } from '../txHelper';
-import { privateKey } from '../privateKey';
-import { getUtxoManager } from '../utxoManager';
+import { signAndSend } from './util/txHelper';
+import { privateKey } from './util/privateKey';
+import { getUtxoManager } from './util/utxoManager';
 import { int2str } from 'scrypt-ts';
 
 async function main() {

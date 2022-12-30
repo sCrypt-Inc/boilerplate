@@ -1,7 +1,7 @@
-import { bsv } from 'scrypt-ts';
+import { bsv, UTXO } from 'scrypt-ts';
 import { privateKey } from './privateKey';
 import { fetchUtxos, sendTx, sleep } from './txHelper';
-import { UTXO } from '../src/types';
+
 
 enum UtxoMgrInitState {
   UNINITIALIZED,

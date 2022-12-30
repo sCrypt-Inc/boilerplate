@@ -1,6 +1,6 @@
 import { P2PKH } from '../../src/contracts/p2pkh';
-import { getUtxoManager } from '../utxoManager';
-import { signAndSend } from '../txHelper';
+import { getUtxoManager } from './util/utxoManager';
+import { signAndSend } from './util/txHelper';
 import { bsv, Ripemd160, toHex } from 'scrypt-ts';
 
 async function main() {

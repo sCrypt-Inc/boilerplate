@@ -1,6 +1,6 @@
 import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig';
-import { getUtxoManager } from '../utxoManager';
-import { signAndSend } from '../txHelper';
+import { getUtxoManager } from './util/utxoManager';
+import { signAndSend } from './util/txHelper';
 import { bsv, Ripemd160, toHex } from 'scrypt-ts';
 
 async function main() {

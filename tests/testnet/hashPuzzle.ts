@@ -1,6 +1,6 @@
 import { HashPuzzle } from '../../src/contracts/hashpuzzle';
-import { getUtxoManager } from '../utxoManager';
-import { signAndSend } from '../txHelper';
+import { getUtxoManager } from './util/utxoManager';
+import { signAndSend } from './util/txHelper';
 import { Sha256, sha256, toHex } from 'scrypt-ts';
 
 async function main() {

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { Ripemd160, bsv, toHex, PubKey, Sig, signTx  } from 'scrypt-ts';
 import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig';
-import { newTx, inputIndex, inputSatoshis } from '../txHelper';
+import { newTx, inputIndex, inputSatoshis } from './util/txHelper';
 
 describe('Test SmartContract `AccumulatorMultiSig`', () => {
 

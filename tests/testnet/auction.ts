@@ -1,8 +1,8 @@
 import { Auction } from '../../src/contracts/auction';
-import { getUtxoManager } from '../utxoManager';
-import { signAndSend } from '../txHelper';
+import { getUtxoManager } from './util/utxoManager';
+import { signAndSend } from './util/txHelper';
 import { bsv, PubKeyHash, Ripemd160, toHex, PubKey } from 'scrypt-ts';
-import { privateKey } from '../privateKey';
+import { privateKey } from './util/privateKey';
 async function main() {
     const utxoMgr = await getUtxoManager();
     await Auction.compile();

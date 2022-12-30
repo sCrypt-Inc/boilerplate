@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { SigHashPreimage } from 'scrypt-ts';
 import { Counter } from '../../src/contracts/counter';
-import { dummyUTXO } from '../txHelper';
+import { dummyUTXO } from './util/txHelper';
 
 describe('Test SmartContract `Counter`', () => {
 

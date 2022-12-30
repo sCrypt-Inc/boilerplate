@@ -1,7 +1,7 @@
 import { Counter } from '../../src/contracts/counter';
-import { signAndSend } from '../txHelper';
-import { privateKey } from '../privateKey';
-import { getUtxoManager } from '../utxoManager';
+import { signAndSend } from './util/txHelper';
+import { privateKey } from './util/privateKey';
+import { getUtxoManager } from './util/utxoManager';
 
 async function main() {
   await Counter.compile();

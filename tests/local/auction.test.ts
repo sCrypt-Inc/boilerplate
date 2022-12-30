@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { SigHashPreimage, bsv, PubKeyHash, PubKey, toHex } from 'scrypt-ts';
 import { Auction } from '../../src/contracts/auction';
-import { inputSatoshis} from '../txHelper';
+import { inputSatoshis} from './util/txHelper';
 
 describe('Transpiler', () => {
   before(async () => {

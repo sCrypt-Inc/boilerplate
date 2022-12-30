@@ -1,9 +1,9 @@
 
-import { bsv } from 'scrypt-ts';
+import { bsv, UTXO } from 'scrypt-ts';
 import { randomBytes } from 'crypto';
 import { privateKey } from './privateKey'
 import axios from 'axios';
-import { UTXO } from '../src/types';
+
 
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
 

@@ -3,6 +3,7 @@ import { bsv } from 'scrypt-ts';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 
+
 const dotenvConfigPath = ".env";
 dotenv.config({path: dotenvConfigPath});
 

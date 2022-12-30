@@ -1,6 +1,6 @@
 import { Demo } from '../../src/contracts/demo';
-import { getUtxoManager } from '../utxoManager';
-import { signAndSend } from '../txHelper';
+import { getUtxoManager } from './util/utxoManager';
+import { signAndSend } from './util/txHelper';
 
 async function main() {
     const utxoMgr = await getUtxoManager();

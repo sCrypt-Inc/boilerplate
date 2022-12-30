@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { PubKeyHash, SigHashPreimage, bsv, toHex, buildPublicKeyHashScript } from 'scrypt-ts';
 import { AnyoneCanSpend } from '../../src/contracts/acs';
-import { inputIndex } from '../txHelper';
+import { inputIndex } from './util/txHelper';
 
 const Signature = bsv.crypto.Signature;
 // Note: ANYONECANPAY
