@@ -18,7 +18,7 @@ export class AccumulatorMultiSig extends SmartContract {
         this.pubKeyHashs = pubKeyHashs;
     }
 
-    @method
+    @method()
     public main(pubKeys: FixedArray<PubKey, 3>, sigs: FixedArray<Sig, 3>, masks: FixedArray<boolean, 3>) {
 
         let total: bigint = 0n;

@@ -16,7 +16,7 @@ export class AdvancedCounter extends SmartContract {
     }
 
 
-    @method
+    @method()
     public increment(txPreimage: SigHashPreimage) {
         this.counter++;
 

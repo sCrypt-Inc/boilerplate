@@ -1,4 +1,4 @@
-import { method, prop, SmartContract, assert, SigHashPreimage, SigHash, bsv } from "scrypt-ts";
+import { method, prop, SmartContract, assert, SigHashPreimage, SigHash, bsv, hash256 } from "scrypt-ts";
 import { UTXO } from "../types";
 
 export class Counter extends SmartContract {
@@ -10,10 +10,10 @@ export class Counter extends SmartContract {
     this.count = count;
   }
 
-  @method
-  public increment(txPreimage: SigHashPreimage) {
+  @method()
+  public increment() {
     this.count++;
-    assert(this.updateState(txPreimage, SigHash.value(txPreimage)));
+    assert(this.ctx.hashOutputs == hash256(this.buildStateOutput(this.ctx.utxo.value)));
   }
 
   private balance: number;
@@ -43,7 +43,7 @@ export class Counter extends SmartContract {
       .setInputScript(inputIndex, (tx: bsv.Transaction) => {
         this.unlockFrom = { tx, inputIndex };
         return this.getUnlockingScript(self => {
-          self.increment(SigHashPreimage(tx.getPreimage(inputIndex)));
+          self.increment();
         })
       });
   }

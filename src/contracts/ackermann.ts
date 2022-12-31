@@ -19,7 +19,7 @@ export class Ackermann extends SmartContract {
         this.b = b;
     }
 
-    @method
+    @method()
     ackermann(m: bigint, n: bigint): bigint {
 
         let stk: string = int2str(m, 1n);
@@ -54,7 +54,7 @@ export class Ackermann extends SmartContract {
     }
 
     // y = 5
-    @method
+    @method()
     public unlock(y: bigint) {
         assert(y == this.ackermann(this.a, this.b));
     }

@@ -12,9 +12,9 @@ export class HashPuzzle extends SmartContract {
         this.sha256 = sha256;
     }
 
-    @method
+    @method()
     public unlock(data: string) {
-        assert(this.sha256.toString() == sha256(data));
+        assert(this.sha256 == sha256(data));
     }
 
     getDeployTx(utxos: UTXO[], satoshis: number): bsv.Transaction {

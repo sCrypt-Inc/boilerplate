@@ -15,7 +15,7 @@ export class AnyoneCanSpend extends SmartContract {
         this.pubKeyHash = pubKeyHash;
     }
 
-    @method
+    @method()
     public unlock(txPreimage: SigHashPreimage, outputAmount: bigint) {
 
         assert(this.checkPreimageSigHashType(txPreimage, SigHash.ANYONECANPAY_SINGLE));

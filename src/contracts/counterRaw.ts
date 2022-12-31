@@ -7,7 +7,7 @@ export class Counter extends SmartContract {
     static readonly DataLen: number = 1;
 
 
-    @method
+    @method()
     public increment(txPreimage: SigHashPreimage, amount: bigint) {
 
         assert(this.checkPreimage(txPreimage));

@@ -1,4 +1,4 @@
-import { method, prop, SmartContract, assert, PubKeyHash, PubKey, SigHashPreimage, Sig, SigHash, hash256, Utils, bsv, buildPublicKeyHashScript } from "scrypt-ts";
+import { method, prop, SmartContract, assert, PubKeyHash, PubKey, SigHashPreimage, Sig, SigHash, hash256, Utils, bsv, buildPublicKeyHashScript, ByteString } from "scrypt-ts";
 import { UTXO } from "../types";
 
 
@@ -25,7 +25,7 @@ export class Auction extends SmartContract {
 
 
     // bid with a higher offer
-    @method
+    @method()
     public bid(bidder: PubKeyHash, bid: bigint , changeSats: bigint , txPreimage: SigHashPreimage) {
         let highestBid: bigint = SigHash.value(txPreimage);
         assert(bid > highestBid);
@@ -34,32 +34,32 @@ export class Auction extends SmartContract {
         this.bidder = bidder;
 
         // auction continues with a higher bidder
-        let stateScript: string = this.getStateScript();
-        let auctionOutput: string = Utils.buildOutput(stateScript, bid);
+        let stateScript: ByteString = this.getStateScript();
+        let auctionOutput: ByteString = Utils.buildOutput(stateScript, bid);
 
         // refund previous highest bidder
-        let refundScript: string = Utils.buildPublicKeyHashScript(highestBidder);
-        let refundOutput: string = Utils.buildOutput(refundScript, highestBid);
-        let output:string = auctionOutput + refundOutput;
+        let refundScript: ByteString = Utils.buildPublicKeyHashScript(highestBidder);
+        let refundOutput: ByteString = Utils.buildOutput(refundScript, highestBid);
+        let output:ByteString = auctionOutput + refundOutput;
 
         if(changeSats > 0) {
 
-            let changeScript: string = Utils.buildPublicKeyHashScript(bidder);
-            let changeOutput: string = Utils.buildOutput(changeScript, changeSats);
+            let changeScript: ByteString = Utils.buildPublicKeyHashScript(bidder);
+            let changeOutput: ByteString = Utils.buildOutput(changeScript, changeSats);
             output += changeOutput;
         }
 
         assert(this.propagateState(txPreimage, output));
     }
 
-    @method
+    @method()
     public close(sig: Sig, txPreimage: SigHashPreimage) {
         assert(this.checkPreimage(txPreimage));
         assert(SigHash.nLocktime(txPreimage) >= this.auctionDeadline);
         assert(this.checkSig(sig, this.auctioner));
     }
 
-    @method
+    @method()
     propagateState(txPreimage: SigHashPreimage , outputs: string) : boolean {
         assert(this.checkPreimage(txPreimage));
         return (hash256(outputs) == SigHash.hashOutputs(txPreimage));

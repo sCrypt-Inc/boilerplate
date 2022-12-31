@@ -13,9 +13,9 @@ export class P2PKH extends SmartContract {
     }
 
 
-    @method
+    @method()
     public unlock(sig: Sig, pubkey: PubKey) {
-        assert(hash160(pubkey.toString()) == this.pubKeyHash.toString());
+        assert(hash160(pubkey) == this.pubKeyHash);
         assert(this.checkSig(sig, pubkey));
     }
 
