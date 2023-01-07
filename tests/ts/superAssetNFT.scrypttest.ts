@@ -72,7 +72,7 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
   it('signature check should succeed when right private key signs', () => {
     const SuperAssetNFT = buildContractClass(compileContract('SuperAssetNFT.scrypt'));
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer());
-    let nft = new SuperAssetNFT(new Bytes('000000000000000000000000000000000000000000000000000000000000000000000000'), new Ripemd160(toHex(publicKeyHash)));
+    let nft = new SuperAssetNFT(Bytes('000000000000000000000000000000000000000000000000000000000000000000000000'), Ripemd160(toHex(publicKeyHash)));
     const asmVars = {
       'Tx.checkPreimageOpt_.sigHashType': 
       sighashType2Hex(sighashType)
@@ -103,8 +103,8 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
         satoshis: 0,
       }) 
     })
-    const receiveAddressWithSize = new Bytes('14' + privateKey.toAddress().toHex().substring(2));
-    const outputSatsWithSize = new Bytes(num2bin(inputSatoshis, 8) + `${outputSize}24`);
+    const receiveAddressWithSize = Bytes('14' + privateKey.toAddress().toHex().substring(2));
+    const outputSatsWithSize = Bytes(num2bin(BigInt(inputSatoshis), 8) + `${outputSize}24`);
     const preimage = generatePreimage(true, tx, nft.lockingScript, inputSatoshis, sighashType);
     let sig = signTx(tx, privateKey, nft.lockingScript, inputSatoshis, 0, sighashType)
 
@@ -112,16 +112,16 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
       preimage,
       outputSatsWithSize,
       receiveAddressWithSize,
-      new Bool(false),
-      new Sig(toHex(sig)),
-      new PubKey(toHex(publicKey))).verify()
+      Bool(false),
+      Sig(toHex(sig)),
+      PubKey(toHex(publicKey))).verify()
     expect(result.success, result.error).to.be.true
   });
 
   it('signature check should fail when wrong private key signs', () => {
     const SuperAssetNFT = buildContractClass(compileContract('SuperAssetNFT.scrypt'));
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer());
-    let nft = new SuperAssetNFT(new Bytes('000000000000000000000000000000000000000000000000000000000000000000000000'), new Ripemd160(toHex(publicKeyHash)));
+    let nft = new SuperAssetNFT(Bytes('000000000000000000000000000000000000000000000000000000000000000000000000'), Ripemd160(toHex(publicKeyHash)));
     const asmVars = {
       'Tx.checkPreimageOpt_.sigHashType': 
       sighashType2Hex(sighashType)
@@ -142,24 +142,24 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
         satoshis: inputSatoshis,
       });
     })
-    const receiveAddressWithSize = new Bytes('14' + privateKey.toAddress().toHex().substring(2));
-    const outputSatsWithSize = new Bytes(num2bin(inputSatoshis, 8) + `${outputSize}24`);
+    const receiveAddressWithSize = Bytes('14' + privateKey.toAddress().toHex().substring(2));
+    const outputSatsWithSize = Bytes(num2bin(BigInt(inputSatoshis), 8) + `${outputSize}24`);
     const preimage = generatePreimage(true, tx, nft.lockingScript, inputSatoshis, sighashType);
     let sig = signTx(tx, privateKey2, nft.lockingScript, inputSatoshis, 0, sighashType)
     let result = nft.unlock(
       preimage,
       outputSatsWithSize,
       receiveAddressWithSize,
-      new Bool(false),
-      new Sig(toHex(sig)),
-      new PubKey(toHex(publicKey))).verify()
+      Bool(false),
+      Sig(toHex(sig)),
+      PubKey(toHex(publicKey))).verify()
     expect(result.success, result.error).to.be.false
   }); 
 
   it('should fail when non-SIGHASH_SINGLE flag is used when there are other outputs', () => {
     const SuperAssetNFT = buildContractClass(compileContract('SuperAssetNFT.scrypt'));
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer());
-    let nft = new SuperAssetNFT(new Bytes('000000000000000000000000000000000000000000000000000000000000000000000000'), new Ripemd160(toHex(publicKeyHash)));
+    let nft = new SuperAssetNFT(Bytes('000000000000000000000000000000000000000000000000000000000000000000000000'), Ripemd160(toHex(publicKeyHash)));
     const sighashTypeNotSighashSingle = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL| Signature.SIGHASH_FORKID;
     const asmVars = {
       'Tx.checkPreimageOpt_.sigHashType': 
@@ -188,23 +188,23 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
         satoshis: 0,
       }) 
     })
-    const receiveAddressWithSize = new Bytes('14' + privateKey.toAddress().toHex().substring(2));
-    const outputSatsWithSize = new Bytes(num2bin(inputSatoshis, 8) + `${outputSize}24`);
+    const receiveAddressWithSize = Bytes('14' + privateKey.toAddress().toHex().substring(2));
+    const outputSatsWithSize = Bytes(num2bin(BigInt(inputSatoshis), 8) + `${outputSize}24`);
     const preimage = generatePreimage(true, tx, nft.lockingScript, inputSatoshis, sighashTypeNotSighashSingle);
     let sig = signTx(tx, privateKey, nft.lockingScript, inputSatoshis, 0, sighashTypeNotSighashSingle)
     let result = nft.unlock(
       preimage,
       outputSatsWithSize,
       receiveAddressWithSize,
-      new Bool(false),
-      new Sig(toHex(sig)),
-      new PubKey(toHex(publicKey))).verify()
+      Bool(false),
+      Sig(toHex(sig)),
+      PubKey(toHex(publicKey))).verify()
     expect(result.success, result.error).to.be.false
   }); 
   it('should allow arbitrary change when isTransform is true', () => {
     const SuperAssetNFT = buildContractClass(compileContract('SuperAssetNFT.scrypt'));
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer());
-    let nft = new SuperAssetNFT(new Bytes('000000000000000000000000000000000000000000000000000000000000000000000000'), new Ripemd160(toHex(publicKeyHash)));
+    let nft = new SuperAssetNFT(Bytes('000000000000000000000000000000000000000000000000000000000000000000000000'), Ripemd160(toHex(publicKeyHash)));
     const asmVars = {
       'Tx.checkPreimageOpt_.sigHashType': 
       sighashType2Hex(sighashType)
@@ -231,24 +231,24 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
         satoshis: 10,
       }) 
     })
-    const receiveAddressWithSize = new Bytes('14' + privateKey.toAddress().toHex().substring(2));
-    const outputSatsWithSize = new Bytes(num2bin(inputSatoshis, 8) + `${outputSize}24`);
+    const receiveAddressWithSize = Bytes('14' + privateKey.toAddress().toHex().substring(2));
+    const outputSatsWithSize = Bytes(num2bin(BigInt(inputSatoshis), 8) + `${outputSize}24`);
     const preimage = generatePreimage(true, tx, nft.lockingScript, inputSatoshis, sighashType);
     let sig = signTx(tx, privateKey, nft.lockingScript, inputSatoshis, 0, sighashType)
     let result = nft.unlock(
       preimage,
       outputSatsWithSize,
       receiveAddressWithSize,
-      new Bool(true),
-      new Sig(toHex(sig)),
-      new PubKey(toHex(publicKey))).verify()
+      Bool(true),
+      Sig(toHex(sig)),
+      PubKey(toHex(publicKey))).verify()
     expect(result.success, result.error).to.be.true
   });
 
   it('signature check should succeed when right private key signs (after mint)', () => {
     const SuperAssetNFT = buildContractClass(compileContract('SuperAssetNFT.scrypt'));
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer());
-    let nft = new SuperAssetNFT(new Bytes('0a0000000000000000000000000000000000000000000000000000000000000000000001'), new Ripemd160(toHex(publicKeyHash)));
+    let nft = new SuperAssetNFT(Bytes('0a0000000000000000000000000000000000000000000000000000000000000000000001'), Ripemd160(toHex(publicKeyHash)));
     const asmVars = {
       'Tx.checkPreimageOpt_.sigHashType': 
       sighashType2Hex(sighashType)
@@ -279,23 +279,23 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
         satoshis: 0,
       }) 
     })
-    const receiveAddressWithSize = new Bytes('14' + privateKey.toAddress().toHex().substring(2));
-    const outputSatsWithSize = new Bytes(num2bin(inputSatoshis, 8) + `${outputSize}24`);
+    const receiveAddressWithSize = Bytes('14' + privateKey.toAddress().toHex().substring(2));
+    const outputSatsWithSize = Bytes(num2bin(BigInt(inputSatoshis), 8) + `${outputSize}24`);
     const preimage = generatePreimage(true, tx, nft.lockingScript, inputSatoshis, sighashType);
     let sig = signTx(tx, privateKey, nft.lockingScript, inputSatoshis, 0, sighashType)
     let result = nft.unlock(
       preimage,
       outputSatsWithSize,
       receiveAddressWithSize,
-      new Bool(false),
-      new Sig(toHex(sig)),
-      new PubKey(toHex(publicKey))).verify()
+      Bool(false),
+      Sig(toHex(sig)),
+      PubKey(toHex(publicKey))).verify()
     expect(result.success, result.error).to.be.true
   });
   it('op_verify should fail when provided with the wrong pkh in the constructor', () => {
     const SuperAssetNFT = buildContractClass(compileContract('SuperAssetNFT.scrypt'));
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer());
-    let nft = new SuperAssetNFT(new Bytes('0a0000000000000000000000000000000000000000000000000000000000000000000001'), new Ripemd160('4f3c913a459603496db9399aa12c8c9fc7f74932'));
+    let nft = new SuperAssetNFT(Bytes('0a0000000000000000000000000000000000000000000000000000000000000000000001'), Ripemd160('4f3c913a459603496db9399aa12c8c9fc7f74932'));
     const asmVars = {
       'Tx.checkPreimageOpt_.sigHashType': 
       sighashType2Hex(sighashType)
@@ -324,17 +324,17 @@ describe('Test sCrypt contract SuperAssetNFT In Typescript', () => {
         satoshis: 0,
       }) 
     })
-    const receiveAddressWithSize = new Bytes('14' + privateKey.toAddress().toHex().substring(2));
-    const outputSatsWithSize = new Bytes(num2bin(inputSatoshis, 8) + `${outputSize}24`);
+    const receiveAddressWithSize = Bytes('14' + privateKey.toAddress().toHex().substring(2));
+    const outputSatsWithSize = Bytes(num2bin(BigInt(inputSatoshis), 8) + `${outputSize}24`);
     const preimage = generatePreimage(true, tx, nft.lockingScript, inputSatoshis, sighashType);
     let sig = signTx(tx, privateKey, nft.lockingScript, inputSatoshis, 0, sighashType)
     let result = nft.unlock(
       preimage,
       outputSatsWithSize,
       receiveAddressWithSize,
-      new Bool(false),
-      new Sig(toHex(sig)),
-      new PubKey(toHex(publicKey))).verify()
+      Bool(false),
+      Sig(toHex(sig)),
+      PubKey(toHex(publicKey))).verify()
     expect(result.success, result.error).to.be.false
   });
 });

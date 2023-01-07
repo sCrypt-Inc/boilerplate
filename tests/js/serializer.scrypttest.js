@@ -47,21 +47,21 @@ describe( 'Test sCrypt contract Serializer In Javascript', () => {
   } );
 
   it( 'bytes', () => {
-    result = demo.testBytes( new Bytes( '1100' ) ).verify()
+    result = demo.testBytes(Bytes( '1100' ) ).verify()
     expect( result.success, result.error ).to.be.true
-    result = demo.testBytes( new Bytes( '1100ffff' ) ).verify()
+    result = demo.testBytes(Bytes( '1100ffff' ) ).verify()
     expect( result.success, result.error ).to.be.true
   } );
 
   it( 'pushdata 1', () => {
-    result = demo.testBytes( new Bytes( '11'.repeat( 76 ) ) ).verify()
+    result = demo.testBytes(Bytes( '11'.repeat( 76 ) ) ).verify()
     expect( result.success, result.error ).to.be.true
-    result = demo.testBytes( new Bytes( 'ff'.repeat( 0x100 - 1 ) ) ).verify()
+    result = demo.testBytes(Bytes( 'ff'.repeat( 0x100 - 1 ) ) ).verify()
     expect( result.success, result.error ).to.be.true
   } );
 
   it( 'pushdata 2', () => {
-    result = demo.testBytes( new Bytes( '11'.repeat( 2 ** 8 ) ) ).verify()
+    result = demo.testBytes(Bytes( '11'.repeat( 2 ** 8 ) ) ).verify()
     expect( result.success, result.error ).to.be.true
   } );
 
@@ -81,7 +81,7 @@ describe( 'Test sCrypt contract Serializer In Javascript', () => {
         const m = getRandomInt( varIntBounds[ i ], varIntBounds[ i + 1 ] )
         const h = getRandomBytesHex( m )
 
-        result = demo.main( n % 2 === 0, new Bytes( h ), n ).verify()
+        result = demo.main( n % 2 === 0, Bytes( h ), n ).verify()
 
         if(result.success === false) {
           //Print error message, when an unreproducible error occurs

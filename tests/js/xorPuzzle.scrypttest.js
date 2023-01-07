@@ -10,8 +10,7 @@ const {
   Sig,
   signTx,
   toHex,
-  Bytes,
-  readLaunchJson
+  Bytes
 } = require('scryptlib');
 const {
   inputIndex,
@@ -34,7 +33,7 @@ const dataBufHash_false = bsv.crypto.Hash.sha256(dataBuf_false);
 const dataBufHashHex_false = toHex(dataBufHash_false);
 
 // for output of locking transaction
-const privateKeyA = new bsv.PrivateKey.fromRandom('testnet');
+const privateKeyA = bsv.PrivateKey.fromRandom('testnet');
 const publicKeyA = privateKeyA.publicKey;
 const publicKeyAHex = toHex(publicKeyA);
 const publicKeyABI = BigInt('0x' + publicKeyAHex);
@@ -58,7 +57,7 @@ describe('Test sCrypt contract HashPuzzle In Javascript', () => {
 
   before(() => {
     const XorPuzzle = buildContractClass(compileContract('xorPuzzle.scrypt'));
-    xorPuzzle = new XorPuzzle(new Bytes(xorResultHex));
+    xorPuzzle = new XorPuzzle(Bytes(xorResultHex));
     xorPuzzle.txContext = { tx, inputIndex, inputSatoshis };
     sig = signTx(
       tx,
@@ -71,9 +70,9 @@ describe('Test sCrypt contract HashPuzzle In Javascript', () => {
   it('check should succeed when correct data provided', () => {
     result = xorPuzzle
       .unlock(
-        new Sig(toHex(sig)),
-        new PubKey(toHex(publicKeyA)),
-        new Bytes(dataBufHashHex)
+        Sig(toHex(sig)),
+        PubKey(toHex(publicKeyA)),
+        Bytes(dataBufHashHex)
       )
       .verify();
 
@@ -84,9 +83,9 @@ describe('Test sCrypt contract HashPuzzle In Javascript', () => {
   it('check should fail when wrong data provided', () => {
     result = xorPuzzle
       .unlock(
-        new Sig(toHex(sig)),
-        new PubKey(toHex(publicKeyA)),
-        new Bytes(dataBufHashHex_false)
+        Sig(toHex(sig)),
+        PubKey(toHex(publicKeyA)),
+        Bytes(dataBufHashHex_false)
       )
       .verify();
     expect(result.success, result.error).to.be.false;

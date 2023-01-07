@@ -19,7 +19,7 @@ describe('Test sCrypt contract P2SH In Javascript', () => {
     const codeScript = demoContract.codePart.toBuffer()
     const scriptHash = bsv.crypto.Hash.sha256ripemd160( codeScript )
 
-    p2sh = new P2SH(new PubKeyHash(toHex(scriptHash)))
+    p2sh = new P2SH(PubKeyHash(toHex(scriptHash)))
 
 
     tx.addInput(new bsv.Transaction.Input({
@@ -41,7 +41,7 @@ describe('Test sCrypt contract P2SH In Javascript', () => {
     // expect(toHex( p2sh.lockingScript.toBuffer())).is.eql(preimage.scriptCode)
 
     const codeScript = demoContract.codePart.toBuffer()
-    const redeemFn = p2sh.redeem(new Bytes(toHex(codeScript)), new SigHashPreimage(toHex(preimage)))
+    const redeemFn = p2sh.redeem(Bytes(toHex(codeScript)), SigHashPreimage(toHex(preimage)))
     result = redeemFn.verify(context)
     expect(result.success, result.error).to.be.true
   });

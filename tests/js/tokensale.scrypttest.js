@@ -7,7 +7,7 @@ const tx = newTx();
 describe('Test sCrypt contract TokenSale In Javascript', () => {
   let tokenSale, getPreimageAfterPurchase, result
 
-  const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey1 = bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
   const numTokens = 21
   const tokenPriceInSatoshis = 100
@@ -17,7 +17,7 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
     tokenSale = new TokenSale(tokenPriceInSatoshis)
 
     // initial empty state
-    tokenSale.setDataPart('00')
+    tokenSale.setDataPartInASM('00')
 
     getPreimageAfterPurchase = (publicKey) => {
 
@@ -37,9 +37,9 @@ describe('Test sCrypt contract TokenSale In Javascript', () => {
     const context = { tx, inputIndex, inputSatoshis }
     const preimage = getPreimageAfterPurchase(publicKey1)
     result = tokenSale.buy(
-        new PubKey(toHex(publicKey1)),
+        PubKey(toHex(publicKey1)),
         numTokens,
-        new SigHashPreimage(toHex(preimage))
+        SigHashPreimage(toHex(preimage))
       ).verify(context)
     expect(result.success, result.error).to.be.true
   });

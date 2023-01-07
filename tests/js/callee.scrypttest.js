@@ -5,7 +5,6 @@ const {
   getPreimage,
   toHex,
   SigHashPreimage,
-  buildTypeClasses,
   num2bin,
 } = require('scryptlib');
 
@@ -21,18 +20,15 @@ const tx = newTx();
 
 const Signature = bsv.crypto.Signature;
 
-const sighashType =  Signature.SIGHASH_SINGLE | Signature.SIGHASH_FORKID;
-
-const a = 1;
-const b = 1;
-const c = -2;
-const x = 1;
+const a = 1n;
+const b = 1n;
+const c = -2n;
+const x = 1n;
 describe('Test sCrypt contract Callee in Javascript', () => {
-  let callee, preimage, result, Coeff;
+  let callee, preimage, result;
 
   before(() => {
     const Callee = buildContractClass(compileContract('callee.scrypt'));
-    Coeff = buildTypeClasses(Callee).Coeff;
     callee = new Callee();
 
     const newLockingScript = ['OP_FALSE', 'OP_RETURN', num2bin(a, 2) + num2bin(b, 2) + num2bin(c, 2)+ num2bin(x, 2)].join(' ')
@@ -48,7 +44,7 @@ describe('Test sCrypt contract Callee in Javascript', () => {
       callee.lockingScript,
       inputSatoshis,
       0,
-      sighashType
+      Signature.SINGLE
     );
 
     // set txContext for verification
@@ -60,20 +56,20 @@ describe('Test sCrypt contract Callee in Javascript', () => {
   });
 
   it('should succeed when a,b,c,x  satisfy a * x * x + b * x + c == 0', () => {
-    result = callee.solve(new Coeff({
+    result = callee.solve({
       a: a,
       b: b,
       c: c
-    }), x, new SigHashPreimage(toHex(preimage))).verify();
+    }, x, SigHashPreimage(toHex(preimage))).verify();
     expect(result.success, result.error).to.be.true;
   });
 
   it('should fail when a,b,c,x  Not satisfy a * x * x + b * x + c == 0', () => {
-    result = callee.solve(new Coeff({
+    result = callee.solve({
       a: a,
       b: b,
       c: c
-    }), 2, new SigHashPreimage(toHex(preimage))).verify();
+    }, 2n, SigHashPreimage(toHex(preimage))).verify();
     expect(result.success, result.error).to.be.false;
   });
 });

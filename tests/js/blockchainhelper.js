@@ -173,9 +173,9 @@ function newTxInBlock() {
 
 // Whether the Node is valid, or its position in the merkle tree
 const NodeCode = {
-    INVALID: 0,
-    LEFT: 1,
-    RIGHT: 2
+    INVALID: 0n,
+    LEFT: 1n,
+    RIGHT: 2n
 }
 
 
@@ -199,33 +199,32 @@ const wrongMerklePath = {
 
 
 // convert json object to BlockHeader struct
-function toBlockHeader(BlockHeader, json) {
-
-    return new BlockHeader({
-        version: new Bytes(uint32Tobin(json.version)),
-        prevBlockHash: new Sha256(toLittleIndian(json.previousblockhash)),
-        merkleRoot: new Sha256(toLittleIndian(json.merkleroot)),
-        time: json.time,
-        bits: new Bytes(toLittleIndian(json.bits)),
-        nonce: json.nonce
-    })
+function toBlockHeader(json) {
+    return {
+        version: Bytes(uint32Tobin(json.version)),
+        prevBlockHash: Sha256(toLittleIndian(json.previousblockhash)),
+        merkleRoot: Sha256(toLittleIndian(json.merkleroot)),
+        time: BigInt(json.time),
+        bits: Bytes(toLittleIndian(json.bits)),
+        nonce: BigInt(json.nonce)
+    }
 }
 
 // build Merkle Proof by merklePath, The generated proof is an array of 32 lengths.
 // If the merkle path is less than 32 levels, 
 // the rest will be filled with default values
-function buildMerkleProof(NodeClass, merklePath) {
+function buildMerkleProof(merklePath) {
     const proof = new Array(32);
-    proof.fill(new NodeClass({
-        hash: new Sha256("0000000000000000000000000000000000000000000000000000000000000000"),
+    proof.fill({
+        hash: Sha256("0000000000000000000000000000000000000000000000000000000000000000"),
         left: NodeCode.INVALID //invalid Node
-    }))
+    })
 
     merklePath.branches.forEach((m, index) => {
-        proof[index] = new NodeClass({
-            hash: new Sha256(toLittleIndian(m.hash)),
-            left: m.pos === "L" ? 1 : 2
-        });
+        proof[index] = {
+            hash: Sha256(toLittleIndian(m.hash)),
+            left: m.pos === "L" ? 1n : 2n
+        };
     })
 
     return proof;

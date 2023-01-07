@@ -8,18 +8,16 @@ var tx = newTx();
 describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
   let rps, lockingScriptCodePart;
 
-  const privateKeyA = new bsv.PrivateKey.fromRandom("testnet");
+  const privateKeyA = bsv.PrivateKey.fromRandom("testnet");
   const publicKeyA = bsv.PublicKey.fromPrivateKey(privateKeyA);
   const publicKeyHashPlayerA = bsv.crypto.Hash.sha256ripemd160(publicKeyA.toBuffer());
-  const privateKeyB = new bsv.PrivateKey.fromRandom("testnet");
+  const privateKeyB = bsv.PrivateKey.fromRandom("testnet");
   const publicKeyB = bsv.PublicKey.fromPrivateKey(privateKeyB);
   const publicKeyHashPlayerB = bsv.crypto.Hash.sha256ripemd160(publicKeyB.toBuffer());
 
   const playerAdata = bsv.crypto.Hash.sha256ripemd160(Buffer.from("01" + toHex(publicKeyA.toBuffer()), "hex"));
 
   const Signature = bsv.crypto.Signature;
-  // Note: ANYONECANPAY
-  const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID;
 
   const PubKeyHashLen = 20;
 
@@ -38,7 +36,7 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
 
   it("should succeed when playerB follow", () => {
     const testFollow = (playerBpkh, action, initAmount, inputAmount, outputAmount, changeAmount) => {
-      rps.setDataPart(toHex(playerAdata) + num2bin(0, PubKeyHashLen) + num2bin(actionINIT, DataLen));
+      rps.setDataPartInASM(toHex(playerAdata) + num2bin(0, PubKeyHashLen) + num2bin(actionINIT, DataLen));
 
       tx = new bsv.Transaction();
       tx.addInput(
@@ -77,9 +75,9 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
       );
 
       rps.txContext = { tx, inputIndex, inputSatoshis: initAmount };
-      const preimage = getPreimage(tx, rps.lockingScript, initAmount, inputIndex, sighashType);
+      const preimage = getPreimage(tx, rps.lockingScript, initAmount, inputIndex, Signature.ANYONECANPAY_ALL);
 
-      return rps.follow(new SigHashPreimage(toHex(preimage)), action, new PubKeyHash(toHex(playerBpkh)), changeAmount);
+      return rps.follow(SigHashPreimage(toHex(preimage)), action, PubKeyHash(toHex(playerBpkh)), changeAmount);
     };
 
     let initAmount = 100000;
@@ -93,7 +91,7 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
 
   it("should succeed when playerA finish", () => {
     const testFinish = (privKey, playerBpkh, actionA, actionB, totalAmount, inputAmount, outputAmount, changeAmount) => {
-      rps.setDataPart(toHex(playerAdata) + toHex(playerBpkh) + num2bin(actionB, DataLen));
+      rps.setDataPartInASM(toHex(playerAdata) + toHex(playerBpkh) + num2bin(actionB, DataLen));
 
       tx = new bsv.Transaction();
 
@@ -134,10 +132,10 @@ describe("Test sCrypt contract Rock Paper Scissors In Javascript", () => {
       }
       rps.txContext = { tx, inputIndex, inputSatoshis: totalAmount };
 
-      const preimage = getPreimage(tx, rps.lockingScript, totalAmount, inputIndex, sighashType);
-      const sig = signTx(tx, privKey, rps.lockingScript, totalAmount, inputIndex, sighashType);
+      const preimage = getPreimage(tx, rps.lockingScript, totalAmount, inputIndex, Signature.ANYONECANPAY_ALL);
+      const sig = signTx(tx, privKey, rps.lockingScript, totalAmount, inputIndex, Signature.ANYONECANPAY_ALL);
 
-      return rps.finish(new SigHashPreimage(toHex(preimage)), actionA, new Sig(toHex(sig)), new PubKey(toHex(publicKeyA)), changeAmount);
+      return rps.finish(SigHashPreimage(toHex(preimage)), actionA, Sig(toHex(sig)), PubKey(toHex(publicKeyA)), changeAmount);
     };
 
     let totalAmount = 150000;

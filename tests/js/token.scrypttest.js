@@ -1,6 +1,6 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, signTx, toHex, getPreimage, num2bin, Sig, PubKey, SigHashPreimage, buildTypeClasses } = require('scryptlib');
-const { inputIndex, inputSatoshis, newTx, compileContract, DataLen } = require('../../helper');
+const { bsv, buildContractClass, signTx, toHex, getPreimage, Sig, PubKey, SigHashPreimage } = require('scryptlib');
+const { inputIndex, inputSatoshis, newTx, compileContract } = require('../../helper');
 
 const tx = newTx();
 
@@ -9,33 +9,32 @@ const outputAmount = 222222
 describe('Test sCrypt contract Token In Javascript', () => {
   let token, getPreimageAfterTransfer, result
 
-  const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey1 = bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
-  const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
   
   before(() => {
     const desc = compileContract('token.scrypt');
     const Token = buildContractClass(desc);
-    const {Account} = buildTypeClasses(desc)
-    token = new Token([new Account({
-      pubKey: new PubKey(toHex(publicKey1)),
+    token = new Token([{
+      pubKey: PubKey(toHex(publicKey1)),
       balance: 100
-    }), new Account({
-      pubKey: new PubKey(toHex(publicKey2)),
+    }, {
+      pubKey: PubKey(toHex(publicKey2)),
       balance: 0
-    })])
+    }])
 
     
     getPreimageAfterTransfer = (balance1, balance2) => {
       const newLockingScript = token.getNewStateScript({
-        accounts: [new Account({
-          pubKey: new PubKey(toHex(publicKey1)),
+        accounts: [{
+          pubKey: PubKey(toHex(publicKey1)),
           balance: balance1
-        }), new Account({
-          pubKey: new PubKey(toHex(publicKey2)),
+        }, {
+          pubKey: PubKey(toHex(publicKey2)),
           balance: balance2
-        })]
+        }]
       })
       tx.addOutput(new bsv.Transaction.Output({
         script: newLockingScript,
@@ -53,11 +52,11 @@ describe('Test sCrypt contract Token In Javascript', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
     const sig1 = signTx(tx, privateKey1, token.lockingScript, inputSatoshis)
     result = token.transfer(
-        new PubKey(toHex(publicKey1)),
-        new Sig(toHex(sig1)),
-        new PubKey(toHex(publicKey2)),
+        PubKey(toHex(publicKey1)),
+        Sig(toHex(sig1)),
+        PubKey(toHex(publicKey2)),
         40,
-        new SigHashPreimage(toHex(preimage)),
+        SigHashPreimage(toHex(preimage)),
         outputAmount
       ).verify()
     expect(result.success, result.error).to.be.true
@@ -68,11 +67,11 @@ describe('Test sCrypt contract Token In Javascript', () => {
     const preimage = getPreimageAfterTransfer(60, 30)
     const sig1 = signTx(tx, privateKey1, token.lockingScript, inputSatoshis)
     result = token.transfer(
-          new PubKey(toHex(publicKey1)),
-          new Sig(toHex(sig1)),
-          new PubKey(toHex(publicKey2)),
+          PubKey(toHex(publicKey1)),
+          Sig(toHex(sig1)),
+          PubKey(toHex(publicKey2)),
           40,
-          new SigHashPreimage(toHex(preimage)),
+          SigHashPreimage(toHex(preimage)),
           outputAmount
         ).verify()
     expect(result.success, result.error).to.be.false
@@ -82,11 +81,11 @@ describe('Test sCrypt contract Token In Javascript', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
     const sig2 = signTx(tx, privateKey2, token.lockingScript, inputSatoshis)
     result = token.transfer(
-          new PubKey(toHex(publicKey2)),
-          new Sig(toHex(sig2)),
-          new PubKey(toHex(publicKey1)),
+          PubKey(toHex(publicKey2)),
+          Sig(toHex(sig2)),
+          PubKey(toHex(publicKey1)),
           40,
-          new SigHashPreimage(toHex(preimage)),
+          SigHashPreimage(toHex(preimage)),
           outputAmount
         ).verify()
     expect(result.success, result.error).to.be.false
@@ -96,11 +95,11 @@ describe('Test sCrypt contract Token In Javascript', () => {
     const preimage = getPreimageAfterTransfer(60, 40)
     const sig2 = signTx(tx, privateKey2, token.lockingScript, inputSatoshis)
     result = token.transfer(
-          new PubKey(toHex(publicKey1)),
-          new Sig(toHex(sig2)),
-          new PubKey(toHex(publicKey2)),
+          PubKey(toHex(publicKey1)),
+          Sig(toHex(sig2)),
+          PubKey(toHex(publicKey2)),
           40,
-          new SigHashPreimage(toHex(preimage)),
+          SigHashPreimage(toHex(preimage)),
           outputAmount
         ).verify()
     expect(result.success, result.error).to.be.false

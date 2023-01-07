@@ -20,9 +20,9 @@ describe('Test sCrypt contract Counter In Javascript', () => {
     counter = new Counter()
 
     // set initial counter value
-    counter.setDataPart(num2bin(0, DataLen))
+    counter.setDataPartInASM(num2bin(0n, DataLen))
 
-    const newLockingScript = [counter.codePart.toASM(), num2bin(1, DataLen)].join(' ')
+    const newLockingScript = [counter.codePart.toASM(), num2bin(1n, DataLen)].join(' ')
 
     tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript),
@@ -40,17 +40,17 @@ describe('Test sCrypt contract Counter In Javascript', () => {
   });
 
   it('should succeed when pushing right preimage & amount', () => {
-    result = counter.increment(new SigHashPreimage(toHex(preimage)), outputAmount).verify()
+    result = counter.increment(SigHashPreimage(toHex(preimage)), BigInt(outputAmount)).verify()
     expect(result.success, result.error).to.be.true
   });
 
   it('should fail when pushing wrong preimage', () => {
-    result = counter.increment(new SigHashPreimage(toHex(preimage) + '01'), outputAmount).verify()
+    result = counter.increment(SigHashPreimage(toHex(preimage) + '01'), BigInt(outputAmount)).verify()
     expect(result.success, result.error).to.be.false
   });
 
   it('should fail when pushing wrong amount', () => {
-    result = counter.increment(new SigHashPreimage(toHex(preimage)), outputAmount - 1).verify()
+    result = counter.increment(SigHashPreimage(toHex(preimage)), BigInt(outputAmount - 1)).verify()
     expect(result.success, result.error).to.be.false
   });
 });

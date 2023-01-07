@@ -1,9 +1,8 @@
 const { expect } = require('chai');
 const { compileContract, newTx } = require('../../helper');
 
-const { buildContractClass, toData, Bytes, bsv, findKeyIndex, getPreimage, buildTypeClasses } = require('scryptlib');
-const { toHashedMap } = require('scryptlib/dist/utils');
-const { SortedItem } = require('scryptlib/dist/scryptTypes');
+const { buildContractClass, bsv, getPreimage } = require('scryptlib');
+const { SortedItem, getSortedItem } = require('scryptlib/dist/scryptTypes');
 
 const inputIndex = 0;
 const inputSatoshis = 100000;
@@ -11,19 +10,18 @@ const outputAmount = inputSatoshis
 
 describe('test.stateMap', () => {
     describe('stateMap', () => {
-        let mapTest, StateMap, MapEntry;
+        let mapTest, StateMap;
 
         let map = new Map();
 
         before(() => {
             StateMap = buildContractClass(compileContract('stateMap.scrypt'))
-            MapEntry = buildTypeClasses(StateMap).MapEntry
-            mapTest = new StateMap(toHashedMap(map)) // empty initial map
+            mapTest = new StateMap(map) // empty initial map
         })
 
         function preHook(map) {
             let newLockingScript = mapTest.getNewStateScript({
-                map: toHashedMap(map),
+                map: map,
             });
 
             const tx = newTx(inputSatoshis);
@@ -52,25 +50,22 @@ describe('test.stateMap', () => {
                 map.set(key, val);
 
                 const preimage = preHook(map);
-                const result = mapTest.insert(new MapEntry({
-                    key: new SortedItem({
-                        item: key,
-                        idx: findKeyIndex(map, key)
-                    }),
+                const result = mapTest.insert({
+                    key: getSortedItem(map, key),
                     val: val
-                }), preimage).verify()                
+                }, preimage).verify()                
                 expect(result.success, result.error).to.be.true;
 
-                mapTest.map = toHashedMap(map)
+                mapTest.map = map
             }
 
-            testInsert(3, 1);
+            testInsert(3n, 1n);
 
-            testInsert(5, 6);
+            testInsert(5n, 6n);
 
-            testInsert(0, 11);
+            testInsert(0n, 11n);
 
-            testInsert(1, 5);
+            testInsert(1n, 5n);
 
         })
 
@@ -84,23 +79,20 @@ describe('test.stateMap', () => {
 
                 const preimage = preHook(map);
 
-                const result = mapTest.update(new MapEntry({
-                    key: new SortedItem({
-                        item: key,
-                        idx: findKeyIndex(map, key)
-                    }),
+                const result = mapTest.update({
+                    key: getSortedItem(map, key),
                     val: val
-                }), preimage).verify()
+                }, preimage).verify()
                 expect(result.success, result.error).to.be.true;
 
-                mapTest.map = toHashedMap(map)
+                mapTest.map = map
             }
 
 
-            testUpdate(1, 6)
+            testUpdate(1n, 6n)
 
-            testUpdate(1, 8)
-            testUpdate(0, 1)
+            testUpdate(1n, 8n)
+            testUpdate(0n, 1n)
 
         })
 
@@ -110,28 +102,25 @@ describe('test.stateMap', () => {
 
             function testDelete(key) {
 
-                const keyIndex = findKeyIndex(map, key);
+                const sortedItem = getSortedItem(map, key);
                 map.delete(key);
 
                 const preimage = preHook(map);
 
-                const result = mapTest.delete(new SortedItem({
-                    item: key,
-                    idx: keyIndex
-                }), preimage).verify()
+                const result = mapTest.delete(sortedItem, preimage).verify()
                 expect(result.success, result.error).to.be.true;
 
-                mapTest.map = toHashedMap(map)
+                mapTest.map = map
             }
 
 
-            testDelete(1)
+            testDelete(1n)
 
-            testDelete(5)
+            testDelete(5n)
 
-            testDelete(3)
+            testDelete(3n)
 
-            testDelete(0)
+            testDelete(0n)
 
         })
 

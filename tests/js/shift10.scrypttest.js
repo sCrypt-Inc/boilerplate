@@ -3,15 +3,14 @@ const {
 } = require('chai');
 const {
   toHex, Bytes,
-  buildContractClass,
-  buildTypeClasses
+  buildContractClass
 } = require('scryptlib');
 const {
   compileContract
 } = require('../../helper');
 
 
-const s2b = str => new Bytes(toHex(Buffer.from(str)));
+const s2b = str => Bytes(toHex(Buffer.from(str)));
 
 describe("Test Shift10 Library In Javascript", () => {
   let test, result;

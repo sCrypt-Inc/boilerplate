@@ -6,8 +6,6 @@ const Point = bsv.crypto.Point;
 
 const Signature = bsv.crypto.Signature
 
-const sighashType = Signature.SIGHASH_NONE | Signature.SIGHASH_FORKID
-
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
 
@@ -89,7 +87,7 @@ describe('Test sCrypt contract Oracle In Javascript', () => {
 
   before(() => {
     const OracleTest = buildContractClass(compileContract('oracleTest.scrypt'));
-    oracle = new OracleTest(new PubKey(toHex(publicKey)));
+    oracle = new OracleTest(PubKey(toHex(publicKey)));
 
   });
 
@@ -102,11 +100,11 @@ describe('Test sCrypt contract Oracle In Javascript', () => {
       inputSatoshis
     }
 
-    const sig = signTx(tx, derivedOraclePrivateKey, oracle.lockingScript, inputSatoshis, 0, sighashType)
-    const preimage = getPreimage(tx, oracle.lockingScript, inputSatoshis, 0, sighashType)
-    result = oracle.unlock(new Bytes(toHex(data)), sig, new PubKey(toHex(derivedOraclePubKey)),
-      new PubKey(toHex(publicKeyX)),
-      new Int(lambda.toString(10)),
+    const sig = signTx(tx, derivedOraclePrivateKey, oracle.lockingScript, inputSatoshis, 0, Signature.NONE)
+    const preimage = getPreimage(tx, oracle.lockingScript, inputSatoshis, 0, Signature.NONE)
+    result = oracle.unlock(Bytes(toHex(data)), sig, PubKey(toHex(derivedOraclePubKey)),
+      PubKey(toHex(publicKeyX)),
+      Int(lambda.toString(10)),
       preimage
     ).verify()
 
@@ -123,11 +121,11 @@ describe('Test sCrypt contract Oracle In Javascript', () => {
     }
     const wrongDerivedOraclePrivateKey = new bsv.PrivateKey.fromRandom('testnet')
 
-    const sig = signTx(tx, wrongDerivedOraclePrivateKey, oracle.lockingScript, inputSatoshis, 0, sighashType)
-    const preimage = getPreimage(tx, oracle.lockingScript, inputSatoshis, 0, sighashType)
-    result = oracle.unlock(new Bytes(toHex(data)), sig, new PubKey(toHex(derivedOraclePubKey)),
-      new PubKey(toHex(publicKeyX)),
-      new Int(lambda.toString(10)),
+    const sig = signTx(tx, wrongDerivedOraclePrivateKey, oracle.lockingScript, inputSatoshis, 0, Signature.NONE)
+    const preimage = getPreimage(tx, oracle.lockingScript, inputSatoshis, 0, Signature.NONE)
+    result = oracle.unlock(Bytes(toHex(data)), sig, PubKey(toHex(derivedOraclePubKey)),
+      PubKey(toHex(publicKeyX)),
+      Int(lambda.toString(10)),
       preimage
     ).verify()
 
@@ -147,11 +145,11 @@ describe('Test sCrypt contract Oracle In Javascript', () => {
 
     const wrongDerivedOraclePubKey = bsv.PrivateKey.fromRandom('testnet').publicKey
 
-    const sig = signTx(tx, derivedOraclePrivateKey, oracle.lockingScript, inputSatoshis, 0, sighashType)
-    const preimage = getPreimage(tx, oracle.lockingScript, inputSatoshis, 0, sighashType)
-    result = oracle.unlock(new Bytes(toHex(data)), sig, new PubKey(toHex(wrongDerivedOraclePubKey)),
-      new PubKey(toHex(publicKeyX)),
-      new Int(lambda.toString(10)),
+    const sig = signTx(tx, derivedOraclePrivateKey, oracle.lockingScript, inputSatoshis, 0, Signature.NONE)
+    const preimage = getPreimage(tx, oracle.lockingScript, inputSatoshis, 0, Signature.NONE)
+    result = oracle.unlock(Bytes(toHex(data)), sig, PubKey(toHex(wrongDerivedOraclePubKey)),
+      PubKey(toHex(publicKeyX)),
+      Int(lambda.toString(10)),
       preimage
     ).verify()
 
@@ -169,11 +167,11 @@ describe('Test sCrypt contract Oracle In Javascript', () => {
       inputSatoshis
     }
     const wrongPublicKeyX = toHex(new bsv.PrivateKey.fromRandom('testnet').publicKey)
-    const sig = signTx(tx, derivedOraclePrivateKey, oracle.lockingScript, inputSatoshis, 0, sighashType)
-    const preimage = getPreimage(tx, oracle.lockingScript, inputSatoshis, 0, sighashType)
-    result = oracle.unlock(new Bytes(toHex(data)), sig, new PubKey(toHex(derivedOraclePubKey)),
-      new PubKey(toHex(wrongPublicKeyX)),
-      new Int(lambda.toString(10)),
+    const sig = signTx(tx, derivedOraclePrivateKey, oracle.lockingScript, inputSatoshis, 0, Signature.NONE)
+    const preimage = getPreimage(tx, oracle.lockingScript, inputSatoshis, 0, Signature.NONE)
+    result = oracle.unlock(Bytes(toHex(data)), sig, PubKey(toHex(derivedOraclePubKey)),
+      PubKey(toHex(wrongPublicKeyX)),
+      Int(lambda.toString(10)),
       preimage
     ).verify()
 
@@ -192,11 +190,11 @@ describe('Test sCrypt contract Oracle In Javascript', () => {
 
     const fakeData = Buffer.from("fakeData");
 
-    const sig = signTx(tx, derivedOraclePrivateKey, oracle.lockingScript, inputSatoshis, 0, sighashType)
-    const preimage = getPreimage(tx, oracle.lockingScript, inputSatoshis, 0, sighashType)
-    result = oracle.unlock(new Bytes(toHex(fakeData)), sig, new PubKey(toHex(derivedOraclePubKey)),
-      new PubKey(toHex(publicKeyX)),
-      new Int(lambda.toString(10)),
+    const sig = signTx(tx, derivedOraclePrivateKey, oracle.lockingScript, inputSatoshis, 0, Signature.NONE)
+    const preimage = getPreimage(tx, oracle.lockingScript, inputSatoshis, 0, Signature.NONE)
+    result = oracle.unlock(Bytes(toHex(fakeData)), sig, PubKey(toHex(derivedOraclePubKey)),
+      PubKey(toHex(publicKeyX)),
+      Int(lambda.toString(10)),
       preimage
     ).verify()
 

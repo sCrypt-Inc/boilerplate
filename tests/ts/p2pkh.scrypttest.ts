@@ -20,7 +20,7 @@ describe('Test sCrypt contract DemoP2PKH In Typescript', () => {
 
   before(() => {
     const DemoP2PKH = buildContractClass(compileContract('p2pkh.scrypt'))
-    demo = new DemoP2PKH(new PubKeyHash(toHex(pkh)))
+    demo = new DemoP2PKH(PubKeyHash(toHex(pkh)))
     demo.txContext = {
       tx,
       inputIndex,
@@ -30,13 +30,13 @@ describe('Test sCrypt contract DemoP2PKH In Typescript', () => {
 
   it('signature check should succeed when right private key signs', () => {
     sig = signTx(tx, privateKey, demo.lockingScript, inputSatoshis)
-    result = demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify()
+    result = demo.unlock(Sig(toHex(sig)), PubKey(toHex(publicKey))).verify()
     expect(result.success, result.error).to.be.true
   });
 
   it('signature check should fail when wrong private key signs', () => {
     sig = signTx(tx, privateKey2, demo.lockingScript, inputSatoshis)
-    result = demo.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify()
+    result = demo.unlock(Sig(toHex(sig)), PubKey(toHex(publicKey))).verify()
     expect(result.success, result.error).to.be.false
   });
 });

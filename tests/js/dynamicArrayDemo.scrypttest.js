@@ -11,7 +11,7 @@ describe('Test sCrypt contract dynamicArray In Javascript', () => {
   });
 
   it('should return true', () => {
-    result = array.test(0).verify()
+    result = array.test(0n).verify()
     expect(result.success, result.error).to.be.true
   });
 

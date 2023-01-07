@@ -1,14 +1,13 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, toHex, Bytes, getPreimage, SigHashPreimage, num2bin } = require('scryptlib');
+const { bsv, buildContractClass, getPreimage } = require('scryptlib');
 
 /**
  * an example test for contract containing signature verification
  */
-const { compileContract, inputIndex, inputSatoshis, dummyTxId, newTx, DataLen } = require('../../helper');
+const { compileContract, inputIndex, inputSatoshis, newTx } = require('../../helper');
 
 
 const tx = newTx();
-const outputAmount = 222222
 
 describe('Test sCrypt contract Clone In Javascript', () => {
   let clone, preimage, context

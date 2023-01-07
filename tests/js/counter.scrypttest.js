@@ -1,10 +1,9 @@
 
 
 const { expect } = require('chai');
-const { compileContract, newTx } = require('../../helper');
-const { buildContractClass, Bool, Bytes, Int, SigHashPreimage, bsv, toHex, getPreimage, buildTypeClasses } = require('scryptlib');
-const inputIndex = 0;
-const inputSatoshis = 100000;
+const { compileContract, newTx, inputIndex, inputSatoshis } = require('../../helper');
+const { buildContractClass, SigHashPreimage, bsv, toHex, getPreimage } = require('scryptlib');
+
 
 const outputAmount = 222222
 
@@ -17,13 +16,13 @@ describe('Counter', () => {
 
     before(() => {
         Counter = buildContractClass(compileContract('counter.scrypt'));
-        counter = new Counter(0);
+        counter = new Counter(0n);
     });
 
     it('should call success', () => {
 
         let newLockingScript = counter.getNewStateScript({
-            counter: 1
+            counter: 1n
         })
         const tx1 = newTx(inputSatoshis);
         tx1.addOutput(new bsv.Transaction.Output({
@@ -39,14 +38,14 @@ describe('Counter', () => {
             inputSatoshis
         }
 
-        const result1 = counter.increment(new SigHashPreimage(toHex(preimage1)), outputAmount).verify()
+        const result1 = counter.increment(SigHashPreimage(toHex(preimage1)), BigInt(outputAmount)).verify()
         expect(result1.success, result1.error).to.be.true
 
         // save state
-        counter.counter = 1
+        counter.counter = 1n
 
         newLockingScript = counter.getNewStateScript({
-            counter: 2
+            counter: 2n
         })
 
 
@@ -64,16 +63,16 @@ describe('Counter', () => {
             inputSatoshis
         }
 
-        const result2 = counter.increment(new SigHashPreimage(toHex(preimage2)), outputAmount).verify()
+        const result2 = counter.increment(SigHashPreimage(toHex(preimage2)), BigInt(outputAmount)).verify()
         expect(result2.success, result2.error).to.be.true
 
     });
 
     it('should fail when pushing wrong amount', () => {
-        counter = new Counter(0);
+        counter = new Counter(0n);
 
         let newLockingScript = counter.getNewStateScript({
-            counter: 1
+            counter: 1n
         })
         const tx1 = newTx(inputSatoshis);
         tx1.addOutput(new bsv.Transaction.Output({
@@ -89,16 +88,16 @@ describe('Counter', () => {
             inputSatoshis
         }
 
-        const result1 = counter.increment(new SigHashPreimage(toHex(preimage1)), outputAmount - 1).verify()
+        const result1 = counter.increment(SigHashPreimage(toHex(preimage1)), BigInt(outputAmount - 1)).verify()
         expect(result1.success, result1.error).to.be.false
     });
 
 
     it('should fail when pushing wrong new state', () => {
-        counter = new Counter(0);
+        counter = new Counter(0n);
 
         let newLockingScript = counter.getNewStateScript({
-            counter: 2
+            counter: 2n
         })
         const tx1 = newTx(inputSatoshis);
         tx1.addOutput(new bsv.Transaction.Output({
@@ -114,7 +113,7 @@ describe('Counter', () => {
             inputSatoshis
         }
 
-        const result1 = counter.increment(new SigHashPreimage(toHex(preimage1)), outputAmount).verify()
+        const result1 = counter.increment(SigHashPreimage(toHex(preimage1)), BigInt(outputAmount)).verify()
         expect(result1.success, result1.error).to.be.false
     });
 

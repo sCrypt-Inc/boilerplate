@@ -7,20 +7,20 @@ describe('Test sCrypt contract Demo In Javascript', () => {
 
   before(() => {
     const Demo = buildContractClass(compileContract('demo.scrypt'));
-    demo = new Demo(7, 4);
+    demo = new Demo(7n, 4n);
   });
 
   it('should return true', () => {
-    result = demo.add(7 + 4).verify()
+    result = demo.add(7n + 4n).verify()
     expect(result.success, result.error).to.be.true
-    result = demo.sub(7 - 4).verify()
+    result = demo.sub(7n - 4n).verify()
     expect(result.success, result.error).to.be.true
   });
 
   it('should throw error', () => {
-    result = demo.add(0).verify()
+    result = demo.add(0n).verify()
     expect(result.success, result.error).to.be.false
-    result = demo.sub(1).verify()
+    result = demo.sub(1n).verify()
     expect(result.success, result.error).to.be.false
   });
 });

@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { buildContractClass, buildTypeClasses, Bytes } = require('scryptlib');
+const { buildContractClass, Bytes } = require('scryptlib');
 const { compileContract } = require('../../helper');
 const { generatePrivKey, privKeyToPubKey, sign } = require('rabinsig');
 
@@ -14,8 +14,7 @@ describe('Test sCrypt contract RabinSignature In Javascript', () => {
   });
 
   it('should return true', () => {
-    const { RabinSig, RabinPubKey } = buildTypeClasses(RabinSignature);
-    
+
     // append "n" for big int
     let key = generatePrivKey();
 
@@ -30,15 +29,15 @@ describe('Test sCrypt contract RabinSignature In Javascript', () => {
       paddingBytes += '00';
     }
 
-    const sig = new RabinSig({
+    const sig = {
       s: result.signature,
-      padding: new Bytes(paddingBytes),
-    })
+      padding: Bytes(paddingBytes),
+    }
     
     result = rabin.main(
-        new Bytes(msg),
+        Bytes(msg),
         sig,
-        new RabinPubKey(nRabin)
+        nRabin
       ).verify()
     expect(result.success, result.error).to.be.true
   });
@@ -46,7 +45,6 @@ describe('Test sCrypt contract RabinSignature In Javascript', () => {
 
   
   it('should throw error with wrong padding', () => {
-    const { RabinSig, RabinPubKey } = buildTypeClasses(RabinSignature);
     let key = generatePrivKey();
 
     let nRabin = privKeyToPubKey(key.p, key.q);
@@ -60,21 +58,21 @@ describe('Test sCrypt contract RabinSignature In Javascript', () => {
       paddingBytes += '00';
     }
 
-    const sig = new RabinSig({
+    const sig = {
       s: result.signature,
-      padding: new Bytes(paddingBytes + '00'),
-    })
+      padding: Bytes(paddingBytes + '00'),
+    }
     
     result = rabin.main(
-      new Bytes(msg),
+      Bytes(msg),
       sig,
-      new RabinPubKey(nRabin)
+      nRabin
     ).verify()
   expect(result.success, result.error).to.be.false
   });
 
   it('should throw error with wrong signature', () => {
-    const { RabinSig, RabinPubKey } = buildTypeClasses(RabinSignature);
+
     let key = generatePrivKey();
 
     let nRabin = privKeyToPubKey(key.p, key.q);
@@ -88,14 +86,14 @@ describe('Test sCrypt contract RabinSignature In Javascript', () => {
       paddingBytes += '00';
     }
 
-    const sig = new RabinSig({
+    const sig = {
       s: result.signature  + 1n,
-      padding: new Bytes(paddingBytes),
-    })
+      padding: Bytes(paddingBytes),
+    }
     result = rabin.main(
-      new Bytes(msg),
+      Bytes(msg),
       sig,
-      new RabinPubKey(nRabin)
+      nRabin
     ).verify()
     expect(result.success, result.error).to.be.false
   });

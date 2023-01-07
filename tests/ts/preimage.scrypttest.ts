@@ -21,7 +21,7 @@ describe('check OCSPreimage', () => {
 
   before(() => {
     const OCSPreimage = buildContractClass(compileContract("OCSPreimage.scrypt"))
-    ocsPreimage = new OCSPreimage(1)
+    ocsPreimage = new OCSPreimage(1n)
   })
 
   it('Tx.checkPreimageOCS should success when using cropped preimage', () => {
@@ -42,7 +42,7 @@ describe('check OCSPreimage', () => {
     }
     const preimage = getPreimage(tx, ocsPreimage.lockingScript.subScript(0), inputSatoshis)
 
-    const result = ocsPreimage.unlock(new SigHashPreimage(toHex(preimage))).verify()
+    const result = ocsPreimage.unlock(SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.true
 
 
@@ -64,7 +64,7 @@ describe('check OCSPreimage', () => {
     }
     const preimage = getPreimage(tx, ocsPreimage.lockingScript, inputSatoshis)
 
-    const result = ocsPreimage.unlock(new SigHashPreimage(toHex(preimage))).verify()
+    const result = ocsPreimage.unlock(SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.false
 
   })
@@ -91,7 +91,7 @@ describe('check OCSPreimage', () => {
 
     const preimage = getLowSPreimage(tx, ocsPreimage.lockingScript.subScript(1), inputSatoshis)
 
-    const result = ocsPreimage.unlock0(new SigHashPreimage(toHex(preimage))).verify()
+    const result = ocsPreimage.unlock0(SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.true
   })
 
@@ -117,7 +117,7 @@ describe('check OCSPreimage', () => {
 
     const preimage = getLowSPreimage(tx, ocsPreimage.lockingScript.subScript(0), inputSatoshis)
 
-    const result = ocsPreimage.unlock0(new SigHashPreimage(toHex(preimage))).verify()
+    const result = ocsPreimage.unlock0(SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.false
   })
 
@@ -140,7 +140,7 @@ describe('check OCSPreimage', () => {
 
     const preimage = getLowSPreimage(tx, ocsPreimage.lockingScript, inputSatoshis)
 
-    const result = ocsPreimage.unlock0(new SigHashPreimage(toHex(preimage))).verify()
+    const result = ocsPreimage.unlock0(SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.false
   })
 
@@ -152,9 +152,9 @@ describe('check OCSPreimage', () => {
     
     const tx = newTx(inputSatoshis);
     // set initial counter value
-    ocsPreimage.setDataPart(num2bin(0, DataLen))
+    ocsPreimage.setDataPart(num2bin(0n, DataLen))
 
-    const newLockingScript = [ocsPreimage.codePart.toASM(), num2bin(1, DataLen)].join(' ')
+    const newLockingScript = [ocsPreimage.codePart.toASM(), num2bin(1n, DataLen)].join(' ')
 
     tx.addOutput(new bsv.Transaction.Output({
       script: bsv.Script.fromASM(newLockingScript).subScript(2),
@@ -170,7 +170,7 @@ describe('check OCSPreimage', () => {
       inputSatoshis
     }
 
-    const result = ocsPreimage.increment(new SigHashPreimage(toHex(preimage)), outputAmount).verify()
+    const result = ocsPreimage.increment(SigHashPreimage(toHex(preimage)), outputAmount).verify()
     expect(result.success, result.error).to.be.true
   })
 

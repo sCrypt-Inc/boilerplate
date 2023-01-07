@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const { bsv, buildContractClass, Sig, PubKey, signTx, toHex, Bytes } = require('scryptlib');
 const { compileContract, inputIndex, inputSatoshis, newTx } = require('../../helper');
 
-const privateKey = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey = bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 
@@ -23,20 +23,20 @@ describe('Test sCrypt contract Asm In Javascript', () => {
   });
 
   it('should return true', () => {
-    result = asm.double(222, 111).verify()
+    result = asm.double(222n, 111n).verify()
     expect(result.success, result.error).to.be.true
 
-    result = asm.equal(11).verify()
+    result = asm.equal(11n).verify()
     expect(result.success, result.error).to.be.true
     
     sig = signTx(tx, privateKey, asm.lockingScript, inputSatoshis)
-    result = asm.p2pkh(new Sig(toHex(sig)), new PubKey(toHex(publicKey))).verify( { tx, inputSatoshis, inputIndex } )
+    result = asm.p2pkh(Sig(toHex(sig)), PubKey(toHex(publicKey))).verify( { tx, inputSatoshis, inputIndex } )
     expect(result.success, result.error).to.be.true
 
-    result = asm.checkLen(new Bytes('1122ffee'), 4).verify()
+    result = asm.checkLen(Bytes('1122ffee'), 4n).verify()
     expect(result.success, result.error).to.be.true
     
-    result = asm.checkLenFail(new Bytes('1122ffee'), 4).verify()
+    result = asm.checkLenFail(Bytes('1122ffee'), 4n).verify()
     expect(result.success, result.error).to.be.false
   });
 });

@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { buildContractClass, buildTypeClasses, bsv, PubKey, Bytes, Sig, toHex, Int, num2bin } = require('scryptlib');
+const { buildContractClass, bsv, PubKey, Bytes, Sig, toHex, Int } = require('scryptlib');
 const { compileContract } = require('../../helper');
 const bsvPoint = bsv.crypto.Point;
 
@@ -11,8 +11,8 @@ const G = bsvPoint.getG();
 const N = bsvPoint.getN();
 
 describe('Heavy: Test sCrypt contract Schnorr In Javascript', () => {
-  const pk = new bsv.PrivateKey.fromRandom('testnet');
-  const publicKey = new bsv.PublicKey(Object.assign(
+  const pk = bsv.PrivateKey.fromRandom('testnet');
+  const publicKey = bsv.PublicKey(Object.assign(
     pk.publicKey.toJSON(), { compressed: false, network: 'testnet' }))
 
   let X, sig, m, st, result;
@@ -21,7 +21,7 @@ describe('Heavy: Test sCrypt contract Schnorr In Javascript', () => {
     m = Buffer.from("test schnorr BitcoinSV");
 
     const sha256Data = bsv.crypto.Hash.sha256(m);
-    const r = new bsv.PrivateKey.fromBuffer(sha256Data.reverse(), 'testnet')
+    const r = bsv.PrivateKey.fromBuffer(sha256Data.reverse(), 'testnet')
     const rBN = r.toBigNumber();
 
     //R = r × G
@@ -33,7 +33,7 @@ describe('Heavy: Test sCrypt contract Schnorr In Javascript', () => {
       Buffer.from(rBN.toBuffer().reverse(), 'hex'), 
       Buffer.from(toHex(publicKey), 'hex'), 
       m]));
-    const rPmBig = new bsv.crypto.BN.fromBuffer(rPmHash);
+    const rPmBig = bsv.crypto.BN.fromBuffer(rPmHash);
 
     //s = r + hash(r, P, m) ⋅ pk
     const s = rBN.add(rPmBig.mul(pk.toBigNumber())).mod(N);
@@ -45,36 +45,34 @@ describe('Heavy: Test sCrypt contract Schnorr In Javascript', () => {
 
     const contra = compileContract('schnorr.scrypt');
     SchnorrTest = buildContractClass(contra);
-    typeClasses = buildTypeClasses(contra);
-    let Point = typeClasses.Point;
 
-    X = new Point({
-      x: new Int(R.getX().toString()),
-      y: new Int(R.getY().toString())
-    })
+    X = {
+      x: Int(R.getX().toString()),
+      y: Int(R.getY().toString())
+    }
   
     st = new SchnorrTest();
   });
 
   it('should return true', () => {
     result = st.verify(
-      new Sig(toHex(sig)), 
-      new PubKey(toHex(publicKey)), 
-      new Bytes(toHex(m)), 
+      Sig(toHex(sig)), 
+      PubKey(toHex(publicKey)), 
+      Bytes(toHex(m)), 
       X).verify();
 
     expect(result.success, result.error).to.be.true
   });
 
   it('should fail with invalid publicKeyX', () => {
-    const wrongPk = new bsv.PrivateKey.fromRandom('testnet');
-    const wrongPublicKey = new bsv.PublicKey(Object.assign(
+    const wrongPk = bsv.PrivateKey.fromRandom('testnet');
+    const wrongPublicKey = bsv.PublicKey(Object.assign(
       wrongPk.publicKey.toJSON(), { compressed: false, network: 'testnet' }));
 
     result = st.verify(
-      new Sig(toHex(sig)), 
-      new PubKey(toHex(wrongPublicKey)), 
-      new Bytes(toHex(m)), 
+      Sig(toHex(sig)), 
+      PubKey(toHex(wrongPublicKey)), 
+      Bytes(toHex(m)), 
       X).verify();
 
     expect(result.success, result.error).to.be.false
@@ -82,9 +80,9 @@ describe('Heavy: Test sCrypt contract Schnorr In Javascript', () => {
 
   it('should fail with invalid message', () => {
     result = st.verify(
-      new Sig(toHex(sig)), 
-      new PubKey(toHex(publicKey)), 
-      new Bytes(toHex(m) + "11"), 
+      Sig(toHex(sig)), 
+      PubKey(toHex(publicKey)), 
+      Bytes(toHex(m) + "11"), 
       X).verify();
 
     expect(result.success, result.error).to.be.false
@@ -97,9 +95,9 @@ describe('Heavy: Test sCrypt contract Schnorr In Javascript', () => {
     ]);
 
     result = st.verify(
-      new Sig(toHex(wrongSig)), 
-      new PubKey(toHex(publicKey)), 
-      new Bytes(toHex(m)), 
+      Sig(toHex(wrongSig)), 
+      PubKey(toHex(publicKey)), 
+      Bytes(toHex(m)), 
       X).verify();
 
     expect(result.success, result.error).to.be.false
