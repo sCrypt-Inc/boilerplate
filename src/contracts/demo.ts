@@ -1,5 +1,5 @@
-import { method, prop, SmartContract, assert, bsv } from "scrypt-ts";
-import { UTXO } from "../types";
+import {assert, bsv, method, prop, SmartContract} from "scrypt-ts";
+import {UTXO} from "../types";
 
 export class Demo extends SmartContract {
 
@@ -22,12 +22,12 @@ export class Demo extends SmartContract {
 
     @method()
     public add(z: bigint) {
-        assert(z == this.sum(this.x, this.y));
+        assert(z == this.sum(this.x, this.y), 'add check failed');
     }
 
     @method()
     public sub(z: bigint) {
-        assert(z == this.x - this.y);
+        assert(z == this.x - this.y, 'sub check failed');
     }
 
     getDeployTx(utxos: UTXO[], satoshis: number): bsv.Transaction {
