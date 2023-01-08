@@ -45,7 +45,7 @@ const r0 = r[0] > 127 ? Buffer.concat([Buffer.alloc(1), r]) : r;
 const rhash = bsv.crypto.Hash.sha256ripemd160(r0);
 
 // ephemeral privateKey used for generating the r signature
-const privateKeyR = new bsv.PrivateKey.fromRandom('testnet');
+const privateKeyR = bsv.PrivateKey.fromRandom('testnet');
 const publicKeyR = privateKeyR.publicKey;
 
 describe('Test sCrypt contract RPuzzle in Javascript', () => {
@@ -53,10 +53,10 @@ describe('Test sCrypt contract RPuzzle in Javascript', () => {
 
   before(() => {
     const RPuzzle = buildContractClass(compileContract('rpuzzle.scrypt'));
-    rpuzzle = new RPuzzle(new Ripemd160(toHex(rhash)));
+    rpuzzle = new RPuzzle(Ripemd160(toHex(rhash)));
 
     const tx = newTx();
-    const sighashType = Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID;
+    const sighashType = Signature.ALL;
     const flags =
       Script.Interpreter.SCRIPT_VERIFY_MINIMALDATA |
       Script.Interpreter.SCRIPT_ENABLE_SIGHASH_FORKID |
@@ -68,7 +68,7 @@ describe('Test sCrypt contract RPuzzle in Javascript', () => {
       sighashType,
       inputIndex,
       rpuzzle.lockingScript,
-      new BN.fromNumber(inputSatoshis),
+      BN.fromNumber(inputSatoshis),
       flags
     );
 
@@ -110,9 +110,9 @@ describe('Test sCrypt contract RPuzzle in Javascript', () => {
   it('should succeed when pushing right signature with right secret', () => {
     result = rpuzzle
       .unlock(
-        new Sig(toHex(sig)),
-        new PubKey(toHex(publicKeyR)),
-        new Sig(toHex(sigr))
+        Sig(toHex(sig)),
+        PubKey(toHex(publicKeyR)),
+        Sig(toHex(sigr))
       )
       .verify();
     expect(result.success, result.error).to.be.true;
@@ -121,9 +121,9 @@ describe('Test sCrypt contract RPuzzle in Javascript', () => {
   it('should fail when pushing wrong signature with wrong secret', () => {
     result = rpuzzle
     .unlock(
-      new Sig(toHex(sig)),
-      new PubKey(toHex(publicKeyR)),
-      new Sig(toHex(sigr_false))
+      Sig(toHex(sig)),
+      PubKey(toHex(publicKeyR)),
+      Sig(toHex(sigr_false))
     )
     .verify();
     expect(result.success, result.error).to.be.false;

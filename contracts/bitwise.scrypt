@@ -1,0 +1,60 @@
+library Bitwise {
+
+    static function twos_complement(int x, int xlen) : bytes {
+        bytes ret = num2bin(x, xlen);
+        if (x == 0) {
+            ret = num2bin(0, xlen);
+        }
+        else if (x < 0) {
+            int l = len(ret);
+            bytes t1 = ~ret;
+            int t2 = unpack(t1) + 1;
+            int t3 = t2 * -1;
+            ret = num2bin(t3, l);
+        }
+        return ret;
+    }
+
+    static function signMagnitude(bytes x) : bytes {
+        bytes ret = x;
+        int n = unpack(x);
+        if (n < 0) {
+            int l = len(x);
+            int t1 = n * -1;
+            int t2 = t1 - 1;
+            ret = ~num2bin(t2, l);
+        }
+        return ret;
+    }
+
+    static function invert(int z) : int {
+        bytes a = twos_complement(z, max(1, len(pack(z))));
+        return unpack(signMagnitude(~a));
+    }
+
+    // return 2^n
+    static function pow2(int n) : int {
+        return unpack(num2bin(0, n / 8) + 
+            (b'0100' << n % 8));
+    }
+
+    static function and(int x, int y) : int {
+        int max = max(len(pack(x)), len(pack(y)));
+        bytes a = twos_complement(x, max) & twos_complement(y, max);
+        return unpack(signMagnitude(a));
+    }
+
+    static function or(int x, int y) : int {
+        int max = max(len(pack(x)), len(pack(y)));
+        bytes a = twos_complement(x, max) | twos_complement(y, max);
+        return unpack(signMagnitude(a));
+    }
+
+    static function xor(int x, int y) : int {
+        int max = max(len(pack(x)), len(pack(y)));
+        bytes a = twos_complement(x, max) ^ twos_complement(y, max);
+        return unpack(signMagnitude(a));
+    }
+
+    
+}

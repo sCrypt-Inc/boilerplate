@@ -6,7 +6,6 @@ const {
   getPreimage,
   toHex,
   SigHashPreimage,
-  buildTypeClasses,
   num2bin,
   PubKeyHash,
   Bytes,
@@ -38,17 +37,16 @@ const calleeContractTx = newTx();
 
 const outputAmount = 100000;
 
-const a = 1;
-const b = 1;
-const c = -2;
-const x = 1;
+const a = 1n;
+const b = 1n;
+const c = -2n;
+const x = 1n;
 describe('Test sCrypt contract Callee in Javascript', () => {
-  let callee, caller, preimage, result, Coeff, newLockingScript;
+  let callee, caller, preimage, result, newLockingScript;
 
   before(() => {
     const Callee = buildContractClass(compileContract('callee.scrypt'));
     const Caller = buildContractClass(compileContract('caller.scrypt'));
-    Coeff = buildTypeClasses(Callee).Coeff;
     callee = new Callee();
 
     calleeContractTx.addOutput(
@@ -58,7 +56,7 @@ describe('Test sCrypt contract Callee in Javascript', () => {
       })
     );
 
-    caller = new Caller(new PubKeyHash(callee.codeHash));
+    caller = new Caller(PubKeyHash(callee.codeHash));
 
 
     newLockingScript = bsv.Script.fromASM(['OP_FALSE', 'OP_RETURN', num2bin(a, 2) + num2bin(b, 2) + num2bin(c, 2) + num2bin(x, 2)].join(' '))
@@ -87,16 +85,16 @@ describe('Test sCrypt contract Callee in Javascript', () => {
   });
 
   it('should succeed when callee calls', () => {
-    result = caller.call(new Coeff({
+    result = caller.call({
       a: a,
       b: b,
       c: c
-    }),
-      new Bytes(tx.prevouts()),
-      new Bytes(calleeContractTx.toString()),
-      new Bytes(newLockingScript.toHex()),
-      outputAmount,
-      new SigHashPreimage(toHex(preimage))).verify();
+    },
+      Bytes(tx.prevouts()),
+      Bytes(calleeContractTx.toString()),
+      Bytes(newLockingScript.toHex()),
+      BigInt(outputAmount),
+      SigHashPreimage(toHex(preimage))).verify();
     expect(result.success, result.error).to.be.true;
   });
 
@@ -110,16 +108,16 @@ describe('Test sCrypt contract Callee in Javascript', () => {
       })
     );
 
-    result = caller.call(new Coeff({
+    result = caller.call({
       a: a,
       b: b,
       c: c
-    }),
-      new Bytes(tx.prevouts()),
-      new Bytes(fakecalleeContractTx.toString()),
-      new Bytes(newLockingScript.toHex()),
-      outputAmount,
-      new SigHashPreimage(toHex(preimage))).verify();
+    },
+      Bytes(tx.prevouts()),
+      Bytes(fakecalleeContractTx.toString()),
+      Bytes(newLockingScript.toHex()),
+      BigInt(outputAmount),
+      SigHashPreimage(toHex(preimage))).verify();
     expect(result.success, result.error).to.be.false;
   });
 
@@ -128,34 +126,34 @@ describe('Test sCrypt contract Callee in Javascript', () => {
 
     const fakeTx = newFakeTx();
     fakeTx.addInputFromPrevTx(calleeContractTx)
-    result = caller.call(new Coeff({
+    result = caller.call({
       a: a,
       b: b,
       c: c
-    }),
-      new Bytes(fakeTx.prevouts()),
-      new Bytes(calleeContractTx.toString()),
-      new Bytes(newLockingScript.toHex()),
-      outputAmount,
-      new SigHashPreimage(toHex(preimage))).verify();
+    },
+      Bytes(fakeTx.prevouts()),
+      Bytes(calleeContractTx.toString()),
+      Bytes(newLockingScript.toHex()),
+      BigInt(outputAmount),
+      SigHashPreimage(toHex(preimage))).verify();
     expect(result.success, result.error).to.be.false;
   });
 
 
   it('should fail with fake newLockingScript', () => {
 
-    const fakeNewLockingScript = bsv.Script.fromASM(['OP_FALSE', 'OP_RETURN', num2bin(a, 2) + num2bin(b, 2) + num2bin(c, 2) + num2bin(x+ 1, 2)].join(' '))
+    const fakeNewLockingScript = bsv.Script.fromASM(['OP_FALSE', 'OP_RETURN', num2bin(a, 2) + num2bin(b, 2) + num2bin(c, 2) + num2bin(x+ 1n, 2)].join(' '))
 
-    result = caller.call(new Coeff({
+    result = caller.call({
       a: a,
       b: b,
       c: c
-    }),
-      new Bytes(tx.prevouts()),
-      new Bytes(calleeContractTx.toString()),
-      new Bytes(fakeNewLockingScript.toHex()),
-      outputAmount,
-      new SigHashPreimage(toHex(preimage))).verify();
+    },
+      Bytes(tx.prevouts()),
+      Bytes(calleeContractTx.toString()),
+      Bytes(fakeNewLockingScript.toHex()),
+      BigInt(outputAmount),
+      SigHashPreimage(toHex(preimage))).verify();
     expect(result.success, result.error).to.be.false;
   });
 

@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { buildContractClass, PubKey, PubKeyHash, Int, toHex, Sig, bsv, Bytes, signTx, getPreimage, SigHashPreimage, num2bin, buildTypeClasses } = require('scryptlib');
+const { buildContractClass, PubKey, PubKeyHash, Int, toHex, Sig, bsv, Bytes, signTx, getPreimage, SigHashPreimage } = require('scryptlib');
 const { compileContract, inputIndex, inputSatoshis, newTx } = require('../../helper');
 
 const axios = require('axios')
@@ -13,7 +13,6 @@ describe('Heavy: Test Witness Service Timestamp', () => {
 
   it('should return true', async () => {
     const WitnessCLTV = buildContractClass(compileContract('witnessCLTV.scrypt'));
-    const { RabinSig, RabinPubKey } = buildTypeClasses(WitnessCLTV);
     const now = {
       "timestamp": 1633427514,
       "msg": "3a205c61",
@@ -22,7 +21,7 @@ describe('Heavy: Test Witness Service Timestamp', () => {
       "padding": ""
     }
 
-    const privateKey = new bsv.PrivateKey.fromRandom('testnet')
+    const privateKey = bsv.PrivateKey.fromRandom('testnet')
     const publicKey = privateKey.publicKey
     const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
     const tx = newTx();
@@ -31,22 +30,21 @@ describe('Heavy: Test Witness Service Timestamp', () => {
     onedayAgo.setDate(onedayAgo.getDate() - 1);
     const matureTime = Math.round(onedayAgo.valueOf() / 1000)
 
-    const cltv = new WitnessCLTV(new PubKeyHash(toHex(pkh)), new RabinPubKey(BigInt(now.pubkey)), new Int(matureTime));
+    const cltv = new WitnessCLTV(PubKeyHash(toHex(pkh)), Int(now.pubkey), Int(matureTime));
 
     sig = signTx(tx, privateKey, cltv.lockingScript, inputSatoshis)
     const context = { tx, inputIndex, inputSatoshis }
 
-    result = cltv.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey)), new Int(now.timestamp),
-      new RabinSig({
-        s: new Int(BigInt(now.signature)),
-        padding: new Bytes(now.padding)
-      })).verify(context)
+    result = cltv.unlock(Sig(toHex(sig)), PubKey(toHex(publicKey)), Int(now.timestamp),
+      {
+        s: Int(BigInt(now.signature)),
+        padding: Bytes(now.padding)
+      }).verify(context)
     expect(result.success, result.error).to.be.true
   });
 
   it('should return false', async () => {
     const WitnessCLTV = buildContractClass(compileContract('witnessCLTV.scrypt'));
-    const { RabinSig, RabinPubKey } = buildTypeClasses(WitnessCLTV);
     const now = {
       "symbol": "BSV_USDT",
       "price": 146.7302,
@@ -58,7 +56,7 @@ describe('Heavy: Test Witness Service Timestamp', () => {
       "padding": ""
     }
 
-    const privateKey = new bsv.PrivateKey.fromRandom('testnet')
+    const privateKey = bsv.PrivateKey.fromRandom('testnet')
     const publicKey = privateKey.publicKey
     const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
     const tx = newTx();
@@ -67,16 +65,16 @@ describe('Heavy: Test Witness Service Timestamp', () => {
     nextday.setDate(nextday.getDate() + 1);
     const matureTime = Math.round(nextday.valueOf() / 1000)
 
-    const cltv = new WitnessCLTV(new PubKeyHash(toHex(pkh)), new RabinPubKey(BigInt(now.pubkey)), new Int(matureTime));
+    const cltv = new WitnessCLTV(PubKeyHash(toHex(pkh)), Int(now.pubkey), Int(matureTime));
 
     sig = signTx(tx, privateKey, cltv.lockingScript, inputSatoshis)
     const context = { tx, inputIndex, inputSatoshis }
 
-    result = cltv.unlock(new Sig(toHex(sig)), new PubKey(toHex(publicKey)), new Int(now.timestamp),
-    new RabinSig({
-      s: new Int(BigInt(now.signature)),
-      padding: new Bytes(now.padding)
-    })).verify(context)
+    result = cltv.unlock(Sig(toHex(sig)), PubKey(toHex(publicKey)), Int(now.timestamp),
+      {
+        s: Int(now.signature),
+        padding: Bytes(now.padding)
+      }).verify(context)
     expect(result.success, result.error).to.be.false
   });
 
@@ -93,7 +91,6 @@ describe('Test Witness Service BSV Price', () => {
 
   it('should return true', async () => {
     const WitnessBinaryOption = buildContractClass(compileContract('witnessBinaryOption.scrypt'));
-    const { RabinSig, RabinPubKey } = buildTypeClasses(WitnessBinaryOption);
     const priceData = {
       "symbol": "BSV_USDT",
       "price": 146.7302,
@@ -112,24 +109,24 @@ describe('Test Witness Service BSV Price', () => {
 
     const betPrice = 180 * 10 ** decimal;
 
-    const privateKey_A = new bsv.PrivateKey.fromRandom('testnet')
+    const privateKey_A = bsv.PrivateKey.fromRandom('testnet')
     const publicKey_A = privateKey_A.publicKey
     const pkh_A = bsv.crypto.Hash.sha256ripemd160(publicKey_A.toBuffer())
 
-    const privateKey_B = new bsv.PrivateKey.fromRandom('testnet')
+    const privateKey_B = bsv.PrivateKey.fromRandom('testnet')
     const publicKey_B = privateKey_B.publicKey
     const pkh_B = bsv.crypto.Hash.sha256ripemd160(publicKey_B.toBuffer())
 
     const outputAmount = 222222
 
     const binaryOption = new WitnessBinaryOption(
-      new Bytes(toHex(Buffer.from(symbol, 'utf-8'))),
-      new Int(decimal),
-      new Int(betPrice),
-      new Int(matureTime),
-      new RabinPubKey(BigInt(witness.pubkey)),
-      new PubKeyHash(toHex(pkh_A)),
-      new PubKeyHash(toHex(pkh_B)));
+      Bytes(toHex(Buffer.from(symbol, 'utf-8'))),
+      Int(decimal),
+      Int(betPrice),
+      Int(matureTime),
+      Int(witness.pubkey),
+      PubKeyHash(toHex(pkh_A)),
+      PubKeyHash(toHex(pkh_B)));
 
     const tx = newTx();
 
@@ -157,14 +154,14 @@ describe('Test Witness Service BSV Price', () => {
     const preimage = getPreimage(tx, binaryOption.lockingScript, inputSatoshis)
     const context = { tx, inputIndex, inputSatoshis }
     result = binaryOption.unlock(
-      new SigHashPreimage(toHex(preimage)),
-      new Int(price),
-      new Int(priceData.timestamp),
+      SigHashPreimage(toHex(preimage)),
+      Int(price),
+      Int(priceData.timestamp),
       outputAmount,
-      new RabinSig({
-        s: new Int(BigInt(priceData.signature)),
-        padding: new Bytes(priceData.padding)
-      })
+      {
+        s: Int(priceData.signature),
+        padding: Bytes(priceData.padding)
+      }
     )
       .verify(context)
 

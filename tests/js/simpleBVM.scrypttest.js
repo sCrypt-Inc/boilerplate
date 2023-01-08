@@ -14,12 +14,12 @@ describe('Test sCrypt contract SimpleBVM in Javascript', () => {
   });
 
   it('should succeed when pushing right input script', () => {
-    result = simpleBVM.unlock(new Bytes(toHex(inputScript))).verify();
+    result = simpleBVM.unlock(Bytes(toHex(inputScript))).verify();
     expect(result.success, result.error).to.be.true;
   });
 
   it('should fail when pushing wrong  input script', () => {
-    result = simpleBVM.unlock(new Bytes(toHex(inputScript + '52'))).verify();
+    result = simpleBVM.unlock(Bytes(toHex(inputScript + '52'))).verify();
     expect(result.success, result.error).to.be.false;
   });
 });

@@ -5,9 +5,7 @@ const {
   toHex,
   getPreimage,
   num2bin,
-  SigHashPreimage,
   PubKeyHash,
-  Sig,
   Bytes,
   PubKey,
   signTx
@@ -51,7 +49,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     const newEntry = toHex(payoutAddress + num2bin(amount, 1))
     const lastEntry = toHex("00".repeat(20) + "01")
     const newLockingScript = [lockingScriptCodePart, sha256(sha256(lastEntry) + sha256(newEntry))].join(' ')
-    const lastMerklePath = new Bytes(sha256(lastEntry) + "01")
+    const lastMerklePath = Bytes(sha256(lastEntry) + "01")
 
     token.setDataPart(sha256(sha256(lastEntry).repeat(2)))
 
@@ -81,17 +79,17 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
       })
     )
 
-    const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex, sighashType)
+    const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex, Signature.ANYONECANPAY_ALL)
 
     token.txContext = { tx, inputIndex, inputSatoshis }
     const result = token
       .buy(
         preimage,
         amount,
-        new PubKeyHash(changeAddress),
-        new PubKeyHash(payoutAddress),
+        PubKeyHash(changeAddress),
+        PubKeyHash(payoutAddress),
         changeSats,
-        new Bytes(lastEntry),
+        Bytes(lastEntry),
         lastMerklePath
       )
       .verify()
@@ -106,7 +104,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     const tokenBalance = num2bin(amount + 1, 1)
     const newEntry = toHex(payoutAddress + tokenBalance)
     const newLockingScript = [lockingScriptCodePart, sha256(sha256(newEntry).repeat(2))].join(' ')
-    const merklePath = new Bytes(sha256(oldEntry) + "01")
+    const merklePath = Bytes(sha256(oldEntry) + "01")
 
     token.setDataPart(sha256(sha256(oldEntry).repeat(2)))
 
@@ -143,8 +141,8 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
       .buyMore(
         preimage,
         amount,
-        new PubKeyHash(changeAddress),
-        new PubKeyHash(payoutAddress),
+        PubKeyHash(changeAddress),
+        PubKeyHash(payoutAddress),
         changeSats,
         prevBalance,
         merklePath
@@ -160,7 +158,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
     const oldEntry = toHex(payoutAddress + "01")
     const newEntry = toHex(payoutAddress + "00")
     const newLockingScript = [lockingScriptCodePart, sha256(sha256(newEntry).repeat(2))].join(' ')
-    const merklePath = new Bytes(sha256(oldEntry) + "01")
+    const merklePath = Bytes(sha256(oldEntry) + "01")
 
     token.setDataPart(sha256(sha256(oldEntry).repeat(2)))
 
@@ -200,7 +198,7 @@ describe("Test sCrypt contract merkleToken In Javascript", () => {
       .sell(
         preimage,
         amount,
-        new PubKey(toHex(publicKey)),
+        PubKey(toHex(publicKey)),
         sig,
         merklePath,
         prevBalance,

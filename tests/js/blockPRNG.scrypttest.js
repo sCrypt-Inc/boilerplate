@@ -1,15 +1,15 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, PubKey, toHex, Sha256, Bytes, getPreimage, signTx, buildTypeClasses, num2bin } = require('scryptlib');
-const { compileContract, inputIndex, inputSatoshis, toLittleIndian, pdiff2Target, uint32Tobin } = require('../../helper');
+const { bsv, buildContractClass, PubKey, toHex, Sha256, Bytes, getPreimage, signTx, num2bin } = require('scryptlib');
+const { compileContract, inputIndex, inputSatoshis, pdiff2Target } = require('../../helper');
 
 
 const { newTxInBlock, header, wrongMerklePath, merklePath, toBlockHeader, buildMerkleProof } = require('./blockchainhelper');
 
 
-const alicePrivateKey = new bsv.PrivateKey.fromRandom('testnet')
+const alicePrivateKey = bsv.PrivateKey.fromRandom('testnet')
 const alicePublicKey = bsv.PublicKey.fromPrivateKey(alicePrivateKey)
 
-const bobPrivateKey = new bsv.PrivateKey.fromRandom('testnet')
+const bobPrivateKey = bsv.PrivateKey.fromRandom('testnet')
 const bobPublicKey = bsv.PublicKey.fromPrivateKey(bobPrivateKey)
 
 const tx = newTxInBlock();
@@ -18,15 +18,12 @@ const outputAmount = 222222
 
 describe('Test sCrypt contract BlockchainPRNG In Javascript', () => {
 
-    let blockchainPRNG, BlockHeader, Node
+    let blockchainPRNG
     before(() => {
         const BlockchainPRNG = buildContractClass(compileContract('blockPRNG.scrypt'))
 
-        const Types = buildTypeClasses(BlockchainPRNG);
-        Node = Types.Node;
-        BlockHeader = Types.BlockHeader;
         //Normally, the difficulty of the current network should be used
-        blockchainPRNG = new BlockchainPRNG(pdiff2Target(header.difficulty), new PubKey(toHex(alicePublicKey)), new PubKey(toHex(bobPublicKey)))
+        blockchainPRNG = new BlockchainPRNG(pdiff2Target(header.difficulty), PubKey(toHex(alicePublicKey)), PubKey(toHex(bobPublicKey)))
     })
 
     function runBet(privatekey, header, proof) {
@@ -49,8 +46,8 @@ describe('Test sCrypt contract BlockchainPRNG In Javascript', () => {
 
     it('blockchainPRNG should succeed when using right block header', () => {
 
-        const result = runBet(alicePrivateKey, toBlockHeader(BlockHeader, header),
-            buildMerkleProof(Node, merklePath))
+        const result = runBet(alicePrivateKey, toBlockHeader( header),
+            buildMerkleProof(merklePath))
 
         expect(result.success, result.error).to.be.true
     });
@@ -59,16 +56,16 @@ describe('Test sCrypt contract BlockchainPRNG In Javascript', () => {
     it('blockchainPRNG should fail when using wrong block header', () => {
         const wrongHeader = Object.assign({}, header);
         wrongHeader.nonce++;
-        const result = runBet(alicePrivateKey, toBlockHeader(BlockHeader, wrongHeader),
-            buildMerkleProof(Node, merklePath))
+        const result = runBet(alicePrivateKey, toBlockHeader(wrongHeader),
+            buildMerkleProof(merklePath))
         expect(result.success, result.error).to.be.false
     });
 
 
     it('blockchainPRNG should fail when using wrong wrongMerklePath', () => {
 
-        const result = runBet(alicePrivateKey, toBlockHeader(BlockHeader, header),
-            buildMerkleProof(Node, wrongMerklePath))
+        const result = runBet(alicePrivateKey, toBlockHeader(header),
+            buildMerkleProof(wrongMerklePath))
 
         expect(result.success, result.error).to.be.false
     });
@@ -76,8 +73,8 @@ describe('Test sCrypt contract BlockchainPRNG In Javascript', () => {
 
     it('when nonce is odd, Bob should NOT win and not able to unlock', () => {
 
-        const result = runBet(bobPrivateKey, toBlockHeader(BlockHeader, header),
-            buildMerkleProof(Node, merklePath))
+        const result = runBet(bobPrivateKey, toBlockHeader(header),
+            buildMerkleProof(merklePath))
 
         expect(result.success, result.error).to.be.false
     });

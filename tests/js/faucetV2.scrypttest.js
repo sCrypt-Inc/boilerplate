@@ -9,7 +9,7 @@ const withdrawIntervals = 300
 // how many satoshis can be withdrawn each time
 const withdrawAmount = 20000
 
-const privateKey = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey = bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 
@@ -24,7 +24,7 @@ describe('Test Faucet', () => {
 
     before(() => {
         const Faucet = buildContractClass(compileContract('faucetV2.scrypt'))
-        faucet = new Faucet(withdrawIntervals, withdrawAmount, new PubKeyHash(toHex(publicKeyHash)), initialTimestamp)
+        faucet = new Faucet(withdrawIntervals, withdrawAmount, PubKeyHash(toHex(publicKeyHash)), initialTimestamp)
     })
 
 
@@ -48,7 +48,7 @@ describe('Test Faucet', () => {
         })
 
         it('should succeed', () => {
-            const result = faucet.withdraw(new SigHashPreimage(toHex(preimage)), new PubKeyHash(toHex(publicKeyHash))).verify()
+            const result = faucet.withdraw(SigHashPreimage(toHex(preimage)), PubKeyHash(toHex(publicKeyHash))).verify()
             expect(result.success, result.error).to.be.true
         })
 
@@ -57,7 +57,7 @@ describe('Test Faucet', () => {
 
             const _preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis)
             const context = { tx, inputIndex, inputSatoshis }
-            const result = faucet.withdraw(new SigHashPreimage(toHex(_preimage)), new PubKeyHash(toHex(publicKeyHash))).verify(context)
+            const result = faucet.withdraw(SigHashPreimage(toHex(_preimage)), PubKeyHash(toHex(publicKeyHash))).verify(context)
             expect(result.success, result.error).to.be.false
 
             tx.setOutput(0, new bsv.Transaction.Output({ script: newLockingScript, satoshis: contractAmount }))
@@ -72,7 +72,7 @@ describe('Test Faucet', () => {
 
             let _preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis)
             let context = { tx, inputIndex, inputSatoshis }
-            let result = faucet.withdraw(new SigHashPreimage(toHex(_preimage)), new PubKeyHash(toHex(publicKeyHash))).verify(context)
+            let result = faucet.withdraw(SigHashPreimage(toHex(_preimage)), PubKeyHash(toHex(publicKeyHash))).verify(context)
             expect(result.success, result.error).to.be.false
 
             // nLocktime too high
@@ -83,7 +83,7 @@ describe('Test Faucet', () => {
 
             _preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis)
             context = { tx, inputIndex, inputSatoshis }
-            result = faucet.withdraw(new SigHashPreimage(toHex(_preimage)), new PubKeyHash(toHex(publicKeyHash))).verify(context)
+            result = faucet.withdraw(SigHashPreimage(toHex(_preimage)), PubKeyHash(toHex(publicKeyHash))).verify(context)
             expect(result.success, result.error).to.be.false
 
             tx.setOutput(0, new bsv.Transaction.Output({ script: newLockingScript, satoshis: contractAmount }))
@@ -95,7 +95,7 @@ describe('Test Faucet', () => {
 
             const _preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis)
             const context = { tx, inputIndex, inputSatoshis }
-            const result = faucet.withdraw(new SigHashPreimage(toHex(_preimage)), new PubKeyHash(toHex(publicKeyHash))).verify(context)
+            const result = faucet.withdraw(SigHashPreimage(toHex(_preimage)), PubKeyHash(toHex(publicKeyHash))).verify(context)
             expect(result.success, result.error).to.be.false
 
             tx.setOutput(1, new bsv.Transaction.Output({ script: bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()), satoshis: withdrawAmount }))
@@ -106,14 +106,14 @@ describe('Test Faucet', () => {
 
             const _preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis)
             const context = { tx, inputIndex, inputSatoshis }
-            const result = faucet.withdraw(new SigHashPreimage(toHex(_preimage)), new PubKeyHash(toHex(publicKeyHash))).verify(context)
+            const result = faucet.withdraw(SigHashPreimage(toHex(_preimage)), PubKeyHash(toHex(publicKeyHash))).verify(context)
             expect(result.success, result.error).to.be.false
 
             tx.inputs[0].sequenceNumber = 0xfffffffe
         })
 
         it('should succeed again', () => {
-            const result = faucet.withdraw(new SigHashPreimage(toHex(preimage)), new PubKeyHash(toHex(publicKeyHash))).verify()
+            const result = faucet.withdraw(SigHashPreimage(toHex(preimage)), PubKeyHash(toHex(publicKeyHash))).verify()
             expect(result.success, result.error).to.be.true
         })
     })
@@ -133,12 +133,12 @@ describe('Test Faucet', () => {
         })
 
         it('should succeed with only 1 output', () => {
-            const result = faucet.deposit(new SigHashPreimage(toHex(preimage)), depositAmount).verify()
+            const result = faucet.deposit(SigHashPreimage(toHex(preimage)), depositAmount).verify()
             expect(result.success, result.error).to.be.true
         })
 
         it('should fail if deposit amount is not positive', () => {
-            const result = faucet.deposit(new SigHashPreimage(toHex(preimage)), 0).verify()
+            const result = faucet.deposit(SigHashPreimage(toHex(preimage)), 0).verify()
             expect(result.success, result.error).to.be.false
         })
 
@@ -146,13 +146,13 @@ describe('Test Faucet', () => {
             tx.addOutput(new bsv.Transaction.Output({ script: bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()), satoshis: 1000 }))
             let _preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis, inputIndex, sigHashType)
             let context = { tx, inputIndex, inputSatoshis }
-            let result = faucet.deposit(new SigHashPreimage(toHex(_preimage)), depositAmount).verify(context)
+            let result = faucet.deposit(SigHashPreimage(toHex(_preimage)), depositAmount).verify(context)
             expect(result.success, result.error).to.be.true
 
             tx.addOutput(new bsv.Transaction.Output({ script: bsv.Script.buildPublicKeyHashOut(privateKey.toAddress()), satoshis: 1000 }))
             _preimage = getPreimage(tx, faucet.lockingScript, inputSatoshis, inputIndex, sigHashType)
             context = { tx, inputIndex, inputSatoshis }
-            result = faucet.deposit(new SigHashPreimage(toHex(_preimage)), depositAmount).verify(context)
+            result = faucet.deposit(SigHashPreimage(toHex(_preimage)), depositAmount).verify(context)
             expect(result.success, result.error).to.be.true
 
             tx.outputs.pop()
@@ -160,7 +160,7 @@ describe('Test Faucet', () => {
         })
 
         it('should succeed again', () => {
-            const result = faucet.deposit(new SigHashPreimage(toHex(preimage)), depositAmount).verify()
+            const result = faucet.deposit(SigHashPreimage(toHex(preimage)), depositAmount).verify()
             expect(result.success, result.error).to.be.true
         })
     })
@@ -176,21 +176,21 @@ describe('Test Faucet', () => {
 
         it('should succeed', () => {
             const signature = signTx(tx, privateKey, faucet.lockingScript, inputSatoshis)
-            const result = faucet.destroy(new Sig(toHex(signature)), new PubKey(toHex(publicKey))).verify()
+            const result = faucet.destroy(Sig(toHex(signature)), PubKey(toHex(publicKey))).verify()
             expect(result.success, result.error).to.be.true
         })
 
         it('should fail when passing incorrect signature', () => {
             const incorrectPrivateKey = new bsv.PrivateKey.fromRandom('testnet')
             const incorrectSignature = signTx(tx, incorrectPrivateKey, faucet.lockingScript, inputSatoshis)
-            const result = faucet.destroy(new Sig(toHex(incorrectSignature)), new PubKey(toHex(publicKey))).verify()
+            const result = faucet.destroy(Sig(toHex(incorrectSignature)), PubKey(toHex(publicKey))).verify()
             expect(result.success, result.error).to.be.false
         })
 
         it('should fail when passing incorrect public key', () => {
             const incorrectPublicKey = new bsv.PrivateKey.fromRandom('testnet').publicKey
             const signature = signTx(tx, privateKey, faucet.lockingScript, inputSatoshis)
-            const result = faucet.destroy(new Sig(toHex(signature)), new PubKey(toHex(incorrectPublicKey))).verify()
+            const result = faucet.destroy(Sig(toHex(signature)), PubKey(toHex(incorrectPublicKey))).verify()
             expect(result.success, result.error).to.be.false
         })
     })

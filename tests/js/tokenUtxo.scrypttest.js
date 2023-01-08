@@ -7,12 +7,12 @@ const outputAmount = 22222
 describe('Test sCrypt contract UTXO Token In Javascript', () => {
   let token, lockingScriptCodePart, result
 
-  const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey1 = bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
   const pkh1 = bsv.crypto.Hash.sha256ripemd160(publicKey1.toBuffer())
-  const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
-  const privateKey3 = new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey3 = bsv.PrivateKey.fromRandom('testnet')
   const publicKey3 = bsv.PublicKey.fromPrivateKey(privateKey3)
 
   before(() => {
@@ -26,7 +26,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
   it('should succeed when one token is split into two', () => {
 
     // split 100 tokens
-    token.setDataPart(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
+    token.setDataPartInASM(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
     
     const testSplit = (privKey, balance0, balance1, balanceInput0 = balance0, balanceInput1 = balance1) => {
       let tx = new bsv.Transaction()
@@ -56,14 +56,14 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex)
       const sig = signTx(tx, privKey, token.lockingScript, inputSatoshis)
       return token.split(
-        new Sig(toHex(sig)),
-        new PubKey(toHex(publicKey2)),
+        Sig(toHex(sig)),
+        PubKey(toHex(publicKey2)),
         balanceInput0,
         outputAmount,
-        new PubKey(toHex(publicKey3)),
+        PubKey(toHex(publicKey3)),
         balanceInput1,
         outputAmount,
-        new SigHashPreimage(toHex(preimage))
+        SigHashPreimage(toHex(preimage))
       )
     }
 
@@ -134,17 +134,17 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
 
       token.txContext = { tx, inputIndex, inputSatoshis }
 
-      token.setDataPart(inputIndex == 0 ? dataPart0 : dataPart1)
+      token.setDataPartInASM(inputIndex == 0 ? dataPart0 : dataPart1)
       
       const preimage = getPreimage(tx, inputIndex == 0 ? bsv.Script.fromASM(lockingScript0) : bsv.Script.fromASM(lockingScript1), inputSatoshis, inputIndex)
       const sig = signTx(tx, inputIndex == 0 ? privateKey1 : privateKey2, inputIndex == 0 ? bsv.Script.fromASM(lockingScript0) : bsv.Script.fromASM(lockingScript1), inputSatoshis, inputIndex)
       return token.merge(
-        new Sig(toHex(sig)),
-        new PubKey(toHex(publicKey3)),
-        new Bytes(prevouts),
+        Sig(toHex(sig)),
+        PubKey(toHex(publicKey3)),
+        Bytes(prevouts),
         inputIndex == 0 ? balance1 : balance0,
         outputAmount,
-        new SigHashPreimage(toHex(preimage))
+        SigHashPreimage(toHex(preimage))
       )
     }
 
@@ -170,7 +170,7 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
 
   it('should succeed when one token UTXO is burnt', () => {
     // burn 100 tokens
-    token.setDataPart(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
+    token.setDataPartInASM(toHex(publicKey1) + num2bin(10, DataLen) + num2bin(90, DataLen))
     let tx = newTx();
     
     const testBurn = (privKey) => {
@@ -190,10 +190,10 @@ describe('Test sCrypt contract UTXO Token In Javascript', () => {
       const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex)
       const sig = signTx(tx, privKey, token.lockingScript, inputSatoshis)
       return token.burn(
-        new Sig(toHex(sig)),
-        new PubKeyHash(toHex(pkh1)),
+        Sig(toHex(sig)),
+        PubKeyHash(toHex(pkh1)),
         outputAmount,
-        new SigHashPreimage(toHex(preimage))
+        SigHashPreimage(toHex(preimage))
       )
     }
 

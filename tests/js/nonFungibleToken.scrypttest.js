@@ -8,9 +8,9 @@ const outputAmount = 22222
 describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
   let token, lockingScriptCodePart
 
-  const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey1 = bsv.PrivateKey.fromRandom('testnet')
   const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
-  const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
+  const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
   const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
   const currTokenId = 42
   const issuer = publicKey1
@@ -54,11 +54,11 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex)
       const sig = signTx(tx, privKey, token.lockingScript, inputSatoshis)
       return token.issue(
-        new Sig(toHex(sig)),
-        new PubKey(toHex(receiver)),
+        Sig(toHex(sig)),
+        PubKey(toHex(receiver)),
         outputAmount,
         outputAmount,
-        new SigHashPreimage(toHex(preimage))
+        SigHashPreimage(toHex(preimage))
       )
     }
 
@@ -105,10 +105,10 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex)
       const sig = signTx(tx, privKey, token.lockingScript, inputSatoshis)
       return token.transfer(
-        new Sig(toHex(sig)),
-        new PubKey(toHex(receiver)),
+        Sig(toHex(sig)),
+        PubKey(toHex(receiver)),
         outputAmount,
-        new SigHashPreimage(toHex(preimage))
+        SigHashPreimage(toHex(preimage))
       )
     }
 
@@ -154,11 +154,11 @@ describe('Test sCrypt contract Non-Fungible Token In Javascript', () => {
       const preimage = getPreimage(tx, token.lockingScript, inputSatoshis, inputIndex)
       const sig = signTx(tx, privKey, token.lockingScript, inputSatoshis)
       return token.issue(
-        new Sig(toHex(sig)),
-        new PubKey(toHex(receiver)),
+        Sig(toHex(sig)),
+        PubKey(toHex(receiver)),
         outputAmount,
         outputAmount,
-        new SigHashPreimage(toHex(preimage))
+        SigHashPreimage(toHex(preimage))
       )
     }
 

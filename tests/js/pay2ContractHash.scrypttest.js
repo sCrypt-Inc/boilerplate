@@ -1,17 +1,13 @@
 
 
 const { expect } = require('chai');
-const { compileContract, newTx} = require('../../helper');
-const {  buildContractClass, Bytes, Sig, SigHashPreimage,  bsv, toHex, getPreimage, buildTypeClasses, SigHash, PubKeyHash, PubKey } = require('scryptlib');
-const {  toHashedMap, findKeyIndex, hash160, signTx, buildOpreturnScript } = require('scryptlib/dist/utils');
-const { SortedItem } = require('scryptlib/dist/scryptTypes');
+const { compileContract, newTx, inputIndex, inputSatoshis} = require('../../helper');
+const {  buildContractClass, Bytes, Sig,  bsv, toHex, getPreimage, PubKeyHash, PubKey, buildOpreturnScript, signTx, getSortedItem, hash160 } = require('scryptlib');
 
-const inputIndex = 0;
-const inputSatoshis = 100000;
-
+const Signature = bsv.crypto.Signature
 const outputAmount = inputSatoshis
 
-const privateKey = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey = bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
 const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 
@@ -19,8 +15,8 @@ const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
 
 let map = new Map();
 
-const tokenId = 111;
-map.set(tokenId, new PubKeyHash(toHex(pkh)))
+const tokenId = 111n;
+map.set(tokenId, PubKeyHash(toHex(pkh)))
 
 // tx that transfers token from PubKeyHash to Counter's contract hash
 const tx1 = newTx(inputSatoshis);
@@ -34,11 +30,11 @@ describe('Pay2ContractHash', () => {
         const Pay2ContractHash = buildContractClass(compileContract('pay2ContractHash.scrypt'));
 
 
-        counter = new Counter(0);
+        counter = new Counter(0n);
 
-        pay2ContractHash = new Pay2ContractHash(toHashedMap(map));
+        pay2ContractHash = new Pay2ContractHash(map);
 
-        counterContractHash = new PubKeyHash(hash160(counter.lockingScript.toHex()));
+        counterContractHash = PubKeyHash(hash160(counter.lockingScript.toHex()));
       });
     
 
@@ -49,7 +45,7 @@ describe('Pay2ContractHash', () => {
 
 
         let newLockingScript = pay2ContractHash.getNewStateScript({
-            owners: toHashedMap(map)
+            owners: map
         })
 
 
@@ -58,9 +54,9 @@ describe('Pay2ContractHash', () => {
             satoshis: outputAmount
         }))
 
-        const preimage = getPreimage(tx1, pay2ContractHash.lockingScript, inputSatoshis, 0, SigHash.SINGLE_FORKID);
+        const preimage = getPreimage(tx1, pay2ContractHash.lockingScript, inputSatoshis, 0, Signature.SINGLE);
 
-        const fromSig = signTx(tx1, privateKey, pay2ContractHash.lockingScript, inputSatoshis, 0, SigHash.SINGLE_FORKID);
+        const fromSig = signTx(tx1, privateKey, pay2ContractHash.lockingScript, inputSatoshis, 0, Signature.SINGLE);
 
         pay2ContractHash.txContext = {
             tx: tx1,
@@ -68,14 +64,11 @@ describe('Pay2ContractHash', () => {
             inputSatoshis
         }
 
-        const result = pay2ContractHash.transferFrom(new PubKeyHash(toHex(pkh)), counterContractHash, fromSig, new PubKey(toHex(publicKey)), new Bytes(''),
-            new Bytes(''), 0, new SortedItem({
-                item: tokenId,
-                idx: findKeyIndex(map, tokenId)
-            }), preimage).verify()
+        const result = pay2ContractHash.transferFrom(PubKeyHash(toHex(pkh)), counterContractHash, fromSig, PubKey(toHex(publicKey)), Bytes(''),
+            Bytes(''), 0, getSortedItem(map, tokenId), preimage).verify()
         expect(result.success, result.error).to.be.true
 
-        pay2ContractHash.owners = toHashedMap(map)
+        pay2ContractHash.owners = map
 
     });
 
@@ -91,11 +84,11 @@ describe('Pay2ContractHash', () => {
             satoshis: outputAmount
         }))
 
-        map.set(tokenId, new PubKeyHash(toHex(pkh)))
+        map.set(tokenId, PubKeyHash(toHex(pkh)))
 
 
         let newLockingScript = pay2ContractHash.getNewStateScript({
-            owners: toHashedMap(map)
+            owners: map
         })
 
         // tx that transfering token from Counter ContractHash to PubKeyHash
@@ -109,7 +102,7 @@ describe('Pay2ContractHash', () => {
             satoshis: outputAmount
         }))
 
-        const preimage = getPreimage(tx3, pay2ContractHash.lockingScript, inputSatoshis, 0, SigHash.SINGLE_FORKID);
+        const preimage = getPreimage(tx3, pay2ContractHash.lockingScript, inputSatoshis, 0, Signature.SINGLE);
 
         pay2ContractHash.txContext = {
             tx: tx3,
@@ -117,11 +110,8 @@ describe('Pay2ContractHash', () => {
             inputSatoshis
         }
 
-        const result = pay2ContractHash.transferFrom(counterContractHash, new PubKeyHash(toHex(pkh)), new Sig('00'), new PubKey(toHex(publicKey)), new Bytes(tx3.prevouts()),
-            new Bytes(toHex(tx2)), 1 /**contractInputIndex */, new SortedItem({
-                item: tokenId,
-                idx: findKeyIndex(map, tokenId)
-            }), preimage).verify()
+        const result = pay2ContractHash.transferFrom(counterContractHash, PubKeyHash(toHex(pkh)), Sig('00'), PubKey(toHex(publicKey)), Bytes(tx3.prevouts()),
+            Bytes(toHex(tx2)), 1 /**contractInputIndex */, getSortedItem(map, tokenId), preimage).verify()
         expect(result.success, result.error).to.be.true
 
     });
@@ -139,11 +129,11 @@ describe('Pay2ContractHash', () => {
             satoshis: outputAmount
         }))
 
-        map.set(tokenId, new PubKeyHash(toHex(pkh)))
+        map.set(tokenId, PubKeyHash(toHex(pkh)))
 
 
         let newLockingScript = pay2ContractHash.getNewStateScript({
-            owners: toHashedMap(map)
+            owners: map
         })
 
         // tx that transferstoken from Counter ContractHash to PubKeyHash
@@ -157,7 +147,7 @@ describe('Pay2ContractHash', () => {
             satoshis: outputAmount
         }))
 
-        const preimage = getPreimage(tx3, pay2ContractHash.lockingScript, inputSatoshis, 0, SigHash.SINGLE_FORKID);
+        const preimage = getPreimage(tx3, pay2ContractHash.lockingScript, inputSatoshis, 0, Signature.SINGLE);
 
         pay2ContractHash.txContext = {
             tx: tx3,
@@ -165,11 +155,8 @@ describe('Pay2ContractHash', () => {
             inputSatoshis
         }
 
-        const result = pay2ContractHash.transferFrom(counterContractHash, new PubKeyHash(toHex(pkh)), new Sig('00'), new PubKey(toHex(publicKey)), new Bytes(tx3.prevouts()),
-            new Bytes(toHex(tx2)), 1 /**contractInputIndex */, new SortedItem({
-                item: tokenId,
-                idx: findKeyIndex(map, tokenId)
-            }), preimage).verify()
+        const result = pay2ContractHash.transferFrom(counterContractHash, PubKeyHash(toHex(pkh)), Sig('00'), PubKey(toHex(publicKey)), Bytes(tx3.prevouts()),
+            Bytes(toHex(tx2)), 1 /**contractInputIndex */, getSortedItem(map, tokenId), preimage).verify()
         expect(result.success, result.error).to.be.false
     });
 

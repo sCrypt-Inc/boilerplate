@@ -1,19 +1,17 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, signTx, getPreimage, num2bin, toHex, Bytes, PubKey, Sig, Sha256, PubKeyHash } = require('scryptlib');
-const { compileContract, fixLowS, checkLowS } = require('../../helper.js');
+const { bsv, buildContractClass, signTx, getPreimage, toHex, PubKey, Sig, Sha256, PubKeyHash } = require('scryptlib');
+const { compileContract, fixLowS, checkLowS, inputIndex, inputSatoshis } = require('../../helper.js');
 
-const inputIndex = 0;
-const inputSatoshis = 100000;
-const agentKey = new bsv.PrivateKey.fromRandom('testnet');
+const agentKey = bsv.PrivateKey.fromRandom('testnet');
 const approveOutputBytes = "d3070000000000001976a9140f68389668c7e680d62e2446866ea1ca668e7fa188ac";
 const approveOutputScript = "76a9140f68389668c7e680d62e2446866ea1ca668e7fa188ac";
 const refundOutputBytes = "d3070000000000001976a9148c5a40d16db46e3fc419fd26105bb159cd2863b788ac";
 const refundOutputScript = "76a9148c5a40d16db46e3fc419fd26105bb159cd2863b788ac";
-const expireKey = new bsv.PrivateKey.fromRandom('testnet');
-const expiration = 610000;
+const expireKey = bsv.PrivateKey.fromRandom('testnet');
+const expiration = 610000n;
 const outputAmount = 2003;
 const wrongLockScript = "76a91486ead68829c1249844758bb3169ee19c4263c5cd88ac";
-const wrongKey = new bsv.PrivateKey.fromRandom('testnet');
+const wrongKey = bsv.PrivateKey.fromRandom('testnet');
 let EnforceAgentBitcoinTransfer;
 let agentKeyHash, approveOutputsHash, refundOutputsHash, expireKeyHash;
 
@@ -22,10 +20,10 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
   before(() => {
     EnforceAgentBitcoinTransfer = buildContractClass(compileContract('enforceAgentBitcoinTransfer.scrypt'));
-    agentKeyHash = new PubKeyHash(toHex(bsv.crypto.Hash.sha256ripemd160(agentKey.publicKey.toBuffer())));
-    approveOutputsHash = new Sha256(toHex(bsv.crypto.Hash.sha256sha256(Buffer.from(approveOutputBytes, 'hex'))));
-    refundOutputsHash = new Sha256(toHex(bsv.crypto.Hash.sha256sha256(Buffer.from(refundOutputBytes, 'hex'))));
-    expireKeyHash = new PubKeyHash(toHex(bsv.crypto.Hash.sha256ripemd160(expireKey.publicKey.toBuffer())));
+    agentKeyHash = PubKeyHash(toHex(bsv.crypto.Hash.sha256ripemd160(agentKey.publicKey.toBuffer())));
+    approveOutputsHash = Sha256(toHex(bsv.crypto.Hash.sha256sha256(Buffer.from(approveOutputBytes, 'hex'))));
+    refundOutputsHash = Sha256(toHex(bsv.crypto.Hash.sha256sha256(Buffer.from(refundOutputBytes, 'hex'))));
+    expireKeyHash = PubKeyHash(toHex(bsv.crypto.Hash.sha256ripemd160(expireKey.publicKey.toBuffer())));
     contract = new EnforceAgentBitcoinTransfer(agentKeyHash, approveOutputsHash, refundOutputsHash, expireKeyHash, expiration);
   });
 
@@ -38,7 +36,7 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
-    const res = contract.approve(new Sig(toHex(sig)), new PubKey(toHex(agentKey.publicKey)), preimage);
+    const res = contract.approve(Sig(toHex(sig)), PubKey(toHex(agentKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.true;
   });
@@ -52,7 +50,7 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
-    const res = contract.approve(new Sig(toHex(sig)), new PubKey(toHex(wrongKey.publicKey)), preimage);
+    const res = contract.approve(Sig(toHex(sig)), PubKey(toHex(wrongKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.false;
   });
@@ -66,7 +64,7 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
-    const res = contract.approve(new Sig(toHex(sig)), new PubKey(toHex(agentKey.publicKey)), preimage);
+    const res = contract.approve(Sig(toHex(sig)), PubKey(toHex(agentKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.false;
   });
@@ -80,7 +78,7 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
-    const res = contract.approve(new Sig(toHex(sig)), new PubKey(toHex(agentKey.publicKey)), preimage);
+    const res = contract.approve(Sig(toHex(sig)), PubKey(toHex(agentKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.false;
   });
@@ -94,7 +92,7 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
-    const res = contract.refund(new Sig(toHex(sig)), new PubKey(toHex(agentKey.publicKey)), preimage);
+    const res = contract.refund(Sig(toHex(sig)), PubKey(toHex(agentKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.true;
   });
@@ -108,7 +106,7 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
   
     contract.txContext = { tx, inputIndex, inputSatoshis };
   
-    const res = contract.refund(new Sig(toHex(sig)), new PubKey(toHex(wrongKey.publicKey)), preimage);
+    const res = contract.refund(Sig(toHex(sig)), PubKey(toHex(wrongKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.false;
   });
@@ -122,7 +120,7 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
   
     contract.txContext = { tx, inputIndex, inputSatoshis };
   
-    const res = contract.refund(new Sig(toHex(sig)), new PubKey(toHex(agentKey.publicKey)), preimage);
+    const res = contract.refund(Sig(toHex(sig)), PubKey(toHex(agentKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.false;
   });
@@ -136,14 +134,14 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
   
     contract.txContext = { tx, inputIndex, inputSatoshis };
   
-    const res = contract.refund(new Sig(toHex(sig)), new PubKey(toHex(agentKey.publicKey)), preimage);
+    const res = contract.refund(Sig(toHex(sig)), PubKey(toHex(agentKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.false;
   });
 
   it('Call expire', () => {
     const tx = createTx(refundOutputScript, outputAmount);
-    tx.nLockTime = expiration;
+    tx.nLockTime = Number(expiration);
     fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
     const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
@@ -151,14 +149,14 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
-    const res = contract.expire(new Sig(toHex(sig)), new PubKey(toHex(expireKey.publicKey)), preimage);
+    const res = contract.expire(Sig(toHex(sig)), PubKey(toHex(expireKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.true;
   });
 
   it('Call expire earlier lock time', () => {
     const tx = createTx(refundOutputScript, outputAmount);
-    tx.nLockTime = expiration-1;
+    tx.nLockTime = Number(expiration-1n);
     fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
     const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
@@ -166,21 +164,21 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
-    const res = contract.expire(new Sig(toHex(sig)), new PubKey(toHex(expireKey.publicKey)), preimage);
+    const res = contract.expire(Sig(toHex(sig)), PubKey(toHex(expireKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.false;
   });
 
   it('Call expire with max sequence', () => {
     const tx = createTx(refundOutputScript, outputAmount);
-    tx.nLockTime = expiration;
+    tx.nLockTime = Number(expiration);
     tx.inputs[0].sequenceNumber = 0xffffffff;
     let maxSequenceContract;
 
     for (i=0;i<25;i++) {
         // Modify agent key to get tx to work with low s.
-        const maxSequenceAgentKey = new bsv.PrivateKey.fromRandom('testnet');
-        const maxSequenceAgentKeyHash = new PubKeyHash(toHex(bsv.crypto.Hash.sha256ripemd160(maxSequenceAgentKey.publicKey.toBuffer())));
+        const maxSequenceAgentKey = bsv.PrivateKey.fromRandom('testnet');
+        const maxSequenceAgentKeyHash = PubKeyHash(toHex(bsv.crypto.Hash.sha256ripemd160(maxSequenceAgentKey.publicKey.toBuffer())));
         maxSequenceContract = new EnforceAgentBitcoinTransfer(maxSequenceAgentKeyHash, approveOutputsHash, refundOutputsHash, expireKeyHash, expiration);
         if (checkLowS(tx, maxSequenceContract.lockingScript, inputSatoshis, inputIndex)) {
             break;
@@ -192,14 +190,14 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
     maxSequenceContract.txContext = { tx, inputIndex, inputSatoshis };
 
-    const res = maxSequenceContract.expire(new Sig(toHex(sig)), new PubKey(toHex(expireKey.publicKey)), preimage);
+    const res = maxSequenceContract.expire(Sig(toHex(sig)), PubKey(toHex(expireKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.false;
   });
 
   it('Call expire with wrong key', () => {
     const tx = createTx(refundOutputScript, outputAmount);
-    tx.nLockTime = expiration;
+    tx.nLockTime = Number(expiration);
     fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
     const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
@@ -207,14 +205,14 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
-    const res = contract.expire(new Sig(toHex(sig)), new PubKey(toHex(wrongKey.publicKey)), preimage);
+    const res = contract.expire(Sig(toHex(sig)), PubKey(toHex(wrongKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.false;
   });
 
   it('Call expire with wrong signature', () => {
     const tx = createTx(refundOutputScript, outputAmount);
-    tx.nLockTime = expiration;
+    tx.nLockTime = Number(expiration);
     fixLowS(tx, contract.lockingScript, inputSatoshis, inputIndex);
 
     const preimage = getPreimage(tx, contract.lockingScript, inputSatoshis, inputIndex);
@@ -222,7 +220,7 @@ describe('Test EnforceAgentBitcoinTransfer', () => {
 
     contract.txContext = { tx, inputIndex, inputSatoshis };
 
-    const res = contract.expire(new Sig(toHex(sig)), new PubKey(toHex(expireKey.publicKey)), preimage);
+    const res = contract.expire(Sig(toHex(sig)), PubKey(toHex(expireKey.publicKey)), preimage);
     result = res.verify();
     expect(result.success, result.error).to.be.false;
   });

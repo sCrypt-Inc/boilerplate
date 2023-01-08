@@ -11,6 +11,7 @@ const {
   Sha256, 
   Bytes,
   SigHashPreimage,
+  Int,
 } = require('scryptlib');
 
 const {
@@ -27,15 +28,15 @@ const {
 
 const scenario = 1;
 
-const privateKeyA = new bsv.PrivateKey.fromRandom('testnet');
+const privateKeyA = bsv.PrivateKey.fromRandom('testnet');
 const publicKeyA = privateKeyA.publicKey;
 const publicKeyHashA = bsv.crypto.Hash.sha256ripemd160(publicKeyA.toBuffer());
 
-const privateKeyB = new bsv.PrivateKey.fromRandom('testnet');
+const privateKeyB = bsv.PrivateKey.fromRandom('testnet');
 const publicKeyB = privateKeyB.publicKey;
 const publicKeyHashB = bsv.crypto.Hash.sha256ripemd160(publicKeyB.toBuffer());
 
-const privateKeyE = new bsv.PrivateKey.fromRandom('testnet');
+const privateKeyE = bsv.PrivateKey.fromRandom('testnet');
 const publicKeyE = privateKeyE.publicKey;
 const publicKeyHashE = bsv.crypto.Hash.sha256ripemd160(publicKeyE.toBuffer());
 
@@ -45,7 +46,7 @@ const hashSecret1 = bsv.crypto.Hash.sha256(secretBuf1);
 const secretBuf2 = Buffer.from("def");
 const hashSecret2 = bsv.crypto.Hash.sha256(secretBuf2);
 
-const privateKeyChange = new bsv.PrivateKey.fromRandom('testnet');
+const privateKeyChange = bsv.PrivateKey.fromRandom('testnet');
 const publicKeyChange = privateKeyChange.publicKey;
 const publicKeyHashChange = bsv.crypto.Hash.sha256ripemd160(publicKeyChange.toBuffer());
 
@@ -54,15 +55,16 @@ const fee = 1000;
 const tx = newTx();
 
 const amount = inputSatoshis;
+const Signature = bsv.crypto.Signature
 
 describe('Test sCrypt contract Escrow in Javascript', () => {
   let escrow, preimage, result;
 
   before(() => {
     const Escrow = buildContractClass(compileContract('escrow.scrypt'));
-    escrow = new Escrow(new PubKeyHash(toHex(publicKeyHashA)), new PubKeyHash(toHex(publicKeyHashB)), new PubKeyHash(toHex(publicKeyHashE)), new Sha256(toHex(hashSecret1)), new Sha256(toHex(hashSecret2)));
-    const Signature = bsv.crypto.Signature
-    const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
+    escrow = new Escrow(PubKeyHash(toHex(publicKeyHashA)), PubKeyHash(toHex(publicKeyHashB)), 
+      PubKeyHash(toHex(publicKeyHashE)), Sha256(toHex(hashSecret1)), Sha256(toHex(hashSecret2)));
+
     switch(scenario) {
       case 1:
         tx.addOutput(new bsv.Transaction.Output({
@@ -111,7 +113,7 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
       escrow.lockingScript,
       inputSatoshis,
       0,
-      sighashType
+      Signature.ANYONECANPAY_ALL
     );
 
     // set txContext for verification
@@ -126,14 +128,14 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
     case 1:
       it('should succeed when pushing right data for scenario 1: PA + PB', () => {
         result = escrow.unlock(
-          new SigHashPreimage(toHex(preimage)),
-          new PubKey(toHex(publicKeyA)),
-          new Sig(toHex(sigA)),
-          new PubKey(toHex(publicKeyB)),
-          new Sig(toHex(sigB)),
-          new Bytes(toHex('')),
-          new PubKeyHash(toHex(publicKeyHashChange)),
-          1000
+          SigHashPreimage(toHex(preimage)),
+          PubKey(toHex(publicKeyA)),
+          Sig(toHex(sigA)),
+          PubKey(toHex(publicKeyB)),
+          Sig(toHex(sigB)),
+          Bytes(toHex('')),
+          PubKeyHash(toHex(publicKeyHashChange)),
+          1000n
         )
         .verify();
         expect(result.success, result.error).to.be.true;
@@ -141,14 +143,14 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
 
       it('should fail when pushing wrong preimage', () => {
         result = escrow.unlock(
-          new SigHashPreimage(toHex(preimage) + '01'),
-          new PubKey(toHex(publicKeyA)),
-          new Sig(toHex(sigA)),
-          new PubKey(toHex(publicKeyB)),
-          new Sig(toHex(sigB)),
-          new Bytes(toHex('')),
-          new PubKeyHash(toHex(publicKeyHashChange)),
-          amount / 2 - fee
+          SigHashPreimage(toHex(preimage) + '01'),
+          PubKey(toHex(publicKeyA)),
+          Sig(toHex(sigA)),
+          PubKey(toHex(publicKeyB)),
+          Sig(toHex(sigB)),
+          Bytes(toHex('')),
+          PubKeyHash(toHex(publicKeyHashChange)),
+          Int(amount / 2 - fee)
         )
         .verify();
         expect(result.success, result.error).to.be.false;
@@ -158,14 +160,14 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
     case 2:
       it('should succeed when pushing right data for scenario 2: PA + PE + Hash 1', () => {
         result = escrow.unlock(
-          new SigHashPreimage(toHex(preimage)),
-          new PubKey(toHex(publicKeyA)),
-          new Sig(toHex(sigA)),
-          new PubKey(toHex(publicKeyE)),
-          new Sig(toHex(sigE)),
-          new Bytes(toHex(secretBuf1)),
-          new PubKeyHash(toHex(publicKeyHashChange)),
-          amount - fee
+          SigHashPreimage(toHex(preimage)),
+          PubKey(toHex(publicKeyA)),
+          Sig(toHex(sigA)),
+          PubKey(toHex(publicKeyE)),
+          Sig(toHex(sigE)),
+          Bytes(toHex(secretBuf1)),
+          PubKeyHash(toHex(publicKeyHashChange)),
+          Int(amount - fee)
         )
         .verify();
         expect(result.success, result.error).to.be.true;
@@ -204,14 +206,14 @@ describe('Test sCrypt contract Escrow in Javascript', () => {
 
       it('should fail when pushing wrong preimage', () => {
         result = escrow.unlock(
-          new SigHashPreimage(toHex(preimage) + '01'),
-          new PubKey(toHex(publicKeyB)),
-          new Sig(toHex(sigB)),
-          new PubKey(toHex(publicKeyE)),
-          new Sig(toHex(sigE)),
-          new Bytes(toHex(secretBuf2)),
-          new PubKeyHash(toHex(publicKeyHashChange)),
-          amount - fee
+          SigHashPreimage(toHex(preimage) + '01'),
+          PubKey(toHex(publicKeyB)),
+          Sig(toHex(sigB)),
+          PubKey(toHex(publicKeyE)),
+          Sig(toHex(sigE)),
+          Bytes(toHex(secretBuf2)),
+          PubKeyHash(toHex(publicKeyHashChange)),
+          Int(amount - fee)
         )
         .verify();
         expect(result.success, result.error).to.be.false;

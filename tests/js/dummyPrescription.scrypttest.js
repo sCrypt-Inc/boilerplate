@@ -9,18 +9,17 @@ const {
   toHex,
   Sig,
   PubKeyHash,
-  buildTypeClasses,
 } = require("scryptlib");
 const { compileContract, inputIndex, newTx } = require("../../helper");
 const { generatePrivKey, privKeyToPubKey, sign } = require("rabinsig");
 
 // prescription details
-const drug = 1;
+const drug = 1n;
 const prescriptionIDHex = Buffer.from("some prescription unique id").toString(
   "hex"
 );
-const currTime = 1427527;
-const expiration = currTime + 100;
+const currTime = 1427527n;
+const expiration = currTime + 100n;
 const patientReward = 5000;
 
 // prescriber information
@@ -67,23 +66,21 @@ describe("Dummy Prescription", () => {
       compileContract("dummy_prescription.scrypt")
     );
 
-    const {RabinSig, RabinPubKey} = buildTypeClasses(DummyPrescription);
-
     // init prescription aka locking script
     dummyPrescription = new DummyPrescription(
       drug,
       expiration,
-      new Bytes(prescriptionIDHex),
-      patientReward,
-      new PubKeyHash(toHex(publicKeyHashPatient)),
+      Bytes(prescriptionIDHex),
+      BigInt(patientReward),
+      PubKeyHash(toHex(publicKeyHashPatient)),
       [
-        new PubKey(toHex(publicKeyPharmacy1)),
-        new PubKey(toHex(publicKeyPharmacy2)),
+        PubKey(toHex(publicKeyPharmacy1)),
+        PubKey(toHex(publicKeyPharmacy2)),
       ],
-      new RabinSig({
+      {
         s: prescriberSig.signature,
         padding: paddingBytes(prescriberSig.paddingByteCount),
-      })
+      }
     );
 
     // add reward payout to user
@@ -119,7 +116,7 @@ describe("Dummy Prescription", () => {
   });
   it("fills for correct patient", () => {
     result = dummyPrescription
-      .fill(new Sig(toHex(pharmacySig1)), prescriber_nRabin, currTime, preimage)
+      .fill(Sig(toHex(pharmacySig1)), prescriber_nRabin, currTime, preimage)
       .verify();
     expect(result.success, result.error).to.be.true;
   });
@@ -133,7 +130,7 @@ describe("Dummy Prescription", () => {
     );
     result = dummyPrescription
       .fill(
-        new Sig(toHex(pharmacyImposterSig)),
+        Sig(toHex(pharmacyImposterSig)),
         prescriber_nRabin,
         currTime,
         preimage
@@ -142,10 +139,10 @@ describe("Dummy Prescription", () => {
     expect(result.success, result.error).to.be.false;
   });
   it("does not filled expired", () => {
-    const expiredDate = expiration + 1;
+    const expiredDate = expiration + 1n;
     result = dummyPrescription
       .fill(
-        new Sig(toHex(pharmacySig1)),
+        Sig(toHex(pharmacySig1)),
         prescriber_nRabin,
         expiredDate,
         preimage
@@ -155,7 +152,7 @@ describe("Dummy Prescription", () => {
   });
   it("does not fill for wrong patient", () => {
     tx = newTx();
-    const wrongPrivKeyPatient = new bsv.PrivateKey.fromRandom("testnet");
+    const wrongPrivKeyPatient = bsv.PrivateKey.fromRandom("testnet");
     // add reward payout to user
     tx.addOutput(
       new bsv.Transaction.Output({
@@ -180,7 +177,7 @@ describe("Dummy Prescription", () => {
       inputSatoshis
     );
     result = dummyPrescription
-      .fill(new Sig(toHex(pharmacySig1)), prescriber_nRabin, currTime, preimage)
+      .fill(Sig(toHex(pharmacySig1)), prescriber_nRabin, currTime, preimage)
       .verify();
     expect(result.success, result.error).to.be.false;
   });
@@ -191,5 +188,5 @@ function paddingBytes(paddingByteCount) {
   for (let i = 0; i < paddingByteCount; i++) {
     paddingBytes += "00";
   }
-  return new Bytes(paddingBytes);
+  return Bytes(paddingBytes);
 }

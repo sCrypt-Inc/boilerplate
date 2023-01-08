@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { buildContractClass, buildTypeClasses, Int } = require('scryptlib');
+const { buildContractClass, Int } = require('scryptlib');
 const { compileContract, loadDesc } = require('../../helper');
 
 

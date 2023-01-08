@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { buildContractClass, buildTypeClasses, Bytes } = require('scryptlib');
+const { buildContractClass } = require('scryptlib');
 const { compileContract, getRandomInt } = require('../../helper');
 const { buildMimc7 } = require('circomlibjs');
 

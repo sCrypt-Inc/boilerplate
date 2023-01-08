@@ -11,14 +11,12 @@ const {
 
 
 const Signature = bsv.crypto.Signature
-// Note: ANYONECANPAY
-const sighashType = Signature.SIGHASH_ANYONECANPAY | Signature.SIGHASH_ALL | Signature.SIGHASH_FORKID
 
 
 
 // Token price is 1000 satoshis each
 // NOTE: a price that is too low could run afoul of dust policy
-const SATS_PER_TOKEN = 1000
+const SATS_PER_TOKEN = 1000n
 
 
 const privateKeys = [1,1,1,1,1].map(k => new bsv.PrivateKey.fromRandom())
@@ -39,7 +37,7 @@ describe('Test sCrypt contract Counter In Javascript', () => {
     seller = new AdvancedTokenSale(SATS_PER_TOKEN);
 
     // append state as passive data
-    seller.setDataPart(emptyPublicKey + "00");
+    seller.setDataPartInASM(emptyPublicKey + "00");
     
   });
 
@@ -49,8 +47,8 @@ describe('Test sCrypt contract Counter In Javascript', () => {
 
     const newLockingScript = [seller.codePart.toASM(), newState].join(' ')
   
-    const changeAmount = inputSatoshis - numBought * SATS_PER_TOKEN
-    const outputAmount = inputSatoshis + numBought * SATS_PER_TOKEN
+    const changeAmount = inputSatoshis - Number(numBought) * Number(SATS_PER_TOKEN)
+    const outputAmount = inputSatoshis + Number(numBought) * Number(SATS_PER_TOKEN)
 
     // counter output
     tx.addOutput(new bsv.Transaction.Output({
@@ -64,11 +62,11 @@ describe('Test sCrypt contract Counter In Javascript', () => {
       satoshis: changeAmount
     }))
 
-    preimage = getPreimage(tx, seller.lockingScript, inputSatoshis, 0, sighashType)
+    preimage = getPreimage(tx, seller.lockingScript, inputSatoshis, 0, Signature.ANYONECANPAY_ALL)
 
 
     const context = { tx, inputIndex, inputSatoshis }
-    result = seller.buy(new SigHashPreimage(toHex(preimage)), new PubKeyHash(toHex(pkh)), changeAmount, new Bytes(toHex(publicKey)), numBought).verify(context)
+    result = seller.buy(SigHashPreimage(toHex(preimage)), PubKeyHash(toHex(pkh)), BigInt(changeAmount), Bytes(toHex(publicKey)), numBought).verify(context)
     expect(result.success, result.error).to.be.true;
     return newState;
   }
@@ -78,15 +76,15 @@ describe('Test sCrypt contract Counter In Javascript', () => {
   it('should succeed when pushing right preimage & amount', () => {
     // any contract that includes checkSig() must be verified in a given context
 
-    let newState = testBuy(1, pkhs[0], publicKeys[0]);
+    let newState = testBuy(1n, pkhs[0], publicKeys[0]);
 
     seller.setDataPart(newState);
-    newState  = testBuy(3, pkhs[1], publicKeys[1])
+    newState  = testBuy(3n, pkhs[1], publicKeys[1])
     seller.setDataPart(newState);
-    newState  = testBuy(10, pkhs[2], publicKeys[2])
+    newState  = testBuy(10n, pkhs[2], publicKeys[2])
 
     seller.setDataPart(newState);
-    newState  = testBuy(2, pkhs[3], publicKeys[3])
+    newState  = testBuy(2n, pkhs[3], publicKeys[3])
   });
 
 });

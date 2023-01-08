@@ -1,11 +1,10 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, getPreimage, toHex, num2bin, SigHashPreimage, Bytes } = require('scryptlib');
+const { bsv, buildContractClass, getPreimage, toHex, SigHashPreimage } = require('scryptlib');
 
 const {
   inputIndex,
   inputSatoshis,
   newTx,
-  DataLen,
   compileContract
 } = require('../../helper');
 
@@ -21,24 +20,24 @@ describe('Heavy: Test sCrypt contract Conways GOL In Javascript', () => {
     // TODO: This is a dumb way to do it but easier to visualize
     // original board
     let board = [
-      0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0,
-      0, 1, 1, 1, 0, 0, 0,
-      0, 0, 0, 1, 0, 0, 0,
-      0, 1, 1, 1, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0
+      0n, 0n, 0n, 0n, 0n, 0n, 0n,
+      0n, 0n, 0n, 0n, 0n, 0n, 0n,
+      0n, 1n, 1n, 1n, 0n, 0n, 0n,
+      0n, 0n, 0n, 1n, 0n, 0n, 0n,
+      0n, 1n, 1n, 1n, 0n, 0n, 0n,
+      0n, 0n, 0n, 0n, 0n, 0n, 0n,
+      0n, 0n, 0n, 0n, 0n, 0n, 0n
     ];
     gol = new GameOfLife(board)
     // new board
     let newBoard = [
-      0, 0, 0, 0, 0, 0, 0,
-      0, 0, 1, 0, 0, 0, 0,
-      0, 0, 1, 1, 0, 0, 0,
-      0, 0, 0, 0, 1, 0, 0,
-      0, 0, 1, 1, 0, 0, 0,
-      0, 0, 1, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0
+      0n, 0n, 0n, 0n, 0n, 0n, 0n,
+      0n, 0n, 1n, 0n, 0n, 0n, 0n,
+      0n, 0n, 1n, 1n, 0n, 0n, 0n,
+      0n, 0n, 0n, 0n, 1n, 0n, 0n,
+      0n, 0n, 1n, 1n, 0n, 0n, 0n,
+      0n, 0n, 1n, 0n, 0n, 0n, 0n,
+      0n, 0n, 0n, 0n, 0n, 0n, 0n
     ]
     const newLockingScript = gol.getNewStateScript({
       board: newBoard
@@ -60,17 +59,17 @@ describe('Heavy: Test sCrypt contract Conways GOL In Javascript', () => {
   });
 
   it('should succeed when pushing right preimage & amount', () => {
-    result = gol.play(outputAmount, new SigHashPreimage(toHex(preimage))).verify()
+    result = gol.play(BigInt(outputAmount), SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.true
   });
 
   it('should fail when pushing wrong preimage', () => {
-    result = gol.play(outputAmount, new SigHashPreimage(toHex(preimage) + '01')).verify()
+    result = gol.play(BigInt(outputAmount), SigHashPreimage(toHex(preimage) + '01')).verify()
     expect(result.success, result.error).to.be.false
   });
 
   it('should fail when pushing wrong amount', () => {
-    result = gol.play(outputAmount - 1, new SigHashPreimage(toHex(preimage))).verify()
+    result = gol.play(BigInt(outputAmount - 1), SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.false
   });
 });

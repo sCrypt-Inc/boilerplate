@@ -1,16 +1,16 @@
 const { expect } = require('chai');
-const { bsv, buildContractClass, PubKey, toHex, Sha256, Bytes, getPreimage, signTx, buildTypeClasses, num2bin } = require('scryptlib');
-const { compileContract, inputIndex, inputSatoshis, uint322bin,
+const { bsv, buildContractClass, PubKey, toHex, getPreimage, signTx } = require('scryptlib');
+const { compileContract, inputIndex, inputSatoshis, 
     pdiff2Target } = require('../../helper');
 
-const { newTxInBlock, header, wrongMerklePath, merklePath,
+const { newTxInBlock, wrongMerklePath, merklePath,
     headers, toBlockHeader, buildMerkleProof } = require('./blockchainhelper');
 
 
-const alicePrivateKey = new bsv.PrivateKey.fromRandom('testnet')
+const alicePrivateKey = bsv.PrivateKey.fromRandom('testnet')
 const alicePublicKey = bsv.PublicKey.fromPrivateKey(alicePrivateKey)
 
-const bobPrivateKey = new bsv.PrivateKey.fromRandom('testnet')
+const bobPrivateKey = bsv.PrivateKey.fromRandom('testnet')
 const bobPublicKey = bsv.PublicKey.fromPrivateKey(bobPrivateKey)
 
 const tx = newTxInBlock();
@@ -24,12 +24,9 @@ describe('Test sCrypt contract blockTimeBet In Javascript', () => {
 
         const BlockTimeBet = buildContractClass(compileContract('blockTimeBet.scrypt'))
 
-        const Types = buildTypeClasses(BlockTimeBet);
-        BlockHeader = Types.BlockHeader;
-        Node = Types.Node
     
         //Normally, the difficulty of the current network should be used
-        blockTimeBet = new BlockTimeBet(pdiff2Target(headers[1].difficulty), new PubKey(toHex(alicePublicKey)), new PubKey(toHex(bobPublicKey)))
+        blockTimeBet = new BlockTimeBet(pdiff2Target(headers[1].difficulty), PubKey(toHex(alicePublicKey)), PubKey(toHex(bobPublicKey)))
     })
 
     function runMain(privateKey, headers, proof) {
@@ -53,8 +50,8 @@ describe('Test sCrypt contract blockTimeBet In Javascript', () => {
     it('blockTimeBet should succeed when using right block header', () => {
 
         const result = runMain(alicePrivateKey,
-            headers.map(h => toBlockHeader(BlockHeader, h)),
-            buildMerkleProof(Node, merklePath))
+            headers.map(h => toBlockHeader(h)),
+            buildMerkleProof(merklePath))
         expect(result.success, result.error).to.be.true
     });
 
@@ -62,10 +59,10 @@ describe('Test sCrypt contract blockTimeBet In Javascript', () => {
     it('blockTimeBet should fail when using wrong block header', () => {
 
         const result = runMain(alicePrivateKey,
-            headers.map(h => toBlockHeader(BlockHeader, Object.assign({}, h, {
+            headers.map(h => toBlockHeader(Object.assign({}, h, {
                 version: 1
             }))),
-            buildMerkleProof(Node, merklePath))
+            buildMerkleProof(merklePath))
 
         expect(result.success, result.error).to.be.false
     });
@@ -74,8 +71,8 @@ describe('Test sCrypt contract blockTimeBet In Javascript', () => {
     it('blockTimeBet should fail when using wrongMerklePath', () => {
 
         const result = runMain(alicePrivateKey,
-            headers.map(h => toBlockHeader(BlockHeader, h)),
-            buildMerkleProof(Node, wrongMerklePath))
+            headers.map(h => toBlockHeader(h)),
+            buildMerkleProof(wrongMerklePath))
         expect(result.success, result.error).to.be.false
     });
 
@@ -83,8 +80,8 @@ describe('Test sCrypt contract blockTimeBet In Javascript', () => {
     it('when time is less 10 minutes , Bob should NOT win and not able to unlock', () => {
 
         const result = runMain(bobPrivateKey,
-            headers.map(h => toBlockHeader(BlockHeader, h)),
-            buildMerkleProof(Node, merklePath))
+            headers.map(h => toBlockHeader(h)),
+            buildMerkleProof(merklePath))
         expect(result.success, result.error).to.be.false
     });
 

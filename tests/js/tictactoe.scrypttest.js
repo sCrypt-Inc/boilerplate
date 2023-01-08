@@ -1,18 +1,18 @@
 const { expect } = require('chai');
-const { buildContractClass, Bytes, signTx, bsv, Sig, SigHashPreimage, PubKey, toHex, getPreimage } = require('scryptlib');
-const { inputIndex, inputSatoshis, newTx, compileContract, DataLen } = require('../../helper');
+const { buildContractClass,  signTx, bsv, Sig, PubKey, toHex, getPreimage } = require('scryptlib');
+const { inputIndex, inputSatoshis, newTx, compileContract } = require('../../helper');
 
 
-const privateKey1 = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey1 = bsv.PrivateKey.fromRandom('testnet')
 const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
 
-const privateKey2 = new bsv.PrivateKey.fromRandom('testnet')
+const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
 const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
 
-const privateKeyAlice = new bsv.PrivateKey.fromRandom('testnet')
+const privateKeyAlice = bsv.PrivateKey.fromRandom('testnet')
 const publicKeyAlice = bsv.PublicKey.fromPrivateKey(privateKeyAlice)
 
-const privateKeyBob = new bsv.PrivateKey.fromRandom('testnet')
+const privateKeyBob = bsv.PrivateKey.fromRandom('testnet')
 const publicKeyBob = bsv.PublicKey.fromPrivateKey(privateKeyBob)
 
 
@@ -22,7 +22,7 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
 
   before(() => {
     const Tictactoe = buildContractClass(compileContract('tictactoe.scrypt'));
-    game = new Tictactoe(new PubKey(toHex(publicKeyAlice)), new PubKey(toHex(publicKeyBob)), true, [0,0,0,0,0,0,0,0,0]);
+    game = new Tictactoe(PubKey(toHex(publicKeyAlice)), PubKey(toHex(publicKeyBob)), true, [0,0,0,0,0,0,0,0,0]);
   })
 
   function reset() {
@@ -60,7 +60,7 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
 
     const context = { tx, inputIndex, inputSatoshis }
 
-    result = game.move(n, new Sig(toHex(sig)), 10000, preimage).verify(context)
+    result = game.move(n, Sig(toHex(sig)), 10000, preimage).verify(context)
 
     if (expected === false) {
       expect(result.success, result.error).to.be.false;
@@ -90,7 +90,7 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
 
     const context = { tx, inputIndex, inputSatoshis }
 
-    result = game.move(n, new Sig(toHex(sig)), 10000, preimage).verify(context)
+    result = game.move(n, Sig(toHex(sig)), 10000, preimage).verify(context)
 
     expect(result.success, result.error).to.be.true;
   }
@@ -117,7 +117,7 @@ describe('Test sCrypt contract Tictactoe In Javascript', () => {
 
     const context = { tx, inputIndex, inputSatoshis }
 
-    result = game.move(n, new Sig(toHex(sig)), 10000, preimage).verify(context)
+    result = game.move(n, Sig(toHex(sig)), 10000, preimage).verify(context)
     expect(result.success, result.error).to.be.true;
   }
 

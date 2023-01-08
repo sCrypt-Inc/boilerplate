@@ -24,123 +24,121 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
     const result = compileContract('turingMachine.scrypt');
     const TuringMachine = buildContractClass(result);
 
-    const { StateStruct } = buildTypeClasses(TuringMachine);
-
     allStates = [
 
-      new StateStruct({
+      {
         'headPos': 0,
-        'tape': new Bytes('01010202'),
-        'curState': new Bytes('00')
-      }),
+        'tape': Bytes('01010202'),
+        'curState': Bytes('00')
+      },
 
-      new StateStruct({
+      {
         'headPos': 1,
-        'tape': new Bytes('01010202'),
-        'curState': new Bytes('00')
-      }),
+        'tape': Bytes('01010202'),
+        'curState': Bytes('00')
+      },
 
-      new StateStruct({
+      {
         'headPos': 2,
-        'tape': new Bytes('01010202'),
-        'curState': new Bytes('00')
-      }),
+        'tape': Bytes('01010202'),
+        'curState': Bytes('00')
+      },
 
-      new StateStruct({
+      {
         'headPos': 1,
-        'tape': new Bytes('01010302'),
-        'curState': new Bytes('01')
-      }),
+        'tape': Bytes('01010302'),
+        'curState': Bytes('01')
+      },
 
-      new StateStruct({
+      {
         'headPos': 2,
-        'tape': new Bytes('01030302'),
-        'curState': new Bytes('00')
-      }),
+        'tape': Bytes('01030302'),
+        'curState': Bytes('00')
+      },
 
-      new StateStruct({
+      {
         'headPos': 3,
-        'tape': new Bytes('01030302'),
-        'curState': new Bytes('00')
-      }),
+        'tape': Bytes('01030302'),
+        'curState': Bytes('00')
+      },
 
-      new StateStruct({
+      {
         'headPos': 2,
-        'tape': new Bytes('01030303'),
-        'curState': new Bytes('01')
-      }),
+        'tape': Bytes('01030303'),
+        'curState': Bytes('01')
+      },
 
-      new StateStruct({
+      {
         'headPos': 1,
-        'tape': new Bytes('01030303'),
-        'curState': new Bytes('01')
-      }),
+        'tape': Bytes('01030303'),
+        'curState': Bytes('01')
+      },
 
-      new StateStruct({
+      {
         'headPos': 0,
-        'tape': new Bytes('01030303'),
-        'curState': new Bytes('01')
-      }),
+        'tape': Bytes('01030303'),
+        'curState': Bytes('01')
+      },
 
-      new StateStruct({
+      {
         'headPos': 1,
-        'tape': new Bytes('03030303'),
-        'curState': new Bytes('00')
-      }),
+        'tape': Bytes('03030303'),
+        'curState': Bytes('00')
+      },
 
-      new StateStruct({
+      {
         'headPos': 2,
-        'tape': new Bytes('03030303'),
-        'curState': new Bytes('00')
-      }),
+        'tape': Bytes('03030303'),
+        'curState': Bytes('00')
+      },
 
-      new StateStruct({
+      {
         'headPos': 3,
-        'tape': new Bytes('03030303'),
-        'curState': new Bytes('00')
-      }),
+        'tape': Bytes('03030303'),
+        'curState': Bytes('00')
+      },
 
-      new StateStruct({
+      {
         'headPos': 4,
-        'tape': new Bytes('0303030300'),
-        'curState': new Bytes('00')
-      }),
+        'tape': Bytes('0303030300'),
+        'curState': Bytes('00')
+      },
 
-      new StateStruct({
+      {
         'headPos': 3,
-        'tape': new Bytes('0303030300'),
-        'curState': new Bytes('02')
-      }),
+        'tape': Bytes('0303030300'),
+        'curState': Bytes('02')
+      },
 
-      new StateStruct({
+      {
         'headPos': 2,
-        'tape': new Bytes('0303030300'),
-        'curState': new Bytes('02')
-      }),
+        'tape': Bytes('0303030300'),
+        'curState': Bytes('02')
+      },
 
-      new StateStruct({
+      {
         'headPos': 1,
-        'tape': new Bytes('0303030300'),
-        'curState': new Bytes('02')
-      }),
+        'tape': Bytes('0303030300'),
+        'curState': Bytes('02')
+      },
 
-      new StateStruct({
+      {
         'headPos': 0,
-        'tape': new Bytes('0303030300'),
-        'curState': new Bytes('02')
-      }),
+        'tape': Bytes('0303030300'),
+        'curState': Bytes('02')
+      },
 
-      new StateStruct({
+      {
         'headPos': 0,
-        'tape': new Bytes('000303030300'),
-        'curState': new Bytes('02')
-      }),
+        'tape': Bytes('000303030300'),
+        'curState': Bytes('02')
+      },
 
-      new StateStruct({
+      {
         'headPos': 0,
-        'tape': new Bytes('000303030300'),
-        'curState': new Bytes('03')
-      }),
+        'tape': Bytes('000303030300'),
+        'curState': Bytes('03')
+      },
 
     ]
 
@@ -164,7 +162,7 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
     }))
 
 
-    preimage = getPreimage(tx, turingMachine.lockingScript, inputSatoshis, 0, sighashType)
+    preimage = getPreimage(tx, turingMachine.lockingScript, inputSatoshis, 0, Signature.ANYONECANPAY_SINGLE)
 
     // set txContext for verification
     turingMachine.txContext = {
@@ -173,7 +171,7 @@ describe('Test sCrypt contract TuringMachine In Javascript', () => {
       inputSatoshis
     }
 
-    result = turingMachine.transit(new SigHashPreimage(toHex(preimage))).verify()
+    result = turingMachine.transit(SigHashPreimage(toHex(preimage))).verify()
     expect(result.success, result.error).to.be.true
 
   }

@@ -7,16 +7,16 @@ describe('Test sCrypt contract Ackermann In Javascript', () => {
 
   before(() => {
     const Ackermann = buildContractClass(compileContract('ackermann.scrypt'));
-    ackermann = new Ackermann(2, 1);
+    ackermann = new Ackermann(2n, 1n);
   });
 
   it('should return true', () => {
-    result = ackermann.unlock(5).verify()
+    result = ackermann.unlock(5n).verify()
     expect(result.success, result.error).to.be.true
   });
 
   it('should throw error', () => {
-    result = ackermann.unlock(0).verify()
+    result = ackermann.unlock(0n).verify()
     expect(result.success, result.error).to.be.false
   });
 });

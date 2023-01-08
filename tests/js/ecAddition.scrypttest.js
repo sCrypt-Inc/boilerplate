@@ -3,9 +3,7 @@ const { expect } = require('chai');
 const {
   bsv,
   buildContractClass,
-  buildTypeClasses,
-  Int,
-  toHex,
+  Int
 } = require('scryptlib');
 
 const {
@@ -42,29 +40,27 @@ function get_lambda(P1, P2) {
 }
 
 describe('Test EC sCrypt contract in Javascript', () => {
-  let ecAddition, Point, P1, P2;
+  let ecAddition, P1, P2;
 
   before(() => {
     let contract = compileContract('ecAddition.scrypt')
     ECAddition = buildContractClass(contract);
-    typeClasses = buildTypeClasses(contract);
-    Point = typeClasses.Point
 
     // P1 and P2
-    k1 = new bsv.PrivateKey.fromRandom('testnet')
-    k2 = new bsv.PrivateKey.fromRandom('testnet')
+    k1 = bsv.PrivateKey.fromRandom('testnet')
+    k2 = bsv.PrivateKey.fromRandom('testnet')
     P1 = k1.publicKey.point;
     P2 = k2.publicKey.point;
 
     ecAddition = new ECAddition(
-      new Point({
-        x: new Int(P1.getX().toString(10)),
-        y: new Int(P1.getY().toString(10))
-      }),
-      new Point({
-        x: new Int(P2.getX().toString(10)),
-        y: new Int(P2.getY().toString(10))
-      }),
+      {
+        x: Int(P1.getX().toString(10)),
+        y: Int(P1.getY().toString(10))
+      },
+      {
+        x: Int(P2.getX().toString(10)),
+        y: Int(P2.getY().toString(10))
+      },
     );
   });
 
@@ -74,14 +70,14 @@ describe('Test EC sCrypt contract in Javascript', () => {
     // P = P1 + P2
     let Px = lambda.sqr().sub(P1.getX()).sub(P2.getX()).umod(p)
     let Py = lambda.mul(P1.getX().sub(Px)).sub(P1.getY()).umod(p)
-  
+
     result = ecAddition
       .testSum(
-        new Int(lambda.toString(10)),
-        new Point({
-          x: new Int(Px.toString(10)),
-          y: new Int(Py.toString(10))
-        }),
+        Int(lambda.toString(10)),
+        {
+          x: Int(Px.toString(10)),
+          y: Int(Py.toString(10))
+        },
       )
       .verify();
     expect(result.success, result.error).to.be.true;
@@ -94,23 +90,23 @@ describe('Test EC sCrypt contract in Javascript', () => {
     let Py = lambda.mul(P1.getX().sub(Px)).sub(P1.getY()).umod(p)
 
     ecAdditionSamePoint = new ECAddition(
-      new Point({
-        x: new Int(P1.getX().toString(10)),
-        y: new Int(P1.getY().toString(10))
-      }),
-      new Point({
-        x: new Int(P1.getX().toString(10)),
-        y: new Int(P1.getY().toString(10))
-      }),
+      {
+        x: Int(P1.getX().toString(10)),
+        y: Int(P1.getY().toString(10))
+      },
+      {
+        x: Int(P1.getX().toString(10)),
+        y: Int(P1.getY().toString(10))
+      },
     );
-  
+
     result = ecAdditionSamePoint
       .testSum(
-        new Int(lambda.toString(10)),
-        new Point({
-          x: new Int(Px.toString(10)),
-          y: new Int(Py.toString(10))
-        }),
+        Int(lambda.toString(10)),
+        {
+          x: Int(Px.toString(10)),
+          y: Int(Py.toString(10))
+        },
       )
       .verify();
     expect(result.success, result.error).to.be.true;
@@ -118,23 +114,23 @@ describe('Test EC sCrypt contract in Javascript', () => {
 
   it('should succeed when pushing right point addition result and P2 == ZERO', () => {
     ecAdditionSamePoint = new ECAddition(
-      new Point({
-        x: new Int(P1.getX().toString(10)),
-        y: new Int(P1.getY().toString(10))
-      }),
-      new Point({
-        x: new Int(0),
-        y: new Int(0)
-      }),
+      {
+        x: Int(P1.getX().toString(10)),
+        y: Int(P1.getY().toString(10))
+      },
+      {
+        x: Int(0),
+        y: Int(0)
+      },
     );
-  
+
     result = ecAdditionSamePoint
       .testSum(
-        new Int(0),  // Lamda doesn't matter here and can be whatever value
-        new Point({
-          x: new Int(P1.getX().toString(10)),
-          y: new Int(P1.getY().toString(10))
-        }),
+        Int(0),  // Lamda doesn't matter here and can be whatever value
+        {
+          x: Int(P1.getX().toString(10)),
+          y: Int(P1.getY().toString(10))
+        },
       )
       .verify();
     expect(result.success, result.error).to.be.true;
@@ -147,14 +143,14 @@ describe('Test EC sCrypt contract in Javascript', () => {
     // P = P1 + P2
     let Px = lambda.sqr().sub(P1.getX()).sub(P2.getX()).addn(1).umod(p)
     let Py = lambda.mul(P1.getX().sub(Px)).sub(P1.getY()).umod(p)
-  
+
     result = ecAddition
       .testSum(
-        new Int(lambda.toString(10)),
-        new Point({
-          x: new Int(Px.toString(10)),
-          y: new Int(Py.toString(10))
-        }),
+        Int(lambda.toString(10)),
+        {
+          x: Int(Px.toString(10)),
+          y: Int(Py.toString(10))
+        },
       )
       .verify();
     expect(result.success, result.error).to.be.false;
@@ -166,17 +162,17 @@ describe('Test EC sCrypt contract in Javascript', () => {
     // P = P1 + P2
     let Px = lambda.sqr().sub(P1.getX()).sub(P2.getX()).umod(p)
     let Py = lambda.mul(P1.getX().sub(Px)).sub(P1.getY()).umod(p)
-  
+
     result = ecAddition
       .testSum(
-        new Int(p.toString(10)),
-        new Point({
-          x: new Int(Px.toString(10)),
-          y: new Int(Py.toString(10))
-        }),
+        Int(p.toString(10)),
+        {
+          x: Int(Px.toString(10)),
+          y: Int(Py.toString(10))
+        },
       )
       .verify();
     expect(result.success, result.error).to.be.false;
   });
-  
+
 });

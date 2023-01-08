@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { buildContractClass, getPreimage, toHex, num2bin, Bytes } = require('scryptlib');
+const { buildContractClass, num2bin, Bytes } = require('scryptlib');
 
 const {
   newTx,
@@ -101,29 +101,29 @@ describe('Heavy: Test sCrypt contract sudoku In Javascript', () => {
 
   before(() => {
     const Sudoku = buildContractClass(compileContract('sudoku.scrypt'))
-    sudoku = new Sudoku(new Bytes(boardToHex(board)))
+    sudoku = new Sudoku(Bytes(boardToHex(board)))
 
   })
 
   it('should succeed', () => {
-    result = sudoku.solve(new Bytes(boardToHex(solution))).verify()
+    result = sudoku.solve(Bytes(boardToHex(solution))).verify()
     expect(result.success, result.error).to.be.true
   });
 
 
   it('should fail', () => {
-    result = sudoku.solve(new Bytes(boardToHex(validSolution0))).verify()
+    result = sudoku.solve(Bytes(boardToHex(validSolution0))).verify()
     expect(result.success, result.error).to.be.false
   });
 
 
   it('should fail', () => {
-    result = sudoku.solve(new Bytes(boardToHex(validSolution1))).verify()
+    result = sudoku.solve(Bytes(boardToHex(validSolution1))).verify()
     expect(result.success, result.error).to.be.false
   });
 
   it('should fail', () => {
-    result = sudoku.solve(new Bytes(boardToHex(validSolution2))).verify()
+    result = sudoku.solve(Bytes(boardToHex(validSolution2))).verify()
     expect(result.success, result.error).to.be.false
   });
 
