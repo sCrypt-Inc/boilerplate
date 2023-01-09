@@ -4,7 +4,7 @@ import {UTXO} from "../types";
 export class Counter extends SmartContract {
 
     @prop()
-    static readonly DataLen: number = 1;
+    static readonly DATA_LEN: number = 1;
 
     @method()
     public increment(txPreimage: SigHashPreimage, amount: bigint) {
@@ -17,13 +17,13 @@ export class Counter extends SmartContract {
         //console.log("txPreimage", txPreimage.toJSONObject())
         let scriptLen: number = len(scriptCode);
         // counter is at the end
-        let counter: bigint = unpack(scriptCode.slice((scriptLen - Counter.DataLen) * 2, scriptLen * 2));
+        let counter: bigint = unpack(scriptCode.slice((scriptLen - Counter.DATA_LEN) * 2, scriptLen * 2));
 
         // increment counter
         counter++;
 
         // serialize state
-        let outputScript: ByteString = scriptCode.slice(0, (scriptLen - Counter.DataLen) * 2) + int2str(counter, BigInt(Counter.DataLen));
+        let outputScript: ByteString = scriptCode.slice(0, (scriptLen - Counter.DATA_LEN) * 2) + int2str(counter, BigInt(Counter.DATA_LEN));
 
         let output: ByteString = Utils.buildOutput(outputScript, amount);
 

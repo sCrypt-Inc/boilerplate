@@ -4,7 +4,7 @@ import {UTXO} from "../types";
 
 export class Ackermann extends SmartContract {
 
-    static readonly LoopCount: number = 14;
+    static readonly LOOP_COUNT: number = 14;
     @prop()
     a: bigint;
     @prop()
@@ -21,7 +21,7 @@ export class Ackermann extends SmartContract {
 
         let stk: ByteString = int2str(m, 1n);
 
-        for (let i = 0; i < Ackermann.LoopCount; i++) {
+        for (let i = 0; i < Ackermann.LOOP_COUNT; i++) {
             if (len(stk) > 0) {
                 let top: ByteString = stk.slice(0, 2);
                 m = unpack(top);
