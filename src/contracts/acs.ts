@@ -1,4 +1,4 @@
-import {assert, bsv, buildPublicKeyHashScript, ByteString, hash256, method, prop, PubKeyHash, SigHash, SigHashPreimage, SmartContract, Utils} from "scrypt-ts";
+import {assert, bsv, buildPublicKeyHashScript, ByteString, hash256, method, prop, PubKeyHash, SigHash, SmartContract, Utils} from "scrypt-ts";
 import {UTXO} from "../types";
 
 
@@ -12,14 +12,11 @@ export class AnyoneCanSpend extends SmartContract {
         this.pubKeyHash = pubKeyHash;
     }
 
-    @method()
-    public unlock(txPreimage: SigHashPreimage, outputAmount: bigint) {
-
-        assert(this.checkPreimageSigHashType(txPreimage, SigHash.ANYONECANPAY_SINGLE), 'preimage check failed');
-
+    @method(SigHash.ANYONECANPAY_SINGLE)
+    public unlock(outputAmount: bigint) {
         let lockingScript: ByteString = Utils.buildPublicKeyHashScript(this.pubKeyHash);
         let output: ByteString = Utils.buildOutput(lockingScript, outputAmount);
-        assert(hash256(output) == SigHash.hashOutputs(txPreimage), 'hashOutput check failed');
+        assert(hash256(output) == this.ctx.hashOutputs, 'hashOutput check failed');
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
@@ -49,7 +46,7 @@ export class AnyoneCanSpend extends SmartContract {
             }, (tx) => {
                 this.unlockFrom = {tx, inputIndex};
                 return this.getUnlockingScript(self => {
-                    self.unlock(SigHashPreimage(tx.getPreimage(inputIndex)), BigInt(tx.getOutputAmount(0)))
+                    self.unlock(BigInt(tx.getOutputAmount(0)))
                 });
             })
     }

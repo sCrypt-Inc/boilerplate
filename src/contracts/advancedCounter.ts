@@ -1,4 +1,4 @@
-import {assert, bsv, method, prop, SigHash, SigHashPreimage, SmartContract} from "scrypt-ts";
+import {assert, bsv, ByteString, hash256, method, prop, SigHash, SmartContract} from "scrypt-ts";
 import {UTXO} from "../types";
 
 
@@ -13,15 +13,17 @@ export class AdvancedCounter extends SmartContract {
         this.counter = counter;
     }
 
-    @method()
-    public increment(txPreimage: SigHashPreimage) {
+    @method(SigHash.ANYONECANPAY_SINGLE)
+    public increment() {
         this.counter++;
 
         // ensure output matches what we expect:
         // - amount is same as specified
         // - output script is the same as scriptCode except the counter was incremented
-        let amount: bigint = SigHash.value(txPreimage);
-        assert(this.updateStateSigHashType(txPreimage, amount, SigHash.ANYONECANPAY_SINGLE), 'stateSigHashType update failed');
+        let amount: bigint = this.ctx.utxo.value
+        let output: ByteString = this.buildStateOutput(amount);
+
+        assert(hash256(output) == this.ctx.hashOutputs, 'hashOutput update failed');
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
@@ -54,7 +56,7 @@ export class AdvancedCounter extends SmartContract {
             }, (tx: bsv.Transaction) => {
                 this.unlockFrom = {tx, inputIndex};
                 return this.getUnlockingScript(self => {
-                    self.increment(SigHashPreimage(tx.getPreimage(inputIndex)));
+                    self.increment();
                 })
             });
     }

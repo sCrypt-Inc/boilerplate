@@ -48,7 +48,7 @@ describe('Test SmartContract `AnyoneCanSpend`', () => {
       return anyoneCanSpend.getUnlockingScript((cloned) => {
         // call previous counter's public method to get the unlocking script.
         cloned.unlockFrom = {tx, inputIndex}
-        cloned.unlock(SigHashPreimage(tx.getPreimage(inputIndex)), 1n);
+        cloned.unlock(1n);
       })
     })
     .seal()
