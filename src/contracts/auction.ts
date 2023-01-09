@@ -1,4 +1,4 @@
-import {assert, bsv, buildPublicKeyHashScript, ByteString, hash256, method, prop, PubKey, PubKeyHash, Sig, SigHash, SigHashPreimage, SmartContract, Utils} from "scrypt-ts";
+import {assert, bsv, buildPublicKeyHashScript, ByteString, hash256, method, prop, PubKey, PubKeyHash, Sig, SmartContract, Utils} from "scrypt-ts";
 import {UTXO} from "../types";
 
 
@@ -22,42 +22,34 @@ export class Auction extends SmartContract {
 
     // bid with a higher offer
     @method()
-    public bid(bidder: PubKeyHash, bid: bigint, changeSatoshis: bigint, txPreimage: SigHashPreimage) {
-        let highestBid: bigint = SigHash.value(txPreimage);
+    public bid(bidder: PubKeyHash, bid: bigint, changeSatoshis: bigint) {
+        let highestBid: bigint = this.ctx.utxo.value;
         assert(bid > highestBid, 'the auction bid is lower than the current highest bid');
 
         let highestBidder: PubKeyHash = this.bidder;
         this.bidder = bidder;
 
         // auction continues with a higher bidder
-        let stateScript: ByteString = this.getStateScript();
-        let auctionOutput: ByteString = Utils.buildOutput(stateScript, bid);
+        let auctionOutput: ByteString = this.buildStateOutput(bid);
 
         // refund previous highest bidder
         let refundScript: ByteString = Utils.buildPublicKeyHashScript(highestBidder);
         let refundOutput: ByteString = Utils.buildOutput(refundScript, highestBid);
-        let output: ByteString = auctionOutput + refundOutput;
+        let outputs: ByteString = auctionOutput + refundOutput;
 
         if (changeSatoshis > 0) {
             let changeScript: ByteString = Utils.buildPublicKeyHashScript(bidder);
             let changeOutput: ByteString = Utils.buildOutput(changeScript, changeSatoshis);
-            output += changeOutput;
+            outputs += changeOutput;
         }
 
-        assert(this.propagateState(txPreimage, output), 'preimage and hashOutput check failed');
+        assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs check failed');
     }
 
     @method()
-    public close(sig: Sig, txPreimage: SigHashPreimage) {
-        assert(this.checkPreimage(txPreimage), 'preimage check failed');
-        assert(SigHash.nLocktime(txPreimage) >= this.auctionDeadline, 'auction is not over yet');
+    public close(sig: Sig) {
+        assert(this.ctx.nLocktime >= this.auctionDeadline, 'auction is not over yet');
         assert(this.checkSig(sig, this.auctioneer), 'signature check failed');
-    }
-
-    @method()
-    propagateState(txPreimage: SigHashPreimage, outputs: ByteString): boolean {
-        assert(this.checkPreimage(txPreimage), 'preimage check failed');
-        return (hash256(outputs) == SigHash.hashOutputs(txPreimage));
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
@@ -102,7 +94,7 @@ export class Auction extends SmartContract {
             }, (tx: bsv.Transaction) => {
                 this.unlockFrom = {tx, inputIndex};
                 return this.getUnlockingScript(self => {
-                    self.bid(bidder, BigInt(bid), BigInt(tx.getOutputAmount(2)), SigHashPreimage(tx.getPreimage(inputIndex)));
+                    self.bid(bidder, BigInt(bid), BigInt(tx.getOutputAmount(2)));
                 })
             });
     }

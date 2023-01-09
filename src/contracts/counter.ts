@@ -14,7 +14,7 @@ export class Counter extends SmartContract {
     @method()
     public increment() {
         this.count++;
-        assert(this.ctx.hashOutputs == hash256(this.buildStateOutput(this.ctx.utxo.value)), 'hashOutput check failed');
+        assert(this.ctx.hashOutputs == hash256(this.buildStateOutput(this.ctx.utxo.value)), 'hashOutputs check failed');
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {

@@ -31,7 +31,7 @@ describe('Test SmartContract `Counter`', () => {
       const callTx = prevInstance.getCallTx(prevTx, newCounter);
       // 4. run `verify` method on `prevInstance`
       const result = prevInstance.verify(self => {
-        self.increment(SigHashPreimage(callTx.getPreimage(0)), BigInt(callTx.getOutputAmount(0)));
+        self.increment(BigInt(callTx.getOutputAmount(0)));
       });
 
       expect(result.success, result.error).to.be.true;

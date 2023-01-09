@@ -16,7 +16,7 @@ export class AnyoneCanSpend extends SmartContract {
     public unlock(outputAmount: bigint) {
         let lockingScript: ByteString = Utils.buildPublicKeyHashScript(this.pubKeyHash);
         let output: ByteString = Utils.buildOutput(lockingScript, outputAmount);
-        assert(hash256(output) == this.ctx.hashOutputs, 'hashOutput check failed');
+        assert(hash256(output) == this.ctx.hashOutputs, 'hashOutputs check failed');
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {

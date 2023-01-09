@@ -23,7 +23,7 @@ export class AdvancedCounter extends SmartContract {
         let amount: bigint = this.ctx.utxo.value
         let output: ByteString = this.buildStateOutput(amount);
 
-        assert(hash256(output) == this.ctx.hashOutputs, 'hashOutput update failed');
+        assert(hash256(output) == this.ctx.hashOutputs, 'hashOutputs update failed');
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {

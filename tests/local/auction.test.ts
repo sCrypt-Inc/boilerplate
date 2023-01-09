@@ -72,7 +72,7 @@ describe('Transpiler', () => {
         return auction.getUnlockingScript((cloned) => {
           // call previous counter's public method to get the unlocking script.
           cloned.unlockFrom = {tx, inputIndex}
-          cloned.bid(PubKeyHash(toHex(publicKeyHashNewBid)), BigInt(bid), BigInt(changeSats), SigHashPreimage(tx.getPreimage(0)))
+          cloned.bid(PubKeyHash(toHex(publicKeyHashNewBid)), BigInt(bid), BigInt(changeSats))
         })
       })
       .seal();
