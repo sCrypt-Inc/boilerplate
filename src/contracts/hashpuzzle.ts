@@ -1,11 +1,10 @@
-import { method, prop, SmartContract, assert, Sha256, sha256, bsv } from "scrypt-ts";
-import { UTXO } from "../types";
+import {assert, bsv, ByteString, method, prop, Sha256, sha256, SmartContract} from "scrypt-ts";
+import {UTXO} from "../types";
 
 export class HashPuzzle extends SmartContract {
 
     @prop()
     sha256: Sha256;
-
 
     constructor(sha256: Sha256) {
         super(sha256);
@@ -13,8 +12,8 @@ export class HashPuzzle extends SmartContract {
     }
 
     @method()
-    public unlock(data: string) {
-        assert(this.sha256 == sha256(data));
+    public unlock(data: ByteString) {
+        assert(this.sha256 == sha256(data), 'hashes are not equal');
     }
 
     getDeployTx(utxos: UTXO[], satoshis: number): bsv.Transaction {
@@ -25,12 +24,11 @@ export class HashPuzzle extends SmartContract {
             }))
     }
 
-    getCallTx(data: string, prevTx: bsv.Transaction): bsv.Transaction {
+    getCallTx(data: ByteString, prevTx: bsv.Transaction): bsv.Transaction {
         return new bsv.Transaction()
             .addInputFromPrevTx(prevTx)
             .setInputScript(0, () => {
                 return this.getUnlockingScript(self => self.unlock(data));
             })
     }
-
 }

@@ -1,37 +1,31 @@
-import { method, prop, SmartContract, assert, Ripemd160, PubKey, Sig, hash160, FixedArray, bsv, toHex } from "scrypt-ts";
-import { UTXO } from "../types";
+import {assert, bsv, FixedArray, hash160, method, prop, PubKey, Ripemd160, Sig, SmartContract, toHex} from "scrypt-ts";
+import {UTXO} from "../types";
 
 export class AccumulatorMultiSig extends SmartContract {
 
+    public static readonly N: number = 3;
     @prop()
     threshold: bigint;
-
     @prop()
-    pubKeyHashs: FixedArray<Ripemd160, 3>;
+    pubKeyHashes: FixedArray<Ripemd160, 3>;
 
-    public static readonly N: number = 3;
-
-
-    constructor(threshold: bigint, pubKeyHashs: FixedArray<Ripemd160, 3>) {
-        super(threshold, pubKeyHashs);
+    constructor(threshold: bigint, pubKeyHashes: FixedArray<Ripemd160, 3>) {
+        super(threshold, pubKeyHashes);
         this.threshold = threshold
-        this.pubKeyHashs = pubKeyHashs;
+        this.pubKeyHashes = pubKeyHashes;
     }
 
     @method()
     public main(pubKeys: FixedArray<PubKey, 3>, sigs: FixedArray<Sig, 3>, masks: FixedArray<boolean, 3>) {
-
         let total: bigint = 0n;
-
         for (let i = 0; i < AccumulatorMultiSig.N; i++) {
             if (masks[i]) {
-                if (hash160(pubKeys[i]) == this.pubKeyHashs[i] && this.checkSig(sigs[i], pubKeys[i])) {
+                if (hash160(pubKeys[i]) == this.pubKeyHashes[i] && this.checkSig(sigs[i], pubKeys[i])) {
                     total++;
                 }
             }
         }
-        assert(total >= this.threshold);
-
+        assert(total >= this.threshold, 'the number of signatures does not meet the threshold limit');
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
@@ -40,7 +34,7 @@ export class AccumulatorMultiSig extends SmartContract {
                 script: this.lockingScript,
                 satoshis: initBalance,
             }));
-        this.lockTo = { tx, outputIndex: 0 };
+        this.lockTo = {tx, outputIndex: 0};
         return tx;
     }
 
@@ -53,9 +47,7 @@ export class AccumulatorMultiSig extends SmartContract {
                 privateKey
             }, (tx) => {
                 const sigs = tx.getSignature(inputIndex)
-
                 this.unlockFrom = {tx, inputIndex};
-                
                 return this.getUnlockingScript(self => {
                     self.main([PubKey(toHex(pubKeys[0])), PubKey(toHex(pubKeys[1])), PubKey(toHex(pubKeys[2]))],
                         [Sig(sigs[0]), Sig(sigs[1]), Sig(sigs[2])],
@@ -63,5 +55,4 @@ export class AccumulatorMultiSig extends SmartContract {
                 });
             })
     }
-
 }

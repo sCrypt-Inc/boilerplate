@@ -1,5 +1,5 @@
-import { method, prop, SmartContract, assert, PubKeyHash, Sig, PubKey, hash160, bsv, toHex } from "scrypt-ts";
-import { UTXO } from "../types";
+import {assert, bsv, hash160, method, prop, PubKey, PubKeyHash, Sig, SmartContract, toHex} from "scrypt-ts";
+import {UTXO} from "../types";
 
 
 export class P2PKH extends SmartContract {
@@ -12,11 +12,10 @@ export class P2PKH extends SmartContract {
         this.pubKeyHash = pubKeyHash;
     }
 
-
     @method()
     public unlock(sig: Sig, pubkey: PubKey) {
-        assert(hash160(pubkey) == this.pubKeyHash);
-        assert(this.checkSig(sig, pubkey));
+        assert(hash160(pubkey) == this.pubKeyHash, 'public key hashes are not equal');
+        assert(this.checkSig(sig, pubkey), 'signature check failed');
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
@@ -25,7 +24,7 @@ export class P2PKH extends SmartContract {
                 script: this.lockingScript,
                 satoshis: initBalance,
             }));
-        this.lockTo = { tx, outputIndex: 0 };
+        this.lockTo = {tx, outputIndex: 0};
         return tx;
     }
 
@@ -38,9 +37,7 @@ export class P2PKH extends SmartContract {
                 privateKey
             }, (tx) => {
                 const sig = tx.getSignature(inputIndex)
-
                 this.unlockFrom = {tx, inputIndex};
-                
                 return this.getUnlockingScript(self => {
                     self.unlock(Sig(sig as string), PubKey(toHex(pubKey)))
                 });

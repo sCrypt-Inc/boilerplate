@@ -1,17 +1,14 @@
-import { method, prop, SmartContract, assert, int2str, len, unpack, bsv } from "scrypt-ts";
-import { UTXO } from "../types";
+import {assert, bsv, ByteString, int2str, len, method, prop, SmartContract, unpack} from "scrypt-ts";
+import {UTXO} from "../types";
 
 
 export class Ackermann extends SmartContract {
 
+    static readonly LOOP_COUNT: number = 14;
     @prop()
     a: bigint;
-
     @prop()
     b: bigint;
-
-    static readonly LOOPCOUNT: number = 14;
-
 
     constructor(a: bigint, b: bigint) {
         super(a, b);
@@ -22,11 +19,11 @@ export class Ackermann extends SmartContract {
     @method()
     ackermann(m: bigint, n: bigint): bigint {
 
-        let stk: string = int2str(m, 1n);
+        let stk: ByteString = int2str(m, 1n);
 
-        for (let i = 0; i < Ackermann.LOOPCOUNT; i++) {
+        for (let i = 0; i < Ackermann.LOOP_COUNT; i++) {
             if (len(stk) > 0) {
-                let top: string = stk.slice(0, 2);
+                let top: ByteString = stk.slice(0, 2);
                 m = unpack(top);
 
                 // pop
@@ -34,14 +31,12 @@ export class Ackermann extends SmartContract {
 
                 if (m == 0n) {
                     n = n + m + 1n;
-                }
-                else if (n == 0n) {
+                } else if (n == 0n) {
                     n++;
                     m--;
                     // push
                     stk = int2str(m, 1n) + stk;
-                }
-                else {
+                } else {
                     stk = int2str(m - 1n, 1n) + stk;
                     stk = int2str(m, 1n) + stk;
                     n--;
@@ -50,13 +45,12 @@ export class Ackermann extends SmartContract {
         }
 
         return n;
-
     }
 
-    // y = 5
+    // y == 5
     @method()
     public unlock(y: bigint) {
-        assert(y == this.ackermann(this.a, this.b));
+        assert(y == this.ackermann(this.a, this.b), 'y != 5');
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
@@ -65,7 +59,7 @@ export class Ackermann extends SmartContract {
                 script: this.lockingScript,
                 satoshis: initBalance,
             }));
-        this.lockTo = { tx, outputIndex: 0 };
+        this.lockTo = {tx, outputIndex: 0};
         return tx;
     }
 
@@ -76,5 +70,4 @@ export class Ackermann extends SmartContract {
                 return this.getUnlockingScript(self => self.unlock(y));
             })
     }
-
 }
