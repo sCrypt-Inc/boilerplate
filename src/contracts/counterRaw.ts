@@ -1,4 +1,4 @@
-import {assert, bsv, ByteString, hash256, int2str, len, method, prop, SigHash, SigHashPreimage, SmartContract, unpack, Utils} from "scrypt-ts";
+import {assert, bsv, ByteString, hash256, int2str, len, method, prop, SmartContract, unpack, Utils} from "scrypt-ts";
 import {UTXO} from "../types";
 
 export class Counter extends SmartContract {
@@ -7,12 +7,10 @@ export class Counter extends SmartContract {
     static readonly DataLen: number = 1;
 
     @method()
-    public increment(txPreimage: SigHashPreimage, amount: bigint) {
-
-        assert(this.checkPreimage(txPreimage), 'preimage check failed');
+    public increment(amount: bigint) {
 
         // deserialize state (i.e., counter value)
-        let scriptCode: ByteString = SigHash.scriptCode(txPreimage);
+        let scriptCode: ByteString = this.ctx.utxo.scriptCode;
 
         //console.log("txPreimage", txPreimage.toJSONObject())
         let scriptLen: number = len(scriptCode);
@@ -27,7 +25,7 @@ export class Counter extends SmartContract {
 
         let output: ByteString = Utils.buildOutput(outputScript, amount);
 
-        assert(hash256(output) == SigHash.hashOutputs(txPreimage), 'hashOutput check failed');
+        assert(hash256(output) == this.ctx.hashOutputs, 'hashOutputs check failed');
     }
 
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
@@ -55,7 +53,7 @@ export class Counter extends SmartContract {
             .setInputScript(inputIndex, (tx: bsv.Transaction) => {
                 this.unlockFrom = {tx, inputIndex};
                 return this.getUnlockingScript(self => {
-                    self.increment(SigHashPreimage(tx.getPreimage(inputIndex)), BigInt(tx.getOutputAmount(0)));
+                    self.increment(BigInt(tx.getOutputAmount(0)));
                 })
             });
     }
