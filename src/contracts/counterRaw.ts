@@ -1,7 +1,7 @@
 import {assert, bsv, ByteString, hash256, int2str, len, method, prop, SmartContract, unpack, Utils} from "scrypt-ts";
 import {UTXO} from "../types";
 
-export class Counter extends SmartContract {
+export class CounterRaw extends SmartContract {
 
     @prop()
     static readonly DATA_LEN: number = 1;
@@ -15,13 +15,13 @@ export class Counter extends SmartContract {
         //console.log("txPreimage", txPreimage.toJSONObject())
         let scriptLen: number = len(scriptCode);
         // counter is at the end
-        let counter: bigint = unpack(scriptCode.slice((scriptLen - Counter.DATA_LEN) * 2, scriptLen * 2));
+        let counter: bigint = unpack(scriptCode.slice((scriptLen - CounterRaw.DATA_LEN) * 2, scriptLen * 2));
 
         // increment counter
         counter++;
 
         // serialize state
-        let outputScript: ByteString = scriptCode.slice(0, (scriptLen - Counter.DATA_LEN) * 2) + int2str(counter, BigInt(Counter.DATA_LEN));
+        let outputScript: ByteString = scriptCode.slice(0, (scriptLen - CounterRaw.DATA_LEN) * 2) + int2str(counter, BigInt(CounterRaw.DATA_LEN));
 
         let output: ByteString = Utils.buildOutput(outputScript, amount);
 
@@ -39,7 +39,7 @@ export class Counter extends SmartContract {
         return tx;
     }
 
-    getCallTx(prevTx: bsv.Transaction, nextInst: Counter): bsv.Transaction {
+    getCallTx(prevTx: bsv.Transaction, nextInst: CounterRaw): bsv.Transaction {
         const inputIndex = 0;
         return new bsv.Transaction()
             .addInputFromPrevTx(prevTx)

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Counter } from '../../src/contracts/counterRaw';
+import { CounterRaw } from '../../src/contracts/counterRaw';
 import { int2str, SigHashPreimage } from 'scrypt-ts';
 import { dummyUTXO } from './util/txHelper';
 
@@ -7,11 +7,11 @@ import { dummyUTXO } from './util/txHelper';
 describe('Test SmartContract `Counter`', () => {
 
   before(async () => {
-    await Counter.compile();
+    await CounterRaw.compile();
   })
 
   it('should pass the public method unit test successfully.', async () => {
-    let counter = new Counter();
+    let counter = new CounterRaw();
 
     const utxos = [dummyUTXO];
 

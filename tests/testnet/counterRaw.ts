@@ -1,16 +1,16 @@
-import { Counter } from '../../src/contracts/counterRaw';
+import { CounterRaw } from '../../src/contracts/counterRaw';
 import { signAndSend } from './util/txHelper';
 import { privateKey } from './util/privateKey';
 import { getUtxoManager } from './util/utxoManager';
 import { int2str } from 'scrypt-ts';
 
 async function main() {
-  await Counter.compile();
+  await CounterRaw.compile();
   const utxoMgr = await getUtxoManager();
   
   // contract deployment
   // 1. create a genesis instance
-  const counter = new Counter()
+  const counter = new CounterRaw()
   // 2. get the available utxos for the private key
   const utxos = await utxoMgr.getUtxos();
   // 3. construct a transaction for deployment
