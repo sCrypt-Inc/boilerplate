@@ -1,3 +1,3 @@
 import { bsv } from 'scrypt-ts'
 
-export type UTXO = bsv.Transaction.IUnspentOutput;
+export type UTXO = bsv.Transaction.IUnspentOutput
