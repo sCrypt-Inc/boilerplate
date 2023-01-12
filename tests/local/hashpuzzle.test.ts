@@ -7,7 +7,7 @@ const sha256Data = sha256(data)
 
 describe('Test SmartContract `HashPuzzle`', () => {
     before(async () => {
-        await HashPuzzle.compile() // asm
+        await HashPuzzle.compile()
     })
 
     it('should pass the public method unit test successfully.', async () => {

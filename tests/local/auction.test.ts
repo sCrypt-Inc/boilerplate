@@ -5,7 +5,7 @@ import { inputSatoshis } from './util/txHelper'
 
 describe('Transpiler', () => {
     before(async () => {
-        await Auction.compile() // asm
+        await Auction.compile()
     })
 
     it('should transpile contract `Auction` successfully.', async () => {
@@ -17,9 +17,9 @@ describe('Transpiler', () => {
         )
         const addressHighestBid = privateKeyHighestBid.toAddress()
 
-        const privateKeyAuctioner = bsv.PrivateKey.fromRandom('testnet')
-        const publicKeyAuctioner =
-            bsv.PublicKey.fromPrivateKey(privateKeyAuctioner)
+        const privateKeyAuctioneer = bsv.PrivateKey.fromRandom('testnet')
+        const publicKeyAuctioneer =
+            bsv.PublicKey.fromPrivateKey(privateKeyAuctioneer)
 
         const privateKeyNewBid = bsv.PrivateKey.fromRandom('testnet')
         const publicKeyNewBid = bsv.PublicKey.fromPrivateKey(privateKeyNewBid)
@@ -32,16 +32,16 @@ describe('Transpiler', () => {
 
         const FEE = 5000
 
-        const payinputSatoshis = 200000
+        const payInputSatoshis = 200000
 
-        const changeSats = payinputSatoshis - bid - FEE
+        const changeSatoshis = payInputSatoshis - bid - FEE
 
-        const onedayAgo = new Date('2020-01-03')
-        const auctionDeadline = BigInt(Math.round(onedayAgo.valueOf() / 1000))
+        const oneDayAgo = new Date('2020-01-03')
+        const auctionDeadline = BigInt(Math.round(oneDayAgo.valueOf() / 1000))
 
         const auction = new Auction(
             PubKeyHash(toHex(publicKeyHashHighestBid)),
-            PubKey(toHex(publicKeyAuctioner)),
+            PubKey(toHex(publicKeyAuctioneer)),
             auctionDeadline
         ).markAsGenesis()
 
@@ -58,7 +58,7 @@ describe('Transpiler', () => {
             .setOutput(outputIndex, () => {
                 // bind contract & tx locking relation
                 return new bsv.Transaction.Output({
-                    // use newInstance's lockingscript as the new UTXO's lockingscript
+                    // use the locking script of newInstance, as the locking script of the new UTXO
                     script: newInstance.lockingScript,
                     satoshis: bid,
                 })
@@ -72,12 +72,12 @@ describe('Transpiler', () => {
             .addOutput(
                 new bsv.Transaction.Output({
                     script: bsv.Script.buildPublicKeyHashOut(addressNewBid),
-                    satoshis: changeSats,
+                    satoshis: changeSatoshis,
                 })
             )
             .setInputScript(inputIndex, (tx: bsv.Transaction) => {
                 // bind contract & tx unlocking relation
-                // use the cloned version bcoz this callback will be executed multiple times during tx building process,
+                // use the cloned version because this callback will be executed multiple times during tx building process,
                 // and calling contract method may have side effects on its properties.
                 return auction.getUnlockingScript((cloned) => {
                     // call previous counter's public method to get the unlocking script.
@@ -85,7 +85,7 @@ describe('Transpiler', () => {
                     cloned.bid(
                         PubKeyHash(toHex(publicKeyHashNewBid)),
                         BigInt(bid),
-                        BigInt(changeSats)
+                        BigInt(changeSatoshis)
                     )
                 })
             })

@@ -1,26 +1,17 @@
 import { expect } from 'chai'
 import { Ripemd160, bsv, toHex, PubKey, Sig, signTx } from 'scrypt-ts'
 import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
-import { newTx, inputIndex, inputSatoshis } from './util/txHelper'
+import {
+    newTx,
+    inputIndex,
+    inputSatoshis,
+    randomPrivateKey,
+} from './util/txHelper'
 
 describe('Test SmartContract `AccumulatorMultiSig`', () => {
-    const privateKey1 = bsv.PrivateKey.fromRandom('testnet')
-    const publicKey1 = bsv.PublicKey.fromPrivateKey(privateKey1)
-    const publicKeyHash1 = bsv.crypto.Hash.sha256ripemd160(
-        publicKey1.toBuffer()
-    )
-
-    const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
-    const publicKey2 = bsv.PublicKey.fromPrivateKey(privateKey2)
-    const publicKeyHash2 = bsv.crypto.Hash.sha256ripemd160(
-        publicKey2.toBuffer()
-    )
-
-    const privateKey3 = bsv.PrivateKey.fromRandom('testnet')
-    const publicKey3 = bsv.PublicKey.fromPrivateKey(privateKey3)
-    const publicKeyHash3 = bsv.crypto.Hash.sha256ripemd160(
-        publicKey3.toBuffer()
-    )
+    const [privateKey1, publicKey1, publicKeyHash1] = randomPrivateKey()
+    const [privateKey2, publicKey2, publicKeyHash2] = randomPrivateKey()
+    const [privateKey3, publicKey3, publicKeyHash3] = randomPrivateKey()
 
     const privateKeyWrong = bsv.PrivateKey.fromRandom('testnet')
 

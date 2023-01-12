@@ -9,15 +9,12 @@ describe('Test SmartContract `Counter`', () => {
     })
 
     it('should pass the public method unit test successfully.', async () => {
-        const counter = new CounterRaw()
-
         const utxos = [dummyUTXO]
 
+        // create a genesis instance
+        let prevInstance = new CounterRaw().markAsGenesis()
         // construct a transaction for deployment
-        const deployTx = counter.getDeployTx(utxos, 1000)
-
-        let prevTx = deployTx
-        let prevInstance = counter
+        let prevTx = prevInstance.getDeployTx(utxos, 1000)
 
         // multiple calls
         for (let i = 0; i < 3; i++) {

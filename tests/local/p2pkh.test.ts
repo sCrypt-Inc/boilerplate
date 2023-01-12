@@ -11,7 +11,7 @@ const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
 
 describe('Test SmartContract `P2PKH`', () => {
     before(async () => {
-        await P2PKH.compile() // asm
+        await P2PKH.compile()
     })
 
     it('should pass if use right privateKey', async () => {

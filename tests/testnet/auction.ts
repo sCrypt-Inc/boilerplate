@@ -15,21 +15,21 @@ async function main() {
         publicKeyHighestBid.toBuffer()
     )
 
-    const privateKeyAuctioner = bsv.PrivateKey.fromRandom('testnet')
-    const publicKeyAuctioner = bsv.PublicKey.fromPrivateKey(privateKeyAuctioner)
+    const privateKeyAuctioneer = bsv.PrivateKey.fromRandom('testnet')
+    const publicKeyAuctioneer =
+        bsv.PublicKey.fromPrivateKey(privateKeyAuctioneer)
 
-    const privateKeyNewBid = privateKey
-    const publicKeyNewBid = bsv.PublicKey.fromPrivateKey(privateKeyNewBid)
+    const publicKeyNewBid = bsv.PublicKey.fromPrivateKey(privateKey)
     const publicKeyHashNewBid = bsv.crypto.Hash.sha256ripemd160(
         publicKeyNewBid.toBuffer()
     )
 
-    const onedayAgo = new Date('2020-01-03')
-    const auctionDeadline = BigInt(Math.round(onedayAgo.valueOf() / 1000))
+    const oneDayAgo = new Date('2020-01-03')
+    const auctionDeadline = BigInt(Math.round(oneDayAgo.valueOf() / 1000))
 
     const auction = new Auction(
         PubKeyHash(toHex(publicKeyHashHighestBid)),
-        PubKey(toHex(publicKeyAuctioner)),
+        PubKey(toHex(publicKeyAuctioneer)),
         auctionDeadline
     ).markAsGenesis()
 

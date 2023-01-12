@@ -3,27 +3,27 @@ import { PubKey, PubKeyHash, Sig, bsv, toHex } from 'scrypt-ts'
 import { Crowdfund } from '../../src/contracts/crowdfund'
 import { inputIndex, dummyUTXO } from './util/txHelper'
 
-const privateKeyRecepient = bsv.PrivateKey.fromRandom('testnet')
-const pkhRecepient = bsv.crypto.Hash.sha256ripemd160(
-    privateKeyRecepient.publicKey.toBuffer()
+const privateKeyRecipient = bsv.PrivateKey.fromRandom('testnet')
+const pkhRecipient = bsv.crypto.Hash.sha256ripemd160(
+    privateKeyRecipient.publicKey.toBuffer()
 )
 
 const privateKeyContributor = bsv.PrivateKey.fromRandom('testnet')
-const privateKeyPublickey = bsv.PublicKey.fromPrivateKey(privateKeyContributor)
+const privateKeyPublicKey = bsv.PublicKey.fromPrivateKey(privateKeyContributor)
 
 describe('Test SmartContract `Crowdfund`', () => {
     before(async () => {
-        await Crowdfund.compile() // asm
+        await Crowdfund.compile()
     })
 
     it('should collect fund success', async () => {
-        const onedayAgo = new Date('2020-01-03')
+        const oneDayAgo = new Date('2020-01-03')
 
-        const deadline = Math.round(onedayAgo.valueOf() / 1000)
+        const deadline = Math.round(oneDayAgo.valueOf() / 1000)
 
         const crowdfund = new Crowdfund(
-            PubKeyHash(toHex(pkhRecepient)),
-            PubKey(toHex(privateKeyPublickey)),
+            PubKeyHash(toHex(pkhRecipient)),
+            PubKey(toHex(privateKeyPublicKey)),
             BigInt(deadline),
             10000n
         )
@@ -36,7 +36,7 @@ describe('Test SmartContract `Crowdfund`', () => {
         const raisedAmount = 10000n
         const callTx = crowdfund.getCallCollectTx(
             deployTx,
-            PubKeyHash(toHex(pkhRecepient)),
+            PubKeyHash(toHex(pkhRecipient)),
             raisedAmount
         )
 
@@ -49,13 +49,13 @@ describe('Test SmartContract `Crowdfund`', () => {
     })
 
     it('should collect fund fail if  raisedAmount not reach target', async () => {
-        const onedayAgo = new Date('2020-01-03')
+        const oneDayAgo = new Date('2020-01-03')
 
-        const deadline = Math.round(onedayAgo.valueOf() / 1000)
+        const deadline = Math.round(oneDayAgo.valueOf() / 1000)
 
         const crowdfund = new Crowdfund(
-            PubKeyHash(toHex(pkhRecepient)),
-            PubKey(toHex(privateKeyPublickey)),
+            PubKeyHash(toHex(pkhRecipient)),
+            PubKey(toHex(privateKeyPublicKey)),
             BigInt(deadline),
             10000n
         )
@@ -70,7 +70,7 @@ describe('Test SmartContract `Crowdfund`', () => {
         expect(() => {
             crowdfund.getCallCollectTx(
                 deployTx,
-                PubKeyHash(toHex(pkhRecepient)),
+                PubKeyHash(toHex(pkhRecipient)),
                 raisedAmount
             )
         }).to.throw(/Execution failed/)
@@ -80,8 +80,8 @@ describe('Test SmartContract `Crowdfund`', () => {
         const deadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
 
         const crowdfund = new Crowdfund(
-            PubKeyHash(toHex(pkhRecepient)),
-            PubKey(toHex(privateKeyPublickey)),
+            PubKeyHash(toHex(pkhRecipient)),
+            PubKey(toHex(privateKeyPublicKey)),
             BigInt(deadline),
             10000n
         )
@@ -95,7 +95,7 @@ describe('Test SmartContract `Crowdfund`', () => {
 
         const callTx = crowdfund.getCallRefundTx(
             deployTx,
-            PubKeyHash(toHex(pkhRecepient)),
+            PubKeyHash(toHex(pkhRecipient)),
             privateKeyContributor,
             today
         )
@@ -112,8 +112,8 @@ describe('Test SmartContract `Crowdfund`', () => {
         const deadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
 
         const crowdfund = new Crowdfund(
-            PubKeyHash(toHex(pkhRecepient)),
-            PubKey(toHex(privateKeyPublickey)),
+            PubKeyHash(toHex(pkhRecipient)),
+            PubKey(toHex(privateKeyPublicKey)),
             BigInt(deadline),
             10000n
         )
@@ -130,7 +130,7 @@ describe('Test SmartContract `Crowdfund`', () => {
         expect(() => {
             crowdfund.getCallRefundTx(
                 deployTx,
-                PubKeyHash(toHex(pkhRecepient)),
+                PubKeyHash(toHex(pkhRecipient)),
                 privateKeyContributor,
                 beforeDeadline
             )

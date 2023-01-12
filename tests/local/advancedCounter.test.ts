@@ -11,12 +11,9 @@ describe('Test SmartContract `AdvancedCounter`', () => {
         const utxos = [dummyUTXO]
 
         // create a genesis instance
-        const counter = new AdvancedCounter(0n).markAsGenesis()
+        let prevInstance = new AdvancedCounter(0n).markAsGenesis()
         // construct a transaction for deployment
-        const deployTx = counter.getDeployTx(utxos, 1)
-
-        let prevTx = deployTx
-        let prevInstance = counter
+        let prevTx = prevInstance.getDeployTx(utxos, 1)
 
         // multiple calls
         for (let i = 0; i < 3; i++) {

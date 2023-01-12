@@ -12,7 +12,7 @@ const sighashType =
 
 describe('Test SmartContract `AnyoneCanSpend`', () => {
     before(async () => {
-        await AnyoneCanSpend.compile() // asm
+        await AnyoneCanSpend.compile()
     })
 
     it('should transpile contract `AnyoneCanSpend` successfully.', async () => {
@@ -36,7 +36,7 @@ describe('Test SmartContract `AnyoneCanSpend`', () => {
             .setOutput(outputIndex, () => {
                 // bind contract & tx locking relation
                 return new bsv.Transaction.Output({
-                    // use newInstance's lockingscript as the new UTXO's lockingscript
+                    // use the locking script of newInstance, as the locking script of the new UTXO
                     script: buildPublicKeyHashScript(
                         PubKeyHash(toHex(publicKeyHashAlice))
                     ),
@@ -50,7 +50,7 @@ describe('Test SmartContract `AnyoneCanSpend`', () => {
                 },
                 (tx: bsv.Transaction) => {
                     // bind contract & tx unlocking relation
-                    // use the cloned version bcoz this callback will be executed multiple times during tx building process,
+                    // use the cloned version because this callback will be executed multiple times during tx building process,
                     // and calling contract method may have side effects on its properties.
                     return anyoneCanSpend.getUnlockingScript((cloned) => {
                         // call previous counter's public method to get the unlocking script.
