@@ -15,7 +15,7 @@ export class HashPuzzle extends SmartContract {
     sha256: Sha256
 
     constructor(sha256: Sha256) {
-        super(sha256)
+        super(...arguments)
         this.sha256 = sha256
     }
 

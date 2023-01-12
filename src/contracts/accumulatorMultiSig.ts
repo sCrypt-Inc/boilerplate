@@ -21,7 +21,7 @@ export class AccumulatorMultiSig extends SmartContract {
     pubKeyHashes: FixedArray<Ripemd160, 3>
 
     constructor(threshold: bigint, pubKeyHashes: FixedArray<Ripemd160, 3>) {
-        super(threshold, pubKeyHashes)
+        super(...arguments)
         this.threshold = threshold
         this.pubKeyHashes = pubKeyHashes
     }

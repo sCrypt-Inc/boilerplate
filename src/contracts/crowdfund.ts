@@ -32,7 +32,7 @@ export class Crowdfund extends SmartContract {
         deadline: bigint,
         target: bigint
     ) {
-        super(recipient, contributor, deadline, target)
+        super(...arguments)
         this.recipient = recipient
         this.contributor = contributor
         this.deadline = deadline

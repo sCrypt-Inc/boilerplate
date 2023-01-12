@@ -29,7 +29,7 @@ export class Auction extends SmartContract {
         auctioneer: PubKey,
         auctionDeadline: bigint
     ) {
-        super(bidder, auctioneer, auctionDeadline)
+        super(...arguments)
         this.bidder = bidder
         this.auctioneer = auctioneer
         this.auctionDeadline = auctionDeadline

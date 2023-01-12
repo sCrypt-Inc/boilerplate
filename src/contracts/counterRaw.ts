@@ -6,7 +6,6 @@ import {
     int2str,
     len,
     method,
-    prop,
     SmartContract,
     unpack,
     Utils,
@@ -14,21 +13,19 @@ import {
 import { UTXO } from '../types'
 
 export class CounterRaw extends SmartContract {
-    @prop()
-    static readonly DATA_LEN: number = 1
+    static readonly DATA_LEN: bigint = 1n
 
     @method()
     public increment(amount: bigint) {
         // deserialize state (i.e., counter value)
         const scriptCode: ByteString = this.ctx.utxo.scriptCode
 
-        //console.log("txPreimage", txPreimage.toJSONObject())
-        const scriptLen: number = len(scriptCode)
+        const scriptLen = BigInt(len(scriptCode))
         // counter is at the end
         let counter: bigint = unpack(
             scriptCode.slice(
-                (scriptLen - CounterRaw.DATA_LEN) * 2,
-                scriptLen * 2
+                Number((scriptLen - CounterRaw.DATA_LEN) * 2n),
+                Number(scriptLen * 2n)
             )
         )
 
@@ -37,7 +34,7 @@ export class CounterRaw extends SmartContract {
 
         // serialize state
         const outputScript: ByteString =
-            scriptCode.slice(0, (scriptLen - CounterRaw.DATA_LEN) * 2) +
+            scriptCode.slice(0, Number(scriptLen - CounterRaw.DATA_LEN) * 2) +
             int2str(counter, BigInt(CounterRaw.DATA_LEN))
 
         const output: ByteString = Utils.buildOutput(outputScript, amount)

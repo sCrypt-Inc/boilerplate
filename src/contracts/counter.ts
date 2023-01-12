@@ -7,7 +7,7 @@ export class Counter extends SmartContract {
     private balance: number
 
     constructor(count: bigint) {
-        super(count)
+        super(...arguments)
         this.count = count
     }
 

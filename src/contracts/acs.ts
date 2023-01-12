@@ -18,7 +18,7 @@ export class AnyoneCanSpend extends SmartContract {
     pubKeyHash: PubKeyHash
 
     constructor(pubKeyHash: PubKeyHash) {
-        super(pubKeyHash)
+        super(...arguments)
         this.pubKeyHash = pubKeyHash
     }
 

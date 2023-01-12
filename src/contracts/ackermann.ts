@@ -19,7 +19,7 @@ export class Ackermann extends SmartContract {
     b: bigint
 
     constructor(a: bigint, b: bigint) {
-        super(a, b)
+        super(...arguments)
         this.a = a
         this.b = b
     }

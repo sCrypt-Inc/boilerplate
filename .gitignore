@@ -7,3 +7,4 @@ out/
 scrypts/
 .env
 scrypt.index.json
+.eslintcache
