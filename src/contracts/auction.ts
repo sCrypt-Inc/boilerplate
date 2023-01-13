@@ -78,7 +78,7 @@ export class Auction extends SmartContract {
     @method()
     public close(sig: Sig) {
         assert(
-            this.ctx.nLocktime >= this.auctionDeadline,
+            this.ctx.locktime >= this.auctionDeadline,
             'auction is not over yet'
         )
         assert(this.checkSig(sig, this.auctioneer), 'signature check failed')

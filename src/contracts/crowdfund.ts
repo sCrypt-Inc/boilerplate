@@ -62,10 +62,10 @@ export class Crowdfund extends SmartContract {
     @method()
     public refund(sig: Sig) {
         // require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
-        assert(this.ctx.nSequence < 0xffffffffn, 'require nLocktime enabled')
+        assert(this.ctx.sequence < 0xffffffffn, 'require nLocktime enabled')
 
         // fundraising expired
-        assert(this.ctx.nLocktime >= this.deadline, 'fundraising expired')
+        assert(this.ctx.locktime >= this.deadline, 'fundraising expired')
         assert(this.checkSig(sig, this.contributor), 'signature check failed')
     }
 
