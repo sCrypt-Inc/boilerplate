@@ -18,7 +18,7 @@ export class CounterRaw extends SmartContract {
     @method()
     public increment(amount: bigint) {
         // deserialize state (i.e., counter value)
-        const scriptCode: ByteString = this.ctx.utxo.scriptCode
+        const scriptCode: ByteString = this.ctx.utxo.script
 
         const scriptLen = BigInt(len(scriptCode))
         // counter is at the end
