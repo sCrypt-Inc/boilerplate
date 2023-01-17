@@ -12,14 +12,14 @@ export class CheckLockTimeVerify extends SmartContract {
     @method()
     public unlock() {
         // Ensure nSequence is less than UINT_MAX.
-        assert(this.ctx.nSequence < 4294967295n)
+        assert(this.ctx.sequence < 4294967295n)
 
         // Check if using block height.
         if (this.matureTime < 500000000) {
             // Enforce nLocktime field to also use block height.
-            assert(this.ctx.nLocktime < 500000000)
+            assert(this.ctx.locktime < 500000000)
         }
-        assert(this.ctx.nLocktime >= this.matureTime)
+        assert(this.ctx.locktime >= this.matureTime)
     }
 
     getDeployTx(utxos: UTXO[], satoshis: number): bsv.Transaction {
@@ -47,8 +47,8 @@ export class CheckLockTimeVerify extends SmartContract {
             return this.getUnlockingScript((cloned) => {
                 // Call cloned contract's public method to get the unlocking script.
                 cloned.unlockFrom = { tx, inputIndex }
-                cloned.ctx.nLocktime = BigInt(timeNow)
-                cloned.ctx.nSequence = 0n
+                cloned.ctx.locktime = BigInt(timeNow)
+                cloned.ctx.sequence = 0n
                 cloned.unlock()
             })
         })
