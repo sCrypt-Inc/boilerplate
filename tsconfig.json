@@ -18,7 +18,7 @@
     "sourceMap": true,
     "plugins": [
       {
-        "transform": "scrypt-ts/dist/transformer",
+        "transform": "scrypt-ts/dist/transformation/transformer",
         "outDir": "./scrypts",
         "transformProgram": true
       }
