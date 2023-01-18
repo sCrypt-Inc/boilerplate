@@ -15,6 +15,7 @@ import {
 } from 'scrypt-ts'
 
 // this contract simulates the Monty Hall problem
+// https://xiaohuiliu.medium.com/the-monty-hall-problem-on-bitcoin-1f9be62b38e8
 export class MontyHall extends SmartContract {
     @prop()
     player: PubKey
