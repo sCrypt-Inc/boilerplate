@@ -46,3 +46,13 @@ export class Demo extends SmartContract {
             })
     }
 }
+
+/* uncomment to run this file as a standalone script: `ts-node src/contracts/demo.ts`
+(async () => { 
+    await Demo.compile()
+    const demo = new Demo(1n, 2n)
+    const sum = 3n
+    demo.add(sum)
+    console.log(`add to ${sum}`)
+})()
+*/
