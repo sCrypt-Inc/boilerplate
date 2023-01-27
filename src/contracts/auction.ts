@@ -77,8 +77,6 @@ export class Auction extends SmartContract {
 
     @method()
     public close(sig: Sig) {
-        console.log('deadline:', this.auctionDeadline)
-        console.log('ctx.locktime: ', this.ctx.locktime)
         assert(
             this.ctx.locktime >= this.auctionDeadline,
             'auction is not over yet'
