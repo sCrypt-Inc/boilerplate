@@ -77,6 +77,8 @@ export class Auction extends SmartContract {
 
     @method()
     public close(sig: Sig) {
+        console.log('deadline:', this.auctionDeadline)
+        console.log('ctx.locktime: ', this.ctx.locktime)
         assert(
             this.ctx.locktime >= this.auctionDeadline,
             'auction is not over yet'
@@ -142,6 +144,34 @@ export class Auction extends SmartContract {
                         )
                     })
                 }
+            )
+    }
+
+    // auctioneer closes auction
+    getCallTxForClose(privateKey: bsv.PrivateKey, prevTx: bsv.Transaction) {
+        const inputIndex = 0
+        return new bsv.Transaction()
+            .addInputFromPrevTx(prevTx)
+            .setInputScript(
+                {
+                    inputIndex,
+                    privateKey,
+                },
+                (tx) => {
+                    const sig = tx.getSignature(inputIndex)
+                    this.unlockFrom = { tx, inputIndex }
+                    return this.getUnlockingScript((self) => {
+                        self.close(Sig(sig as string))
+                    })
+                }
+            )
+            .addOutput(
+                new bsv.Transaction.Output({
+                    script: bsv.Script.buildPublicKeyHashOut(
+                        privateKey.toPublicKey()
+                    ),
+                    satoshis: Number(this.ctx.utxo.value),
+                })
             )
     }
 }
