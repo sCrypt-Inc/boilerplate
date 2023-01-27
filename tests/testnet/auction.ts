@@ -52,7 +52,7 @@ async function main() {
     const newInstance = auction.next()
     newInstance.bidder = PubKeyHash(toHex(publicKeyHashNewBid))
     // 1. construct a transaction for call
-    const unsignedCallTx = auction.getCallTxForBid(
+    const unsignedBidTx = auction.getCallTxForBid(
         await utxoMgr.getUtxos(),
         deployTx,
         newInstance,
@@ -61,12 +61,20 @@ async function main() {
     )
 
     // 2. sign and broadcast the transaction
-    const callTx = await signAndSend(unsignedCallTx, privateKey, false)
+    const bidTx = await signAndSend(unsignedBidTx, privateKey, false)
 
-    console.log('Auction contract called: ', callTx.id)
+    console.log('Bid Tx: ', bidTx.id)
 
     // collect the new p2pkh utxo if it exists in `callTx`
-    utxoMgr.collectUtxoFrom(callTx)
+    utxoMgr.collectUtxoFrom(bidTx)
+    const instance = newInstance
+    const unsignedCloseTx = instance.getCallTxForClose(
+        privateKeyAuctioneer,
+        bidTx
+    )
+    const closeTx = await signAndSend(unsignedCloseTx, privateKeyAuctioneer)
+
+    console.log('Close Tx: ', closeTx.id)
 }
 
 describe('Test SmartContract `Auction` on testnet', () => {
