@@ -1,5 +1,5 @@
 import { bsv, UTXO } from 'scrypt-ts'
-import { myPrivateKey } from './myPrivateKey'
+import { myPrivateKey } from './privateKey'
 import { fetchUtxos, sendTx, sleep } from './txHelper'
 
 enum UtxoMgrInitState {

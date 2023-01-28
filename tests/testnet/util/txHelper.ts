@@ -1,6 +1,6 @@
-import { bsv, UTXO } from 'scrypt-ts'
+import { bsv, TestWallet, UTXO, WhatsonchainProvider } from 'scrypt-ts'
 import { randomBytes } from 'crypto'
-import { myPrivateKey } from './myPrivateKey'
+import { myPrivateKey } from './privateKey'
 import axios from 'axios'
 
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
@@ -90,3 +90,13 @@ export function randomPrivateKey() {
     const address = publicKey.toAddress()
     return [privateKey, publicKey, publicKeyHash, address] as const
 }
+
+export function getTestnetSigner(
+    privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
+) {
+    return new TestWallet(privateKey || myPrivateKey).connect(
+        new WhatsonchainProvider(bsv.Networks.testnet)
+    )
+}
+
+export const testnetDefaultSigner = getTestnetSigner()

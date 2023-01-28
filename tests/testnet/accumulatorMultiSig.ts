@@ -1,21 +1,13 @@
 import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
 import {
-    randomPrivateKey,
+    getTestnetSigner,
     inputIndex,
-    outputIndex,
     inputSatoshis,
+    outputIndex,
+    randomPrivateKey,
 } from './util/txHelper'
-import { myPrivateKey } from './util/myPrivateKey'
-import {
-    bsv,
-    PubKey,
-    Ripemd160,
-    Sig,
-    TestWallet,
-    toHex,
-    utxoFromOutput,
-    WhatsonchainProvider,
-} from 'scrypt-ts'
+import { myPrivateKey } from './util/privateKey'
+import { bsv, PubKey, Ripemd160, Sig, toHex, utxoFromOutput } from 'scrypt-ts'
 
 async function main() {
     const [privateKey1, , publicKeyHash1, address1] = randomPrivateKey()
@@ -29,12 +21,12 @@ async function main() {
         Ripemd160(toHex(publicKeyHash3)),
     ])
 
-    const signer = new TestWallet([
+    const signer = getTestnetSigner([
         myPrivateKey,
         privateKey1,
         privateKey2,
         privateKey3,
-    ]).connect(new WhatsonchainProvider(bsv.Networks.testnet))
+    ])
 
     // connect to a signer
     accumulatorMultiSig.connect(signer)

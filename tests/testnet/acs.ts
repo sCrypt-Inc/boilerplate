@@ -1,31 +1,26 @@
 import { AnyoneCanSpend } from '../../src/contracts/acs'
-import { inputIndex, inputSatoshis, outputIndex } from './util/txHelper'
 import {
-    bsv,
-    Ripemd160,
-    TestWallet,
-    toHex,
-    WhatsonchainProvider,
-} from 'scrypt-ts'
-import { myPrivateKey, myPublicKeyHash } from './util/myPrivateKey'
+    inputIndex,
+    inputSatoshis,
+    outputIndex,
+    testnetDefaultSigner,
+} from './util/txHelper'
+import { bsv, Ripemd160, toHex } from 'scrypt-ts'
+import { myPublicKeyHash } from './util/privateKey'
 
 async function main() {
     await AnyoneCanSpend.compile()
     const acs = new AnyoneCanSpend(Ripemd160(toHex(myPublicKeyHash)))
 
-    const signer = new TestWallet(myPrivateKey).connect(
-        new WhatsonchainProvider(bsv.Networks.testnet)
-    )
-
     // connect to a signer
-    acs.connect(signer)
+    acs.connect(testnetDefaultSigner)
 
     // contract deployment
     const deployTx = await acs.deploy(inputSatoshis)
     console.log('AnyoneCanSpend contract deployed: ', deployTx.id)
 
     // contract call
-    const changeAddress = await signer.getDefaultAddress()
+    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
     const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
         .addInputFromPrevTx(deployTx)
         .change(changeAddress)
@@ -44,7 +39,9 @@ async function main() {
                 })
             }
         )
-    const callTx = await signer.signAndsendTransaction(unsignedCallTx)
+    const callTx = await testnetDefaultSigner.signAndsendTransaction(
+        unsignedCallTx
+    )
     console.log('AnyoneCanSpend contract called: ', callTx.id)
 }
 

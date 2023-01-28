@@ -2,7 +2,7 @@ import { Auction } from '../../src/contracts/auction'
 import { getUtxoManager } from './util/utxoManager'
 import { signAndSend } from './util/txHelper'
 import { bsv, PubKeyHash, Ripemd160, toHex, PubKey } from 'scrypt-ts'
-import { myPrivateKey } from './util/myPrivateKey'
+import { myPrivateKey } from './util/privateKey'
 
 async function main() {
     const utxoMgr = await getUtxoManager()

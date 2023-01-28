@@ -1,35 +1,27 @@
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { inputIndex, inputSatoshis, outputIndex } from './util/txHelper'
-import { myAddress, myPrivateKey, myPublicKeyHash } from './util/myPrivateKey'
-
 import {
-    bsv,
-    PubKey,
-    Ripemd160,
-    Sig,
-    TestWallet,
-    toHex,
-    utxoFromOutput,
-    WhatsonchainProvider,
-} from 'scrypt-ts'
+    inputIndex,
+    inputSatoshis,
+    outputIndex,
+    testnetDefaultSigner,
+} from './util/txHelper'
+import { myAddress, myPublicKeyHash } from './util/privateKey'
+
+import { bsv, PubKey, Ripemd160, Sig, toHex, utxoFromOutput } from 'scrypt-ts'
 
 async function main() {
     await P2PKH.compile()
     const p2pkh = new P2PKH(Ripemd160(toHex(myPublicKeyHash)))
 
-    const signer = new TestWallet(myPrivateKey).connect(
-        new WhatsonchainProvider(bsv.Networks.testnet)
-    )
-
     // connect to a signer
-    p2pkh.connect(signer)
+    p2pkh.connect(testnetDefaultSigner)
 
     // deploy
     const deployTx = await p2pkh.deploy(inputSatoshis)
     console.log('P2PKH contract deployed: ', deployTx.id)
 
     // call
-    const changeAddress = await signer.getDefaultAddress()
+    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
     const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
         .addInputFromPrevTx(deployTx)
         .change(changeAddress)
@@ -41,14 +33,17 @@ async function main() {
             return p2pkh.getUnlockingScript(async (cloned) => {
                 const spendingUtxo = utxoFromOutput(deployTx, outputIndex)
 
-                const sigResponses = await signer.getSignatures(tx.toString(), [
-                    {
-                        inputIndex,
-                        satoshis: spendingUtxo.satoshis,
-                        scriptHex: spendingUtxo.script,
-                        address: myAddress,
-                    },
-                ])
+                const sigResponses = await testnetDefaultSigner.getSignatures(
+                    tx.toString(),
+                    [
+                        {
+                            inputIndex,
+                            satoshis: spendingUtxo.satoshis,
+                            scriptHex: spendingUtxo.script,
+                            address: myAddress,
+                        },
+                    ]
+                )
 
                 const sigs = sigResponses.map((sigResp) => sigResp.sig)
                 const pubKeys = sigResponses.map((sigResp) => sigResp.publicKey)
@@ -56,7 +51,9 @@ async function main() {
                 cloned.unlock(Sig(sigs[0]), PubKey(pubKeys[0]))
             })
         })
-    const callTx = await signer.signAndsendTransaction(unsignedCallTx)
+    const callTx = await testnetDefaultSigner.signAndsendTransaction(
+        unsignedCallTx
+    )
     console.log('P2PKH contract called: ', callTx.id)
 }
 

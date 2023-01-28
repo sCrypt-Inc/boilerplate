@@ -1,6 +1,6 @@
 import { Counter } from '../../src/contracts/counter'
 import { signAndSend } from './util/txHelper'
-import { myPrivateKey } from './util/myPrivateKey'
+import { myPrivateKey } from './util/privateKey'
 import { getUtxoManager } from './util/utxoManager'
 
 async function main() {

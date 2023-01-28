@@ -1,25 +1,24 @@
 import { Demo } from '../../src/contracts/demo'
-import { inputIndex, inputSatoshis } from './util/txHelper'
-import { bsv, TestWallet, WhatsonchainProvider } from 'scrypt-ts'
-import { myPrivateKey } from './util/myPrivateKey'
+import {
+    inputIndex,
+    inputSatoshis,
+    testnetDefaultSigner,
+} from './util/txHelper'
+import { bsv } from 'scrypt-ts'
 
 async function main() {
     await Demo.compile()
     const demo = new Demo(1n, 2n)
 
-    const signer = new TestWallet(myPrivateKey).connect(
-        new WhatsonchainProvider(bsv.Networks.testnet)
-    )
-
     // connect to a signer
-    demo.connect(signer)
+    demo.connect(testnetDefaultSigner)
 
     // contract deployment
     const deployTx = await demo.deploy(inputSatoshis)
     console.log('Demo contract deployed: ', deployTx.id)
 
     // contract call
-    const changeAddress = await signer.getDefaultAddress()
+    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
     const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
         .addInputFromPrevTx(deployTx)
         .change(changeAddress)
@@ -32,7 +31,9 @@ async function main() {
                 cloned.add(3n)
             })
         })
-    const callTx = await signer.signAndsendTransaction(unsignedCallTx)
+    const callTx = await testnetDefaultSigner.signAndsendTransaction(
+        unsignedCallTx
+    )
     console.log('Demo contract `add` called: ', callTx.id)
 }
 
