@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { Auction } from '../../src/contracts/auction'
-import { bsv, PubKeyHash, Sig, signTx, toHex, PubKey } from 'scrypt-ts'
-import { dummyUTXO, newTx, inputIndex, inputSatoshis } from './util/txHelper'
+import { bsv, PubKeyHash, toHex, PubKey } from 'scrypt-ts'
+import { dummyUTXO, inputSatoshis } from './util/txHelper'
 
 const privateKeyAuctioneer = bsv.PrivateKey.fromRandom('testnet')
 const publicKeyAuctioneer = bsv.PublicKey.fromPrivateKey(privateKeyAuctioneer)
@@ -11,9 +11,6 @@ const publicKeyBidder = bsv.PublicKey.fromPrivateKey(privateKeyBidder)
 const publicKeyHashBidder = bsv.crypto.Hash.sha256ripemd160(
     publicKeyBidder.toBuffer()
 )
-
-const oneDayAgo = new Date('2020-01-03')
-const auctionDeadline = BigInt(Math.round(oneDayAgo.valueOf() / 1000))
 
 describe('Test SmartContract `Auction` on testnet', () => {
     before(async () => {
