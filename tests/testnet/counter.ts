@@ -1,6 +1,6 @@
 import { Counter } from '../../src/contracts/counter'
 import { signAndSend } from './util/txHelper'
-import { privateKey } from './util/privateKey'
+import { myPrivateKey } from './util/myPrivateKey'
 import { getUtxoManager } from './util/utxoManager'
 
 async function main() {
@@ -37,7 +37,7 @@ async function main() {
         // 4. construct a transaction for contract call
         const unsignedCallTx = prevInstance.getCallTx(utxos, prevTx, newCounter)
         // 5. sign and broadcast the transaction
-        const callTx = await signAndSend(unsignedCallTx, privateKey, false)
+        const callTx = await signAndSend(unsignedCallTx, myPrivateKey, false)
         console.log(
             'Counter call tx: ',
             callTx.id,

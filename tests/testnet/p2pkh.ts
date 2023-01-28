@@ -1,6 +1,6 @@
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { inputIndex } from './util/txHelper'
-import { privateKey } from './util/privateKey'
+import { inputIndex, inputSatoshis, outputIndex } from './util/txHelper'
+import { myAddress, myPrivateKey, myPublicKeyHash } from './util/myPrivateKey'
 
 import {
     bsv,
@@ -14,14 +14,10 @@ import {
 } from 'scrypt-ts'
 
 async function main() {
-    const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
-    const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
-    const address = publicKey.toAddress()
-
     await P2PKH.compile()
-    const p2pkh = new P2PKH(Ripemd160(toHex(publicKeyHash)))
+    const p2pkh = new P2PKH(Ripemd160(toHex(myPublicKeyHash)))
 
-    const signer = new TestWallet(privateKey).connect(
+    const signer = new TestWallet(myPrivateKey).connect(
         new WhatsonchainProvider(bsv.Networks.testnet)
     )
 
@@ -29,7 +25,7 @@ async function main() {
     p2pkh.connect(signer)
 
     // deploy
-    const deployTx = await p2pkh.deploy(1000)
+    const deployTx = await p2pkh.deploy(inputSatoshis)
     console.log('P2PKH contract deployed: ', deployTx.id)
 
     // call
@@ -43,14 +39,14 @@ async function main() {
             // use the cloned version because this callback may be executed multiple times during tx building process,
             // and calling contract method may have side effects on its properties.
             return p2pkh.getUnlockingScript(async (cloned) => {
-                const spendingUtxo = utxoFromOutput(deployTx, 0)
+                const spendingUtxo = utxoFromOutput(deployTx, outputIndex)
 
                 const sigResponses = await signer.getSignatures(tx.toString(), [
                     {
                         inputIndex,
                         satoshis: spendingUtxo.satoshis,
                         scriptHex: spendingUtxo.script,
-                        address: address,
+                        address: myAddress,
                     },
                 ])
 

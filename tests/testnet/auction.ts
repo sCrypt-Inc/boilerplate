@@ -2,7 +2,7 @@ import { Auction } from '../../src/contracts/auction'
 import { getUtxoManager } from './util/utxoManager'
 import { signAndSend } from './util/txHelper'
 import { bsv, PubKeyHash, Ripemd160, toHex, PubKey } from 'scrypt-ts'
-import { privateKey } from './util/privateKey'
+import { myPrivateKey } from './util/myPrivateKey'
 
 async function main() {
     const utxoMgr = await getUtxoManager()
@@ -19,7 +19,7 @@ async function main() {
     const publicKeyAuctioneer =
         bsv.PublicKey.fromPrivateKey(privateKeyAuctioneer)
 
-    const publicKeyNewBid = bsv.PublicKey.fromPrivateKey(privateKey)
+    const publicKeyNewBid = bsv.PublicKey.fromPrivateKey(myPrivateKey)
     const publicKeyHashNewBid = bsv.crypto.Hash.sha256ripemd160(
         publicKeyNewBid.toBuffer()
     )
@@ -61,7 +61,7 @@ async function main() {
     )
 
     // 2. sign and broadcast the transaction
-    const bidTx = await signAndSend(unsignedBidTx, privateKey, false)
+    const bidTx = await signAndSend(unsignedBidTx, myPrivateKey, false)
 
     console.log('Bid Tx: ', bidTx.id)
 

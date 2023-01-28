@@ -1,6 +1,11 @@
 import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
-import { randomPrivateKey, inputIndex } from './util/txHelper'
-import { privateKey } from './util/privateKey'
+import {
+    randomPrivateKey,
+    inputIndex,
+    outputIndex,
+    inputSatoshis,
+} from './util/txHelper'
+import { myPrivateKey } from './util/myPrivateKey'
 import {
     bsv,
     PubKey,
@@ -25,7 +30,7 @@ async function main() {
     ])
 
     const signer = new TestWallet([
-        privateKey,
+        myPrivateKey,
         privateKey1,
         privateKey2,
         privateKey3,
@@ -35,7 +40,7 @@ async function main() {
     accumulatorMultiSig.connect(signer)
 
     // deploy
-    const deployTx = await accumulatorMultiSig.deploy(1000)
+    const deployTx = await accumulatorMultiSig.deploy(inputSatoshis)
     console.log('AccumulatorMultiSig contract deployed: ', deployTx.id)
 
     // call
@@ -49,7 +54,7 @@ async function main() {
             // use the cloned version because this callback may be executed multiple times during tx building process,
             // and calling contract method may have side effects on its properties.
             return accumulatorMultiSig.getUnlockingScript(async (cloned) => {
-                const spendingUtxo = utxoFromOutput(deployTx, 0)
+                const spendingUtxo = utxoFromOutput(deployTx, outputIndex)
 
                 const sigResponses = await signer.getSignatures(tx.toString(), [
                     {

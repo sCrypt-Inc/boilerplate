@@ -1,5 +1,5 @@
 import { bsv, UTXO } from 'scrypt-ts'
-import { privateKey } from './privateKey'
+import { myPrivateKey } from './myPrivateKey'
 import { fetchUtxos, sendTx, sleep } from './txHelper'
 
 enum UtxoMgrInitState {
@@ -15,7 +15,7 @@ export class UtxoManager {
     private initStates: UtxoMgrInitState = UtxoMgrInitState.UNINITIALIZED
     private initUtxoCnt = 0
 
-    constructor(privKey = privateKey) {
+    constructor(privKey = myPrivateKey) {
         this.privKey = privKey
         this.address = privKey.toAddress().toString()
     }
