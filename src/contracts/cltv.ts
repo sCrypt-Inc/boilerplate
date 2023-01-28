@@ -2,7 +2,7 @@ import { method, prop, SmartContract, assert, bsv, UTXO } from 'scrypt-ts'
 
 export class CheckLockTimeVerify extends SmartContract {
     @prop()
-    matureTime: bigint // Can be timestamp or block height.
+    matureTime: bigint // Can be a timestamp or block height.
 
     constructor(matureTime: bigint) {
         super(matureTime)
