@@ -27,7 +27,7 @@ async function main() {
     // calling contract multiple times
     for (let i = 0; i < 3; i++) {
         // avoid mempool conflicts, sleep to allow previous tx "sink-into" the network
-        await sleep(2)
+        await sleep(5)
 
         // 1. build a new contract instance
         const newCounter = prevInstance.next()

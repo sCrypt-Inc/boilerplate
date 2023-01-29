@@ -1,80 +1,145 @@
 import { Auction } from '../../src/contracts/auction'
-import { getUtxoManager } from './util/utxoManager'
-import { signAndSend } from './util/txHelper'
-import { bsv, PubKeyHash, Ripemd160, toHex, PubKey } from 'scrypt-ts'
-import { myPrivateKey } from './util/privateKey'
+import {
+    fetchUtxos,
+    getTestnetSigner,
+    inputIndex,
+    outputIndex,
+    sleep,
+    testnetDefaultSigner,
+} from './util/txHelper'
+import {
+    bsv,
+    PubKey,
+    PubKeyHash,
+    Sig,
+    toHex,
+    utxoFromOutput,
+    buildPublicKeyHashScript,
+} from 'scrypt-ts'
+import {
+    myAddress,
+    myPrivateKey,
+    myPublicKey,
+    myPublicKeyHash,
+} from './util/privateKey'
 
 async function main() {
-    const utxoMgr = await getUtxoManager()
     await Auction.compile()
 
-    const privateKeyHighestBid = bsv.PrivateKey.fromRandom('testnet')
-    const publicKeyHighestBid =
-        bsv.PublicKey.fromPrivateKey(privateKeyHighestBid)
-    const publicKeyHashHighestBid = bsv.crypto.Hash.sha256ripemd160(
-        publicKeyHighestBid.toBuffer()
+    const privateKeyAuctioneer = myPrivateKey
+    const publicKeyAuctioneer = myPublicKey
+    const addressAuctioneer = myAddress
+
+    const publicKeyHashHighestBidder = myPublicKeyHash
+    const publicKeyHashNewBidder = myPublicKeyHash
+    const auctionDeadline = BigInt(
+        Math.round(new Date('2020-01-03').valueOf() / 1000)
     )
-
-    const privateKeyAuctioneer = bsv.PrivateKey.fromRandom('testnet')
-    const publicKeyAuctioneer =
-        bsv.PublicKey.fromPrivateKey(privateKeyAuctioneer)
-
-    const publicKeyNewBid = bsv.PublicKey.fromPrivateKey(myPrivateKey)
-    const publicKeyHashNewBid = bsv.crypto.Hash.sha256ripemd160(
-        publicKeyNewBid.toBuffer()
-    )
-
-    const oneDayAgo = new Date('2020-01-03')
-    const auctionDeadline = BigInt(Math.round(oneDayAgo.valueOf() / 1000))
+    const timeNow = Math.floor(Date.now() / 1000)
 
     const auction = new Auction(
-        PubKeyHash(toHex(publicKeyHashHighestBid)),
+        PubKeyHash(toHex(publicKeyHashHighestBidder)),
         PubKey(toHex(publicKeyAuctioneer)),
         auctionDeadline
     ).markAsGenesis()
 
+    const signer = getTestnetSigner(privateKeyAuctioneer)
+    auction.connect(signer)
+
     const highestBid = 1000
     const newBid = highestBid * 2
+    const changeAddress = await signer.getDefaultAddress()
+
     // contract deployment
-    // 1. get the available utxos for the private key
-    const utxos = await utxoMgr.getUtxos()
-    // 2. construct a transaction for deployment
-    const unsignedDeployTx = auction.getDeployTx(utxos, 1000)
-    // 3. sign and broadcast the transaction
-    const deployTx = await signAndSend(unsignedDeployTx)
+    const deployTx = await auction.deploy(highestBid)
     console.log('Auction contract deployed: ', deployTx.id)
 
-    // collect the new p2pkh utxo
-    utxoMgr.collectUtxoFrom(deployTx)
-
-    // contract call
+    // contract call `bid`
+    // avoid mempool conflicts, sleep to allow previous tx "sink-into" the network
+    await sleep(5)
     // 1. build a new contract instance
     const newInstance = auction.next()
-    newInstance.bidder = PubKeyHash(toHex(publicKeyHashNewBid))
-    // 1. construct a transaction for call
-    const unsignedBidTx = auction.getCallTxForBid(
-        await utxoMgr.getUtxos(),
-        deployTx,
-        newInstance,
-        Ripemd160(toHex(publicKeyHashNewBid)),
-        newBid
+    newInstance.bidder = PubKeyHash(toHex(publicKeyHashNewBidder))
+    // 2. construct a transaction for contract call
+    const unsignedCallBidTx: bsv.Transaction = await new bsv.Transaction()
+        // contract previous state input
+        .addInputFromPrevTx(deployTx)
+        // gas inputs
+        .from(await fetchUtxos())
+        // contract new state output
+        .setOutput(outputIndex, (tx: bsv.Transaction) => {
+            newInstance.lockTo = { tx, outputIndex }
+            return new bsv.Transaction.Output({
+                script: newInstance.lockingScript,
+                satoshis: newBid, // continues with a higher bid
+            })
+        })
+        // contract refund output
+        .setOutput(1, () => {
+            return new bsv.Transaction.Output({
+                script: buildPublicKeyHashScript(
+                    PubKeyHash(toHex(publicKeyHashHighestBidder))
+                ),
+                satoshis: highestBid, // refund previous highest bid
+            })
+        })
+        // change output
+        .change(changeAddress)
+        .setInputScriptAsync(inputIndex, (tx: bsv.Transaction) => {
+            // bind contract & tx unlocking relation
+            auction.unlockFrom = { tx, inputIndex }
+
+            // use the cloned version because this callback may be executed multiple times during tx building process,
+            // and calling contract method may have side effects on its properties.
+            return auction.getUnlockingScript(async (cloned) => {
+                cloned.bid(
+                    PubKeyHash(toHex(publicKeyHashNewBidder)),
+                    BigInt(newBid),
+                    BigInt(tx.getChangeAmount())
+                )
+            })
+        })
+    const bidTx = await testnetDefaultSigner.signAndsendTransaction(
+        unsignedCallBidTx
     )
-
-    // 2. sign and broadcast the transaction
-    const bidTx = await signAndSend(unsignedBidTx, myPrivateKey, false)
-
     console.log('Bid Tx: ', bidTx.id)
 
-    // collect the new p2pkh utxo if it exists in `callTx`
-    utxoMgr.collectUtxoFrom(bidTx)
-    const instance = newInstance
-    const unsignedCloseTx = instance.getCallTxForClose(
-        Number(auctionDeadline) + 1000,
-        privateKeyAuctioneer,
-        bidTx
-    )
-    const closeTx = await signAndSend(unsignedCloseTx, privateKeyAuctioneer)
+    // contract call `close`
+    // avoid mempool conflicts, sleep to allow previous tx "sink-into" the network
+    await sleep(5)
+    const unsignedCallCloseTx: bsv.Transaction = await new bsv.Transaction()
+        .addInputFromPrevTx(bidTx)
+        .change(changeAddress)
+        .setInputSequence(inputIndex, 0)
+        .setLockTime(timeNow)
+        .setInputScriptAsync(inputIndex, (tx: bsv.Transaction) => {
+            // bind contract & tx unlocking relation
+            newInstance.unlockFrom = { tx, inputIndex }
 
+            // use the cloned version because this callback may be executed multiple times during tx building process,
+            // and calling contract method may have side effects on its properties.
+            return newInstance.getUnlockingScript(async (cloned) => {
+                const spendingUtxo = utxoFromOutput(bidTx, outputIndex)
+
+                const sigResponses = await testnetDefaultSigner.getSignatures(
+                    tx.toString(),
+                    [
+                        {
+                            inputIndex,
+                            satoshis: spendingUtxo.satoshis,
+                            scriptHex: spendingUtxo.script,
+                            address: addressAuctioneer,
+                        },
+                    ]
+                )
+
+                const sigs = sigResponses.map((sigResp) => sigResp.sig)
+                cloned.close(Sig(sigs[0]))
+            })
+        })
+    const closeTx = await testnetDefaultSigner.signAndsendTransaction(
+        unsignedCallCloseTx
+    )
     console.log('Close Tx: ', closeTx.id)
 }
 
