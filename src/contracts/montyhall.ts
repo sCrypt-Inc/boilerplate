@@ -60,6 +60,7 @@ export class MontyHall extends SmartContract {
     public choose(choice: bigint, sig: Sig) {
         assert(++this.step == 1n, 'step number unexpected')
 
+        this.checkSig(sig, this.player)
         this.choice = choice
 
         // game goes on
@@ -74,6 +75,8 @@ export class MontyHall extends SmartContract {
     @method()
     public open(goatDoorNum: bigint, behindDoor: ByteString, sig: Sig) {
         assert(++this.step == 2n, 'step number unexpected')
+
+        this.checkSig(sig, this.host)
 
         this.openedDoor = goatDoorNum
         const goatDoorHash = this.doorHashes[Number(goatDoorNum)]
@@ -91,6 +94,7 @@ export class MontyHall extends SmartContract {
     @method()
     public stay(stay: boolean, sig: Sig) {
         assert(++this.step == 3n, 'step number unexpected')
+        this.checkSig(sig, this.player)
 
         if (!stay) {
             // switch
