@@ -1,5 +1,4 @@
-import { assert, bsv, method, prop, SmartContract } from 'scrypt-ts'
-import { UTXO } from '../types'
+import { assert, bsv, method, prop, SmartContract, UTXO } from 'scrypt-ts'
 
 export class Demo extends SmartContract {
     @prop()

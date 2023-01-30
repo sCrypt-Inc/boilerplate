@@ -10,8 +10,8 @@ import {
     Sig,
     SmartContract,
     toHex,
+    UTXO,
 } from 'scrypt-ts'
-import { UTXO } from '../types'
 
 export class AccumulatorMultiSig extends SmartContract {
     public static readonly N: number = 3

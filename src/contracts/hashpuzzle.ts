@@ -7,8 +7,8 @@ import {
     Sha256,
     sha256,
     SmartContract,
+    UTXO,
 } from 'scrypt-ts'
-import { UTXO } from '../types'
 
 export class HashPuzzle extends SmartContract {
     @prop()

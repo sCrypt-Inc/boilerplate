@@ -8,8 +8,8 @@ import {
     prop,
     SmartContract,
     unpack,
+    UTXO,
 } from 'scrypt-ts'
-import { UTXO } from '../types'
 
 export class Ackermann extends SmartContract {
     static readonly LOOP_COUNT: number = 14

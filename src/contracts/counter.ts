@@ -1,5 +1,12 @@
-import { assert, bsv, hash256, method, prop, SmartContract } from 'scrypt-ts'
-import { UTXO } from '../types'
+import {
+    assert,
+    bsv,
+    hash256,
+    method,
+    prop,
+    SmartContract,
+    UTXO,
+} from 'scrypt-ts'
 
 export class Counter extends SmartContract {
     @prop(true)

@@ -9,8 +9,8 @@ import {
     Sig,
     SmartContract,
     toHex,
+    UTXO,
 } from 'scrypt-ts'
-import { UTXO } from '../types'
 
 export class P2PKH extends SmartContract {
     @prop()

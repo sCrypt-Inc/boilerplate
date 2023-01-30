@@ -10,8 +10,8 @@ import {
     SigHash,
     SmartContract,
     Utils,
+    UTXO,
 } from 'scrypt-ts'
-import { UTXO } from '../types'
 
 export class AnyoneCanSpend extends SmartContract {
     @prop()

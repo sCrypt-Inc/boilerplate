@@ -11,8 +11,8 @@ import {
     Sig,
     SmartContract,
     Utils,
+    UTXO,
 } from 'scrypt-ts'
-import { UTXO } from '../types'
 
 export class Auction extends SmartContract {
     @prop(true)
