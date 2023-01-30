@@ -12,6 +12,7 @@ import {
     Utils,
     unpack,
     sha256,
+    hash160,
 } from 'scrypt-ts'
 
 // this contract simulates the Monty Hall problem
@@ -121,7 +122,9 @@ export class MontyHall extends SmartContract {
         const winner = won ? this.player : this.host
 
         // pay full amount to winner
-        const winnerScript: ByteString = Utils.buildPublicKeyHashScript(winner)
+        const winnerScript: ByteString = Utils.buildPublicKeyHashScript(
+            hash160(winner)
+        )
         const payoutOutput: ByteString = Utils.buildOutput(
             winnerScript,
             this.ctx.utxo.value
