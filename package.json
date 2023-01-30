@@ -12,6 +12,7 @@
     "testnet": "npm run build && mocha 'dist/tests/testnet/**/*.js' --timeout 1200000",
     "lint": "eslint . --ext .js,.ts --fix && prettier --write --ignore-unknown \"**/*\"",
     "lint-check": "eslint . --ext .js,.ts && prettier --check --ignore-unknown \"**/*\"",
+    "genprivkey": "npm run build && node 'dist/tests/testnet/util/privateKey.js'",
     "prepare": "husky install"
   },
   "lint-staged": {
