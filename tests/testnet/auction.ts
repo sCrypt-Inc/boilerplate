@@ -69,6 +69,7 @@ async function main() {
     utxoMgr.collectUtxoFrom(bidTx)
     const instance = newInstance
     const unsignedCloseTx = instance.getCallTxForClose(
+        Number(auctionDeadline) + 1000,
         privateKeyAuctioneer,
         bidTx
     )

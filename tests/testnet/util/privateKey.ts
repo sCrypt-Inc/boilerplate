@@ -10,6 +10,11 @@ dotenv.config({ path: dotenvConfigPath })
 const privKey: string = process.env.PRIVATE_KEY || ''
 if (!privKey) {
     genPrivKey()
+} else {
+    console.log(`Private key already generated. 
+You can fund its address '${bsv.PrivateKey.fromWIF(
+        privKey
+    ).toAddress()}' from the sCrypt faucet https://scrypt.io/#faucet`)
 }
 
 export function genPrivKey() {
@@ -20,7 +25,7 @@ You can fund its address '${newPrivKey.toAddress()}' from sCrypt faucet https://
     // auto generate .env file with new generated key
     fs.writeFileSync(
         dotenvConfigPath,
-        `# You can fund its address '${newPrivKey.toAddress()}' from sCrypt faucet https://scrypt.io/#faucet
+        `# You can fund its address '${newPrivKey.toAddress()}' from the sCrypt faucet https://scrypt.io/#faucet
 PRIVATE_KEY="${newPrivKey}"`
     )
     exit(-1)

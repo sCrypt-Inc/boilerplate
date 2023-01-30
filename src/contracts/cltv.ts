@@ -22,6 +22,7 @@ export class CheckLockTimeVerify extends SmartContract {
         assert(this.ctx.locktime >= this.matureTime)
     }
 
+    // Local method to construct deployment TX.
     getDeployTx(utxos: UTXO[], satoshis: number): bsv.Transaction {
         return new bsv.Transaction().from(utxos).addOutput(
             new bsv.Transaction.Output({
@@ -31,6 +32,7 @@ export class CheckLockTimeVerify extends SmartContract {
         )
     }
 
+    // Local method to construct TX that calls deployed contract.
     getCallTxForUnlock(
         timeNow: number,
         prevTx: bsv.Transaction

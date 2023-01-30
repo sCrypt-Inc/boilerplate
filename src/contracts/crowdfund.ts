@@ -39,18 +39,19 @@ export class Crowdfund extends SmartContract {
         this.target = target
     }
 
-    // collect pledged fund
+    // Method to collect pledged fund.
     @method()
     public collect(raisedAmount: bigint) {
-        // reach target
+        // Ensure raised amount actually reached the target.
         assert(
             raisedAmount >= this.target,
             'raisedAmount is less than this.target'
         )
 
-        // fund goes to the recipient
+        // Funds go to the recipient.
         const lockingScript = Utils.buildPublicKeyHashScript(this.recipient)
 
+        // Ensure the payment output to the recipient is actually in the unlocking TX.
         const output = Utils.buildOutput(lockingScript, raisedAmount)
         assert(
             hash256(output) == this.ctx.hashOutputs,
@@ -58,17 +59,22 @@ export class Crowdfund extends SmartContract {
         )
     }
 
-    // contributor can take the fund back after deadline
+    // Contributors can be refunded after the deadline.
     @method()
     public refund(sig: Sig) {
-        // require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
+        // Require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
         assert(this.ctx.sequence < 0xffffffffn, 'require nLocktime enabled')
 
-        // fundraising expired
+        // Check if using block height.
+        if (this.deadline < 500000000) {
+            // Enforce nLocktime field to also use block height.
+            assert(this.ctx.locktime < 500000000)
+        }
         assert(this.ctx.locktime >= this.deadline, 'fundraising expired')
         assert(this.checkSig(sig, this.contributor), 'signature check failed')
     }
 
+    // Local method to construct deployment TX.
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
         const tx = new bsv.Transaction().from(utxos).addOutput(
             new bsv.Transaction.Output({
@@ -80,6 +86,7 @@ export class Crowdfund extends SmartContract {
         return tx
     }
 
+    // Local method to construct fund collection TX.
     getCallCollectTx(
         prevTx: bsv.Transaction,
         recipient: PubKeyHash,
@@ -103,6 +110,7 @@ export class Crowdfund extends SmartContract {
             .seal()
     }
 
+    // Local method to construct refund TX.
     getCallRefundTx(
         prevTx: bsv.Transaction,
         anyone: PubKeyHash,

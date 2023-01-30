@@ -12,7 +12,12 @@ import {
 } from 'scrypt-ts'
 
 export class Ackermann extends SmartContract {
-    static readonly LOOP_COUNT: number = 14
+    // Maximum number of iterations of the Ackermann function.
+    // This needs to be finite due to the constraints of the Bitcoin virtual machine.
+    @prop()
+    static readonly LOOP_COUNT = 14n
+
+    // Input parameters of the Ackermann function.
     @prop()
     a: bigint
     @prop()
@@ -54,12 +59,13 @@ export class Ackermann extends SmartContract {
         return n
     }
 
-    // y == 5
+    // This method can only be unlocked if the right solution to ackermann(a, b) is provided.
     @method()
     public unlock(y: bigint) {
-        assert(y == this.ackermann(this.a, this.b), 'y != 5')
+        assert(y == this.ackermann(this.a, this.b), 'Wrong solution.')
     }
 
+    // Local method to construct deployment TX.
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
         const tx = new bsv.Transaction().from(utxos).addOutput(
             new bsv.Transaction.Output({

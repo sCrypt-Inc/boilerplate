@@ -14,6 +14,7 @@ import {
 } from 'scrypt-ts'
 
 export class AnyoneCanSpend extends SmartContract {
+    // Address of the recipient.
     @prop()
     pubKeyHash: PubKeyHash
 
@@ -37,6 +38,7 @@ export class AnyoneCanSpend extends SmartContract {
         )
     }
 
+    // Local method to construct deployment TX.
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
         const tx = new bsv.Transaction().from(utxos).addOutput(
             new bsv.Transaction.Output({
@@ -48,6 +50,9 @@ export class AnyoneCanSpend extends SmartContract {
         return tx
     }
 
+    // Local method to construct TX calling a deployed contract.
+    // Due to our choice of SIGHASH flags, anyone can add an extra
+    // input to the transaction.
     getCallTx(
         prevTx: bsv.Transaction,
         changeAddress: PubKeyHash

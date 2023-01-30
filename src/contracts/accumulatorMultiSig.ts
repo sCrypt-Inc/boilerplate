@@ -14,9 +14,15 @@ import {
 } from 'scrypt-ts'
 
 export class AccumulatorMultiSig extends SmartContract {
-    public static readonly N: number = 3
+    // Number of multisig participants.
+    @prop()
+    static readonly N = 3n
+
+    // Threshold of the signatures needed.
     @prop()
     threshold: bigint
+
+    // Addresses.
     @prop()
     pubKeyHashes: FixedArray<Ripemd160, 3>
 
@@ -30,16 +36,18 @@ export class AccumulatorMultiSig extends SmartContract {
     public main(
         pubKeys: FixedArray<PubKey, 3>,
         sigs: FixedArray<Sig, 3>,
-        masks: FixedArray<boolean, 3>
+        masks: FixedArray<boolean, 3> // Mask the unused signatures with `false`
     ) {
         let total = 0n
         for (let i = 0; i < AccumulatorMultiSig.N; i++) {
             if (masks[i]) {
                 if (
+                    // Ensure the public key belongs to the specified address.
                     hash160(pubKeys[i]) == this.pubKeyHashes[i] &&
+                    // Check the signature
                     this.checkSig(sigs[i], pubKeys[i])
                 ) {
-                    total++
+                    total++ // Increment the number of successful signature checks.
                 }
             }
         }
@@ -49,6 +57,7 @@ export class AccumulatorMultiSig extends SmartContract {
         )
     }
 
+    // Local method to construct deployment TX.
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
         const tx = new bsv.Transaction().from(utxos).addOutput(
             new bsv.Transaction.Output({
@@ -60,6 +69,7 @@ export class AccumulatorMultiSig extends SmartContract {
         return tx
     }
 
+    // Local method to construct TX calling a deployed contract.
     getCallTx(
         pubKeys: bsv.PublicKey[],
         privateKey: bsv.PrivateKey[],

@@ -19,11 +19,14 @@ export class HashPuzzle extends SmartContract {
         this.sha256 = sha256
     }
 
+    // This method can only be unlocked if providing the real hash preimage of
+    // the specified SHA-256 hash.
     @method()
     public unlock(data: ByteString) {
         assert(this.sha256 == sha256(data), 'hashes are not equal')
     }
 
+    // Local method to construct deployment TX.
     getDeployTx(utxos: UTXO[], satoshis: number): bsv.Transaction {
         return new bsv.Transaction().from(utxos).addOutput(
             new bsv.Transaction.Output({
@@ -33,6 +36,7 @@ export class HashPuzzle extends SmartContract {
         )
     }
 
+    // Local method to construct TX that calls deployed contract.
     getCallTx(data: ByteString, prevTx: bsv.Transaction): bsv.Transaction {
         return new bsv.Transaction()
             .addInputFromPrevTx(prevTx)

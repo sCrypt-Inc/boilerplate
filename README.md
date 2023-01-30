@@ -16,7 +16,7 @@ This will run every test defined under `tests/local/`.
 To run tests for a specific smart contract, i.e. the `Counter` smart contract, run the following:
 
 ```sh
-npm run build && mocha 'dist/tests/local/counter.test.js'
+npm run build && npx mocha 'dist/tests/local/counter.test.js'
 ```
 
 To understand how these tests work, please read the [scryptTS docs](https://scrypt.io/scrypt-ts/getting-started/how-to-test-a-contract).
@@ -42,7 +42,7 @@ npm run testnet
 to run all defined testnet tests, or:
 
 ```sh
-npm run build && mocha 'dist/tests/testnet/<contract_name>.js'
+npm run build && npx mocha 'dist/tests/testnet/<contract_name>.js'
 ```
 
 to run a specific contracts tests.
