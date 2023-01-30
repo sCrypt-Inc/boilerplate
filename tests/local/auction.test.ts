@@ -118,28 +118,26 @@ async function bidCallTest() {
 }
 
 async function closeCallTest() {
-    const auctionDeadline = 0n
-    // new instance
+    const inputSatoshis = 1000
+    const inputIndex = 0
+    const auctionDeadline = 1673510000n
+    const timeNow = 1673523720
+
     const instance = new Auction(
         PubKeyHash(toHex(publicKeyHashBidder)),
         PubKey(toHex(publicKeyAuctioneer)),
         auctionDeadline
     )
-    // unlockFrom for stateful contract
-    dummyUTXO.script = instance.lockingScript.toHex()
-    const utxos = [dummyUTXO]
-    const tx = newTx(utxos)
-    instance.unlockFrom = { tx, inputIndex }
-    // instance.verify
-    const result = instance.verify((self) => {
-        const sig = signTx(
-            tx,
-            privateKeyAuctioneer,
-            self.lockingScript,
-            inputSatoshis
-        )
-        self.close(Sig(toHex(sig)))
-    })
-    // expect result
-    expect(result.success, result.error).to.be.true
+
+    const deployTx = instance.getDeployTx([dummyUTXO], inputSatoshis)
+
+    const callTx = instance.getCallTxForClose(
+        timeNow,
+        privateKeyAuctioneer,
+        deployTx
+    )
+    callTx.seal()
+
+    const result = callTx.verifyInputScript(inputIndex)
+    expect(result.success, result.error).to.eq(true)
 }

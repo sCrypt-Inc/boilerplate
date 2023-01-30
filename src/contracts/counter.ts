@@ -1,9 +1,19 @@
-import { assert, bsv, hash256, method, prop, SmartContract } from 'scrypt-ts'
-import { UTXO } from '../types'
+import {
+    assert,
+    bsv,
+    hash256,
+    method,
+    prop,
+    SmartContract,
+    UTXO,
+} from 'scrypt-ts'
 
 export class Counter extends SmartContract {
+    // Stateful prop to store counters value.
     @prop(true)
     count: bigint
+
+    // Current balance of the contract. This is only stored locally.
     private balance: number
 
     constructor(count: bigint) {
@@ -13,7 +23,11 @@ export class Counter extends SmartContract {
 
     @method()
     public increment() {
+        // Increment counter value
         this.count++
+
+        // Ensure next output will contain the updated counter value.
+        // I.e. actual output hash matches the one in the tx context.
         assert(
             this.ctx.hashOutputs ==
                 hash256(this.buildStateOutput(this.ctx.utxo.value)),
@@ -21,6 +35,7 @@ export class Counter extends SmartContract {
         )
     }
 
+    // Local method to construct deployment TX.
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
         this.balance = initBalance
         const tx = new bsv.Transaction().from(utxos).addOutput(
@@ -33,6 +48,7 @@ export class Counter extends SmartContract {
         return tx
     }
 
+    // Local method to construct TX calling deployed smart contract.
     getCallTx(
         utxos: UTXO[],
         prevTx: bsv.Transaction,

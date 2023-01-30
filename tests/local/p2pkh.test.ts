@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { PubKey, PubKeyHash, Sig, bsv, signTx, toHex } from 'scrypt-ts'
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { newTx, inputIndex, inputSatoshis } from './util/txHelper'
+import { newTx, inputIndex, inputSatoshis, dummyUTXO } from './util/txHelper'
 
 const privateKey = bsv.PrivateKey.fromRandom('testnet')
 const publicKey = privateKey.publicKey
@@ -35,28 +35,10 @@ describe('Test SmartContract `P2PKH`', () => {
     it('should pass if use right privateKey', async () => {
         const inputIndex = 0
         const p2pkh = new P2PKH(PubKeyHash(toHex(pkh)))
-        const callTx: bsv.Transaction = new bsv.Transaction()
-            .addDummyInput(p2pkh.lockingScript, inputSatoshis)
-            .change(privateKey.toAddress())
-            .setInputScript(
-                {
-                    inputIndex,
-                    privateKey,
-                },
-                (tx: bsv.Transaction) => {
-                    return p2pkh.getUnlockingScript((cloned) => {
-                        cloned.unlockFrom = { tx, inputIndex }
-                        cloned.unlock(
-                            Sig(tx.getSignature(inputIndex) as string),
-                            PubKey(toHex(publicKey))
-                        )
-                    })
-                }
-            )
-            .seal()
+        const deployTx = p2pkh.getDeployTx([dummyUTXO], inputSatoshis)
+        const callTx = p2pkh.getCallTx(publicKey, privateKey, deployTx).seal()
 
         const result = callTx.verifyInputScript(inputIndex)
-
         expect(result.success, result.error).to.eq(true)
     })
 

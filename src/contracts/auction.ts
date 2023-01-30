@@ -11,16 +11,19 @@ import {
     Sig,
     SmartContract,
     Utils,
+    UTXO,
 } from 'scrypt-ts'
-import { UTXO } from '../types'
 
 export class Auction extends SmartContract {
+    // The bidders address.
     @prop(true)
     bidder: PubKeyHash
 
+    // The auctioneers public key.
     @prop()
     auctioneer: PubKey
 
+    // Deadline of the auction. Can be block height or timestamp.
     @prop()
     auctionDeadline: bigint
 
@@ -35,7 +38,7 @@ export class Auction extends SmartContract {
         this.auctionDeadline = auctionDeadline
     }
 
-    // bid with a higher offer
+    // Call this public method to bid with a higher offer.
     @method()
     public bid(bidder: PubKeyHash, bid: bigint, changeSatoshis: bigint) {
         const highestBid: bigint = this.ctx.utxo.value
@@ -44,13 +47,14 @@ export class Auction extends SmartContract {
             'the auction bid is lower than the current highest bid'
         )
 
+        // Change the address of the highest bidder.
         const highestBidder: PubKeyHash = this.bidder
         this.bidder = bidder
 
-        // auction continues with a higher bidder
+        // Auction continues with a higher bidder.
         const auctionOutput: ByteString = this.buildStateOutput(bid)
 
-        // refund previous highest bidder
+        // Refund previous highest bidder.
         const refundScript: ByteString =
             Utils.buildPublicKeyHashScript(highestBidder)
         const refundOutput: ByteString = Utils.buildOutput(
@@ -59,6 +63,7 @@ export class Auction extends SmartContract {
         )
         let outputs: ByteString = auctionOutput + refundOutput
 
+        // Add change output.
         if (changeSatoshis > 0) {
             const changeScript: ByteString =
                 Utils.buildPublicKeyHashScript(bidder)
@@ -75,15 +80,27 @@ export class Auction extends SmartContract {
         )
     }
 
+    // Close the auction if deadline is reached.
     @method()
     public close(sig: Sig) {
+        // Ensure nSequence is less than UINT_MAX.
+        assert(this.ctx.sequence < 4294967295n)
+
+        // Check if using block height.
+        if (this.auctionDeadline < 500000000) {
+            // Enforce nLocktime field to also use block height.
+            assert(this.ctx.locktime < 500000000)
+        }
         assert(
             this.ctx.locktime >= this.auctionDeadline,
             'auction is not over yet'
         )
+
+        // Check signature of the auctioneer.
         assert(this.checkSig(sig, this.auctioneer), 'signature check failed')
     }
 
+    // Local method to construct deployment TX.
     getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
         const tx = new bsv.Transaction().from(utxos).addOutput(
             new bsv.Transaction.Output({
@@ -95,6 +112,7 @@ export class Auction extends SmartContract {
         return tx
     }
 
+    // Local method to construct TX for a bid.
     getCallTxForBid(
         utxos: UTXO[],
         prevTx: bsv.Transaction,
@@ -145,11 +163,21 @@ export class Auction extends SmartContract {
             )
     }
 
-    // auctioneer closes auction
-    getCallTxForClose(privateKey: bsv.PrivateKey, prevTx: bsv.Transaction) {
+    // Local method to construct TX for closing the auction.
+    getCallTxForClose(
+        timeNow: number,
+        privateKey: bsv.PrivateKey,
+        prevTx: bsv.Transaction
+    ) {
         const inputIndex = 0
-        return new bsv.Transaction()
-            .addInputFromPrevTx(prevTx)
+        const callTx: bsv.Transaction = new bsv.Transaction().addInputFromPrevTx(
+            prevTx
+        )
+
+        callTx.setLockTime(timeNow)
+        callTx.setInputSequence(inputIndex, 0)
+
+        return callTx
             .setInputScript(
                 {
                     inputIndex,
