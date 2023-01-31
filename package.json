@@ -12,7 +12,6 @@
     "testnet": "npm run build && mocha 'dist/tests/testnet/**/*.js' --timeout 1200000",
     "lint": "eslint . --ext .js,.ts --fix && prettier --write --ignore-unknown \"**/*\"",
     "lint-check": "eslint . --ext .js,.ts && prettier --check --ignore-unknown \"**/*\"",
-    "genprivkey": "npm run build && node 'dist/tests/testnet/util/privateKey.js'",
     "prepare": "husky install"
   },
   "lint-staged": {
@@ -26,7 +25,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "scrypt-ts": "^0.1.5-beta.10",
+    "scrypt-ts": "^0.1.5-beta.18",
     "scrypt-ts-lib": "^0.1.5"
   },
   "devDependencies": {

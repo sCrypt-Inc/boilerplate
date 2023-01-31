@@ -29,9 +29,8 @@ async function main() {
     // 2.  broadcast the transaction
     const callTx = await signAndSend(unsignedCallTx)
     console.log('CLTV contract called: ', callTx.id)
-
-    // collect the new p2pkh utxo if it exists in `callTx`
-    utxoMgr.collectUtxoFrom(callTx)
+    // callTx is a non-final tx, don't collect it here.
+    // utxoMgr.collectUtxoFrom(callTx)
 }
 
 describe('Test SmartContract `CheckLockTimeVerify` on testnet', () => {
