@@ -170,9 +170,8 @@ export class Auction extends SmartContract {
         prevTx: bsv.Transaction
     ) {
         const inputIndex = 0
-        const callTx: bsv.Transaction = new bsv.Transaction().addInputFromPrevTx(
-            prevTx
-        )
+        const callTx: bsv.Transaction =
+            new bsv.Transaction().addInputFromPrevTx(prevTx)
 
         callTx.setLockTime(timeNow)
         callTx.setInputSequence(inputIndex, 0)
