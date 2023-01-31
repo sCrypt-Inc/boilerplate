@@ -15,6 +15,8 @@ import {
 } from 'scrypt-ts'
 
 export class Auction extends SmartContract {
+    public static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
+
     // The bidders address.
     @prop(true)
     bidder: PubKeyHash
@@ -83,14 +85,15 @@ export class Auction extends SmartContract {
     // Close the auction if deadline is reached.
     @method()
     public close(sig: Sig) {
-        // Ensure nSequence is less than UINT_MAX.
-        assert(this.ctx.sequence < 4294967295n)
-
         // Check if using block height.
-        if (this.auctionDeadline < 500000000) {
+        if (this.auctionDeadline < Auction.LOCKTIME_BLOCK_HEIGHT_MARKER) {
             // Enforce nLocktime field to also use block height.
-            assert(this.ctx.locktime < 500000000)
+            assert(this.ctx.locktime < Auction.LOCKTIME_BLOCK_HEIGHT_MARKER)
         }
+        assert(
+            this.ctx.sequence < 0xffffffffn,
+            'input sequence should less than UINT_MAX'
+        )
         assert(
             this.ctx.locktime >= this.auctionDeadline,
             'auction is not over yet'

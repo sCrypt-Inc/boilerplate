@@ -1,4 +1,5 @@
 import {
+    SigHash,
     assert,
     bsv,
     hash256,
@@ -21,7 +22,7 @@ export class Counter extends SmartContract {
         this.count = count
     }
 
-    @method()
+    @method(SigHash.ANYONECANPAY_SINGLE)
     public increment() {
         // Increment counter value
         this.count++
@@ -54,10 +55,10 @@ export class Counter extends SmartContract {
         prevTx: bsv.Transaction,
         nextInst: Counter
     ): bsv.Transaction {
-        const inputIndex = 1
+        const inputIndex = 0
         return new bsv.Transaction()
-            .from(utxos)
             .addInputFromPrevTx(prevTx)
+            .from(utxos)
             .setOutput(0, (tx: bsv.Transaction) => {
                 nextInst.lockTo = { tx, outputIndex: 0 }
                 return new bsv.Transaction.Output({
@@ -65,11 +66,17 @@ export class Counter extends SmartContract {
                     satoshis: this.balance,
                 })
             })
-            .setInputScript(inputIndex, (tx: bsv.Transaction) => {
-                this.unlockFrom = { tx, inputIndex }
-                return this.getUnlockingScript((self) => {
-                    self.increment()
-                })
-            })
+            .setInputScript(
+                {
+                    inputIndex,
+                    sigtype: bsv.crypto.Signature.ANYONECANPAY_SINGLE,
+                },
+                (tx: bsv.Transaction) => {
+                    this.unlockFrom = { tx, inputIndex }
+                    return this.getUnlockingScript((self) => {
+                        self.increment()
+                    })
+                }
+            )
     }
 }

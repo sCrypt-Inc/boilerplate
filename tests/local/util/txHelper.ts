@@ -23,5 +23,6 @@ export function randomPrivateKey() {
     const privateKey = bsv.PrivateKey.fromRandom('testnet')
     const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
-    return [privateKey, publicKey, publicKeyHash] as const
+    const address = publicKey.toAddress()
+    return [privateKey, publicKey, publicKeyHash, address] as const
 }

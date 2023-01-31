@@ -69,10 +69,7 @@ export class AnyoneCanSpend extends SmartContract {
             .setInputScript(
                 {
                     inputIndex,
-                    sigtype:
-                        bsv.crypto.Signature.SIGHASH_ANYONECANPAY |
-                        bsv.crypto.Signature.SIGHASH_SINGLE |
-                        bsv.crypto.Signature.SIGHASH_FORKID,
+                    sigtype: bsv.crypto.Signature.ANYONECANPAY_SINGLE,
                 },
                 (tx) => {
                     this.unlockFrom = { tx, inputIndex }

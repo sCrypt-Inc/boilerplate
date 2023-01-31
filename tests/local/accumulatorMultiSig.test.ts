@@ -125,38 +125,38 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
         accumulatorMultiSig.unlockFrom = { tx, inputIndex }
 
         expect(() => {
-            accumulatorMultiSig.verify((self) => {
-                const sig1 = signTx(
-                    tx,
-                    privateKey1,
-                    self.lockingScript,
-                    inputSatoshis
-                )
+            const sig1 = signTx(
+                tx,
+                privateKey1,
+                accumulatorMultiSig.lockingScript,
+                inputSatoshis
+            )
 
-                const sig2 = signTx(
-                    tx,
-                    privateKeyWrong,
-                    self.lockingScript,
-                    inputSatoshis
-                )
+            const sig2 = signTx(
+                tx,
+                privateKeyWrong,
+                accumulatorMultiSig.lockingScript,
+                inputSatoshis
+            )
 
-                const sig3 = signTx(
-                    tx,
-                    privateKeyWrong,
-                    self.lockingScript,
-                    inputSatoshis
-                )
+            const sig3 = signTx(
+                tx,
+                privateKeyWrong,
+                accumulatorMultiSig.lockingScript,
+                inputSatoshis
+            )
 
-                self.main(
-                    [
-                        PubKey(toHex(publicKey1)),
-                        PubKey(toHex(publicKey2)),
-                        PubKey(toHex(publicKey3)),
-                    ],
-                    [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))],
-                    [true, false, false]
-                )
-            })
-        }).to.throw(/Execution failed/)
+            accumulatorMultiSig.main(
+                [
+                    PubKey(toHex(publicKey1)),
+                    PubKey(toHex(publicKey2)),
+                    PubKey(toHex(publicKey3)),
+                ],
+                [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))],
+                [true, false, false]
+            )
+        }).to.throw(
+            /the number of signatures does not meet the threshold limit/
+        )
     })
 })

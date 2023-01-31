@@ -1,7 +1,6 @@
 import { expect } from 'chai'
-import { bsv } from 'scrypt-ts'
 import { CheckLockTimeVerify } from '../../src/contracts/cltv'
-import { dummyUTXO, newTx } from './util/txHelper'
+import { dummyUTXO } from './util/txHelper'
 
 describe('Test SmartContract `CheckLockTimeVerify`', () => {
     before(async () => {

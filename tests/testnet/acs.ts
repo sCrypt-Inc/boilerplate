@@ -1,43 +1,48 @@
 import { AnyoneCanSpend } from '../../src/contracts/acs'
-import { getUtxoManager } from './util/utxoManager'
-import { signAndSend } from './util/txHelper'
+import {
+    inputIndex,
+    inputSatoshis,
+    outputIndex,
+    testnetDefaultSigner,
+} from './util/txHelper'
 import { bsv, Ripemd160, toHex } from 'scrypt-ts'
+import { myPublicKeyHash } from './util/privateKey'
 
 async function main() {
-    const utxoMgr = await getUtxoManager()
     await AnyoneCanSpend.compile()
+    const acs = new AnyoneCanSpend(Ripemd160(toHex(myPublicKeyHash)))
 
-    const privateKey = bsv.PrivateKey.fromRandom('testnet')
-    const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
-    const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
-
-    const acs = new AnyoneCanSpend(Ripemd160(toHex(publicKeyHash)))
+    // connect to a signer
+    acs.connect(testnetDefaultSigner)
 
     // contract deployment
-    // 1. get the available utxos for the private key
-    const utxos = await utxoMgr.getUtxos()
-    // 2. construct a transaction for deployment
-    const unsignedDeployTx = acs.getDeployTx(utxos, 1)
-    // 3. sign and broadcast the transaction
-    const deployTx = await signAndSend(unsignedDeployTx)
+    const deployTx = await acs.deploy(inputSatoshis)
     console.log('AnyoneCanSpend contract deployed: ', deployTx.id)
 
-    // collect the new p2pkh utxo
-    utxoMgr.collectUtxoFrom(deployTx)
-
     // contract call
-    // 1. construct a transaction for call
-    const unsignedCallTx = acs.getCallTx(
-        deployTx,
-        Ripemd160(toHex(publicKeyHash))
+    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
+    const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
+        .addInputFromPrevTx(deployTx)
+        .change(changeAddress)
+        .setInputScriptAsync(
+            {
+                inputIndex,
+                sigtype: bsv.crypto.Signature.ANYONECANPAY_SINGLE,
+            },
+            (tx: bsv.Transaction) => {
+                // bind contract & tx unlocking relation
+                acs.unlockFrom = { tx, inputIndex }
+                // use the cloned version because this callback may be executed multiple times during tx building process,
+                // and calling contract method may have side effects on its properties.
+                return acs.getUnlockingScript(async (cloned) => {
+                    cloned.unlock(BigInt(tx.getOutputAmount(outputIndex)))
+                })
+            }
+        )
+    const callTx = await testnetDefaultSigner.signAndsendTransaction(
+        unsignedCallTx
     )
-
-    // 2. sign and broadcast the transaction
-    const callTx = await signAndSend(unsignedCallTx)
     console.log('AnyoneCanSpend contract called: ', callTx.id)
-
-    // collect the new p2pkh utxo if it exists in `callTx`
-    utxoMgr.collectUtxoFrom(callTx)
 }
 
 describe('Test SmartContract `AnyoneCanSpend` on testnet', () => {

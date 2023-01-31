@@ -1,39 +1,60 @@
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { getUtxoManager } from './util/utxoManager'
-import { signAndSend } from './util/txHelper'
-import { bsv, Ripemd160, toHex } from 'scrypt-ts'
+import {
+    inputIndex,
+    inputSatoshis,
+    outputIndex,
+    testnetDefaultSigner,
+} from './util/txHelper'
+import { myAddress, myPublicKeyHash } from './util/privateKey'
+
+import { bsv, PubKey, Ripemd160, Sig, toHex, utxoFromOutput } from 'scrypt-ts'
 
 async function main() {
-    const utxoMgr = await getUtxoManager()
     await P2PKH.compile()
+    const p2pkh = new P2PKH(Ripemd160(toHex(myPublicKeyHash)))
 
-    const privateKey = bsv.PrivateKey.fromRandom('testnet')
-    const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
-    const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
+    // connect to a signer
+    p2pkh.connect(testnetDefaultSigner)
 
-    const p2pkh = new P2PKH(Ripemd160(toHex(publicKeyHash)))
-
-    // contract deployment
-    // 1. get the available utxos for the private key
-    const utxos = await utxoMgr.getUtxos()
-    // 2. construct a transaction for deployment
-    const unsignedDeployTx = p2pkh.getDeployTx(utxos, 1000)
-    // 3. sign and broadcast the transaction
-    const deployTx = await signAndSend(unsignedDeployTx)
+    // deploy
+    const deployTx = await p2pkh.deploy(inputSatoshis)
     console.log('P2PKH contract deployed: ', deployTx.id)
 
-    // collect the new p2pkh utxo
-    utxoMgr.collectUtxoFrom(deployTx)
+    // call
+    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
+    const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
+        .addInputFromPrevTx(deployTx)
+        .change(changeAddress)
+        .setInputScriptAsync({ inputIndex }, (tx: bsv.Transaction) => {
+            // bind contract & tx unlocking relation
+            p2pkh.unlockFrom = { tx, inputIndex }
+            // use the cloned version because this callback may be executed multiple times during tx building process,
+            // and calling contract method may have side effects on its properties.
+            return p2pkh.getUnlockingScript(async (cloned) => {
+                const spendingUtxo = utxoFromOutput(deployTx, outputIndex)
 
-    // contract call
-    // 1. construct a transaction for call
-    const unsignedCallTx = p2pkh.getCallTx(publicKey, privateKey, deployTx)
-    // 2. sign and broadcast the transaction
-    const callTx = await signAndSend(unsignedCallTx)
+                const sigResponses = await testnetDefaultSigner.getSignatures(
+                    tx.toString(),
+                    [
+                        {
+                            inputIndex,
+                            satoshis: spendingUtxo.satoshis,
+                            scriptHex: spendingUtxo.script,
+                            address: myAddress,
+                        },
+                    ]
+                )
+
+                const sigs = sigResponses.map((sigResp) => sigResp.sig)
+                const pubKeys = sigResponses.map((sigResp) => sigResp.publicKey)
+
+                cloned.unlock(Sig(sigs[0]), PubKey(pubKeys[0]))
+            })
+        })
+    const callTx = await testnetDefaultSigner.signAndsendTransaction(
+        unsignedCallTx
+    )
     console.log('P2PKH contract called: ', callTx.id)
-
-    // collect the new p2pkh utxo if it exists in `callTx`
-    utxoMgr.collectUtxoFrom(callTx)
 }
 
 describe('Test SmartContract `P2PKH` on testnet', () => {
