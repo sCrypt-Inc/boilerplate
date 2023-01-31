@@ -13,4 +13,4 @@ os:
 script:
   - npm t
   - echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
-  - if [ "$TRAVIS_EVENT_TYPE" == "cron" ]; then npm run testnet; fi
+  - if [ $TRAVIS_EVENT_TYPE == "cron" ] && [ $TRAVIS_OS_NAME == "linux" ] ; then npm run testnet; fi
