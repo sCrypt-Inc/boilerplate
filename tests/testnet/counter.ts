@@ -71,8 +71,6 @@ async function main() {
             newCounter.count
         )
 
-        utxoMgr.collectUtxoFrom(callTx)
-
         // prepare for the next iteration
         prevTx = callTx
         prevInstance = newCounter
