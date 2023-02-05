@@ -9,6 +9,7 @@ import { bsv } from 'scrypt-ts'
 async function main() {
     await CheckLockTimeVerify.compile()
 
+    // JS timestamps are in milliseconds so we divide by 1000 to get an UNIX timestamp
     const timeNow = Math.floor(Date.now() / 1000)
     const lockTimeMin = BigInt(timeNow - 10000)
     const cltv = new CheckLockTimeVerify(lockTimeMin)

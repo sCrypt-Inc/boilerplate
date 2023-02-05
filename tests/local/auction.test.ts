@@ -55,6 +55,7 @@ async function bidCallTest() {
     const changeSatoshis = payInputSatoshis - bid - FEE
 
     const oneDayAgo = new Date('2020-01-03')
+    // JS timestamps are in milliseconds so we divide by 1000 to get an UNIX timestamp
     const auctionDeadline = BigInt(Math.round(oneDayAgo.valueOf() / 1000))
 
     const auction = new Auction(

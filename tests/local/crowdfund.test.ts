@@ -19,6 +19,7 @@ describe('Test SmartContract `Crowdfund`', () => {
     it('should collect fund success', async () => {
         const oneDayAgo = new Date('2020-01-03')
 
+        // JS timestamps are in milliseconds so we divide by 1000 to get an UNIX timestamp
         const deadline = Math.round(oneDayAgo.valueOf() / 1000)
 
         const crowdfund = new Crowdfund(
