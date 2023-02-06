@@ -49,27 +49,6 @@ to run a specific contracts tests.
 
 ## Debug Smart Contract Code
 
-In order to debug smart contract code in VS Code, you can simply add a debug config to your `launch.json` (located in `.vscode/`):
+In order to debug smart contract code in VS Code, you need to configure `launch.json` (located under `.vscode/`). This repository already has an example configuration for the `Demo` smart contract.
 
-```json
-{
-  "type": "node",
-  "request": "launch",
-  "name": "Launch <contract_name>",
-  "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-  "resolveSourceMapLocations": ["!**/node_modules/**"],
-  "program": "${workspaceRoot}/node_modules/.bin/_mocha",
-  "args": [
-    "${workspaceRoot}/dist/tests/**/<contract_name>.test.js",
-    "--colors",
-    "-t",
-    "100000"
-  ],
-  "preLaunchTask": "tsc: build - tsconfig.json",
-  "outFiles": []
-}
-```
-
-Make sure to substitute `<contract_name>` with the actual contract name.
-
-Once saved, you will have a new option under the debug menu.
+See the [docs](https://scrypt.io/scrypt-ts/getting-started/how-to-debug-a-contract/#use-visual-studio-code-debugger) for more information on how to use the debugger.
