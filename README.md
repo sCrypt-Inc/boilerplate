@@ -45,7 +45,7 @@ to run all defined testnet tests, or:
 npm run build && npx mocha 'dist/tests/testnet/<contract_name>.js'
 ```
 
-to run a specific contracts tests.
+to run a specific contract test.
 
 ## Debug Smart Contract Code
 
