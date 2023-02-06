@@ -13,14 +13,14 @@ async function main() {
     const acs = new AnyoneCanSpend(Ripemd160(toHex(myPublicKeyHash)))
 
     // connect to a signer
-    acs.connect(testnetDefaultSigner)
+    await acs.connect(await testnetDefaultSigner)
 
     // contract deployment
     const deployTx = await acs.deploy(inputSatoshis)
     console.log('AnyoneCanSpend contract deployed: ', deployTx.id)
 
     // contract call
-    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
+    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
     const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
         .addInputFromPrevTx(deployTx)
         .change(changeAddress)
@@ -39,9 +39,9 @@ async function main() {
                 })
             }
         )
-    const callTx = await testnetDefaultSigner.signAndsendTransaction(
-        unsignedCallTx
-    )
+    const callTx = await (
+        await testnetDefaultSigner
+    ).signAndsendTransaction(unsignedCallTx)
     console.log('AnyoneCanSpend contract called: ', callTx.id)
 }
 

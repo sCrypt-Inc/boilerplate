@@ -1,6 +1,6 @@
 import { expect } from 'chai'
-import { utf8ToByteString } from 'scrypt-ts'
-import { HelloWorld } from '../../src/contracts/helloworld'
+import { toByteString } from 'scrypt-ts'
+import { HelloWorld } from '../../src/contracts/helloWorld'
 
 describe('Test SmartContract `HelloWorld`', () => {
     before(async () => {
@@ -10,7 +10,7 @@ describe('Test SmartContract `HelloWorld`', () => {
     it('should pass the public method unit test successfully.', async () => {
         const helloWorld = new HelloWorld()
         const result = helloWorld.verify(() =>
-            helloWorld.unlock(utf8ToByteString('hello world'))
+            helloWorld.unlock(toByteString('hello world', true))
         )
         expect(result.success, result.error).to.eq(true)
     })

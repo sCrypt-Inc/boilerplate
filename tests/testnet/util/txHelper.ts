@@ -91,7 +91,7 @@ export function randomPrivateKey() {
     return [privateKey, publicKey, publicKeyHash, address] as const
 }
 
-export function getTestnetSigner(
+export async function getTestnetSigner(
     privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
 ) {
     return new TestWallet(privateKey || myPrivateKey).connect(

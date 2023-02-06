@@ -11,14 +11,14 @@ async function main() {
     const ackermann = new Ackermann(2n, 1n)
 
     // connect to a signer
-    ackermann.connect(testnetDefaultSigner)
+    await ackermann.connect(await testnetDefaultSigner)
 
     // contract deploy
     const deployTx = await ackermann.deploy(inputSatoshis)
     console.log('Ackermann contract deployed: ', deployTx.id)
 
     // contract call
-    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
+    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
     const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
         .addInputFromPrevTx(deployTx)
         .change(changeAddress)
@@ -31,9 +31,9 @@ async function main() {
                 cloned.unlock(5n)
             })
         })
-    const callTx = await testnetDefaultSigner.signAndsendTransaction(
-        unsignedCallTx
-    )
+    const callTx = await (
+        await testnetDefaultSigner
+    ).signAndsendTransaction(unsignedCallTx)
     console.log('Ackermann contract called: ', callTx.id)
 }
 

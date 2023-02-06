@@ -2,12 +2,12 @@ import {
     assert,
     bsv,
     ByteString,
-    int2str,
+    int2ByteString,
     len,
     method,
     prop,
     SmartContract,
-    unpack,
+    byteString2Int,
     UTXO,
 } from 'scrypt-ts'
 
@@ -31,12 +31,12 @@ export class Ackermann extends SmartContract {
 
     @method()
     ackermann(m: bigint, n: bigint): bigint {
-        let stk: ByteString = int2str(m, 1n)
+        let stk: ByteString = int2ByteString(m, 1n)
 
         for (let i = 0; i < Ackermann.LOOP_COUNT; i++) {
             if (len(stk) > 0) {
                 const top: ByteString = stk.slice(0, 2)
-                m = unpack(top)
+                m = byteString2Int(top)
 
                 // pop
                 stk = stk.slice(2, len(stk) * 2)
@@ -47,10 +47,10 @@ export class Ackermann extends SmartContract {
                     n++
                     m--
                     // push
-                    stk = int2str(m, 1n) + stk
+                    stk = int2ByteString(m, 1n) + stk
                 } else {
-                    stk = int2str(m - 1n, 1n) + stk
-                    stk = int2str(m, 1n) + stk
+                    stk = int2ByteString(m - 1n, 1n) + stk
+                    stk = int2ByteString(m, 1n) + stk
                     n--
                 }
             }

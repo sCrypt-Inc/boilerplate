@@ -33,7 +33,7 @@ async function main() {
     const publicKeyHashHighestBidder = myPublicKeyHash
     const publicKeyHashNewBidder = myPublicKeyHash
     const auctionDeadline = BigInt(
-        // JS timestamps are in milliseconds so we divide by 1000 to get an UNIX timestamp
+        // JS timestamps are in milliseconds, so we divide by 1000 to get an UNIX timestamp
         Math.round(new Date('2020-01-03').valueOf() / 1000)
     )
     const timeNow = Math.floor(Date.now() / 1000)
@@ -44,8 +44,8 @@ async function main() {
         auctionDeadline
     ).markAsGenesis()
 
-    const signer = getTestnetSigner(privateKeyAuctioneer)
-    auction.connect(signer)
+    const signer = await getTestnetSigner(privateKeyAuctioneer)
+    await auction.connect(signer)
 
     const highestBid = 1000
     const newBid = highestBid * 2
@@ -100,9 +100,9 @@ async function main() {
                 )
             })
         })
-    const bidTx = await testnetDefaultSigner.signAndsendTransaction(
-        unsignedCallBidTx
-    )
+    const bidTx = await (
+        await testnetDefaultSigner
+    ).signAndsendTransaction(unsignedCallBidTx)
     console.log('Bid Tx: ', bidTx.id)
 
     // contract call `close`
@@ -122,25 +122,24 @@ async function main() {
             return newInstance.getUnlockingScript(async (cloned) => {
                 const spendingUtxo = utxoFromOutput(bidTx, outputIndex)
 
-                const sigResponses = await testnetDefaultSigner.getSignatures(
-                    tx.toString(),
-                    [
-                        {
-                            inputIndex,
-                            satoshis: spendingUtxo.satoshis,
-                            scriptHex: spendingUtxo.script,
-                            address: addressAuctioneer,
-                        },
-                    ]
-                )
+                const sigResponses = await (
+                    await testnetDefaultSigner
+                ).getSignatures(tx.toString(), [
+                    {
+                        inputIndex,
+                        satoshis: spendingUtxo.satoshis,
+                        scriptHex: spendingUtxo.script,
+                        address: addressAuctioneer,
+                    },
+                ])
 
                 const sigs = sigResponses.map((sigResp) => sigResp.sig)
                 cloned.close(Sig(sigs[0]))
             })
         })
-    const closeTx = await testnetDefaultSigner.signAndsendTransaction(
-        unsignedCallCloseTx
-    )
+    const closeTx = await (
+        await testnetDefaultSigner
+    ).signAndsendTransaction(unsignedCallCloseTx)
     console.log('Close Tx: ', closeTx.id)
 }
 

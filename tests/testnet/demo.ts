@@ -11,14 +11,14 @@ async function main() {
     const demo = new Demo(1n, 2n)
 
     // connect to a signer
-    demo.connect(testnetDefaultSigner)
+    await demo.connect(await testnetDefaultSigner)
 
     // contract deployment
     const deployTx = await demo.deploy(inputSatoshis)
     console.log('Demo contract deployed: ', deployTx.id)
 
     // contract call
-    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
+    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
     const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
         .addInputFromPrevTx(deployTx)
         .change(changeAddress)
@@ -31,9 +31,9 @@ async function main() {
                 cloned.add(3n)
             })
         })
-    const callTx = await testnetDefaultSigner.signAndsendTransaction(
-        unsignedCallTx
-    )
+    const callTx = await (
+        await testnetDefaultSigner
+    ).signAndsendTransaction(unsignedCallTx)
     console.log('Demo contract `add` called: ', callTx.id)
 }
 

@@ -15,13 +15,13 @@ async function main() {
     const counter = new Counter(0n).markAsGenesis()
 
     // connect to a signer
-    counter.connect(testnetDefaultSigner)
+    counter.connect(await testnetDefaultSigner)
 
     // contract deployment
     const deployTx = await counter.deploy(1000)
     console.log('Counter deploy tx:', deployTx.id)
 
-    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
+    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
     let prevTx = deployTx
     let prevInstance = counter
     // calling contract multiple times
@@ -61,9 +61,9 @@ async function main() {
                     })
                 }
             )
-        const callTx = await testnetDefaultSigner.signAndsendTransaction(
-            unsignedCallTx
-        )
+        const callTx = await (
+            await testnetDefaultSigner
+        ).signAndsendTransaction(unsignedCallTx)
         console.log(
             'Counter call tx: ',
             callTx.id,

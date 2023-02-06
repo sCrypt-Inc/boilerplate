@@ -3,7 +3,7 @@ import {
     ByteString,
     method,
     SmartContract,
-    utf8ToByteString,
+    toByteString,
 } from 'scrypt-ts'
 
 export class HelloWorld extends SmartContract {
@@ -11,7 +11,7 @@ export class HelloWorld extends SmartContract {
     @method()
     public unlock(message: ByteString) {
         assert(
-            message === utf8ToByteString('hello world'),
+            message === toByteString('hello world', true),
             'Not expected message!'
         )
     }

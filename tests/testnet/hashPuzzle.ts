@@ -13,14 +13,14 @@ async function main() {
     const sha256Data = sha256(data)
     const hashPuzzle = new HashPuzzle(Sha256(sha256Data))
 
-    hashPuzzle.connect(testnetDefaultSigner)
+    await hashPuzzle.connect(await testnetDefaultSigner)
 
     // contract deployment
     const deployTx = await hashPuzzle.deploy(inputSatoshis)
     console.log('HashPuzzle contract deployed: ', deployTx.id)
 
     // contract call
-    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
+    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
     const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
         .addInputFromPrevTx(deployTx)
         .change(changeAddress)
@@ -33,9 +33,9 @@ async function main() {
                 cloned.unlock(data)
             })
         })
-    const callTx = await testnetDefaultSigner.signAndsendTransaction(
-        unsignedCallTx
-    )
+    const callTx = await (
+        await testnetDefaultSigner
+    ).signAndsendTransaction(unsignedCallTx)
     console.log('HashPuzzle contract called: ', callTx.id)
 }
 

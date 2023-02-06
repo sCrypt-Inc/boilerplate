@@ -15,14 +15,14 @@ async function main() {
     const cltv = new CheckLockTimeVerify(lockTimeMin)
 
     // connect to a signer
-    cltv.connect(testnetDefaultSigner)
+    await cltv.connect(await testnetDefaultSigner)
 
     // contract deployment
     const deployTx = await cltv.deploy(inputSatoshis)
     console.log('CLTV contract deployed: ', deployTx.id)
 
     // contract call
-    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
+    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
     const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
         .addInputFromPrevTx(deployTx)
         .change(changeAddress)
@@ -38,9 +38,9 @@ async function main() {
                 cloned.unlock()
             })
         })
-    const callTx = await testnetDefaultSigner.signAndsendTransaction(
-        unsignedCallTx
-    )
+    const callTx = await (
+        await testnetDefaultSigner
+    ).signAndsendTransaction(unsignedCallTx)
     console.log('CLTV contract called: ', callTx.id)
 }
 

@@ -14,14 +14,14 @@ async function main() {
     const p2pkh = new P2PKH(Ripemd160(toHex(myPublicKeyHash)))
 
     // connect to a signer
-    p2pkh.connect(testnetDefaultSigner)
+    await p2pkh.connect(await testnetDefaultSigner)
 
     // deploy
     const deployTx = await p2pkh.deploy(inputSatoshis)
     console.log('P2PKH contract deployed: ', deployTx.id)
 
     // call
-    const changeAddress = await testnetDefaultSigner.getDefaultAddress()
+    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
     const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
         .addInputFromPrevTx(deployTx)
         .change(changeAddress)
@@ -33,17 +33,16 @@ async function main() {
             return p2pkh.getUnlockingScript(async (cloned) => {
                 const spendingUtxo = utxoFromOutput(deployTx, outputIndex)
 
-                const sigResponses = await testnetDefaultSigner.getSignatures(
-                    tx.toString(),
-                    [
-                        {
-                            inputIndex,
-                            satoshis: spendingUtxo.satoshis,
-                            scriptHex: spendingUtxo.script,
-                            address: myAddress,
-                        },
-                    ]
-                )
+                const sigResponses = await (
+                    await testnetDefaultSigner
+                ).getSignatures(tx.toString(), [
+                    {
+                        inputIndex,
+                        satoshis: spendingUtxo.satoshis,
+                        scriptHex: spendingUtxo.script,
+                        address: myAddress,
+                    },
+                ])
 
                 const sigs = sigResponses.map((sigResp) => sigResp.sig)
                 const pubKeys = sigResponses.map((sigResp) => sigResp.publicKey)
@@ -51,9 +50,9 @@ async function main() {
                 cloned.unlock(Sig(sigs[0]), PubKey(pubKeys[0]))
             })
         })
-    const callTx = await testnetDefaultSigner.signAndsendTransaction(
-        unsignedCallTx
-    )
+    const callTx = await (
+        await testnetDefaultSigner
+    ).signAndsendTransaction(unsignedCallTx)
     console.log('P2PKH contract called: ', callTx.id)
 }
 

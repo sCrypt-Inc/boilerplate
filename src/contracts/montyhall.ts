@@ -10,7 +10,7 @@ import {
     Sha256,
     SmartContract,
     Utils,
-    unpack,
+    byteString2Int,
     sha256,
     hash160,
 } from 'scrypt-ts'
@@ -135,7 +135,7 @@ export class MontyHall extends SmartContract {
     // if last bit is set, it is a car; otherwise, a goat
     @method()
     isCar(behindDoor: ByteString): boolean {
-        return unpack(behindDoor) % 2n == 1n
+        return byteString2Int(behindDoor) % 2n == 1n
     }
 
     // find the remaining unopened door

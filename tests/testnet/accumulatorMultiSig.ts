@@ -21,7 +21,7 @@ async function main() {
         Ripemd160(toHex(publicKeyHash3)),
     ])
 
-    const signer = getTestnetSigner([
+    const signer = await getTestnetSigner([
         myPrivateKey,
         privateKey1,
         privateKey2,
@@ -29,7 +29,7 @@ async function main() {
     ])
 
     // connect to a signer
-    accumulatorMultiSig.connect(signer)
+    await accumulatorMultiSig.connect(signer)
 
     // deploy
     const deployTx = await accumulatorMultiSig.deploy(inputSatoshis)
