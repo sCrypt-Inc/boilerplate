@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Sha256, sha256, toHex } from 'scrypt-ts'
-import { HashPuzzle } from '../../src/contracts/hashpuzzle'
+import { HashPuzzle } from '../../src/contracts/hashPuzzle'
 
 const data = toHex(Buffer.from('abc'))
 const sha256Data = sha256(data)

@@ -1,4 +1,4 @@
-import { HashPuzzle } from '../../src/contracts/hashpuzzle'
+import { HashPuzzle } from '../../src/contracts/hashPuzzle'
 import {
     inputIndex,
     inputSatoshis,
