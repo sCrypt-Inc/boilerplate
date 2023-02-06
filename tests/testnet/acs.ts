@@ -46,7 +46,7 @@ async function main() {
 }
 
 describe('Test SmartContract `AnyoneCanSpend` on testnet', () => {
-    it('should success', async () => {
+    it('should succeed', async () => {
         await main()
     })
 })

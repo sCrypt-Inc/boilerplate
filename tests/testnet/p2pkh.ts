@@ -57,7 +57,7 @@ async function main() {
 }
 
 describe('Test SmartContract `P2PKH` on testnet', () => {
-    it('should success', async () => {
+    it('should succeed', async () => {
         await main()
     })
 })
