@@ -141,8 +141,8 @@ library BN256 {
 
     static function mulXiFQ2(FQ2 a) : FQ2 {
         // (xi+y)(i+3) = (9x+y)i+(9y-x)
-        FQ tx = (a.x << 3) + a.x + a.y;
-        FQ ty = (a.y << 3) + a.y - a.x;
+        FQ tx = 9 * a.x + a.y;
+        FQ ty = 9 * a.y - a.x;
         return {modReduce(tx, P), modReduce(ty, P)};
     }
 
