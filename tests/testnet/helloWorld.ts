@@ -24,7 +24,7 @@ async function main() {
         .change(changeAddress)
         .setInputScriptAsync({ inputIndex }, (tx: bsv.Transaction) => {
             // bind contract & tx unlocking relation
-            helloworld.unlockFrom = { tx, inputIndex }
+            helloworld.to = { tx, inputIndex }
             // use the cloned version because this callback may be executed multiple times during tx building process,
             // and calling contract method may have side effects on its properties.
             return helloworld.getUnlockingScript(async (cloned) => {

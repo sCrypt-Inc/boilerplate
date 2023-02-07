@@ -45,7 +45,7 @@ export class Counter extends SmartContract {
                 satoshis: initBalance,
             })
         )
-        this.lockTo = { tx, outputIndex: 0 }
+        this.from = { tx, outputIndex: 0 }
         return tx
     }
 
@@ -60,7 +60,7 @@ export class Counter extends SmartContract {
             .addInputFromPrevTx(prevTx)
             .from(utxos)
             .setOutput(0, (tx: bsv.Transaction) => {
-                nextInst.lockTo = { tx, outputIndex: 0 }
+                nextInst.from = { tx, outputIndex: 0 }
                 return new bsv.Transaction.Output({
                     script: nextInst.lockingScript,
                     satoshis: this.balance,
@@ -72,7 +72,7 @@ export class Counter extends SmartContract {
                     sigtype: bsv.crypto.Signature.ANYONECANPAY_SINGLE,
                 },
                 (tx: bsv.Transaction) => {
-                    this.unlockFrom = { tx, inputIndex }
+                    this.to = { tx, inputIndex }
                     return this.getUnlockingScript((self) => {
                         self.increment()
                     })

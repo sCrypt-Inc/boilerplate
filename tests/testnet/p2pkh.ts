@@ -27,7 +27,7 @@ async function main() {
         .change(changeAddress)
         .setInputScriptAsync({ inputIndex }, (tx: bsv.Transaction) => {
             // bind contract & tx unlocking relation
-            p2pkh.unlockFrom = { tx, inputIndex }
+            p2pkh.to = { tx, inputIndex }
             // use the cloned version because this callback may be executed multiple times during tx building process,
             // and calling contract method may have side effects on its properties.
             return p2pkh.getUnlockingScript(async (cloned) => {

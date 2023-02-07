@@ -82,7 +82,7 @@ export class Crowdfund extends SmartContract {
                 satoshis: initBalance,
             })
         )
-        this.lockTo = { tx, outputIndex: 0 }
+        this.from = { tx, outputIndex: 0 }
         return tx
     }
 
@@ -102,7 +102,7 @@ export class Crowdfund extends SmartContract {
                 })
             })
             .setInputScript(inputIndex, (tx: bsv.Transaction) => {
-                this.unlockFrom = { tx, inputIndex }
+                this.to = { tx, inputIndex }
                 return this.getUnlockingScript((self) => {
                     self.collect(raisedAmount)
                 })
@@ -135,7 +135,7 @@ export class Crowdfund extends SmartContract {
                     privateKey,
                 },
                 (tx: bsv.Transaction) => {
-                    this.unlockFrom = { tx, inputIndex }
+                    this.to = { tx, inputIndex }
                     return this.getUnlockingScript((self) => {
                         self.refund(Sig(tx.getSignature(0) as string))
                     })

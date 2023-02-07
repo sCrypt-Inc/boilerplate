@@ -46,7 +46,7 @@ export class AnyoneCanSpend extends SmartContract {
                 satoshis: initBalance,
             })
         )
-        this.lockTo = { tx, outputIndex: 0 }
+        this.from = { tx, outputIndex: 0 }
         return tx
     }
 
@@ -72,7 +72,7 @@ export class AnyoneCanSpend extends SmartContract {
                     sigtype: bsv.crypto.Signature.ANYONECANPAY_SINGLE,
                 },
                 (tx) => {
-                    this.unlockFrom = { tx, inputIndex }
+                    this.to = { tx, inputIndex }
                     return this.getUnlockingScript((self) => {
                         self.unlock(BigInt(tx.getOutputAmount(0)))
                     })

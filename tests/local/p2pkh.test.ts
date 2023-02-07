@@ -17,7 +17,7 @@ describe('Test SmartContract `P2PKH`', () => {
     it('should pass if use right privateKey', async () => {
         const tx = newTx()
         const demo = new P2PKH(PubKeyHash(toHex(pkh)))
-        demo.unlockFrom = { tx, inputIndex }
+        demo.to = { tx, inputIndex }
 
         const result = demo.verify(() => {
             const sig = signTx(
@@ -45,7 +45,7 @@ describe('Test SmartContract `P2PKH`', () => {
     it('should fail if use wrong privateKey', async () => {
         const tx = newTx()
         const demo = new P2PKH(PubKeyHash(toHex(pkh)))
-        demo.unlockFrom = { tx, inputIndex }
+        demo.to = { tx, inputIndex }
 
         expect(() => {
             demo.verify(() => {

@@ -55,7 +55,7 @@ export class CheckLockTimeVerify extends SmartContract {
         callTx = callTx.setInputScript(inputIndex, (tx: bsv.Transaction) => {
             return this.getUnlockingScript((cloned) => {
                 // Call cloned contract's public method to get the unlocking script.
-                cloned.unlockFrom = { tx, inputIndex }
+                cloned.to = { tx, inputIndex }
                 cloned.ctx.locktime = BigInt(timeNow)
                 cloned.ctx.sequence = 0n
                 cloned.unlock()

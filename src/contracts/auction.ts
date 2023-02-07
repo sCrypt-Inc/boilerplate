@@ -111,7 +111,7 @@ export class Auction extends SmartContract {
                 satoshis: initBalance,
             })
         )
-        this.lockTo = { tx, outputIndex: 0 }
+        this.from = { tx, outputIndex: 0 }
         return tx
     }
 
@@ -128,21 +128,21 @@ export class Auction extends SmartContract {
             .addInputFromPrevTx(prevTx)
             .from(utxos)
             .setOutput(0, (tx: bsv.Transaction) => {
-                nextInst.lockTo = { tx, outputIndex: 0 }
+                nextInst.from = { tx, outputIndex: 0 }
                 return new bsv.Transaction.Output({
                     script: nextInst.lockingScript,
                     satoshis: bid,
                 })
             })
             .setOutput(1, (tx: bsv.Transaction) => {
-                nextInst.lockTo = { tx, outputIndex: 0 }
+                nextInst.from = { tx, outputIndex: 0 }
                 return new bsv.Transaction.Output({
                     script: buildPublicKeyHashScript(this.bidder),
                     satoshis: tx.getInputAmount(inputIndex),
                 })
             })
             .setOutput(2, (tx: bsv.Transaction) => {
-                nextInst.lockTo = { tx, outputIndex: 0 }
+                nextInst.from = { tx, outputIndex: 0 }
                 return new bsv.Transaction.Output({
                     script: buildPublicKeyHashScript(bidder),
                     satoshis:
@@ -154,7 +154,7 @@ export class Auction extends SmartContract {
                     inputIndex,
                 },
                 (tx: bsv.Transaction) => {
-                    this.unlockFrom = { tx, inputIndex }
+                    this.to = { tx, inputIndex }
                     return this.getUnlockingScript((self) => {
                         self.bid(
                             bidder,
@@ -187,7 +187,7 @@ export class Auction extends SmartContract {
                 },
                 (tx) => {
                     const sig = tx.getSignature(inputIndex)
-                    this.unlockFrom = { tx, inputIndex }
+                    this.to = { tx, inputIndex }
                     return this.getUnlockingScript((self) => {
                         self.close(Sig(sig as string))
                     })

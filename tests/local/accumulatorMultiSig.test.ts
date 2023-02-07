@@ -28,7 +28,7 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
 
         const tx = newTx()
 
-        accumulatorMultiSig.unlockFrom = { tx, inputIndex }
+        accumulatorMultiSig.to = { tx, inputIndex }
 
         const result = accumulatorMultiSig.verify((self) => {
             const sig1 = signTx(
@@ -75,7 +75,7 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
 
         const tx = newTx()
 
-        accumulatorMultiSig.unlockFrom = { tx, inputIndex }
+        accumulatorMultiSig.to = { tx, inputIndex }
 
         const result = accumulatorMultiSig.verify((self) => {
             const sig1 = signTx(
@@ -122,7 +122,7 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
 
         const tx = newTx()
 
-        accumulatorMultiSig.unlockFrom = { tx, inputIndex }
+        accumulatorMultiSig.to = { tx, inputIndex }
 
         expect(() => {
             const sig1 = signTx(

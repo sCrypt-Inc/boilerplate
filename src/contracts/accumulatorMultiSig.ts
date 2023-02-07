@@ -65,7 +65,7 @@ export class AccumulatorMultiSig extends SmartContract {
                 satoshis: initBalance,
             })
         )
-        this.lockTo = { tx, outputIndex: 0 }
+        this.from = { tx, outputIndex: 0 }
         return tx
     }
 
@@ -83,7 +83,7 @@ export class AccumulatorMultiSig extends SmartContract {
             },
             (tx) => {
                 const sigs = tx.getSignature(inputIndex)
-                this.unlockFrom = { tx, inputIndex }
+                this.to = { tx, inputIndex }
                 return this.getUnlockingScript((self) => {
                     self.main(
                         [

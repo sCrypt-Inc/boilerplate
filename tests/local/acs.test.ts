@@ -54,7 +54,7 @@ describe('Test SmartContract `AnyoneCanSpend`', () => {
                     // and calling contract method may have side effects on its properties.
                     return anyoneCanSpend.getUnlockingScript((cloned) => {
                         // call previous counter's public method to get the unlocking script.
-                        cloned.unlockFrom = { tx, inputIndex }
+                        cloned.to = { tx, inputIndex }
                         cloned.unlock(1n)
                     })
                 }

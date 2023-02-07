@@ -69,7 +69,7 @@ async function main() {
         .from(await fetchUtxos())
         // contract new state output
         .setOutput(outputIndex, (tx: bsv.Transaction) => {
-            newInstance.lockTo = { tx, outputIndex }
+            newInstance.from = { tx, outputIndex }
             return new bsv.Transaction.Output({
                 script: newInstance.lockingScript,
                 satoshis: newBid, // continues with a higher bid
@@ -88,7 +88,7 @@ async function main() {
         .change(changeAddress)
         .setInputScriptAsync(inputIndex, (tx: bsv.Transaction) => {
             // bind contract & tx unlocking relation
-            auction.unlockFrom = { tx, inputIndex }
+            auction.to = { tx, inputIndex }
 
             // use the cloned version because this callback may be executed multiple times during tx building process,
             // and calling contract method may have side effects on its properties.
@@ -115,7 +115,7 @@ async function main() {
         .setLockTime(timeNow)
         .setInputScriptAsync(inputIndex, (tx: bsv.Transaction) => {
             // bind contract & tx unlocking relation
-            newInstance.unlockFrom = { tx, inputIndex }
+            newInstance.to = { tx, inputIndex }
 
             // use the cloned version because this callback may be executed multiple times during tx building process,
             // and calling contract method may have side effects on its properties.

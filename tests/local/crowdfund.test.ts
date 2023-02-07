@@ -41,7 +41,7 @@ describe('Test SmartContract `Crowdfund`', () => {
             raisedAmount
         )
 
-        crowdfund.unlockFrom = { tx: callTx, inputIndex }
+        crowdfund.to = { tx: callTx, inputIndex }
         const result = crowdfund.verify((self) => {
             self.collect(raisedAmount)
         })
@@ -101,7 +101,7 @@ describe('Test SmartContract `Crowdfund`', () => {
             today
         )
 
-        crowdfund.unlockFrom = { tx: callTx, inputIndex }
+        crowdfund.to = { tx: callTx, inputIndex }
         const result = crowdfund.verify((self) => {
             self.refund(Sig(callTx.getSignature(0) as string))
         })

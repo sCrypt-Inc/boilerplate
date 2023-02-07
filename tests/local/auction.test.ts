@@ -100,7 +100,7 @@ async function bidCallTest() {
             // and calling contract method may have side effects on its properties.
             return auction.getUnlockingScript((cloned) => {
                 // call previous counter's public method to get the unlocking script.
-                cloned.unlockFrom = { tx, inputIndex }
+                cloned.to = { tx, inputIndex }
                 cloned.bid(
                     PubKeyHash(toHex(publicKeyHashNewBid)),
                     BigInt(bid),

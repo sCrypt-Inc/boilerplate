@@ -38,7 +38,7 @@ async function main() {
             .addInputFromPrevTx(prevTx)
             .from(await fetchUtxos())
             .setOutput(outputIndex, (tx: bsv.Transaction) => {
-                newCounter.lockTo = { tx, outputIndex }
+                newCounter.from = { tx, outputIndex }
                 return new bsv.Transaction.Output({
                     script: newCounter.lockingScript,
                     satoshis: tx.getInputAmount(inputIndex),
@@ -52,7 +52,7 @@ async function main() {
                 },
                 (tx: bsv.Transaction) => {
                     // bind contract & tx unlocking relation
-                    prevInstance.unlockFrom = { tx, inputIndex }
+                    prevInstance.to = { tx, inputIndex }
 
                     // use the cloned version because this callback may be executed multiple times during tx building process,
                     // and calling contract method may have side effects on its properties.

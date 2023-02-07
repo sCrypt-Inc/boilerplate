@@ -41,7 +41,7 @@ export class P2PKH extends SmartContract {
                 satoshis: initBalance,
             })
         )
-        this.lockTo = { tx, outputIndex: 0 }
+        this.from = { tx, outputIndex: 0 }
         return tx
     }
 
@@ -59,7 +59,7 @@ export class P2PKH extends SmartContract {
             },
             (tx) => {
                 const sig = tx.getSignature(inputIndex)
-                this.unlockFrom = { tx, inputIndex }
+                this.to = { tx, inputIndex }
                 return this.getUnlockingScript((self) => {
                     self.unlock(Sig(sig as string), PubKey(toHex(pubKey)))
                 })

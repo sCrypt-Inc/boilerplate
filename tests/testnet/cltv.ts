@@ -30,7 +30,7 @@ async function main() {
         .setInputSequence(inputIndex, 0)
         .setInputScriptAsync({ inputIndex }, (tx: bsv.Transaction) => {
             // bind contract & tx unlocking relation
-            cltv.unlockFrom = { tx, inputIndex }
+            cltv.to = { tx, inputIndex }
 
             // use the cloned version because this callback may be executed multiple times during tx building process,
             // and calling contract method may have side effects on its properties.
