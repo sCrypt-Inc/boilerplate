@@ -179,6 +179,8 @@ export class Auction extends SmartContract {
         callTx.setLockTime(timeNow)
         callTx.setInputSequence(inputIndex, 0)
 
+        const amount = this.from.tx.outputs[this.from.outputIndex].satoshis
+
         return callTx
             .setInputScript(
                 {
@@ -198,7 +200,7 @@ export class Auction extends SmartContract {
                     script: bsv.Script.buildPublicKeyHashOut(
                         privateKey.toPublicKey()
                     ),
-                    satoshis: Number(this.ctx.utxo.value),
+                    satoshis: amount,
                 })
             )
     }
