@@ -9,7 +9,7 @@
     "clean": "rimraf scrypt.index.json && rimraf dist && rimraf scrypts",
     "pretest": "npm run build",
     "test": "mocha 'dist/tests/**/*.test.js' --timeout 1200000",
-    "testnet": "npm run build && mocha 'dist/tests/testnet/**/hashedMapState.js' --timeout 1200000",
+    "testnet": "npm run build && mocha 'dist/tests/testnet/**/*.js' --timeout 1200000",
     "lint": "eslint . --ext .js,.ts --fix && prettier --write --ignore-unknown \"**/*\"",
     "lint-check": "eslint . --ext .js,.ts && prettier --check --ignore-unknown \"**/*\"",
     "prepare": "husky install",
@@ -27,7 +27,7 @@
   "license": "MIT",
   "dependencies": {
     "scrypt-ts": "beta",
-    "scrypt-ts-lib": "^0.1.5"
+    "scrypt-ts-lib": "^0.1.8"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",
