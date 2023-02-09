@@ -5,6 +5,7 @@ import {
     hash256,
     method,
     prop,
+    ByteString,
     SmartContract,
     UTXO,
 } from 'scrypt-ts'
@@ -27,13 +28,12 @@ export class Counter extends SmartContract {
         // Increment counter value
         this.count++
 
-        // Ensure next output will contain the updated counter value.
-        // I.e. actual output hash matches the one in the tx context.
-        assert(
-            this.ctx.hashOutputs ==
-                hash256(this.buildStateOutput(this.ctx.utxo.value)),
-            'hashOutputs check failed'
-        )
+        // make sure balance in the contract does not change
+        const amount: bigint = this.ctx.utxo.value
+        // output containing the latest state
+        const output: ByteString = this.buildStateOutput(amount)
+        // verify current tx has this single output
+        assert(this.ctx.hashOutputs == hash256(output), 'hashOutputs mismatch')
     }
 
     // Local method to construct deployment TX.
