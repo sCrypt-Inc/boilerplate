@@ -20,11 +20,11 @@ export class AccumulatorMultiSig extends SmartContract {
 
     // Threshold of the signatures needed.
     @prop()
-    threshold: bigint
+    readonly threshold: bigint
 
     // Addresses.
     @prop()
-    pubKeyHashes: FixedArray<Ripemd160, 3>
+    readonly pubKeyHashes: FixedArray<Ripemd160, 3>
 
     constructor(threshold: bigint, pubKeyHashes: FixedArray<Ripemd160, 3>) {
         super(...arguments)

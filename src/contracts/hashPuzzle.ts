@@ -12,7 +12,7 @@ import {
 
 export class HashPuzzle extends SmartContract {
     @prop()
-    sha256: Sha256
+    readonly sha256: Sha256
 
     constructor(sha256: Sha256) {
         super(...arguments)

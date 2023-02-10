@@ -23,11 +23,11 @@ export class Auction extends SmartContract {
 
     // The auctioneers public key.
     @prop()
-    auctioneer: PubKey
+    readonly auctioneer: PubKey
 
     // Deadline of the auction. Can be block height or timestamp.
     @prop()
-    auctionDeadline: bigint
+    readonly auctionDeadline: bigint
 
     constructor(
         bidder: PubKeyHash,

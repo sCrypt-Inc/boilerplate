@@ -19,10 +19,10 @@ import {
 // https://xiaohuiliu.medium.com/the-monty-hall-problem-on-bitcoin-1f9be62b38e8
 export class MontyHall extends SmartContract {
     @prop()
-    player: PubKey
+    readonly player: PubKey
 
     @prop()
-    host: PubKey
+    readonly host: PubKey
 
     @prop(true)
     step: bigint

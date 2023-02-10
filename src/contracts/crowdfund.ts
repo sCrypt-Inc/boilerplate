@@ -15,16 +15,16 @@ import {
 
 export class Crowdfund extends SmartContract {
     @prop()
-    recipient: PubKeyHash
+    readonly recipient: PubKeyHash
 
     @prop()
-    contributor: PubKey
+    readonly contributor: PubKey
 
     @prop()
-    deadline: bigint
+    readonly deadline: bigint
 
     @prop()
-    target: bigint
+    readonly target: bigint
 
     constructor(
         recipient: PubKeyHash,

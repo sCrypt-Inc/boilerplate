@@ -16,7 +16,7 @@ import {
 export class AnyoneCanSpend extends SmartContract {
     // Address of the recipient.
     @prop()
-    pubKeyHash: PubKeyHash
+    readonly pubKeyHash: PubKeyHash
 
     constructor(pubKeyHash: PubKeyHash) {
         super(...arguments)

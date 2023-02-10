@@ -19,9 +19,9 @@ export class Ackermann extends SmartContract {
 
     // Input parameters of the Ackermann function.
     @prop()
-    a: bigint
+    readonly a: bigint
     @prop()
-    b: bigint
+    readonly b: bigint
 
     constructor(a: bigint, b: bigint) {
         super(...arguments)

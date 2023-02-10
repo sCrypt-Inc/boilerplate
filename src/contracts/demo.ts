@@ -2,10 +2,10 @@ import { assert, bsv, method, prop, SmartContract, UTXO } from 'scrypt-ts'
 
 export class Demo extends SmartContract {
     @prop()
-    x: bigint
+    readonly x: bigint
 
     @prop()
-    y: bigint
+    readonly y: bigint
 
     // The values of the x and y properties get passed via the
     // smart contracts constructor.

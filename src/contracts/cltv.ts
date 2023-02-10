@@ -4,7 +4,7 @@ export class CheckLockTimeVerify extends SmartContract {
     public static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
 
     @prop()
-    matureTime: bigint // Can be a timestamp or block height.
+    readonly matureTime: bigint // Can be a timestamp or block height.
 
     constructor(matureTime: bigint) {
         super(matureTime)
