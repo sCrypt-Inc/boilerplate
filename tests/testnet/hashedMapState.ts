@@ -21,7 +21,7 @@ function insert(
     map.set(key, val)
     newInstance.hashedmap.attach(map)
 
-    return instance.methods().insert(getSortedItem(map, key), val, {
+    return instance.methods.insert(getSortedItem(map, key), val, {
         next: {
             instance: newInstance,
             balance: initBalance,
@@ -40,7 +40,7 @@ function update(
     map.set(key, val)
     newInstance.hashedmap.attach(map)
 
-    return instance.methods().update(getSortedItem(map, key), val, {
+    return instance.methods.update(getSortedItem(map, key), val, {
         next: {
             instance: newInstance,
             balance: initBalance,
@@ -56,7 +56,7 @@ function canGet(
 ) {
     const newInstance = instance.next()
 
-    return instance.methods().canGet(getSortedItem(map, key), val, {
+    return instance.methods.canGet(getSortedItem(map, key), val, {
         next: {
             instance: newInstance,
             balance: initBalance,
@@ -73,7 +73,7 @@ function deleteKey(
     const newInstance = instance.next()
     map.delete(key)
     newInstance.hashedmap.attach(map)
-    return instance.methods().delete(getSortedItem(map, key), {
+    return instance.methods.delete(getSortedItem(map, key), {
         next: {
             instance: newInstance,
             balance: initBalance,
@@ -90,7 +90,7 @@ function notExist(
     const newInstance = instance.next()
     map.delete(key)
     newInstance.hashedmap.attach(map)
-    return instance.methods().notExist(getSortedItem(map, key), {
+    return instance.methods.notExist(getSortedItem(map, key), {
         next: {
             instance: newInstance,
             balance: initBalance,
