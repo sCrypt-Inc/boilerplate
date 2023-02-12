@@ -1,170 +1,89 @@
 import { expect } from 'chai'
 import {
-    bsv,
-    toHex,
-    PubKey,
-    Sig,
-    signTx,
-    PubKeyHash,
+    findSig,
     FixedArray,
+    MethodCallOptions,
+    PubKey,
+    PubKeyHash,
+    toHex,
 } from 'scrypt-ts'
 import { MultiSig } from '../../src/contracts/multiSig'
-import {
-    newTx,
-    inputIndex,
-    inputSatoshis,
-    randomPrivateKey,
-} from './util/txHelper'
+import { dummySigner, dummyUTXO, randomPrivateKey } from './util/txHelper'
+import { myPublicKey } from '../util/privateKey'
 
 describe('Test SmartContract `MultiSig`', () => {
     const [privateKey1, publicKey1, publicKeyHash1] = randomPrivateKey()
     const [privateKey2, publicKey2, publicKeyHash2] = randomPrivateKey()
     const [privateKey3, publicKey3, publicKeyHash3] = randomPrivateKey()
 
-    const [privateKeyWrong, _, publicKeyHashWrong] = randomPrivateKey()
+    const pubKeyHashes = [publicKeyHash1, publicKeyHash2, publicKeyHash3].map(
+        (pkh) => PubKeyHash(toHex(pkh))
+    ) as FixedArray<PubKeyHash, typeof MultiSig.N>
+
+    const correctPublicKeys = [publicKey1, publicKey2, publicKey3]
+    const incorrectPublicKeys = [publicKey1, myPublicKey, publicKey3]
+
+    let multiSig: MultiSig
 
     before(async () => {
         await MultiSig.compile()
+        multiSig = new MultiSig(pubKeyHashes)
+
+        const signer = dummySigner([privateKey1, privateKey2, privateKey3])
+        await multiSig.connect(signer)
     })
 
-    it('should succeed with all correct sigs', () => {
-        const pubKeysHashes: FixedArray<PubKeyHash, typeof MultiSig.N> = [
-            PubKeyHash(toHex(publicKeyHash1)),
-            PubKeyHash(toHex(publicKeyHash2)),
-            PubKeyHash(toHex(publicKeyHash3)),
-        ]
-        const multiSig = new MultiSig(pubKeysHashes)
+    it('should succeed with all correct signatures', async () => {
+        const { tx: callTx, atInputIndex } = await multiSig.methods.unlock(
+            (sigResps) =>
+                correctPublicKeys.map((pubKey) => findSig(sigResps, pubKey)),
+            correctPublicKeys.map((pk) => PubKey(pk.toString())) as FixedArray<
+                PubKey,
+                typeof MultiSig.N
+            >,
+            {
+                fromUTXO: dummyUTXO,
+                pubKeyOrAddrToSign: correctPublicKeys,
+            } as MethodCallOptions<MultiSig>
+        )
 
-        const tx = newTx()
-
-        multiSig.to = { tx, inputIndex }
-
-        const result = multiSig.verify((self) => {
-            const sig1 = signTx(
-                tx,
-                privateKey1,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            const sig2 = signTx(
-                tx,
-                privateKey2,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            const sig3 = signTx(
-                tx,
-                privateKey3,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            self.unlock(
-                [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))],
-                [
-                    PubKey(toHex(publicKey1)),
-                    PubKey(toHex(publicKey2)),
-                    PubKey(toHex(publicKey3)),
-                ]
-            )
-        })
-
+        const result = callTx.verifyInputScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
-    it('should fail with a wrong sig', () => {
-        const pubKeysHashes: FixedArray<PubKeyHash, typeof MultiSig.N> = [
-            PubKeyHash(toHex(publicKeyHash1)),
-            PubKeyHash(toHex(publicKeyHash2)),
-            PubKeyHash(toHex(publicKeyHash3)),
-        ]
-        const multiSig = new MultiSig(pubKeysHashes)
-
-        const tx = newTx()
-
-        multiSig.to = { tx, inputIndex }
-
-        const result = multiSig.verify((self) => {
-            const sig1 = signTx(
-                tx,
-                privateKey1,
-                self.lockingScript,
-                inputSatoshis
+    it('should fail with a wrong signature', () => {
+        expect(
+            multiSig.methods.unlock(
+                (sigResps) =>
+                    incorrectPublicKeys.map((pubKey) =>
+                        findSig(sigResps, pubKey)
+                    ),
+                correctPublicKeys.map((pk) =>
+                    PubKey(pk.toString())
+                ) as FixedArray<PubKey, typeof MultiSig.N>,
+                {
+                    fromUTXO: dummyUTXO,
+                    pubKeyOrAddrToSign: incorrectPublicKeys,
+                } as MethodCallOptions<MultiSig>
             )
-
-            const sig2 = signTx(
-                tx,
-                privateKey2,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            const sig3 = signTx(
-                tx,
-                privateKeyWrong,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            self.unlock(
-                [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))],
-                [
-                    PubKey(toHex(publicKey1)),
-                    PubKey(toHex(publicKey2)),
-                    PubKey(toHex(publicKey3)),
-                ]
-            )
-        })
-
-        expect(result.success, result.error).to.eq(false)
+        ).to.be.rejectedWith(/Check multisig failed/)
     })
 
-    it('should fail with a wrong pubKey', () => {
-        const pubKeysHashes: FixedArray<PubKeyHash, typeof MultiSig.N> = [
-            PubKeyHash(toHex(publicKeyHash1)),
-            PubKeyHash(toHex(publicKeyHashWrong)),
-            PubKeyHash(toHex(publicKeyHash3)),
-        ]
-        const multiSig = new MultiSig(pubKeysHashes)
-
-        const tx = newTx()
-
-        multiSig.to = { tx, inputIndex }
-
-        expect(() => {
-            multiSig.verify((self) => {
-                const sig1 = signTx(
-                    tx,
-                    privateKey1,
-                    self.lockingScript,
-                    inputSatoshis
-                )
-
-                const sig2 = signTx(
-                    tx,
-                    privateKey2,
-                    self.lockingScript,
-                    inputSatoshis
-                )
-
-                const sig3 = signTx(
-                    tx,
-                    privateKey3,
-                    self.lockingScript,
-                    inputSatoshis
-                )
-
-                self.unlock(
-                    [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))],
-                    [
-                        PubKey(toHex(publicKey1)),
-                        PubKey(toHex(publicKey2)),
-                        PubKey(toHex(publicKey3)),
-                    ]
-                )
-            })
-        }).to.throw(/Execution failed/)
+    it('should fail with a wrong public key', () => {
+        expect(
+            multiSig.methods.unlock(
+                (sigResps) =>
+                    correctPublicKeys.map((pubKey) =>
+                        findSig(sigResps, pubKey)
+                    ),
+                incorrectPublicKeys.map((pk) =>
+                    PubKey(pk.toString())
+                ) as FixedArray<PubKey, typeof MultiSig.N>,
+                {
+                    fromUTXO: dummyUTXO,
+                    pubKeyOrAddrToSign: correctPublicKeys,
+                } as MethodCallOptions<MultiSig>
+            )
+        ).to.be.rejectedWith(/public key hashes are not equal/)
     })
 })

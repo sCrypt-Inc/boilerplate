@@ -6,7 +6,7 @@ import {
     outputIndex,
     randomPrivateKey,
 } from './util/txHelper'
-import { myPrivateKey } from './util/privateKey'
+import { myPrivateKey } from '../util/privateKey'
 import { bsv, PubKey, Ripemd160, Sig, toHex, utxoFromOutput } from 'scrypt-ts'
 
 async function main() {

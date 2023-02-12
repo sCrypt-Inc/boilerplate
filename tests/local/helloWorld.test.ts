@@ -1,6 +1,7 @@
 import { expect } from 'chai'
-import { toByteString } from 'scrypt-ts'
+import { MethodCallOptions, toByteString } from 'scrypt-ts'
 import { HelloWorld } from '../../src/contracts/helloWorld'
+import { dummySigner, dummyUTXO } from './util/txHelper'
 
 describe('Test SmartContract `HelloWorld`', () => {
     before(async () => {
@@ -9,9 +10,15 @@ describe('Test SmartContract `HelloWorld`', () => {
 
     it('should pass the public method unit test successfully.', async () => {
         const helloWorld = new HelloWorld()
-        const result = helloWorld.verify(() =>
-            helloWorld.unlock(toByteString('hello world', true))
+        await helloWorld.connect(dummySigner())
+        const { tx: callTx, atInputIndex } = await helloWorld.methods.unlock(
+            toByteString('hello world', true),
+            {
+                fromUTXO: dummyUTXO,
+            } as MethodCallOptions<HelloWorld>
         )
+
+        const result = callTx.verifyInputScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 })

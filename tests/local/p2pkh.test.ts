@@ -1,62 +1,89 @@
-import { expect } from 'chai'
-import { PubKey, PubKeyHash, Sig, bsv, signTx, toHex } from 'scrypt-ts'
+import { expect, use } from 'chai'
+import chaiAsPromised from 'chai-as-promised'
+import {
+    findSig,
+    MethodCallOptions,
+    PubKey,
+    PubKeyHash,
+    toHex,
+} from 'scrypt-ts'
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { newTx, inputIndex, inputSatoshis, dummyUTXO } from './util/txHelper'
+import { dummySigner, dummyUTXO, randomPrivateKey } from './util/txHelper'
+import { myPublicKey, myPublicKeyHash } from '../util/privateKey'
 
-const privateKey = bsv.PrivateKey.fromRandom('testnet')
-const publicKey = privateKey.publicKey
-const pkh = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
-
-const privateKey2 = bsv.PrivateKey.fromRandom('testnet')
+use(chaiAsPromised)
 
 describe('Test SmartContract `P2PKH`', () => {
     before(async () => {
         await P2PKH.compile()
     })
 
-    it('should pass if use right privateKey', async () => {
-        const tx = newTx()
-        const demo = new P2PKH(PubKeyHash(toHex(pkh)))
-        demo.to = { tx, inputIndex }
-
-        const result = demo.verify(() => {
-            const sig = signTx(
-                tx,
-                privateKey,
-                demo.lockingScript,
-                inputSatoshis
-            )
-            demo.unlock(Sig(toHex(sig)), PubKey(toHex(publicKey)))
-        })
-
-        expect(result.success).to.be.true
-    })
-
-    it('should pass if use right privateKey', async () => {
-        const inputIndex = 0
-        const p2pkh = new P2PKH(PubKeyHash(toHex(pkh)))
-        const deployTx = p2pkh.getDeployTx([dummyUTXO], inputSatoshis)
-        const callTx = p2pkh.getCallTx(publicKey, privateKey, deployTx).seal()
-
-        const result = callTx.verifyInputScript(inputIndex)
+    it('should pass if using right private key', async () => {
+        // create a new P2PKH contract instance
+        // this instance was paid to `myPublicKeyHash`
+        const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
+        // connect contract instance to a signer
+        // dummySigner() has one private key in it by default, it's `myPrivateKey`
+        await p2pkh.connect(dummySigner())
+        // call public function `unlock` of this contract
+        const { tx: callTx, atInputIndex } = await p2pkh.methods.unlock(
+            // pass signature, the first parameter, to `unlock`
+            // after the signer signs the transaction, the signatures are returned in `SignatureResponse[]`
+            // you need to find the signature or signatures you want in the return through the public key or address
+            // here we use `myPublicKey` to find the signature because we signed the transaction with `myPrivateKey` before
+            (sigResps) => findSig(sigResps, myPublicKey),
+            // pass public key, the second parameter, to `unlock`
+            PubKey(toHex(myPublicKey)),
+            // method call options
+            {
+                fromUTXO: dummyUTXO,
+                // tell the signer to use the private key corresponding to `myPublicKey` to sign this transaction
+                // that is using `myPrivateKey` to sign the transaction
+                pubKeyOrAddrToSign: myPublicKey,
+            } as MethodCallOptions<P2PKH>
+        )
+        // check if the unlock transaction built above is correct
+        const result = callTx.verifyInputScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
-    it('should fail if use wrong privateKey', async () => {
-        const tx = newTx()
-        const demo = new P2PKH(PubKeyHash(toHex(pkh)))
-        demo.to = { tx, inputIndex }
+    it('should fail if using wrong private key', async () => {
+        const [wrongPrivateKey, wrongPublicKey] = randomPrivateKey()
+        // contract instance was paid to `myPublicKeyHash`
+        const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
+        // add a new private key, `wrongPrivateKey`, into the signer
+        // now the signer has two private keys in it
+        await p2pkh.connect(dummySigner(wrongPrivateKey))
+        expect(
+            p2pkh.methods.unlock(
+                // pass the signature signed by `wrongPrivateKey`
+                (sigResps) => findSig(sigResps, wrongPublicKey),
+                // pass the correct public key
+                PubKey(toHex(myPublicKey)),
+                {
+                    fromUTXO: dummyUTXO,
+                    pubKeyOrAddrToSign: wrongPublicKey, // use `wrongPrivateKey` to sign
+                } as MethodCallOptions<P2PKH>
+            )
+        ).to.be.rejectedWith(/signature check failed/)
+    })
 
-        expect(() => {
-            demo.verify(() => {
-                const sig = signTx(
-                    tx,
-                    privateKey2,
-                    demo.lockingScript,
-                    inputSatoshis
-                )
-                demo.unlock(Sig(toHex(sig)), PubKey(toHex(publicKey)))
-            })
-        }).to.throw(/Execution failed/)
+    it('should fail if passing wrong public key', async () => {
+        const [, wrongPublicKey, ,] = randomPrivateKey()
+        // contract instance was paid to `myPublicKeyHash`
+        const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
+        await p2pkh.connect(dummySigner())
+        expect(
+            p2pkh.methods.unlock(
+                // pass the correct signature signed by `myPrivateKey`
+                (sigResps) => findSig(sigResps, myPublicKey),
+                // but pass the wrong public key
+                PubKey(toHex(wrongPublicKey)),
+                {
+                    fromUTXO: dummyUTXO,
+                    pubKeyOrAddrToSign: myPublicKey, // use the correct private key, `myPrivateKey`, to sign
+                } as MethodCallOptions<P2PKH>
+            )
+        ).to.be.rejectedWith(/public key hashes are not equal/)
     })
 })

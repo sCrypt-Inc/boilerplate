@@ -1,18 +1,14 @@
 import {
     assert,
-    bsv,
-    FixedArray,
     checkMultiSig,
+    FixedArray,
+    hash160,
     method,
     prop,
     PubKey,
     PubKeyHash,
     Sig,
     SmartContract,
-    toHex,
-    UTXO,
-    signTx,
-    hash160,
 } from 'scrypt-ts'
 
 export class MultiSig extends SmartContract {
@@ -35,58 +31,12 @@ export class MultiSig extends SmartContract {
     ) {
         // Check if public keys hash to the right addresses.
         for (let i = 0; i < MultiSig.N; i++) {
-            assert(hash160(pubKeys[i]) == this.pubKeyHashes[i])
+            assert(
+                hash160(pubKeys[i]) == this.pubKeyHashes[i],
+                'public key hashes are not equal'
+            )
         }
 
         assert(checkMultiSig(sigs, pubKeys), 'Check multisig failed')
-    }
-
-    // Local method to construct deployment TX.
-    getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
-        const tx = new bsv.Transaction().from(utxos).addOutput(
-            new bsv.Transaction.Output({
-                script: this.lockingScript,
-                satoshis: initBalance,
-            })
-        )
-        this.from = { tx, outputIndex: 0 }
-        return tx
-    }
-
-    // Local method to construct TX calling a deployed contract.
-    getCallTx(
-        pubKeys: bsv.PublicKey[],
-        privKeys: bsv.PrivateKey[],
-        prevTx: bsv.Transaction
-    ): bsv.Transaction {
-        const inputIndex = 0
-
-        const tx = new bsv.Transaction().addInputFromPrevTx(prevTx)
-
-        const sigs = [...Array(MultiSig.N)].map((_, i) => {
-            tx.getSignature(inputIndex)
-            const prevOut = tx.outputs[inputIndex]
-            return signTx(
-                tx,
-                privKeys[i],
-                prevOut.script,
-                prevOut.satoshis,
-                inputIndex
-            )
-        })
-
-        return tx.setInputScript(inputIndex, (tx) => {
-            this.to = { tx, inputIndex }
-            return this.getUnlockingScript((self) => {
-                self.unlock(
-                    sigs.map((sig) => {
-                        return Sig(toHex(sig)) // TODO: sig as string?
-                    }) as FixedArray<Sig, typeof MultiSig.N>,
-                    pubKeys.map((pubKey) => {
-                        return PubKey(toHex(pubKey))
-                    }) as FixedArray<PubKey, typeof MultiSig.N>
-                )
-            })
-        })
     }
 }

@@ -1,5 +1,6 @@
-import { bsv, UTXO } from 'scrypt-ts'
+import { bsv, UTXO, TestWallet, DummyProvider } from 'scrypt-ts'
 import { randomBytes } from 'crypto'
+import { myPrivateKey } from '../../util/privateKey'
 
 export const inputSatoshis = 10000
 
@@ -25,4 +26,16 @@ export function randomPrivateKey() {
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
     const address = publicKey.toAddress()
     return [privateKey, publicKey, publicKeyHash, address] as const
+}
+
+export function dummySigner(
+    privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
+): TestWallet {
+    if (global.dummySigner === undefined) {
+        global.dummySigner = new TestWallet(myPrivateKey, new DummyProvider())
+    }
+    if (privateKey !== undefined) {
+        global.dummySigner.addPrivateKey(privateKey)
+    }
+    return global.dummySigner
 }

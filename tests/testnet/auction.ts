@@ -21,7 +21,7 @@ import {
     myPrivateKey,
     myPublicKey,
     myPublicKeyHash,
-} from './util/privateKey'
+} from '../util/privateKey'
 
 async function main() {
     await Auction.compile()

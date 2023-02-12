@@ -1,13 +1,13 @@
 import {
-    method,
-    prop,
-    SmartContract,
     assert,
+    ByteString,
     hash256,
     HashedMap,
-    ByteString,
-    SortedItem,
+    method,
+    prop,
     SigHash,
+    SmartContract,
+    SortedItem,
 } from 'scrypt-ts'
 
 export class HashedMapState extends SmartContract {

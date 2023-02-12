@@ -2,11 +2,10 @@ import { AnyoneCanSpend } from '../../src/contracts/acs'
 import {
     inputIndex,
     inputSatoshis,
-    outputIndex,
     testnetDefaultSigner,
 } from './util/txHelper'
 import { bsv, Ripemd160, toHex } from 'scrypt-ts'
-import { myPublicKeyHash } from './util/privateKey'
+import { myPublicKeyHash } from '../util/privateKey'
 
 async function main() {
     await AnyoneCanSpend.compile()
@@ -35,7 +34,7 @@ async function main() {
                 // use the cloned version because this callback may be executed multiple times during tx building process,
                 // and calling contract method may have side effects on its properties.
                 return acs.getUnlockingScript(async (cloned) => {
-                    cloned.unlock(BigInt(tx.getOutputAmount(outputIndex)))
+                    cloned.unlock()
                 })
             }
         )

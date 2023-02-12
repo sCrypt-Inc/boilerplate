@@ -5,7 +5,7 @@ import {
     outputIndex,
     testnetDefaultSigner,
 } from './util/txHelper'
-import { myAddress, myPublicKeyHash } from './util/privateKey'
+import { myAddress, myPublicKeyHash } from '../util/privateKey'
 
 import { bsv, PubKey, Ripemd160, Sig, toHex, utxoFromOutput } from 'scrypt-ts'
 

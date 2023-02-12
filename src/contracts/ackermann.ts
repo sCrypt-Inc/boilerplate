@@ -1,14 +1,12 @@
 import {
     assert,
-    bsv,
     ByteString,
+    byteString2Int,
     int2ByteString,
     len,
     method,
     prop,
     SmartContract,
-    byteString2Int,
-    UTXO,
 } from 'scrypt-ts'
 
 export class Ackermann extends SmartContract {
@@ -63,25 +61,5 @@ export class Ackermann extends SmartContract {
     @method()
     public unlock(y: bigint) {
         assert(y == this.ackermann(this.a, this.b), 'Wrong solution.')
-    }
-
-    // Local method to construct deployment TX.
-    getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
-        const tx = new bsv.Transaction().from(utxos).addOutput(
-            new bsv.Transaction.Output({
-                script: this.lockingScript,
-                satoshis: initBalance,
-            })
-        )
-        this.from = { tx, outputIndex: 0 }
-        return tx
-    }
-
-    getCallTx(y: bigint, prevTx: bsv.Transaction): bsv.Transaction {
-        return new bsv.Transaction()
-            .addInputFromPrevTx(prevTx)
-            .setInputScript(0, () => {
-                return this.getUnlockingScript((self) => self.unlock(y))
-            })
     }
 }

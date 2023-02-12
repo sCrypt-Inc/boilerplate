@@ -1,6 +1,6 @@
 import { bsv, TestWallet, UTXO, WhatsonchainProvider } from 'scrypt-ts'
 import { randomBytes } from 'crypto'
-import { myPrivateKey } from './privateKey'
+import { myPrivateKey } from '../../util/privateKey'
 import axios from 'axios'
 
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'

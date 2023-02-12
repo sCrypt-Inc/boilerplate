@@ -6,16 +6,8 @@ import {
     outputIndex,
     randomPrivateKey,
 } from './util/txHelper'
-import { myPrivateKey } from './util/privateKey'
-import {
-    bsv,
-    PubKey,
-    PubKeyHash,
-    Ripemd160,
-    Sig,
-    toHex,
-    utxoFromOutput,
-} from 'scrypt-ts'
+import { myPrivateKey } from '../util/privateKey'
+import { bsv, PubKey, PubKeyHash, Sig, toHex, utxoFromOutput } from 'scrypt-ts'
 
 async function main() {
     const [privateKey1, , publicKeyHash1, address1] = randomPrivateKey()
