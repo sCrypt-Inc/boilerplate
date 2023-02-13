@@ -1,7 +1,8 @@
 import {
     assert,
     bsv,
-    buildPublicKeyHashScript,
+    BuildMethodCallTxOptions,
+    BuildMethodCallTxResult,
     ByteString,
     hash256,
     method,
@@ -11,17 +12,16 @@ import {
     Sig,
     SmartContract,
     Utils,
-    UTXO,
 } from 'scrypt-ts'
 
 export class Auction extends SmartContract {
-    public static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
+    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
 
-    // The bidders address.
+    // The bidder's address.
     @prop(true)
     bidder: PubKeyHash
 
-    // The auctioneers public key.
+    // The auctioneer's public key.
     @prop()
     readonly auctioneer: PubKey
 
@@ -42,7 +42,7 @@ export class Auction extends SmartContract {
 
     // Call this public method to bid with a higher offer.
     @method()
-    public bid(bidder: PubKeyHash, bid: bigint, changeSatoshis: bigint) {
+    public bid(bidder: PubKeyHash, bid: bigint) {
         const highestBid: bigint = this.ctx.utxo.value
         assert(
             bid > highestBid,
@@ -57,23 +57,15 @@ export class Auction extends SmartContract {
         const auctionOutput: ByteString = this.buildStateOutput(bid)
 
         // Refund previous highest bidder.
-        const refundScript: ByteString =
-            Utils.buildPublicKeyHashScript(highestBidder)
-        const refundOutput: ByteString = Utils.buildOutput(
-            refundScript,
+        const refundOutput: ByteString = Utils.buildPublicKeyHashOutput(
+            highestBidder,
             highestBid
         )
         let outputs: ByteString = auctionOutput + refundOutput
 
         // Add change output.
-        if (changeSatoshis > 0) {
-            const changeScript: ByteString =
-                Utils.buildPublicKeyHashScript(bidder)
-            const changeOutput: ByteString = Utils.buildOutput(
-                changeScript,
-                changeSatoshis
-            )
-            outputs += changeOutput
+        if (this.changeAmount > 0) {
+            outputs += this.buildChangeOutput(bidder)
         }
 
         assert(
@@ -103,105 +95,53 @@ export class Auction extends SmartContract {
         assert(this.checkSig(sig, this.auctioneer), 'signature check failed')
     }
 
-    // Local method to construct deployment TX.
-    getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
-        const tx = new bsv.Transaction().from(utxos).addOutput(
-            new bsv.Transaction.Output({
-                script: this.lockingScript,
-                satoshis: initBalance,
-            })
-        )
-        this.from = { tx, outputIndex: 0 }
-        return tx
-    }
-
-    // Local method to construct TX for a bid.
-    getCallTxForBid(
-        utxos: UTXO[],
-        prevTx: bsv.Transaction,
-        nextInst: Auction,
+    static bidTxBuilder(
+        options: BuildMethodCallTxOptions<Auction>,
         bidder: PubKeyHash,
-        bid: number
-    ): bsv.Transaction {
-        const inputIndex = 0
-        return new bsv.Transaction()
-            .addInputFromPrevTx(prevTx)
-            .from(utxos)
-            .setOutput(0, (tx: bsv.Transaction) => {
-                nextInst.from = { tx, outputIndex: 0 }
-                return new bsv.Transaction.Output({
-                    script: nextInst.lockingScript,
-                    satoshis: bid,
-                })
-            })
-            .setOutput(1, (tx: bsv.Transaction) => {
-                nextInst.from = { tx, outputIndex: 0 }
-                return new bsv.Transaction.Output({
-                    script: buildPublicKeyHashScript(this.bidder),
-                    satoshis: tx.getInputAmount(inputIndex),
-                })
-            })
-            .setOutput(2, (tx: bsv.Transaction) => {
-                nextInst.from = { tx, outputIndex: 0 }
-                return new bsv.Transaction.Output({
-                    script: buildPublicKeyHashScript(bidder),
-                    satoshis:
-                        tx.inputAmount - tx.outputAmount - tx.getEstimateFee(),
-                })
-            })
-            .setInputScript(
-                {
-                    inputIndex,
-                },
-                (tx: bsv.Transaction) => {
-                    this.to = { tx, inputIndex }
-                    return this.getUnlockingScript((self) => {
-                        self.bid(
-                            bidder,
-                            BigInt(bid),
-                            BigInt(tx.getOutputAmount(2))
-                        )
-                    })
-                }
-            )
-    }
+        bid: bigint
+    ): Promise<BuildMethodCallTxResult<Auction>> {
+        const current = options.current
 
-    // Local method to construct TX for closing the auction.
-    getCallTxForClose(
-        timeNow: number,
-        privateKey: bsv.PrivateKey,
-        prevTx: bsv.Transaction
-    ) {
-        const inputIndex = 0
-        const callTx: bsv.Transaction =
-            new bsv.Transaction().addInputFromPrevTx(prevTx)
+        const nextInstance = current.next()
+        nextInstance.bidder = bidder
 
-        callTx.setLockTime(timeNow)
-        callTx.setInputSequence(inputIndex, 0)
-
-        const amount = this.from.tx.outputs[this.from.outputIndex].satoshis
-
-        return callTx
-            .setInputScript(
-                {
-                    inputIndex,
-                    privateKey,
-                },
-                (tx) => {
-                    const sig = tx.getSignature(inputIndex)
-                    this.to = { tx, inputIndex }
-                    return this.getUnlockingScript((self) => {
-                        self.close(Sig(sig as string))
-                    })
-                }
-            )
+        const unsignedTx: bsv.Transaction = new bsv.Transaction()
+            // add contract input
+            .addInput(current.buildContractInput(options.fromUTXO))
+            // add p2pkh inputs
+            .from(options.utxos)
+            // build next instance output
             .addOutput(
                 new bsv.Transaction.Output({
-                    script: bsv.Script.buildPublicKeyHashOut(
-                        privateKey.toPublicKey()
-                    ),
-                    satoshis: amount,
+                    script: nextInstance.lockingScript,
+                    satoshis: Number(bid),
                 })
             )
+            // build refund output
+            .addOutput(
+                new bsv.Transaction.Output({
+                    script: bsv.Script.fromHex(
+                        Utils.buildPublicKeyHashScript(current.bidder)
+                    ),
+                    satoshis:
+                        options.fromUTXO?.satoshis ??
+                        current.from.tx.outputs[current.from.outputIndex]
+                            .satoshis,
+                })
+            )
+            // build change output
+            .change(options.changeAddress)
+
+        return Promise.resolve({
+            unsignedTx,
+            atInputIndex: 0,
+            nexts: [
+                {
+                    instance: nextInstance,
+                    atOutputIndex: 0,
+                    balance: Number(bid),
+                },
+            ],
+        })
     }
 }

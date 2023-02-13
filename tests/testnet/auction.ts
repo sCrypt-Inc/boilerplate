@@ -95,8 +95,7 @@ async function main() {
             return auction.getUnlockingScript(async (cloned) => {
                 cloned.bid(
                     PubKeyHash(toHex(publicKeyHashNewBidder)),
-                    BigInt(newBid),
-                    BigInt(tx.getChangeAmount())
+                    BigInt(newBid)
                 )
             })
         })
