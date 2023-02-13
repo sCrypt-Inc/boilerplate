@@ -54,7 +54,7 @@ describe('Test SmartContract `P2PKH`', () => {
         // add a new private key, `wrongPrivateKey`, into the signer
         // now the signer has two private keys in it
         await p2pkh.connect(dummySigner(wrongPrivateKey))
-        expect(
+        return expect(
             p2pkh.methods.unlock(
                 // pass the signature signed by `wrongPrivateKey`
                 (sigResps) => findSig(sigResps, wrongPublicKey),
@@ -73,7 +73,7 @@ describe('Test SmartContract `P2PKH`', () => {
         // contract instance was paid to `myPublicKeyHash`
         const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
         await p2pkh.connect(dummySigner())
-        expect(
+        return expect(
             p2pkh.methods.unlock(
                 // pass the correct signature signed by `myPrivateKey`
                 (sigResps) => findSig(sigResps, myPublicKey),

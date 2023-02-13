@@ -28,7 +28,7 @@ describe('Test SmartContract `Ackermann`', () => {
     })
 
     it('should throw', async () => {
-        expect(
+        return expect(
             ackermann.methods.unlock(4n, {
                 fromUTXO: dummyUTXO,
             } as MethodCallOptions<Ackermann>)

@@ -32,8 +32,19 @@ describe('Test SmartContract `Demo`', () => {
         expect(result.success, result.error).to.eq(true)
     })
 
-    it('should throw', () => {
-        expect(demo.methods.add(-5n)).to.be.rejectedWith(/add check failed/)
-        expect(demo.methods.sub(9n)).to.be.rejectedWith(/sub check failed/)
+    it('should throw when calling `add`', () => {
+        return expect(
+            demo.methods.add(-5n, {
+                fromUTXO: dummyUTXO,
+            } as MethodCallOptions<Demo>)
+        ).to.be.rejectedWith(/add check failed/)
+    })
+
+    it('should throw when calling `sub`', () => {
+        return expect(
+            demo.methods.sub(9n, {
+                fromUTXO: dummyUTXO,
+            } as MethodCallOptions<Demo>)
+        ).to.be.rejectedWith(/sub check failed/)
     })
 })

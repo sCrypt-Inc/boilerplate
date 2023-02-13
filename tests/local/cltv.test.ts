@@ -15,23 +15,19 @@ describe('Test SmartContract `CheckLockTimeVerify`', () => {
     })
 
     it('should pass the public method unit test successfully.', async () => {
-        // const timeNow = 1673523720
-        // const {tx: callTx, atInputIndex} = await cltv.methods.unlock(
-        //     {
-        //         fromUTXO: dummyUTXO,
-        //         lockTime: timeNow,
-        //     } as MethodCallOptions<CheckLockTimeVerify>,
-        // )
-        // const result = callTx.verifyInputScript(atInputIndex)
-        // expect(result.success, result.error).to.eq(true)
+        const { tx: callTx, atInputIndex } = await cltv.methods.unlock({
+            fromUTXO: dummyUTXO,
+            lockTime: 1673523720,
+        } as MethodCallOptions<CheckLockTimeVerify>)
+        const result = callTx.verifyInputScript(atInputIndex)
+        expect(result.success, result.error).to.eq(true)
     })
 
     it('should fail when nLocktime is too low.', async () => {
-        const timeNow = 1673500100
-        expect(
+        return expect(
             cltv.methods.unlock({
                 fromUTXO: dummyUTXO,
-                lockTime: timeNow,
+                lockTime: 1673500100,
             } as MethodCallOptions<CheckLockTimeVerify>)
         ).to.be.rejectedWith(/locktime has not yet expired/)
     })

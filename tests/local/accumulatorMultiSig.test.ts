@@ -51,7 +51,7 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
     })
 
     it('should throw with only one right.', async () => {
-        expect(call([false, true, false])).to.be.rejectedWith(
+        return expect(call([false, true, false])).to.be.rejectedWith(
             /the number of signatures does not meet the threshold limit/
         )
     })
