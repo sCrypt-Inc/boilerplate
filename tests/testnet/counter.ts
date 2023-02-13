@@ -57,7 +57,7 @@ async function main() {
                     // use the cloned version because this callback may be executed multiple times during tx building process,
                     // and calling contract method may have side effects on its properties.
                     return prevInstance.getUnlockingScript(async (cloned) => {
-                        cloned.increment()
+                        cloned.incrementOnChain()
                     })
                 }
             )

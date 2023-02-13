@@ -1,4 +1,4 @@
-import { bsv, UTXO, TestWallet, DummyProvider } from 'scrypt-ts'
+import { bsv, DummyProvider, TestWallet, UTXO } from 'scrypt-ts'
 import { randomBytes } from 'crypto'
 import { myPrivateKey } from '../../util/privateKey'
 
@@ -38,4 +38,8 @@ export function dummySigner(
         global.dummySigner.addPrivateKey(privateKey)
     }
     return global.dummySigner
+}
+
+export function getDummyContractUTXO(satoshis: number): UTXO {
+    return Object.assign({}, dummyUTXO, { satoshis })
 }
