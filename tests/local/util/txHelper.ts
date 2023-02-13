@@ -28,7 +28,7 @@ export function randomPrivateKey() {
     return [privateKey, publicKey, publicKeyHash, address] as const
 }
 
-export function dummySigner(
+export function getDummySigner(
     privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
 ): TestWallet {
     if (global.dummySigner === undefined) {

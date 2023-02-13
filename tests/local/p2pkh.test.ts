@@ -8,7 +8,7 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { dummySigner, dummyUTXO, randomPrivateKey } from './util/txHelper'
+import { getDummySigner, dummyUTXO, randomPrivateKey } from './util/txHelper'
 import { myPublicKey, myPublicKeyHash } from '../util/privateKey'
 
 use(chaiAsPromised)
@@ -24,7 +24,7 @@ describe('Test SmartContract `P2PKH`', () => {
         const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
         // connect contract instance to a signer
         // dummySigner() has one private key in it by default, it's `myPrivateKey`
-        await p2pkh.connect(dummySigner())
+        await p2pkh.connect(getDummySigner())
         // call public function `unlock` of this contract
         const { tx: callTx, atInputIndex } = await p2pkh.methods.unlock(
             // pass signature, the first parameter, to `unlock`
@@ -53,7 +53,7 @@ describe('Test SmartContract `P2PKH`', () => {
         const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
         // add a new private key, `wrongPrivateKey`, into the signer
         // now the signer has two private keys in it
-        await p2pkh.connect(dummySigner(wrongPrivateKey))
+        await p2pkh.connect(getDummySigner(wrongPrivateKey))
         return expect(
             p2pkh.methods.unlock(
                 // pass the signature signed by `wrongPrivateKey`
@@ -72,7 +72,7 @@ describe('Test SmartContract `P2PKH`', () => {
         const [, wrongPublicKey, ,] = randomPrivateKey()
         // contract instance was paid to `myPublicKeyHash`
         const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
-        await p2pkh.connect(dummySigner())
+        await p2pkh.connect(getDummySigner())
         return expect(
             p2pkh.methods.unlock(
                 // pass the correct signature signed by `myPrivateKey`

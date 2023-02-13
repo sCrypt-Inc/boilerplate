@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import { Demo } from '../../src/contracts/demo'
 import { MethodCallOptions } from 'scrypt-ts'
-import { dummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, dummyUTXO } from './util/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)
@@ -13,7 +13,7 @@ describe('Test SmartContract `Demo`', () => {
         await Demo.compile()
         demo = new Demo(-2n, 7n)
 
-        await demo.connect(dummySigner())
+        await demo.connect(getDummySigner())
     })
 
     it('should pass `add`', async () => {

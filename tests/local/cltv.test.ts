@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { CheckLockTimeVerify } from '../../src/contracts/cltv'
-import { dummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, dummyUTXO } from './util/txHelper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `CheckLockTimeVerify`', () => {
@@ -11,7 +11,7 @@ describe('Test SmartContract `CheckLockTimeVerify`', () => {
         await CheckLockTimeVerify.compile()
 
         cltv = new CheckLockTimeVerify(lockTimeMin)
-        await cltv.connect(dummySigner())
+        await cltv.connect(getDummySigner())
     })
 
     it('should pass the public method unit test successfully.', async () => {

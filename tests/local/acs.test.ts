@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { MethodCallOptions, PubKeyHash, toHex } from 'scrypt-ts'
 import { AnyoneCanSpend } from '../../src/contracts/acs'
 import { myPublicKeyHash } from '../util/privateKey'
-import { dummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, dummyUTXO } from './util/txHelper'
 
 describe('Test SmartContract `AnyoneCanSpend`', () => {
     before(async () => {
@@ -13,7 +13,7 @@ describe('Test SmartContract `AnyoneCanSpend`', () => {
         const anyoneCanSpend = new AnyoneCanSpend(
             PubKeyHash(toHex(myPublicKeyHash))
         )
-        await anyoneCanSpend.connect(dummySigner())
+        await anyoneCanSpend.connect(getDummySigner())
 
         const { tx: callTx, atInputIndex } =
             await anyoneCanSpend.methods.unlock({

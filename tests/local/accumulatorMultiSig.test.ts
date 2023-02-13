@@ -11,7 +11,7 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
-import { dummySigner, dummyUTXO, randomPrivateKey } from './util/txHelper'
+import { getDummySigner, dummyUTXO, randomPrivateKey } from './util/txHelper'
 
 const [privateKey1, publicKey1, publicKeyHash1] = randomPrivateKey()
 const [privateKey2, publicKey2, publicKeyHash2] = randomPrivateKey()
@@ -34,7 +34,7 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
         await AccumulatorMultiSig.compile()
         accumulatorMultiSig = new AccumulatorMultiSig(2n, pubKeyHashes)
 
-        const signer = dummySigner([privateKey1, privateKey2, privateKey3])
+        const signer = getDummySigner([privateKey1, privateKey2, privateKey3])
         await accumulatorMultiSig.connect(signer)
     })
 

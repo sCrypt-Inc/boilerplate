@@ -1,7 +1,7 @@
 import { Ackermann } from '../../src/contracts/ackermann'
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { dummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, dummyUTXO } from './util/txHelper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 use(chaiAsPromised)
@@ -13,7 +13,7 @@ describe('Test SmartContract `Ackermann`', () => {
         await Ackermann.compile()
         ackermann = new Ackermann(2n, 1n)
 
-        await ackermann.connect(dummySigner())
+        await ackermann.connect(getDummySigner())
     })
 
     it('should transpile contract `Ackermann` successfully.', async () => {

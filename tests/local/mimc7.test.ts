@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Mimc7Test } from '../../src/contracts/mimc7'
-import { dummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, dummyUTXO } from './util/txHelper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `Mimc7Test`', () => {
@@ -10,7 +10,7 @@ describe('Test SmartContract `Mimc7Test`', () => {
 
     it('should pass the public method unit test successfully.', async () => {
         const mimc7 = new Mimc7Test()
-        await mimc7.connect(dummySigner())
+        await mimc7.connect(getDummySigner())
 
         const { tx: callTx, atInputIndex } = await mimc7.methods.unlock(
             1n,

@@ -1,7 +1,7 @@
 import { expect } from 'chai'
-import { MethodCallOptions, Sha256, sha256, toByteString } from 'scrypt-ts'
+import { MethodCallOptions, sha256, toByteString } from 'scrypt-ts'
 import { HashPuzzle } from '../../src/contracts/hashPuzzle'
-import { dummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, dummyUTXO } from './util/txHelper'
 
 const plainText = 'abc'
 const byteString = toByteString(plainText, true)
@@ -13,8 +13,8 @@ describe('Test SmartContract `HashPuzzle`', () => {
     })
 
     it('should pass the public method unit test successfully.', async () => {
-        const hashPuzzle = new HashPuzzle(Sha256(sha256Data))
-        await hashPuzzle.connect(dummySigner())
+        const hashPuzzle = new HashPuzzle(sha256Data)
+        await hashPuzzle.connect(getDummySigner())
         const { tx: callTx, atInputIndex } = await hashPuzzle.methods.unlock(
             byteString,
             {

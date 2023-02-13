@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { findSig, MethodCallOptions, PubKey, toHex } from 'scrypt-ts'
 import { Crowdfund } from '../../src/contracts/crowdfund'
 import {
-    dummySigner,
+    getDummySigner,
     dummyUTXO,
     inputSatoshis,
     randomPrivateKey,
@@ -27,7 +27,7 @@ describe('Test SmartContract `Crowdfund`', () => {
             target
         )
         await crowdfund.connect(
-            dummySigner([privateKeyRecipient, privateKeyContributor])
+            getDummySigner([privateKeyRecipient, privateKeyContributor])
         )
     })
 

@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Counter } from '../../src/contracts/counter'
-import { dummySigner, getDummyContractUTXO } from './util/txHelper'
+import { getDummySigner, getDummyContractUTXO } from './util/txHelper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `Counter`', () => {
@@ -12,7 +12,7 @@ describe('Test SmartContract `Counter`', () => {
 
     it('should pass the public method unit test successfully.', async () => {
         const counter = new Counter(0n)
-        await counter.connect(dummySigner())
+        await counter.connect(getDummySigner())
 
         // set current instance to be the deployed one
         let currentInstance = counter
