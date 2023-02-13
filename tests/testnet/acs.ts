@@ -1,51 +1,26 @@
 import { AnyoneCanSpend } from '../../src/contracts/acs'
-import {
-    inputIndex,
-    inputSatoshis,
-    testnetDefaultSigner,
-} from './util/txHelper'
-import { bsv, Ripemd160, toHex } from 'scrypt-ts'
+import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { PubKeyHash, toHex } from 'scrypt-ts'
 import { myPublicKeyHash } from '../util/privateKey'
 
 async function main() {
     await AnyoneCanSpend.compile()
-    const acs = new AnyoneCanSpend(Ripemd160(toHex(myPublicKeyHash)))
+    const anyoneCanSpend = new AnyoneCanSpend(
+        PubKeyHash(toHex(myPublicKeyHash))
+    )
 
     // connect to a signer
-    await acs.connect(await testnetDefaultSigner)
+    await anyoneCanSpend.connect(getTestnetSigner())
 
     // contract deployment
-    const deployTx = await acs.deploy(inputSatoshis)
+    const deployTx = await anyoneCanSpend.deploy(inputSatoshis)
     console.log('AnyoneCanSpend contract deployed: ', deployTx.id)
 
     // contract call
-    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
-    const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
-        .addInputFromPrevTx(deployTx)
-        .change(changeAddress)
-        .setInputScriptAsync(
-            {
-                inputIndex,
-                sigtype: bsv.crypto.Signature.ANYONECANPAY_SINGLE,
-            },
-            (tx: bsv.Transaction) => {
-                // bind contract & tx unlocking relation
-                acs.to = { tx, inputIndex }
-                // use the cloned version because this callback may be executed multiple times during tx building process,
-                // and calling contract method may have side effects on its properties.
-                return acs.getUnlockingScript(async (cloned) => {
-                    cloned.unlock()
-                })
-            }
-        )
-    const callTx = await (
-        await testnetDefaultSigner
-    ).signAndsendTransaction(unsignedCallTx)
+    const { tx: callTx } = await anyoneCanSpend.methods.unlock()
     console.log('AnyoneCanSpend contract called: ', callTx.id)
 }
 
-describe('Test SmartContract `AnyoneCanSpend` on testnet', () => {
-    it('should succeed', async () => {
-        await main()
-    })
+main().catch((e) => {
+    console.log('error', e.message)
 })

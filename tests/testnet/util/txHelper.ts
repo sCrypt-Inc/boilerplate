@@ -91,12 +91,17 @@ export function randomPrivateKey() {
     return [privateKey, publicKey, publicKeyHash, address] as const
 }
 
-export async function getTestnetSigner(
+export function getTestnetSigner(
     privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
-) {
-    return new TestWallet(privateKey || myPrivateKey).connect(
-        new WhatsonchainProvider(bsv.Networks.testnet)
-    )
+): TestWallet {
+    if (global.testnetSigner === undefined) {
+        global.testnetSigner = new TestWallet(
+            myPrivateKey,
+            new WhatsonchainProvider(bsv.Networks.testnet)
+        )
+    }
+    if (privateKey !== undefined) {
+        global.testnetSigner.addPrivateKey(privateKey)
+    }
+    return global.testnetSigner
 }
-
-export const testnetDefaultSigner = getTestnetSigner()

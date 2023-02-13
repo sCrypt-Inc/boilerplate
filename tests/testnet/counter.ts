@@ -1,84 +1,49 @@
 import { Counter } from '../../src/contracts/counter'
-import {
-    fetchUtxos,
-    inputIndex,
-    outputIndex,
-    testnetDefaultSigner,
-    sleep,
-} from './util/txHelper'
-import { bsv } from 'scrypt-ts'
+import { getTestnetSigner } from './util/txHelper'
+import { MethodCallOptions } from 'scrypt-ts'
 
 async function main() {
     await Counter.compile()
 
-    // create a genesis instance
-    const counter = new Counter(0n).markAsGenesis()
+    const counter = new Counter(0n)
 
     // connect to a signer
-    counter.connect(await testnetDefaultSigner)
+    await counter.connect(getTestnetSigner())
+
+    const balance = 1
 
     // contract deployment
-    const deployTx = await counter.deploy(1000)
+    const deployTx = await counter.deploy(balance)
     console.log('Counter deploy tx:', deployTx.id)
 
-    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
-    let prevTx = deployTx
-    let prevInstance = counter
-    // calling contract multiple times
-    for (let i = 0; i < 3; i++) {
-        // avoid mempool conflicts, sleep to allow previous tx "sink-into" the network
-        await sleep(5)
+    // set current instance to be the deployed one
+    let currentInstance = counter
 
-        // 1. build a new contract instance
-        const newCounter = prevInstance.next()
-        // 2. apply the updates on the new instance.
-        newCounter.count++
-        // 3. construct a transaction for contract call
-        const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
-            .addInputFromPrevTx(prevTx)
-            .from(await fetchUtxos())
-            .setOutput(outputIndex, (tx: bsv.Transaction) => {
-                newCounter.from = { tx, outputIndex }
-                return new bsv.Transaction.Output({
-                    script: newCounter.lockingScript,
-                    satoshis: tx.getInputAmount(inputIndex),
-                })
-            })
-            .change(changeAddress)
-            .setInputScriptAsync(
-                {
-                    inputIndex,
-                    sigtype: bsv.crypto.Signature.ANYONECANPAY_SINGLE,
-                },
-                (tx: bsv.Transaction) => {
-                    // bind contract & tx unlocking relation
-                    prevInstance.to = { tx, inputIndex }
+    // call the method of current instance to apply the updates on chain
+    for (let i = 0; i < 3; ++i) {
+        // create the next instance from the current
+        const nextInstance = currentInstance.next()
 
-                    // use the cloned version because this callback may be executed multiple times during tx building process,
-                    // and calling contract method may have side effects on its properties.
-                    return prevInstance.getUnlockingScript(async (cloned) => {
-                        cloned.incrementOnChain()
-                    })
-                }
-            )
-        const callTx = await (
-            await testnetDefaultSigner
-        ).signAndsendTransaction(unsignedCallTx)
+        // apply updates on the next instance off chain
+        nextInstance.incrementOffChain()
+
+        // call the method of current instance to apply the updates on chain
+        const { tx: tx_i } = await currentInstance.methods.incrementOnChain({
+            next: {
+                instance: nextInstance,
+                balance,
+            },
+        } as MethodCallOptions<Counter>)
+
         console.log(
-            'Counter call tx: ',
-            callTx.id,
-            ', count updated to: ',
-            newCounter.count
+            `Counter call tx: ${tx_i.id}, count updated to: ${nextInstance.count}`
         )
 
-        // prepare for the next iteration
-        prevTx = callTx
-        prevInstance = newCounter
+        // update the current instance reference
+        currentInstance = nextInstance
     }
 }
 
-describe('Test SmartContract `Counter` on testnet', () => {
-    it('should succeed', async () => {
-        await main()
-    })
+main().catch((e) => {
+    console.log('error', e.message)
 })
