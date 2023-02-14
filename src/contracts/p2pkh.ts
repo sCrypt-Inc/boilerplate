@@ -1,6 +1,5 @@
 import {
     assert,
-    bsv,
     hash160,
     method,
     prop,
@@ -8,8 +7,6 @@ import {
     PubKeyHash,
     Sig,
     SmartContract,
-    toHex,
-    UTXO,
 } from 'scrypt-ts'
 
 export class P2PKH extends SmartContract {
@@ -29,41 +26,7 @@ export class P2PKH extends SmartContract {
             hash160(pubkey) == this.pubKeyHash,
             'public key hashes are not equal'
         )
-        // Check the signatures validity.
+        // Check signature validity.
         assert(this.checkSig(sig, pubkey), 'signature check failed')
-    }
-
-    // Local method to construct deployment TX.
-    getDeployTx(utxos: UTXO[], initBalance: number): bsv.Transaction {
-        const tx = new bsv.Transaction().from(utxos).addOutput(
-            new bsv.Transaction.Output({
-                script: this.lockingScript,
-                satoshis: initBalance,
-            })
-        )
-        this.from = { tx, outputIndex: 0 }
-        return tx
-    }
-
-    // Local method to construct TX calling a deployed contract.
-    getCallTx(
-        pubKey: bsv.PublicKey,
-        privateKey: bsv.PrivateKey,
-        prevTx: bsv.Transaction
-    ): bsv.Transaction {
-        const inputIndex = 0
-        return new bsv.Transaction().addInputFromPrevTx(prevTx).setInputScript(
-            {
-                inputIndex,
-                privateKey,
-            },
-            (tx) => {
-                const sig = tx.getSignature(inputIndex)
-                this.to = { tx, inputIndex }
-                return this.getUnlockingScript((self) => {
-                    self.unlock(Sig(sig as string), PubKey(toHex(pubKey)))
-                })
-            }
-        )
     }
 }

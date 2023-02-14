@@ -1,58 +1,42 @@
 import { P2PKH } from '../../src/contracts/p2pkh'
-import {
-    inputIndex,
-    inputSatoshis,
-    outputIndex,
-    testnetDefaultSigner,
-} from './util/txHelper'
-import { myAddress, myPublicKeyHash } from './util/privateKey'
+import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { myPublicKey, myPublicKeyHash } from '../util/privateKey'
 
-import { bsv, PubKey, Ripemd160, Sig, toHex, utxoFromOutput } from 'scrypt-ts'
+import {
+    findSig,
+    MethodCallOptions,
+    PubKey,
+    PubKeyHash,
+    toHex,
+} from 'scrypt-ts'
 
 async function main() {
     await P2PKH.compile()
-    const p2pkh = new P2PKH(Ripemd160(toHex(myPublicKeyHash)))
+    const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
 
     // connect to a signer
-    await p2pkh.connect(await testnetDefaultSigner)
+    await p2pkh.connect(getTestnetSigner())
 
     // deploy
     const deployTx = await p2pkh.deploy(inputSatoshis)
     console.log('P2PKH contract deployed: ', deployTx.id)
 
     // call
-    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
-    const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
-        .addInputFromPrevTx(deployTx)
-        .change(changeAddress)
-        .setInputScriptAsync({ inputIndex }, (tx: bsv.Transaction) => {
-            // bind contract & tx unlocking relation
-            p2pkh.to = { tx, inputIndex }
-            // use the cloned version because this callback may be executed multiple times during tx building process,
-            // and calling contract method may have side effects on its properties.
-            return p2pkh.getUnlockingScript(async (cloned) => {
-                const spendingUtxo = utxoFromOutput(deployTx, outputIndex)
-
-                const sigResponses = await (
-                    await testnetDefaultSigner
-                ).getSignatures(tx.toString(), [
-                    {
-                        inputIndex,
-                        satoshis: spendingUtxo.satoshis,
-                        scriptHex: spendingUtxo.script,
-                        address: myAddress,
-                    },
-                ])
-
-                const sigs = sigResponses.map((sigResp) => sigResp.sig)
-                const pubKeys = sigResponses.map((sigResp) => sigResp.publicKey)
-
-                cloned.unlock(Sig(sigs[0]), PubKey(pubKeys[0]))
-            })
-        })
-    const callTx = await (
-        await testnetDefaultSigner
-    ).signAndsendTransaction(unsignedCallTx)
+    const { tx: callTx } = await p2pkh.methods.unlock(
+        // pass signature, the first parameter, to `unlock`
+        // after the signer signs the transaction, the signatures are returned in `SignatureResponse[]`
+        // you need to find the signature or signatures you want in the return through the public key or address
+        // here we use `myPublicKey` to find the signature because we signed the transaction with `myPrivateKey` before
+        (sigResps) => findSig(sigResps, myPublicKey),
+        // pass public key, the second parameter, to `unlock`
+        PubKey(toHex(myPublicKey)),
+        // method call options
+        {
+            // tell the signer to use the private key corresponding to `myPublicKey` to sign this transaction
+            // that is using `myPrivateKey` to sign the transaction
+            pubKeyOrAddrToSign: myPublicKey,
+        } as MethodCallOptions<P2PKH>
+    )
     console.log('P2PKH contract called: ', callTx.id)
 }
 

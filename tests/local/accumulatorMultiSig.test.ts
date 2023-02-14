@@ -1,162 +1,80 @@
 import { expect } from 'chai'
-import { Ripemd160, bsv, toHex, PubKey, Sig, signTx } from 'scrypt-ts'
-import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
 import {
-    newTx,
-    inputIndex,
-    inputSatoshis,
-    randomPrivateKey,
-} from './util/txHelper'
+    bsv,
+    findSig,
+    FixedArray,
+    getDummySig,
+    MethodCallOptions,
+    MethodCallResult,
+    PubKey,
+    PubKeyHash,
+    toHex,
+} from 'scrypt-ts'
+import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
+import { getDummySigner, randomPrivateKey, getDummyUTXO } from './util/txHelper'
+
+const [privateKey1, publicKey1, publicKeyHash1] = randomPrivateKey()
+const [privateKey2, publicKey2, publicKeyHash2] = randomPrivateKey()
+const [privateKey3, publicKey3, publicKeyHash3] = randomPrivateKey()
+
+const pubKeys = [publicKey1, publicKey2, publicKey3].map((pk) => {
+    return PubKey(pk.toString())
+}) as FixedArray<PubKey, typeof AccumulatorMultiSig.N>
+
+const pubKeyHashes = [publicKeyHash1, publicKeyHash2, publicKeyHash3].map(
+    (pkh) => PubKeyHash(toHex(pkh))
+) as FixedArray<PubKeyHash, typeof AccumulatorMultiSig.N>
+
+let accumulatorMultiSig: AccumulatorMultiSig
 
 describe('Test SmartContract `AccumulatorMultiSig`', () => {
-    const [privateKey1, publicKey1, publicKeyHash1] = randomPrivateKey()
-    const [privateKey2, publicKey2, publicKeyHash2] = randomPrivateKey()
-    const [privateKey3, publicKey3, publicKeyHash3] = randomPrivateKey()
-
-    const privateKeyWrong = bsv.PrivateKey.fromRandom('testnet')
-
     before(async () => {
         await AccumulatorMultiSig.compile()
+        accumulatorMultiSig = new AccumulatorMultiSig(2n, pubKeyHashes)
+
+        const signer = getDummySigner([privateKey1, privateKey2, privateKey3])
+        await accumulatorMultiSig.connect(signer)
     })
 
-    it('should successfully with all three right.', () => {
-        const accumulatorMultiSig = new AccumulatorMultiSig(2n, [
-            Ripemd160(toHex(publicKeyHash1)),
-            Ripemd160(toHex(publicKeyHash2)),
-            Ripemd160(toHex(publicKeyHash3)),
-        ])
-
-        const tx = newTx()
-
-        accumulatorMultiSig.to = { tx, inputIndex }
-
-        const result = accumulatorMultiSig.verify((self) => {
-            const sig1 = signTx(
-                tx,
-                privateKey1,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            const sig2 = signTx(
-                tx,
-                privateKey2,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            const sig3 = signTx(
-                tx,
-                privateKey3,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            self.main(
-                [
-                    PubKey(toHex(publicKey1)),
-                    PubKey(toHex(publicKey2)),
-                    PubKey(toHex(publicKey3)),
-                ],
-                [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))],
-                [true, true, true]
-            )
-        })
-
+    it('should successfully with all three right.', async () => {
+        const { tx: callTx, atInputIndex } = await call([true, true, true])
+        const result = callTx.verifyInputScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
-    it('should successfully with two right.', () => {
-        const accumulatorMultiSig = new AccumulatorMultiSig(2n, [
-            Ripemd160(toHex(publicKeyHash1)),
-            Ripemd160(toHex(publicKeyHash2)),
-            Ripemd160(toHex(publicKeyHash3)),
-        ])
-
-        const tx = newTx()
-
-        accumulatorMultiSig.to = { tx, inputIndex }
-
-        const result = accumulatorMultiSig.verify((self) => {
-            const sig1 = signTx(
-                tx,
-                privateKey1,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            const sig2 = signTx(
-                tx,
-                privateKey2,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            const sig3 = signTx(
-                tx,
-                privateKeyWrong,
-                self.lockingScript,
-                inputSatoshis
-            )
-
-            self.main(
-                [
-                    PubKey(toHex(publicKey1)),
-                    PubKey(toHex(publicKey2)),
-                    PubKey(toHex(publicKey3)),
-                ],
-                [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))],
-                [true, true, false]
-            )
-        })
-
+    it('should successfully with two right.', async () => {
+        const { tx: callTx, atInputIndex } = await call([true, false, true])
+        const result = callTx.verifyInputScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
-    it('should throw with only one right.', () => {
-        const accumulatorMultiSig = new AccumulatorMultiSig(2n, [
-            Ripemd160(toHex(publicKeyHash1)),
-            Ripemd160(toHex(publicKeyHash2)),
-            Ripemd160(toHex(publicKeyHash3)),
-        ])
-
-        const tx = newTx()
-
-        accumulatorMultiSig.to = { tx, inputIndex }
-
-        expect(() => {
-            const sig1 = signTx(
-                tx,
-                privateKey1,
-                accumulatorMultiSig.lockingScript,
-                inputSatoshis
-            )
-
-            const sig2 = signTx(
-                tx,
-                privateKeyWrong,
-                accumulatorMultiSig.lockingScript,
-                inputSatoshis
-            )
-
-            const sig3 = signTx(
-                tx,
-                privateKeyWrong,
-                accumulatorMultiSig.lockingScript,
-                inputSatoshis
-            )
-
-            accumulatorMultiSig.main(
-                [
-                    PubKey(toHex(publicKey1)),
-                    PubKey(toHex(publicKey2)),
-                    PubKey(toHex(publicKey3)),
-                ],
-                [Sig(toHex(sig1)), Sig(toHex(sig2)), Sig(toHex(sig3))],
-                [true, false, false]
-            )
-        }).to.throw(
+    it('should throw with only one right.', async () => {
+        return expect(call([false, true, false])).to.be.rejectedWith(
             /the number of signatures does not meet the threshold limit/
         )
     })
 })
+
+async function call(
+    masks: FixedArray<boolean, typeof AccumulatorMultiSig.N>
+): Promise<MethodCallResult<AccumulatorMultiSig>> {
+    return accumulatorMultiSig.methods.main(
+        pubKeys,
+        (sigResps) => {
+            return pubKeys.map((pubKey) => {
+                try {
+                    return findSig(sigResps, bsv.PublicKey.fromString(pubKey))
+                } catch (error) {
+                    return getDummySig()
+                }
+            })
+        },
+        masks,
+        {
+            fromUTXO: getDummyUTXO(),
+            pubKeyOrAddrToSign: pubKeys
+                .filter((_, idx) => masks[idx])
+                .map((pubkey) => bsv.PublicKey.fromString(pubkey)),
+        } as MethodCallOptions<AccumulatorMultiSig>
+    )
+}

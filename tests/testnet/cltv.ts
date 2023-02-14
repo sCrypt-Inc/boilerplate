@@ -1,46 +1,24 @@
 import { CheckLockTimeVerify } from '../../src/contracts/cltv'
-import {
-    inputIndex,
-    inputSatoshis,
-    testnetDefaultSigner,
-} from './util/txHelper'
-import { bsv } from 'scrypt-ts'
+import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { MethodCallOptions } from 'scrypt-ts'
 
 async function main() {
     await CheckLockTimeVerify.compile()
 
-    // JS timestamps are in milliseconds so we divide by 1000 to get an UNIX timestamp
-    const timeNow = Math.floor(Date.now() / 1000)
-    const lockTimeMin = BigInt(timeNow - 10000)
-    const cltv = new CheckLockTimeVerify(lockTimeMin)
+    const lockTimeMin = 1673510000n
+    const checkLockTimeVerify = new CheckLockTimeVerify(lockTimeMin)
 
     // connect to a signer
-    await cltv.connect(await testnetDefaultSigner)
+    await checkLockTimeVerify.connect(getTestnetSigner())
 
     // contract deployment
-    const deployTx = await cltv.deploy(inputSatoshis)
+    const deployTx = await checkLockTimeVerify.deploy(inputSatoshis)
     console.log('CLTV contract deployed: ', deployTx.id)
 
     // contract call
-    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
-    const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
-        .addInputFromPrevTx(deployTx)
-        .change(changeAddress)
-        .setLockTime(timeNow)
-        .setInputSequence(inputIndex, 0)
-        .setInputScriptAsync({ inputIndex }, (tx: bsv.Transaction) => {
-            // bind contract & tx unlocking relation
-            cltv.to = { tx, inputIndex }
-
-            // use the cloned version because this callback may be executed multiple times during tx building process,
-            // and calling contract method may have side effects on its properties.
-            return cltv.getUnlockingScript(async (cloned) => {
-                cloned.unlock()
-            })
-        })
-    const callTx = await (
-        await testnetDefaultSigner
-    ).signAndsendTransaction(unsignedCallTx)
+    const { tx: callTx } = await checkLockTimeVerify.methods.unlock({
+        lockTime: 1673523720,
+    } as MethodCallOptions<CheckLockTimeVerify>)
     console.log('CLTV contract called: ', callTx.id)
 }
 

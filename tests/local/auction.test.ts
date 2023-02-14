@@ -1,141 +1,62 @@
-import { expect } from 'chai'
 import { Auction } from '../../src/contracts/auction'
-import { bsv, PubKeyHash, toHex, PubKey } from 'scrypt-ts'
-import { dummyUTXO, inputSatoshis } from './util/txHelper'
-
-const privateKeyAuctioneer = bsv.PrivateKey.fromRandom('testnet')
-const publicKeyAuctioneer = bsv.PublicKey.fromPrivateKey(privateKeyAuctioneer)
-
-const privateKeyBidder = bsv.PrivateKey.fromRandom('testnet')
-const publicKeyBidder = bsv.PublicKey.fromPrivateKey(privateKeyBidder)
-const publicKeyHashBidder = bsv.crypto.Hash.sha256ripemd160(
-    publicKeyBidder.toBuffer()
-)
+import {
+    findSig,
+    MethodCallOptions,
+    PubKey,
+    PubKeyHash,
+    toHex,
+} from 'scrypt-ts'
+import { getDummySigner, getDummyUTXO, randomPrivateKey } from './util/txHelper'
+import { expect } from 'chai'
 
 describe('Test SmartContract `Auction` on testnet', () => {
+    const [, , publicKeyHashHighestBidder] = randomPrivateKey()
+    const [privateKeyAuctioneer, publicKeyAuctioneer, ,] = randomPrivateKey()
+    const [, , publicKeyHashNewBidder, addressNewBidder] = randomPrivateKey()
+
+    const auctionDeadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
+
+    let auction: Auction
+
     before(async () => {
         await Auction.compile()
+        Auction.bindTxBuilder('bid', Auction.bidTxBuilder)
+
+        auction = new Auction(
+            PubKeyHash(toHex(publicKeyHashHighestBidder)),
+            PubKey(toHex(publicKeyAuctioneer)),
+            BigInt(auctionDeadline)
+        )
+        await auction.connect(getDummySigner(privateKeyAuctioneer))
     })
 
-    it('should pass Bid call', async () => {
-        await bidCallTest()
+    it('should pass `bid` call', async () => {
+        const balance = 1
+        const { tx: callTx, atInputIndex } = await auction.methods.bid(
+            PubKeyHash(toHex(publicKeyHashNewBidder)),
+            BigInt(balance + 1),
+            {
+                fromUTXO: getDummyUTXO(balance),
+                changeAddress: addressNewBidder,
+            } as MethodCallOptions<Auction>
+        )
+
+        const result = callTx.verifyInputScript(atInputIndex)
+        expect(result.success, result.error).to.eq(true)
     })
 
-    it('should pass Close call', async () => {
-        await closeCallTest()
+    it('should pass `close` call', async () => {
+        const { tx: callTx, atInputIndex } = await auction.methods.close(
+            (sigResps) => findSig(sigResps, publicKeyAuctioneer),
+            {
+                fromUTXO: getDummyUTXO(),
+                pubKeyOrAddrToSign: publicKeyAuctioneer,
+                changeAddress: addressNewBidder,
+                lockTime: auctionDeadline + 1,
+            } as MethodCallOptions<Auction>
+        )
+
+        const result = callTx.verifyInputScript(atInputIndex)
+        expect(result.success, result.error).to.eq(true)
     })
 })
-
-async function bidCallTest() {
-    const privateKeyHighestBid = bsv.PrivateKey.fromRandom('testnet')
-    const publicKeyHighestBid =
-        bsv.PublicKey.fromPrivateKey(privateKeyHighestBid)
-    const publicKeyHashHighestBid = bsv.crypto.Hash.sha256ripemd160(
-        publicKeyHighestBid.toBuffer()
-    )
-    const addressHighestBid = privateKeyHighestBid.toAddress()
-
-    const privateKeyAuctioneer = bsv.PrivateKey.fromRandom('testnet')
-    const publicKeyAuctioneer =
-        bsv.PublicKey.fromPrivateKey(privateKeyAuctioneer)
-
-    const privateKeyNewBid = bsv.PrivateKey.fromRandom('testnet')
-    const publicKeyNewBid = bsv.PublicKey.fromPrivateKey(privateKeyNewBid)
-    const publicKeyHashNewBid = bsv.crypto.Hash.sha256ripemd160(
-        publicKeyNewBid.toBuffer()
-    )
-    const addressNewBid = privateKeyNewBid.toAddress()
-
-    const bid = inputSatoshis + 10000
-
-    const FEE = 5000
-
-    const payInputSatoshis = 200000
-
-    const changeSatoshis = payInputSatoshis - bid - FEE
-
-    const oneDayAgo = new Date('2020-01-03')
-    // JS timestamps are in milliseconds so we divide by 1000 to get an UNIX timestamp
-    const auctionDeadline = BigInt(Math.round(oneDayAgo.valueOf() / 1000))
-
-    const auction = new Auction(
-        PubKeyHash(toHex(publicKeyHashHighestBid)),
-        PubKey(toHex(publicKeyAuctioneer)),
-        auctionDeadline
-    ).markAsGenesis()
-
-    const initBalance = 10000
-
-    const newInstance = auction.next()
-
-    const outputIndex = 0
-    const inputIndex = 0
-    newInstance.bidder = PubKeyHash(toHex(publicKeyHashNewBid))
-
-    const callTx: bsv.Transaction = new bsv.Transaction()
-        .addDummyInput(auction.lockingScript, initBalance)
-        .setOutput(outputIndex, () => {
-            // bind contract & tx locking relation
-            return new bsv.Transaction.Output({
-                // use the locking script of newInstance, as the locking script of the new UTXO
-                script: newInstance.lockingScript,
-                satoshis: bid,
-            })
-        })
-        .addOutput(
-            new bsv.Transaction.Output({
-                script: bsv.Script.buildPublicKeyHashOut(addressHighestBid),
-                satoshis: inputSatoshis,
-            })
-        )
-        .addOutput(
-            new bsv.Transaction.Output({
-                script: bsv.Script.buildPublicKeyHashOut(addressNewBid),
-                satoshis: changeSatoshis,
-            })
-        )
-        .setInputScript(inputIndex, (tx: bsv.Transaction) => {
-            // bind contract & tx unlocking relation
-            // use the cloned version because this callback will be executed multiple times during tx building process,
-            // and calling contract method may have side effects on its properties.
-            return auction.getUnlockingScript((cloned) => {
-                // call previous counter's public method to get the unlocking script.
-                cloned.to = { tx, inputIndex }
-                cloned.bid(
-                    PubKeyHash(toHex(publicKeyHashNewBid)),
-                    BigInt(bid),
-                    BigInt(changeSatoshis)
-                )
-            })
-        })
-        .seal()
-
-    const result = callTx.verifyInputScript(0)
-
-    expect(result.success, result.error).to.eq(true)
-}
-
-async function closeCallTest() {
-    const inputSatoshis = 1000
-    const inputIndex = 0
-    const auctionDeadline = 1673510000n
-    const timeNow = 1673523720
-
-    const instance = new Auction(
-        PubKeyHash(toHex(publicKeyHashBidder)),
-        PubKey(toHex(publicKeyAuctioneer)),
-        auctionDeadline
-    )
-
-    const deployTx = instance.getDeployTx([dummyUTXO], inputSatoshis)
-
-    const callTx = instance.getCallTxForClose(
-        timeNow,
-        privateKeyAuctioneer,
-        deployTx
-    )
-    callTx.seal()
-
-    const result = callTx.verifyInputScript(inputIndex)
-    expect(result.success, result.error).to.eq(true)
-}

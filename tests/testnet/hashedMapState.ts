@@ -1,9 +1,9 @@
 import {
     ByteString,
-    HashedMap,
-    toByteString,
     getSortedItem,
+    HashedMap,
     MethodCallOptions,
+    toByteString,
 } from 'scrypt-ts'
 import { HashedMapState } from '../../src/contracts/hashedMapState'
 import { getTestnetSigner } from './util/txHelper'
@@ -21,7 +21,7 @@ function insert(
     map.set(key, val)
     newInstance.hashedmap.attach(map)
 
-    return instance.methods().insert(getSortedItem(map, key), val, {
+    return instance.methods.insert(getSortedItem(map, key), val, {
         next: {
             instance: newInstance,
             balance: initBalance,
@@ -40,7 +40,7 @@ function update(
     map.set(key, val)
     newInstance.hashedmap.attach(map)
 
-    return instance.methods().update(getSortedItem(map, key), val, {
+    return instance.methods.update(getSortedItem(map, key), val, {
         next: {
             instance: newInstance,
             balance: initBalance,
@@ -56,7 +56,7 @@ function canGet(
 ) {
     const newInstance = instance.next()
 
-    return instance.methods().canGet(getSortedItem(map, key), val, {
+    return instance.methods.canGet(getSortedItem(map, key), val, {
         next: {
             instance: newInstance,
             balance: initBalance,
@@ -67,13 +67,12 @@ function canGet(
 function deleteKey(
     map: Map<bigint, ByteString>,
     instance: HashedMapState,
-    key: bigint,
-    val: ByteString
+    key: bigint
 ) {
     const newInstance = instance.next()
     map.delete(key)
     newInstance.hashedmap.attach(map)
-    return instance.methods().delete(getSortedItem(map, key), {
+    return instance.methods.delete(getSortedItem(map, key), {
         next: {
             instance: newInstance,
             balance: initBalance,
@@ -84,13 +83,12 @@ function deleteKey(
 function notExist(
     map: Map<bigint, ByteString>,
     instance: HashedMapState,
-    key: bigint,
-    val: ByteString
+    key: bigint
 ) {
     const newInstance = instance.next()
     map.delete(key)
     newInstance.hashedmap.attach(map)
-    return instance.methods().notExist(getSortedItem(map, key), {
+    return instance.methods.notExist(getSortedItem(map, key), {
         next: {
             instance: newInstance,
             balance: initBalance,
@@ -156,15 +154,14 @@ async function main() {
     const {
         tx: tx9,
         next: { instance: instance9 },
-    } = await deleteKey(map, instance8, 1n, toByteString('000001'))
+    } = await deleteKey(map, instance8, 1n)
     console.log('contract delete called: ', tx9.id)
-    const {
-        tx: tx10,
-        next: { instance: _ },
-    } = await notExist(map, instance9, 1n, toByteString('000001'))
+    const { tx: tx10 } = await notExist(map, instance9, 1n)
     console.log('contract notExist called: ', tx10.id)
 }
 
-main().catch((e) => {
-    console.log('error', e.message)
+describe('Test SmartContract `HashedMapState` on testnet', () => {
+    it('should succeed', async () => {
+        await main()
+    })
 })

@@ -1,39 +1,22 @@
 import { HelloWorld } from '../../src/contracts/helloWorld'
-import {
-    inputIndex,
-    inputSatoshis,
-    testnetDefaultSigner,
-} from './util/txHelper'
-import { bsv, toByteString } from 'scrypt-ts'
+import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { toByteString } from 'scrypt-ts'
 
 async function main() {
     await HelloWorld.compile()
-    const helloworld = new HelloWorld()
+    const helloWorld = new HelloWorld()
 
     // connect to a signer
-    await helloworld.connect(await testnetDefaultSigner)
+    await helloWorld.connect(getTestnetSigner())
 
     // contract deployment
-    const deployTx = await helloworld.deploy(inputSatoshis)
+    const deployTx = await helloWorld.deploy(inputSatoshis)
     console.log('HelloWorld contract deployed: ', deployTx.id)
 
     // contract call
-    const changeAddress = await (await testnetDefaultSigner).getDefaultAddress()
-    const unsignedCallTx: bsv.Transaction = await new bsv.Transaction()
-        .addInputFromPrevTx(deployTx)
-        .change(changeAddress)
-        .setInputScriptAsync({ inputIndex }, (tx: bsv.Transaction) => {
-            // bind contract & tx unlocking relation
-            helloworld.to = { tx, inputIndex }
-            // use the cloned version because this callback may be executed multiple times during tx building process,
-            // and calling contract method may have side effects on its properties.
-            return helloworld.getUnlockingScript(async (cloned) => {
-                cloned.unlock(toByteString('hello world', true))
-            })
-        })
-    const callTx = await (
-        await testnetDefaultSigner
-    ).signAndsendTransaction(unsignedCallTx)
+    const { tx: callTx } = await helloWorld.methods.unlock(
+        toByteString('hello world', true)
+    )
     console.log('HelloWorld contract `unlock` called: ', callTx.id)
 }
 
