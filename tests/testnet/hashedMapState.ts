@@ -160,6 +160,8 @@ async function main() {
     console.log('contract notExist called: ', tx10.id)
 }
 
-main().catch((e) => {
-    console.log('error', e.message)
+describe('Test SmartContract `HashedMapState` on testnet', () => {
+    it('should succeed', async () => {
+        await main()
+    })
 })

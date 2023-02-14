@@ -63,6 +63,8 @@ async function main() {
     console.log('Close Tx: ', closeTx.id)
 }
 
-main().catch((e) => {
-    console.log('error', e.message)
+describe('Test SmartContract `Auction` on testnet', () => {
+    it('should succeed', async () => {
+        await main()
+    })
 })

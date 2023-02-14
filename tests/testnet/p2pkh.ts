@@ -40,6 +40,8 @@ async function main() {
     console.log('P2PKH contract called: ', callTx.id)
 }
 
-main().catch((e) => {
-    console.log('error', e.message)
+describe('Test SmartContract `P2PKH` on testnet', () => {
+    it('should succeed', async () => {
+        await main()
+    })
 })

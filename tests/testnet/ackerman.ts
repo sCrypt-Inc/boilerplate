@@ -17,6 +17,8 @@ async function main() {
     console.log('Ackermann contract called: ', callTx.id)
 }
 
-main().catch((e) => {
-    console.log('error', e.message)
+describe('Test SmartContract `Ackermann` on testnet', () => {
+    it('should succeed', async () => {
+        await main()
+    })
 })

@@ -72,6 +72,8 @@ async function main() {
     console.log('AccumulatorMultiSig contract called: ', callTx.id)
 }
 
-main().catch((e) => {
-    console.log('error', e.message)
+describe('Test SmartContract `AccumulatorMultiSig` on testnet', () => {
+    it('should succeed', async () => {
+        await main()
+    })
 })

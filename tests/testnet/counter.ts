@@ -44,6 +44,8 @@ async function main() {
     }
 }
 
-main().catch((e) => {
-    console.log('error', e.message)
+describe('Test SmartContract `Counter` on testnet', () => {
+    it('should succeed', async () => {
+        await main()
+    })
 })

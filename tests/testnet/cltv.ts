@@ -22,6 +22,8 @@ async function main() {
     console.log('CLTV contract called: ', callTx.id)
 }
 
-main().catch((e) => {
-    console.log('error', e.message)
+describe('Test SmartContract `CheckLockTimeVerify` on testnet', () => {
+    it('should succeed', async () => {
+        await main()
+    })
 })
