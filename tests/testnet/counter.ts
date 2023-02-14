@@ -1,5 +1,5 @@
 import { Counter } from '../../src/contracts/counter'
-import { getTestnetSigner } from './util/txHelper'
+import { getTestnetSigner, sleep } from './util/txHelper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 async function main() {
@@ -21,6 +21,9 @@ async function main() {
 
     // call the method of current instance to apply the updates on chain
     for (let i = 0; i < 3; ++i) {
+        // avoid mempool conflicts, sleep to allow previous tx "sink-into" the network
+        await sleep(2)
+
         // create the next instance from the current
         const nextInstance = currentInstance.next()
 

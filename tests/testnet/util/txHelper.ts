@@ -1,38 +1,7 @@
-import { bsv, TestWallet, UTXO, WhatsonchainProvider } from 'scrypt-ts'
+import { bsv, TestWallet, WhatsonchainProvider } from 'scrypt-ts'
 import { myPrivateKey } from '../../util/privateKey'
-import axios from 'axios'
-
-const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
 
 export const inputSatoshis = 10000
-
-export async function fetchUtxos(
-    address: string = myPrivateKey.toAddress().toString()
-): Promise<UTXO[]> {
-    const url = `${API_PREFIX}/address/${address}/unspent`
-    const { data: utxos } = await axios.get(url)
-    return utxos.map((utxo: Record<string, unknown>) => ({
-        txId: utxo.tx_hash,
-        outputIndex: utxo.tx_pos,
-        satoshis: utxo.value,
-        script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
-    }))
-}
-
-export async function sendTx(tx: bsv.Transaction): Promise<string> {
-    try {
-        const { data: txid } = await axios.post(`${API_PREFIX}/tx/raw`, {
-            txhex: tx.toString(),
-        })
-        return txid
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.log('sendTx error', error.response.data)
-        }
-
-        throw error
-    }
-}
 
 export const sleep = async (seconds: number) => {
     return new Promise((resolve) => {
