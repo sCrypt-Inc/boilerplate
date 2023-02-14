@@ -14,3 +14,10 @@ script:
   - npm t
   - echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
   - if [ $TRAVIS_EVENT_TYPE == "cron" ] && [ $TRAVIS_OS_NAME == "linux" ] ; then npm run testnet; fi
+
+notifications:
+  slack:
+    rooms:
+      - secure: "TaE6+Awa49WqTWtL7SK92EL+DaDE+gRDK+WgbrjLlT0aYb1yc82+teX07P0ISO6C4gTN6AlP0wlcswj96HRAaSVQXlpkGF9nnlcUA6kAjxA7AJVe3cCtFnySO9Fc2qHUGYCs9cfLIoj8F3UhHjfZE+TiLLbnsoFiEv6H3o4QdcJ1GC0ZAizcTukr/e1kthmh8bgysqjhkhnB29GxODdkQL+2/lpqO/sTO/NdtnWYMfk42Mg3wKi+8vC3RKL9WrMXCH2n5dVgtmr471My0Z/WQsLdmXnmhAJ36rByDJmbgCSIJoA3JpRoEy6SG+Eyp4kWr5TZcZHxAJTA/m9eWuNrdwoDTL+JzupS9tlMeIMWW1iARFsQVnEVMN79MculfyitNSgi+rlBsCv+3tG0Xmvg6X9TJjXlA1+QsCwib7PlXtUQptrmxXUsS5rQKQ6UuxlYQqN37wU6xSxMP5ggd+KITDYSIzOlaw0+mTYzM+R237rR6H+PF/jS5lsQrrTGuzK7PDoTCLm8zw8SDtfH20TGlKwHelr40fKiPVL/PXJVqt5gI17F3e45s/YyQ4AHCYaGGpaNAnmjxYO5zJQRBGkYK3fQgexjFyYgbrr2Pi5tNSDKyHnXbepnTT5ZoRRe9Ae6LaMur/mUKGeEm8nGW/wi62C9rCCBMPmdDkhb9HQZ+Fs="
+    on_success: change
+    on_failure: always
