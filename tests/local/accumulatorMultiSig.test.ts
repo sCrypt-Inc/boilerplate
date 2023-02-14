@@ -11,7 +11,7 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
-import { getDummySigner, dummyUTXO, randomPrivateKey } from './util/txHelper'
+import { getDummySigner, randomPrivateKey, getDummyUTXO } from './util/txHelper'
 
 const [privateKey1, publicKey1, publicKeyHash1] = randomPrivateKey()
 const [privateKey2, publicKey2, publicKeyHash2] = randomPrivateKey()
@@ -22,9 +22,7 @@ const pubKeys = [publicKey1, publicKey2, publicKey3].map((pk) => {
 }) as FixedArray<PubKey, typeof AccumulatorMultiSig.N>
 
 const pubKeyHashes = [publicKeyHash1, publicKeyHash2, publicKeyHash3].map(
-    (pkh) => {
-        return PubKeyHash(toHex(pkh))
-    }
+    (pkh) => PubKeyHash(toHex(pkh))
 ) as FixedArray<PubKeyHash, typeof AccumulatorMultiSig.N>
 
 let accumulatorMultiSig: AccumulatorMultiSig
@@ -73,7 +71,7 @@ async function call(
         },
         masks,
         {
-            fromUTXO: dummyUTXO,
+            fromUTXO: getDummyUTXO(),
             pubKeyOrAddrToSign: pubKeys
                 .filter((_, idx) => masks[idx])
                 .map((pubkey) => bsv.PublicKey.fromString(pubkey)),

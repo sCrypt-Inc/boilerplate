@@ -11,6 +11,9 @@ import {
 } from 'scrypt-ts'
 
 export class Crowdfund extends SmartContract {
+    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
+    static readonly UINT_MAX = 0xffffffffn
+
     @prop()
     readonly recipient: PubKey
 
@@ -39,7 +42,7 @@ export class Crowdfund extends SmartContract {
     // Method to collect pledged fund.
     @method()
     public collect(sig: Sig) {
-        // Ensure collected amount actually reached the target.
+        // Ensure the collected amount actually reaches the target.
         assert(this.ctx.utxo.value >= this.target)
         // Funds go to the recipient.
         const output = Utils.buildPublicKeyHashOutput(
@@ -62,12 +65,15 @@ export class Crowdfund extends SmartContract {
     @method()
     public refund(sig: Sig) {
         // Require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
-        assert(this.ctx.sequence < 0xffffffffn, 'require nLocktime enabled')
+        assert(
+            this.ctx.sequence < Crowdfund.UINT_MAX,
+            'require nLocktime enabled'
+        )
 
         // Check if using block height.
-        if (this.deadline < 500000000) {
+        if (this.deadline < Crowdfund.LOCKTIME_BLOCK_HEIGHT_MARKER) {
             // Enforce nLocktime field to also use block height.
-            assert(this.ctx.locktime < 500000000)
+            assert(this.ctx.locktime < Crowdfund.LOCKTIME_BLOCK_HEIGHT_MARKER)
         }
         assert(this.ctx.locktime >= this.deadline, 'fundraising expired')
         assert(

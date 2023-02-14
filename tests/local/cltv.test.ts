@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { CheckLockTimeVerify } from '../../src/contracts/cltv'
-import { getDummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from './util/txHelper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `CheckLockTimeVerify`', () => {
@@ -16,7 +16,7 @@ describe('Test SmartContract `CheckLockTimeVerify`', () => {
 
     it('should pass the public method unit test successfully.', async () => {
         const { tx: callTx, atInputIndex } = await cltv.methods.unlock({
-            fromUTXO: dummyUTXO,
+            fromUTXO: getDummyUTXO(),
             lockTime: 1673523720,
         } as MethodCallOptions<CheckLockTimeVerify>)
         const result = callTx.verifyInputScript(atInputIndex)
@@ -26,7 +26,7 @@ describe('Test SmartContract `CheckLockTimeVerify`', () => {
     it('should fail when nLocktime is too low.', async () => {
         return expect(
             cltv.methods.unlock({
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
                 lockTime: 1673500100,
             } as MethodCallOptions<CheckLockTimeVerify>)
         ).to.be.rejectedWith(/locktime has not yet expired/)

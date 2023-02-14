@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { MethodCallOptions, toByteString } from 'scrypt-ts'
 import { HelloWorld } from '../../src/contracts/helloWorld'
-import { getDummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from './util/txHelper'
 
 describe('Test SmartContract `HelloWorld`', () => {
     before(async () => {
@@ -14,7 +14,7 @@ describe('Test SmartContract `HelloWorld`', () => {
         const { tx: callTx, atInputIndex } = await helloWorld.methods.unlock(
             toByteString('hello world', true),
             {
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
             } as MethodCallOptions<HelloWorld>
         )
 

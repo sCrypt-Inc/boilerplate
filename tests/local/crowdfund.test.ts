@@ -3,7 +3,7 @@ import { findSig, MethodCallOptions, PubKey, toHex } from 'scrypt-ts'
 import { Crowdfund } from '../../src/contracts/crowdfund'
 import {
     getDummySigner,
-    dummyUTXO,
+    getDummyUTXO,
     inputSatoshis,
     randomPrivateKey,
 } from './util/txHelper'
@@ -12,7 +12,7 @@ const [privateKeyRecipient, publicKeyRecipient, ,] = randomPrivateKey()
 const [privateKeyContributor, publicKeyContributor, ,] = randomPrivateKey()
 
 describe('Test SmartContract `Crowdfund`', () => {
-    // JS timestamps are in milliseconds, so we divide by 1000 to get UNIX timestamp
+    // JS timestamps are in milliseconds, so we divide by 1000 to get a UNIX timestamp
     const deadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
     const target = BigInt(inputSatoshis - 100)
 
@@ -35,7 +35,7 @@ describe('Test SmartContract `Crowdfund`', () => {
         const { tx: callTx, atInputIndex } = await crowdfund.methods.collect(
             (sigResps) => findSig(sigResps, publicKeyRecipient),
             {
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: publicKeyRecipient,
                 changeAddress: publicKeyRecipient.toAddress('testnet'),
             } as MethodCallOptions<Crowdfund>
@@ -49,7 +49,7 @@ describe('Test SmartContract `Crowdfund`', () => {
         const { tx: callTx, atInputIndex } = await crowdfund.methods.refund(
             (sigResps) => findSig(sigResps, publicKeyContributor),
             {
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: publicKeyContributor,
                 lockTime: today,
             } as MethodCallOptions<Crowdfund>
@@ -63,7 +63,7 @@ describe('Test SmartContract `Crowdfund`', () => {
             crowdfund.methods.refund(
                 (sigResps) => findSig(sigResps, publicKeyContributor),
                 {
-                    fromUTXO: dummyUTXO,
+                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: publicKeyContributor,
                     lockTime: deadline - 1,
                 } as MethodCallOptions<Crowdfund>

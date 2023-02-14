@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Mimc7Test } from '../../src/contracts/mimc7'
-import { getDummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from './util/txHelper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `Mimc7Test`', () => {
@@ -17,7 +17,7 @@ describe('Test SmartContract `Mimc7Test`', () => {
             2n,
             10594780656576967754230020536574539122676596303354946869887184401991294982664n,
             {
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
             } as MethodCallOptions<Mimc7Test>
         )
 

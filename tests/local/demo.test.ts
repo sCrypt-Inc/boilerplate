@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import { Demo } from '../../src/contracts/demo'
 import { MethodCallOptions } from 'scrypt-ts'
-import { getDummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from './util/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)
@@ -18,7 +18,7 @@ describe('Test SmartContract `Demo`', () => {
 
     it('should pass `add`', async () => {
         const { tx: callTx, atInputIndex } = await demo.methods.add(5n, {
-            fromUTXO: dummyUTXO,
+            fromUTXO: getDummyUTXO(),
         } as MethodCallOptions<Demo>)
         const result = callTx.verifyInputScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
@@ -26,7 +26,7 @@ describe('Test SmartContract `Demo`', () => {
 
     it('should pass `sub`', async () => {
         const { tx: callTx, atInputIndex } = await demo.methods.sub(-9n, {
-            fromUTXO: dummyUTXO,
+            fromUTXO: getDummyUTXO(),
         } as MethodCallOptions<Demo>)
         const result = callTx.verifyInputScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
@@ -35,7 +35,7 @@ describe('Test SmartContract `Demo`', () => {
     it('should throw when calling `add`', () => {
         return expect(
             demo.methods.add(-5n, {
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
             } as MethodCallOptions<Demo>)
         ).to.be.rejectedWith(/add check failed/)
     })
@@ -43,7 +43,7 @@ describe('Test SmartContract `Demo`', () => {
     it('should throw when calling `sub`', () => {
         return expect(
             demo.methods.sub(9n, {
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
             } as MethodCallOptions<Demo>)
         ).to.be.rejectedWith(/sub check failed/)
     })

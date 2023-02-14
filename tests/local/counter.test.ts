@@ -1,16 +1,16 @@
 import { expect } from 'chai'
 import { Counter } from '../../src/contracts/counter'
-import { getDummySigner, getDummyContractUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from './util/txHelper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `Counter`', () => {
-    const balance = 1
-
     before(async () => {
         await Counter.compile()
     })
 
     it('should pass the public method unit test successfully.', async () => {
+        const balance = 1
+
         const counter = new Counter(0n)
         await counter.connect(getDummySigner())
 
@@ -28,7 +28,7 @@ describe('Test SmartContract `Counter`', () => {
             // call the method of current instance to apply the updates on chain
             const { tx: tx_i, atInputIndex } =
                 await currentInstance.methods.incrementOnChain({
-                    fromUTXO: getDummyContractUTXO(balance),
+                    fromUTXO: getDummyUTXO(balance),
                     next: {
                         instance: nextInstance,
                         balance,

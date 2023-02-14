@@ -1,7 +1,8 @@
 import { assert, method, prop, SmartContract } from 'scrypt-ts'
 
 export class CheckLockTimeVerify extends SmartContract {
-    public static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
+    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
+    static readonly UINT_MAX = 0xffffffffn
 
     @prop()
     readonly matureTime: bigint // Can be a timestamp or block height.
@@ -15,8 +16,8 @@ export class CheckLockTimeVerify extends SmartContract {
     public unlock() {
         // Ensure nSequence is less than UINT_MAX.
         assert(
-            this.ctx.sequence < 0xffffffffn,
-            'sequence should be less than 0xffffffffn'
+            this.ctx.sequence < CheckLockTimeVerify.UINT_MAX,
+            'input sequence should less than UINT_MAX'
         )
 
         // Check if using block height.

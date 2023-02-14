@@ -8,7 +8,7 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { getDummySigner, dummyUTXO, randomPrivateKey } from './util/txHelper'
+import { getDummySigner, getDummyUTXO, randomPrivateKey } from './util/txHelper'
 import { myPublicKey, myPublicKeyHash } from '../util/privateKey'
 
 use(chaiAsPromised)
@@ -36,7 +36,7 @@ describe('Test SmartContract `P2PKH`', () => {
             PubKey(toHex(myPublicKey)),
             // method call options
             {
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
                 // tell the signer to use the private key corresponding to `myPublicKey` to sign this transaction
                 // that is using `myPrivateKey` to sign the transaction
                 pubKeyOrAddrToSign: myPublicKey,
@@ -61,7 +61,7 @@ describe('Test SmartContract `P2PKH`', () => {
                 // pass the correct public key
                 PubKey(toHex(myPublicKey)),
                 {
-                    fromUTXO: dummyUTXO,
+                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: wrongPublicKey, // use `wrongPrivateKey` to sign
                 } as MethodCallOptions<P2PKH>
             )
@@ -80,7 +80,7 @@ describe('Test SmartContract `P2PKH`', () => {
                 // but pass the wrong public key
                 PubKey(toHex(wrongPublicKey)),
                 {
-                    fromUTXO: dummyUTXO,
+                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: myPublicKey, // use the correct private key, `myPrivateKey`, to sign
                 } as MethodCallOptions<P2PKH>
             )

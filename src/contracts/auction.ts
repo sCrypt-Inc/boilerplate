@@ -16,6 +16,7 @@ import {
 
 export class Auction extends SmartContract {
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
+    static readonly UINT_MAX = 0xffffffffn
 
     // The bidder's address.
     @prop(true)
@@ -83,7 +84,7 @@ export class Auction extends SmartContract {
             assert(this.ctx.locktime < Auction.LOCKTIME_BLOCK_HEIGHT_MARKER)
         }
         assert(
-            this.ctx.sequence < 0xffffffffn,
+            this.ctx.sequence < Auction.UINT_MAX,
             'input sequence should less than UINT_MAX'
         )
         assert(
@@ -95,6 +96,7 @@ export class Auction extends SmartContract {
         assert(this.checkSig(sig, this.auctioneer), 'signature check failed')
     }
 
+    // User defined transaction builder for calling function `bid`
     static bidTxBuilder(
         options: BuildMethodCallTxOptions<Auction>,
         bidder: PubKeyHash,

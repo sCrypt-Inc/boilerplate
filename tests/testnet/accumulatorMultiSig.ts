@@ -23,9 +23,7 @@ async function main() {
     const [privateKey3, publicKey3, publicKeyHash3] = randomPrivateKey()
 
     const pubKeyHashes = [publicKeyHash1, publicKeyHash2, publicKeyHash3].map(
-        (pkh) => {
-            return PubKeyHash(toHex(pkh))
-        }
+        (pkh) => PubKeyHash(toHex(pkh))
     ) as FixedArray<PubKeyHash, typeof AccumulatorMultiSig.N>
 
     const accumulatorMultiSig = new AccumulatorMultiSig(2n, pubKeyHashes)

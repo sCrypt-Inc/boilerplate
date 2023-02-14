@@ -6,12 +6,7 @@ import {
     PubKeyHash,
     toHex,
 } from 'scrypt-ts'
-import {
-    getDummySigner,
-    dummyUTXO,
-    getDummyContractUTXO,
-    randomPrivateKey,
-} from './util/txHelper'
+import { getDummySigner, getDummyUTXO, randomPrivateKey } from './util/txHelper'
 import { expect } from 'chai'
 
 describe('Test SmartContract `Auction` on testnet', () => {
@@ -41,7 +36,7 @@ describe('Test SmartContract `Auction` on testnet', () => {
             PubKeyHash(toHex(publicKeyHashNewBidder)),
             BigInt(balance + 1),
             {
-                fromUTXO: getDummyContractUTXO(balance),
+                fromUTXO: getDummyUTXO(balance),
                 changeAddress: addressNewBidder,
             } as MethodCallOptions<Auction>
         )
@@ -54,7 +49,7 @@ describe('Test SmartContract `Auction` on testnet', () => {
         const { tx: callTx, atInputIndex } = await auction.methods.close(
             (sigResps) => findSig(sigResps, publicKeyAuctioneer),
             {
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: publicKeyAuctioneer,
                 changeAddress: addressNewBidder,
                 lockTime: auctionDeadline + 1,

@@ -1,21 +1,10 @@
 import { bsv, TestWallet, UTXO, WhatsonchainProvider } from 'scrypt-ts'
-import { randomBytes } from 'crypto'
 import { myPrivateKey } from '../../util/privateKey'
 import axios from 'axios'
 
 const API_PREFIX = 'https://api.whatsonchain.com/v1/bsv/test'
 
 export const inputSatoshis = 10000
-
-export const inputIndex = 0
-export const outputIndex = 0
-
-export const dummyUTXO = {
-    txId: randomBytes(32).toString('hex'),
-    outputIndex: 0,
-    script: '', // placeholder
-    satoshis: inputSatoshis,
-}
 
 export async function fetchUtxos(
     address: string = myPrivateKey.toAddress().toString()
@@ -28,13 +17,6 @@ export async function fetchUtxos(
         satoshis: utxo.value,
         script: bsv.Script.buildPublicKeyHashOut(address).toHex(),
     }))
-}
-
-export function newTx(utxos?: Array<UTXO>) {
-    if (utxos) {
-        return new bsv.Transaction().from(utxos)
-    }
-    return new bsv.Transaction().from(dummyUTXO)
 }
 
 export async function sendTx(tx: bsv.Transaction): Promise<string> {
@@ -58,29 +40,6 @@ export const sleep = async (seconds: number) => {
             resolve({})
         }, seconds * 1000)
     })
-}
-
-export async function signAndSend(
-    tx: bsv.Transaction,
-    privKey: bsv.PrivateKey = myPrivateKey,
-    autoChange = true
-): Promise<bsv.Transaction> {
-    if (autoChange) {
-        tx.change(privKey.toAddress())
-    }
-
-    tx.sign(privKey).seal()
-
-    try {
-        await sendTx(tx)
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.log('\x1B[31sendTx error: ', error.response?.data)
-        }
-        throw error
-    }
-
-    return tx
 }
 
 export function randomPrivateKey() {

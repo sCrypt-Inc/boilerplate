@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { MethodCallOptions, PubKeyHash, toHex } from 'scrypt-ts'
 import { AnyoneCanSpend } from '../../src/contracts/acs'
 import { myPublicKeyHash } from '../util/privateKey'
-import { getDummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from './util/txHelper'
 
 describe('Test SmartContract `AnyoneCanSpend`', () => {
     before(async () => {
@@ -17,7 +17,7 @@ describe('Test SmartContract `AnyoneCanSpend`', () => {
 
         const { tx: callTx, atInputIndex } =
             await anyoneCanSpend.methods.unlock({
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
             } as MethodCallOptions<AnyoneCanSpend>)
 
         const result = callTx.verifyInputScript(atInputIndex)

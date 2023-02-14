@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { MethodCallOptions, sha256, toByteString } from 'scrypt-ts'
 import { HashPuzzle } from '../../src/contracts/hashPuzzle'
-import { getDummySigner, dummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from './util/txHelper'
 
 const plainText = 'abc'
 const byteString = toByteString(plainText, true)
@@ -18,7 +18,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
         const { tx: callTx, atInputIndex } = await hashPuzzle.methods.unlock(
             byteString,
             {
-                fromUTXO: dummyUTXO,
+                fromUTXO: getDummyUTXO(),
             } as MethodCallOptions<HashPuzzle>
         )
 

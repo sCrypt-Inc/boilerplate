@@ -5,7 +5,7 @@ import {
     method,
     prop,
     PubKey,
-    Ripemd160,
+    PubKeyHash,
     Sig,
     SmartContract,
 } from 'scrypt-ts'
@@ -20,11 +20,11 @@ export class AccumulatorMultiSig extends SmartContract {
 
     // Addresses.
     @prop()
-    readonly pubKeyHashes: FixedArray<Ripemd160, typeof AccumulatorMultiSig.N>
+    readonly pubKeyHashes: FixedArray<PubKeyHash, typeof AccumulatorMultiSig.N>
 
     constructor(
         threshold: bigint,
-        pubKeyHashes: FixedArray<Ripemd160, typeof AccumulatorMultiSig.N>
+        pubKeyHashes: FixedArray<PubKeyHash, typeof AccumulatorMultiSig.N>
     ) {
         super(...arguments)
         this.threshold = threshold
