@@ -35,7 +35,7 @@ describe('Test SmartContract `Counter`', () => {
                     },
                 } as MethodCallOptions<Counter>)
 
-            const result = tx_i.verifyInputScript(atInputIndex)
+            const result = tx_i.verifyScript(atInputIndex)
             expect(result.success, result.error).to.eq(true)
 
             // update the current instance reference

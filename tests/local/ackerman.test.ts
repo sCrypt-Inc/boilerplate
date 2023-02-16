@@ -23,7 +23,7 @@ describe('Test SmartContract `Ackermann`', () => {
                 fromUTXO: getDummyUTXO(),
             } as MethodCallOptions<Ackermann>
         )
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 

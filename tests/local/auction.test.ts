@@ -41,7 +41,7 @@ describe('Test SmartContract `Auction` on testnet', () => {
             } as MethodCallOptions<Auction>
         )
 
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
@@ -56,7 +56,7 @@ describe('Test SmartContract `Auction` on testnet', () => {
             } as MethodCallOptions<Auction>
         )
 
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 })

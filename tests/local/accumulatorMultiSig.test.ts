@@ -38,13 +38,13 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
 
     it('should successfully with all three right.', async () => {
         const { tx: callTx, atInputIndex } = await call([true, true, true])
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
     it('should successfully with two right.', async () => {
         const { tx: callTx, atInputIndex } = await call([true, false, true])
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 

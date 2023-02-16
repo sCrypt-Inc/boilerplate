@@ -22,7 +22,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
             } as MethodCallOptions<HashPuzzle>
         )
 
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 })

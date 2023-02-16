@@ -43,7 +43,7 @@ describe('Test SmartContract `P2PKH`', () => {
             } as MethodCallOptions<P2PKH>
         )
         // check if the unlock transaction built above is correct
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 

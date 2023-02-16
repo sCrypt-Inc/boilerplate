@@ -20,7 +20,7 @@ describe('Test SmartContract `Demo`', () => {
         const { tx: callTx, atInputIndex } = await demo.methods.add(5n, {
             fromUTXO: getDummyUTXO(),
         } as MethodCallOptions<Demo>)
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
@@ -28,7 +28,7 @@ describe('Test SmartContract `Demo`', () => {
         const { tx: callTx, atInputIndex } = await demo.methods.sub(-9n, {
             fromUTXO: getDummyUTXO(),
         } as MethodCallOptions<Demo>)
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 

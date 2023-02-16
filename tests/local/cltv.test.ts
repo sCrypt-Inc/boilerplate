@@ -19,7 +19,7 @@ describe('Test SmartContract `CheckLockTimeVerify`', () => {
             fromUTXO: getDummyUTXO(),
             lockTime: 1673523720,
         } as MethodCallOptions<CheckLockTimeVerify>)
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 

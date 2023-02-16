@@ -66,7 +66,7 @@ export class Auction extends SmartContract {
 
         // Add change output.
         if (this.changeAmount > 0) {
-            outputs += this.buildChangeOutput(bidder)
+            outputs += this.buildChangeOutput()
         }
 
         assert(

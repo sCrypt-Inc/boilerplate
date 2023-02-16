@@ -40,7 +40,7 @@ describe('Test SmartContract `Crowdfund`', () => {
                 changeAddress: publicKeyRecipient.toAddress('testnet'),
             } as MethodCallOptions<Crowdfund>
         )
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
@@ -54,7 +54,7 @@ describe('Test SmartContract `Crowdfund`', () => {
                 lockTime: today,
             } as MethodCallOptions<Crowdfund>
         )
-        const result = callTx.verifyInputScript(atInputIndex)
+        const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
