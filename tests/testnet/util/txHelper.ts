@@ -1,9 +1,4 @@
-import {
-    bsv,
-    DefaultProvider,
-    TestWallet,
-    WhatsonchainProvider,
-} from 'scrypt-ts'
+import { bsv, DefaultProvider, TestWallet } from 'scrypt-ts'
 import { myPrivateKey } from '../../util/privateKey'
 
 export const inputSatoshis = 10000
