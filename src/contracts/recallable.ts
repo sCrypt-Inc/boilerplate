@@ -67,7 +67,7 @@ export class Recallable extends SmartContract {
 
     @method()
     public recall(issuerSig: Sig) {
-        // require the issuer to provide signature before transfer
+        // require the issuer to provide signature before recall
         assert(
             this.checkSig(issuerSig, this.issuerPubKey),
             "issuer's signature check failed"
