@@ -93,12 +93,12 @@ describe('Test SmartContract `Recallable`', () => {
                     pubKeyOrAddrToSign: alicePublicKey,
                     next: [
                         {
-                            instance: aliceNextInstance,
-                            balance: satoshisLeft,
-                        },
-                        {
                             instance: bobNextInstance,
                             balance: satoshiSent,
+                        },
+                        {
+                            instance: aliceNextInstance,
+                            balance: satoshisLeft,
                         },
                     ],
                 } as MethodCallOptions<Recallable>

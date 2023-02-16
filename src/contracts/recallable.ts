@@ -1,13 +1,11 @@
 import {
     assert,
-    ByteString,
     hash256,
     method,
     prop,
     PubKey,
     Sig,
     SmartContract,
-    toByteString,
 } from 'scrypt-ts'
 
 export class Recallable extends SmartContract {
@@ -43,17 +41,23 @@ export class Recallable extends SmartContract {
             "user's signature check failed"
         )
 
+        // temp record previous user
+        const previousUserPubKey = this.userPubKey
+
         // construct all the outputs of the method calling tx
-        let outputs: ByteString = toByteString('')
-        // 1. the change output back to `user`
+
+        // the output send to `receiver`
+        this.userPubKey = receiverPubKey
+        let outputs = this.buildStateOutput(satoshisSent)
+
+        // the change output back to previous `user`
         const satoshisLeft = satoshisTotal - satoshisSent
         if (satoshisLeft > 0) {
+            this.userPubKey = previousUserPubKey
             outputs += this.buildStateOutput(satoshisLeft)
         }
-        // 2. the output send to `receiver`
-        this.userPubKey = receiverPubKey
-        outputs += this.buildStateOutput(satoshisSent)
-        // 3. the change output for paying the transaction fee
+
+        // the change output for paying the transaction fee
         if (this.changeAmount > 0) {
             outputs += this.buildChangeOutput()
         }
