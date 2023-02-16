@@ -23,7 +23,7 @@ describe('Test SmartContract `Counter`', () => {
             const nextInstance = currentInstance.next()
 
             // apply updates on the next instance off chain
-            nextInstance.incrementOffChain()
+            nextInstance.increment()
 
             // call the method of current instance to apply the updates on chain
             const { tx: tx_i, atInputIndex } =
