@@ -1,6 +1,6 @@
 import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
 import {
-    getTestnetSigner,
+    getDefaultSigner,
     inputSatoshis,
     randomPrivateKey,
 } from './util/txHelper'
@@ -28,7 +28,7 @@ async function main() {
 
     const accumulatorMultiSig = new AccumulatorMultiSig(2n, pubKeyHashes)
 
-    const signer = await getTestnetSigner([
+    const signer = await getDefaultSigner([
         privateKey1,
         privateKey2,
         privateKey3,

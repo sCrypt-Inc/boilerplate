@@ -1,4 +1,9 @@
-import { bsv, TestWallet, WhatsonchainProvider } from 'scrypt-ts'
+import {
+    bsv,
+    DefaultProvider,
+    TestWallet,
+    WhatsonchainProvider,
+} from 'scrypt-ts'
 import { myPrivateKey } from '../../util/privateKey'
 
 export const inputSatoshis = 10000
@@ -19,13 +24,13 @@ export function randomPrivateKey() {
     return [privateKey, publicKey, publicKeyHash, address] as const
 }
 
-export function getTestnetSigner(
+export function getDefaultSigner(
     privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
 ): TestWallet {
     if (global.testnetSigner === undefined) {
         global.testnetSigner = new TestWallet(
             myPrivateKey,
-            new WhatsonchainProvider(bsv.Networks.testnet)
+            new DefaultProvider()
         )
     }
     if (privateKey !== undefined) {

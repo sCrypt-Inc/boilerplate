@@ -1,5 +1,5 @@
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from './util/txHelper'
 import { myPublicKey, myPublicKeyHash } from '../util/privateKey'
 
 import {
@@ -15,7 +15,7 @@ async function main() {
     const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
 
     // connect to a signer
-    await p2pkh.connect(getTestnetSigner())
+    await p2pkh.connect(getDefaultSigner())
 
     // deploy
     const deployTx = await p2pkh.deploy(inputSatoshis)

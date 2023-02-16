@@ -1,5 +1,5 @@
 import { HelloWorld } from '../../src/contracts/helloWorld'
-import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from './util/txHelper'
 import { toByteString } from 'scrypt-ts'
 
 async function main() {
@@ -7,7 +7,7 @@ async function main() {
     const helloWorld = new HelloWorld()
 
     // connect to a signer
-    await helloWorld.connect(getTestnetSigner())
+    await helloWorld.connect(getDefaultSigner())
 
     // contract deployment
     const deployTx = await helloWorld.deploy(inputSatoshis)

@@ -1,5 +1,5 @@
 import { Auction } from '../../src/contracts/auction'
-import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from './util/txHelper'
 import {
     findSig,
     MethodCallOptions,
@@ -34,7 +34,7 @@ async function main() {
         BigInt(auctionDeadline)
     )
 
-    await auction.connect(getTestnetSigner(privateKeyAuctioneer))
+    await auction.connect(getDefaultSigner(privateKeyAuctioneer))
 
     // contract deployment
     const deployTx = await auction.deploy(inputSatoshis)

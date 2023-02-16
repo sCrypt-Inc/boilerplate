@@ -1,5 +1,5 @@
 import { Counter } from '../../src/contracts/counter'
-import { getTestnetSigner, sleep } from './util/txHelper'
+import { getDefaultSigner, sleep } from './util/txHelper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 async function main() {
@@ -8,7 +8,7 @@ async function main() {
     const counter = new Counter(0n)
 
     // connect to a signer
-    await counter.connect(getTestnetSigner())
+    await counter.connect(getDefaultSigner())
 
     const balance = 1
 
