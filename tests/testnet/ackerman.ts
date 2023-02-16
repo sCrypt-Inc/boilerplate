@@ -1,4 +1,4 @@
-import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from './util/txHelper'
 import { Ackermann } from '../../src/contracts/ackermann'
 
 async function main() {
@@ -6,7 +6,7 @@ async function main() {
     const ackermann = new Ackermann(2n, 1n)
 
     // connect to a signer
-    await ackermann.connect(getTestnetSigner())
+    await ackermann.connect(getDefaultSigner())
 
     // contract deploy
     const deployTx = await ackermann.deploy(inputSatoshis)

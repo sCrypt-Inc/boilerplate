@@ -1,12 +1,12 @@
 import { Demo } from '../../src/contracts/demo'
-import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from './util/txHelper'
 
 async function main() {
     await Demo.compile()
     const demo = new Demo(1n, 2n)
 
     // connect to a signer
-    await demo.connect(getTestnetSigner())
+    await demo.connect(getDefaultSigner())
 
     // contract deployment
     const deployTx = await demo.deploy(inputSatoshis)

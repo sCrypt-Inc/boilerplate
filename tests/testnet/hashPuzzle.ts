@@ -1,5 +1,5 @@
 import { HashPuzzle } from '../../src/contracts/hashPuzzle'
-import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from './util/txHelper'
 import { sha256, toByteString } from 'scrypt-ts'
 
 async function main() {
@@ -11,7 +11,7 @@ async function main() {
 
     const hashPuzzle = new HashPuzzle(sha256Data)
 
-    await hashPuzzle.connect(getTestnetSigner())
+    await hashPuzzle.connect(getDefaultSigner())
 
     // contract deployment
     const deployTx = await hashPuzzle.deploy(inputSatoshis)

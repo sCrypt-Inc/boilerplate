@@ -1,5 +1,5 @@
 import { CheckLockTimeVerify } from '../../src/contracts/cltv'
-import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from './util/txHelper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 async function main() {
@@ -9,7 +9,7 @@ async function main() {
     const checkLockTimeVerify = new CheckLockTimeVerify(lockTimeMin)
 
     // connect to a signer
-    await checkLockTimeVerify.connect(getTestnetSigner())
+    await checkLockTimeVerify.connect(getDefaultSigner())
 
     // contract deployment
     const deployTx = await checkLockTimeVerify.deploy(inputSatoshis)

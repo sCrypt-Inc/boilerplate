@@ -1,5 +1,5 @@
 import { AnyoneCanSpend } from '../../src/contracts/acs'
-import { getTestnetSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from './util/txHelper'
 import { PubKeyHash, toHex } from 'scrypt-ts'
 import { myPublicKeyHash } from '../util/privateKey'
 
@@ -10,7 +10,7 @@ async function main() {
     )
 
     // connect to a signer
-    await anyoneCanSpend.connect(getTestnetSigner())
+    await anyoneCanSpend.connect(getDefaultSigner())
 
     // contract deployment
     const deployTx = await anyoneCanSpend.deploy(inputSatoshis)

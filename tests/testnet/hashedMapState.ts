@@ -6,7 +6,7 @@ import {
     toByteString,
 } from 'scrypt-ts'
 import { HashedMapState } from '../../src/contracts/hashedMapState'
-import { getTestnetSigner } from './util/txHelper'
+import { getDefaultSigner } from './util/txHelper'
 
 const initBalance = 1
 
@@ -98,7 +98,7 @@ function notExist(
 
 async function main() {
     await HashedMapState.compile()
-    const signer = await getTestnetSigner()
+    const signer = await getDefaultSigner()
     const map = new Map<bigint, ByteString>()
 
     const stateMap = new HashedMapState(new HashedMap(map))
