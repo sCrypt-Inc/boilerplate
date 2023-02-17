@@ -122,7 +122,9 @@ describe('Test SmartContract `Recallable`', () => {
                     pubKeyOrAddrToSign: alicePublicKey,
                     next: {
                         instance: aliceRecallInstance,
-                        balance: 3000, // TODO
+                        balance: bobNextInstance.from?.tx.outputs[
+                            bobNextInstance.from?.outputIndex
+                        ].satoshis as number,
                     },
                 } as MethodCallOptions<Recallable>
             )
