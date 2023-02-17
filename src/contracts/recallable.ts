@@ -8,10 +8,16 @@ import {
     SmartContract,
 } from 'scrypt-ts'
 
+/**
+ * re-callable satoshis demo
+ * users can transfer these satoshis as wish, and issuer can recall them back to himself at anytime
+ */
 export class Recallable extends SmartContract {
+    // the public key of issuer
     @prop()
     readonly issuerPubKey: PubKey
 
+    // the public key of current user
     @prop(true)
     userPubKey: PubKey
 
@@ -23,9 +29,9 @@ export class Recallable extends SmartContract {
 
     @method()
     public transfer(
-        userSig: Sig,
-        receiverPubKey: PubKey,
-        satoshisSent: bigint
+        userSig: Sig, // the current user should provide his signature before transfer
+        receiverPubKey: PubKey, // send to
+        satoshisSent: bigint // send amount
     ) {
         // total satoshis locked in this contract utxo
         const satoshisTotal = this.ctx.utxo.value
