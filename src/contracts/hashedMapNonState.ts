@@ -13,7 +13,7 @@ export class HashedMapNonState extends SmartContract {
     @prop()
     map: MyMap
 
-    constructor(map: HashedMap<bigint, ByteString>) {
+    constructor(map: MyMap) {
         super(map)
         this.map = map
     }

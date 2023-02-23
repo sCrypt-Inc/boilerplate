@@ -97,7 +97,6 @@ export class ERC20 extends SmartContract {
             this.balances.set(address, issuerBalance + amount)
             this.totalSupply += amount
         }
-        this.debug.diffOutputs(this.buildStateOutput(this.ctx.utxo.value))
         assert(
             this.ctx.hashOutputs ==
                 hash256(this.buildStateOutput(this.ctx.utxo.value))
