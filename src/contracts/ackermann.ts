@@ -12,7 +12,6 @@ import {
 export class Ackermann extends SmartContract {
     // Maximum number of iterations of the Ackermann function.
     // This needs to be finite due to the constraints of the Bitcoin virtual machine.
-    @prop()
     static readonly LOOP_COUNT = 14n
 
     // Input parameters of the Ackermann function.
