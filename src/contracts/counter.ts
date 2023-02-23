@@ -19,7 +19,7 @@ export class Counter extends SmartContract {
     }
 
     // ANYONECANPAY_SINGLE is used here to ignore all inputs and outputs, other than the ones contains the state
-    // seehttps://scrypt.io/scrypt-ts/getting-started/what-is-scriptcontext#sighash-type
+    // see https://scrypt.io/scrypt-ts/getting-started/what-is-scriptcontext#sighash-type
     @method(SigHash.ANYONECANPAY_SINGLE)
     public incrementOnChain() {
         // Increment counter value

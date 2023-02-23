@@ -3,11 +3,11 @@ import {
     ByteString,
     hash256,
     HashedMap,
+    int2ByteString,
     method,
     prop,
     SigHash,
     SmartContract,
-    SortedItem,
 } from 'scrypt-ts'
 
 export class HashedMapState extends SmartContract {
@@ -20,11 +20,8 @@ export class HashedMapState extends SmartContract {
     }
 
     @method(SigHash.SINGLE)
-    public insert(key: SortedItem<bigint>, val: ByteString) {
-        assert(
-            this.hashedmap.set(key, val),
-            'set key-value pair into hashedMap failed'
-        )
+    public insert(key: bigint, val: ByteString) {
+        this.hashedmap.set(key, val)
         assert(
             this.ctx.hashOutputs ==
                 hash256(this.buildStateOutput(this.ctx.utxo.value)),
@@ -33,7 +30,7 @@ export class HashedMapState extends SmartContract {
     }
 
     @method(SigHash.SINGLE)
-    public canGet(key: SortedItem<bigint>, val: ByteString) {
+    public canGet(key: bigint, val: ByteString) {
         assert(this.hashedmap.has(key), `hashedMap does not have key: ${key}`)
         assert(
             this.hashedmap.canGet(key, val),
@@ -47,7 +44,7 @@ export class HashedMapState extends SmartContract {
     }
 
     @method(SigHash.SINGLE)
-    public notExist(key: SortedItem<bigint>) {
+    public notExist(key: bigint) {
         assert(
             !this.hashedmap.has(key),
             `key: ${key} should not exist in hashedmap`
@@ -60,11 +57,8 @@ export class HashedMapState extends SmartContract {
     }
 
     @method(SigHash.SINGLE)
-    public update(key: SortedItem<bigint>, val: ByteString) {
-        assert(
-            this.hashedmap.set(key, val),
-            'set key-value pair into hashedMap failed'
-        )
+    public update(key: bigint, val: ByteString) {
+        this.hashedmap.set(key, val)
         assert(
             this.ctx.hashOutputs ==
                 hash256(this.buildStateOutput(this.ctx.utxo.value)),
@@ -73,8 +67,39 @@ export class HashedMapState extends SmartContract {
     }
 
     @method(SigHash.SINGLE)
-    public delete(key: SortedItem<bigint>) {
+    public delete(key: bigint) {
         assert(this.hashedmap.delete(key), 'delete key from hashedMap failed')
+        assert(
+            this.ctx.hashOutputs ==
+                hash256(this.buildStateOutput(this.ctx.utxo.value))
+        )
+    }
+
+    @method(SigHash.SINGLE)
+    public unlock(key: bigint, val: ByteString) {
+        for (let i = 0; i < 5; i++) {
+            this.hashedmap.set(BigInt(i), int2ByteString(BigInt(i), BigInt(i)))
+        }
+
+        for (let i = 0; i < 5; i++) {
+            assert(
+                this.hashedmap.canGet(
+                    BigInt(i),
+                    int2ByteString(BigInt(i), BigInt(i))
+                ),
+                `canGet failed`
+            )
+
+            if (i === 3) {
+                assert(
+                    this.hashedmap.delete(key),
+                    'delete key from hashedMap failed'
+                )
+            } else if (i == 4) {
+                this.hashedmap.set(key, val)
+            }
+        }
+
         assert(
             this.ctx.hashOutputs ==
                 hash256(this.buildStateOutput(this.ctx.utxo.value))
