@@ -19,7 +19,7 @@ To run tests for a specific smart contract, i.e. the `Counter` smart contract, r
 npm run build && npx mocha 'dist/tests/local/counter.test.js'
 ```
 
-To understand how these tests work, please read the [scryptTS docs](https://scrypt.io/scrypt-ts/getting-started/how-to-test-a-contract).
+To understand how these tests work, please read the [scryptTS docs](https://scrypt.io/scrypt-ts/how-to-test-a-contract).
 
 ## Test on the Bitcoin Testnet
 
@@ -51,4 +51,4 @@ to run a specific contract test.
 
 In order to debug smart contract code in VS Code, you need to configure `launch.json` (located under `.vscode/`). This repository already has an example configuration for the `Demo` smart contract.
 
-See the [docs](https://scrypt.io/scrypt-ts/getting-started/how-to-debug-a-contract/#use-visual-studio-code-debugger) for more information on how to use the debugger.
+See the [docs](https://scrypt.io/scrypt-ts/how-to-debug-a-contract/#use-visual-studio-code-debugger) for more information on how to use the debugger.
