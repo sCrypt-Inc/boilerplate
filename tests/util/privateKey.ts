@@ -28,7 +28,7 @@ You can fund its address '${newPrivKey.toAddress()}' from sCrypt faucet https://
         `# You can fund its address '${newPrivKey.toAddress()}' from the sCrypt faucet https://scrypt.io/#faucet
 PRIVATE_KEY="${newPrivKey}"`
     )
-    exit(-1)
+    exit(0)
 }
 
 export const myPrivateKey = bsv.PrivateKey.fromWIF(privKey)
