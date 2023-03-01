@@ -23,6 +23,8 @@ jobs:
           node-version: 16
       - name: Npm Install
         run: npm i
+      - name: Test Generate private key
+        run: npm run genprivkey
       - name: gen Env
         run: echo "PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}"" > .env
       - name: Test
