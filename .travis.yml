@@ -13,6 +13,7 @@ os:
   - windows
 
 script:
+  - npm run genprivkey
   - npm t
   - echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
   - if [ $TRAVIS_EVENT_TYPE == "cron" ] && [ $TRAVIS_OS_NAME == "linux" ] ; then npm run testnet; fi
