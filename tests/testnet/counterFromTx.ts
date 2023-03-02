@@ -20,7 +20,6 @@ async function callIncrementOnChain(
 ): Promise<bsv.Transaction> {
     // recover instance from tx
     const instance = Counter.fromTx(tx, atOutputIndex)
-    console.log('Recovered')
 
     await instance.connect(getDefaultSigner())
 

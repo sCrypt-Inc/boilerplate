@@ -29,8 +29,6 @@ async function call() {
 
     await p2pkh.connect(getDefaultSigner())
 
-    console.log('Recovered')
-
     const { tx } = await p2pkh.methods.unlock(
         (sigResps) => findSig(sigResps, myPublicKey),
         PubKey(toHex(myPublicKey)),
