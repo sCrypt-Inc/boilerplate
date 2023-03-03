@@ -2,17 +2,23 @@ import {
     assert,
     ByteString,
     method,
+    prop,
+    sha256,
+    Sha256,
     SmartContract,
-    toByteString,
 } from 'scrypt-ts'
 
 export class HelloWorld extends SmartContract {
-    // Public method which can be unlocked by providing the solution
+    @prop()
+    hash: Sha256
+
+    constructor(hash: Sha256) {
+        super(...arguments)
+        this.hash = hash
+    }
+
     @method()
     public unlock(message: ByteString) {
-        assert(
-            message === toByteString('hello world', true),
-            'Not expected message!'
-        )
+        assert(this.hash === sha256(message), 'Not expected message!')
     }
 }
