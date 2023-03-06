@@ -12,6 +12,7 @@ import {
     Sig,
     SmartContract,
     Utils,
+    UTXO,
 } from 'scrypt-ts'
 
 export class Auction extends SmartContract {
@@ -94,6 +95,35 @@ export class Auction extends SmartContract {
 
         // Check signature of the auctioneer.
         assert(this.checkSig(sig, this.auctioneer), 'signature check failed')
+    }
+
+    // Customize the deployment tx by overriding `SmartContract.buildDeployTransaction` method
+    override async buildDeployTransaction(
+        utxos: UTXO[],
+        amount: number,
+        changeAddress?: bsv.Address | string
+    ): Promise<bsv.Transaction> {
+        const deployTx = new bsv.Transaction()
+            // add p2pkh inputs
+            .from(utxos)
+            // add contract output
+            .addOutput(
+                new bsv.Transaction.Output({
+                    script: this.lockingScript,
+                    satoshis: amount,
+                })
+            )
+            // add OP_RETURN output
+            .addData('Hello World')
+
+        if (changeAddress) {
+            deployTx.change(changeAddress)
+            if (this._provider) {
+                deployTx.feePerKb(await this.provider.getFeePerKb())
+            }
+        }
+
+        return deployTx
     }
 
     // User defined transaction builder for calling function `bid`
