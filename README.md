@@ -58,3 +58,9 @@ to run a specific contract test.
 In order to debug smart contract code in [Visual Studio Code](https://code.visualstudio.com), you need to configure `launch.json` (located under `.vscode/`). This repository already has an example configuration for the `Demo` smart contract.
 
 See the [docs](https://scrypt.io/scrypt-ts/how-to-debug-a-contract/#use-visual-studio-code-debugger) for more information on how to use the debugger.
+
+## Project Structure
+
+- `src/contracts` - This is where all the smart contract code is. Each file is for a separate smart contract example, e.g. the `P2PKH` smart contract is defined inside `src/contracts/p2pkh.ts`.
+- `tests/local` - This is the directory which contains smart contract tests that get executed locally. Each smart contract has its separate test file.
+- `tests/testnet` - This is the directory which contains smart contract tests that get broadcast to the Bitcoin testnet.
