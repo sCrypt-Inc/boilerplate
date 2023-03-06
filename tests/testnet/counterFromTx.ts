@@ -2,11 +2,13 @@ import { Counter } from '../../src/contracts/counter'
 import { getDefaultSigner } from './util/txHelper'
 import { bsv, MethodCallOptions } from 'scrypt-ts'
 
+import Transaction = bsv.Transaction
+
 async function compileContract() {
     await Counter.compile()
 }
 
-async function deploy(initialCount = 100n): Promise<bsv.Transaction> {
+async function deploy(initialCount = 100n): Promise<Transaction> {
     const instance = new Counter(initialCount)
     await instance.connect(getDefaultSigner())
     const tx = await instance.deploy(1)
@@ -15,9 +17,9 @@ async function deploy(initialCount = 100n): Promise<bsv.Transaction> {
 }
 
 async function callIncrementOnChain(
-    tx: bsv.Transaction,
+    tx: Transaction,
     atOutputIndex = 0
-): Promise<bsv.Transaction> {
+): Promise<Transaction> {
     // recover instance from tx
     const instance = Counter.fromTx(tx, atOutputIndex)
 

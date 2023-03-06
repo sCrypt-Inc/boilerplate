@@ -11,7 +11,9 @@ import {
     bsv,
 } from 'scrypt-ts'
 
-let deployTx: bsv.Transaction
+import Transaction = bsv.Transaction
+
+let deployTx: Transaction
 const atOutputIndex = 0
 
 async function deploy() {

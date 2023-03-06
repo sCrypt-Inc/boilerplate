@@ -1,6 +1,5 @@
 import {
     assert,
-    bsv,
     BuildMethodCallTxOptions,
     BuildMethodCallTxResult,
     ByteString,
@@ -13,7 +12,12 @@ import {
     SmartContract,
     Utils,
     UTXO,
+    bsv,
 } from 'scrypt-ts'
+
+import Transaction = bsv.Transaction
+import Address = bsv.Address
+import Script = bsv.Script
 
 export class Auction extends SmartContract {
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
@@ -101,14 +105,14 @@ export class Auction extends SmartContract {
     override async buildDeployTransaction(
         utxos: UTXO[],
         amount: number,
-        changeAddress?: bsv.Address | string
-    ): Promise<bsv.Transaction> {
-        const deployTx = new bsv.Transaction()
+        changeAddress?: Address | string
+    ): Promise<Transaction> {
+        const deployTx = new Transaction()
             // add p2pkh inputs
             .from(utxos)
             // add contract output
             .addOutput(
-                new bsv.Transaction.Output({
+                new Transaction.Output({
                     script: this.lockingScript,
                     satoshis: amount,
                 })
@@ -137,22 +141,22 @@ export class Auction extends SmartContract {
         const nextInstance = current.next()
         nextInstance.bidder = bidder
 
-        const unsignedTx: bsv.Transaction = new bsv.Transaction()
+        const unsignedTx: Transaction = new Transaction()
             // add contract input
             .addInput(current.buildContractInput(options.fromUTXO))
             // add p2pkh inputs
             .from(options.utxos)
             // build next instance output
             .addOutput(
-                new bsv.Transaction.Output({
+                new Transaction.Output({
                     script: nextInstance.lockingScript,
                     satoshis: Number(bid),
                 })
             )
             // build refund output
             .addOutput(
-                new bsv.Transaction.Output({
-                    script: bsv.Script.fromHex(
+                new Transaction.Output({
+                    script: Script.fromHex(
                         Utils.buildPublicKeyHashScript(current.bidder)
                     ),
                     satoshis:

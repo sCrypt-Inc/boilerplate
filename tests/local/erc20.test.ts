@@ -22,6 +22,8 @@ import {
 } from 'scrypt-ts'
 import { getDummySigner } from './util/txHelper'
 
+import Transaction = bsv.Transaction
+
 const signer = getDummySigner()
 
 const initialSupply = 1000000n
@@ -51,7 +53,7 @@ describe('Test SmartContract `ERC20`', () => {
         issuerBalance: bigint,
         amount: bigint
     ): Promise<{
-        tx: bsv.Transaction
+        tx: Transaction
         newInstance: ERC20
     }> {
         const newInstance = instance.next()
@@ -88,7 +90,7 @@ describe('Test SmartContract `ERC20`', () => {
         to: ERC20Pair,
         amount: bigint
     ): Promise<{
-        tx: bsv.Transaction
+        tx: Transaction
         newInstance: ERC20
     }> {
         const newInstance = instance.next()
@@ -127,7 +129,7 @@ describe('Test SmartContract `ERC20`', () => {
         spender: PubKeyHash,
         amount: bigint
     ): Promise<{
-        tx: bsv.Transaction
+        tx: Transaction
         newInstance: ERC20
     }> {
         const newInstance = instance.next()
@@ -172,7 +174,7 @@ describe('Test SmartContract `ERC20`', () => {
         to: ERC20Pair,
         amount: bigint
     ): Promise<{
-        tx: bsv.Transaction
+        tx: Transaction
         newInstance: ERC20
     }> {
         const newInstance = instance.next()

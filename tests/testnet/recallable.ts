@@ -3,15 +3,17 @@ import { Recallable } from '../../src/contracts/recallable'
 import { getDefaultSigner, randomPrivateKey } from './util/txHelper'
 import { myPublicKey } from '../util/privateKey'
 
+import Transaction = bsv.Transaction
+
 // 3 players, alice, bob, and me
 // I am the issuer
 const [alicePrivateKey, alicePublicKey, ,] = randomPrivateKey()
 const [, bobPublicKey, ,] = randomPrivateKey()
 
 // contract deploy transaction
-let deployTx: bsv.Transaction
+let deployTx: Transaction
 // last contract calling transaction
-let lastCallTx: bsv.Transaction
+let lastCallTx: Transaction
 // contract output index
 const atOutputIndex = 0
 
