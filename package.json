@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "npm run clean",
     "build": "tsc",
-    "clean": "rimraf scrypt.index.json && rimraf dist && rimraf scrypts",
+    "clean": "rimraf scrypt.index.json && rimraf dist && rimraf artifacts",
     "pretest": "npm run build",
     "test": "mocha 'dist/tests/**/*.test.js' --timeout 1200000",
     "testnet": "npm run build && mocha 'dist/tests/testnet/**/*.js' --timeout 1200000",
