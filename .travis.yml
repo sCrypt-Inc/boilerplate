@@ -38,7 +38,7 @@ script:
   - npm run genprivkey
   - npm t
   - echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
-  - if [ $TRAVIS_EVENT_TYPE == "cron" ] && [ $TRAVIS_OS_NAME == "linux" ] && [ $TRAVIS_NODE_VERSION == "16" ] ; then npm run testnet; fi
+  - if [ "$TRAVIS_EVENT_TYPE" == "cron" ] ; then sh ./scripts/testnet.sh; fi
 
 notifications:
   slack:
