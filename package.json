@@ -13,7 +13,7 @@
     "lint": "eslint . --ext .js,.ts --fix && prettier --write --ignore-unknown \"**/*\"",
     "lint-check": "eslint . --ext .js,.ts && prettier --check --ignore-unknown \"**/*\"",
     "prepare": "husky install",
-    "genprivkey": "npm run build && node dist/tests/util/privateKey.js"
+    "genprivkey": "npm run build && node dist/tests/utils/privateKey.js"
   },
   "lint-staged": {
     "**/*": [

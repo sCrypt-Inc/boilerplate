@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import { Demo } from '../../src/contracts/demo'
 import { MethodCallOptions } from 'scrypt-ts'
-import { getDummySigner, getDummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from '../utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)

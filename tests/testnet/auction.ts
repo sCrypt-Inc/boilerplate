@@ -1,5 +1,5 @@
 import { Auction } from '../../src/contracts/auction'
-import { getDefaultSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from '../utils/helper'
 import {
     findSig,
     MethodCallOptions,
@@ -12,7 +12,7 @@ import {
     myPrivateKey,
     myPublicKey,
     myPublicKeyHash,
-} from '../util/privateKey'
+} from '../utils/privateKey'
 
 async function main() {
     await Auction.compile()

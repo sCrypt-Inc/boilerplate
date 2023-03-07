@@ -1,7 +1,7 @@
 import { AnyoneCanSpend } from '../../src/contracts/acs'
-import { getDefaultSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from '../utils/helper'
 import { PubKeyHash, toHex } from 'scrypt-ts'
-import { myPublicKeyHash } from '../util/privateKey'
+import { myPublicKeyHash } from '../utils/privateKey'
 
 async function main() {
     await AnyoneCanSpend.compile()

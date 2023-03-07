@@ -1,8 +1,7 @@
-import { findSig, MethodCallOptions, PubKey, toHex, bsv } from 'scrypt-ts'
+import { bsv, findSig, MethodCallOptions, PubKey, toHex } from 'scrypt-ts'
 import { Recallable } from '../../src/contracts/recallable'
-import { getDefaultSigner, randomPrivateKey } from './util/txHelper'
-import { myPublicKey } from '../util/privateKey'
-
+import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
+import { myPublicKey } from '../utils/privateKey'
 import Transaction = bsv.Transaction
 
 // 3 players, alice, bob, and me

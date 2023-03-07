@@ -1,5 +1,5 @@
 import { Counter } from '../../src/contracts/counter'
-import { getDefaultSigner, sleep } from './util/txHelper'
+import { getDefaultSigner, sleep } from '../utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 async function main() {

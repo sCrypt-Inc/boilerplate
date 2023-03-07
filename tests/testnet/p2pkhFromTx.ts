@@ -1,16 +1,15 @@
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { getDefaultSigner, inputSatoshis } from './util/txHelper'
-import { myPublicKey, myPublicKeyHash } from '../util/privateKey'
+import { getDefaultSigner, inputSatoshis } from '../utils/helper'
+import { myPublicKey, myPublicKeyHash } from '../utils/privateKey'
 
 import {
+    bsv,
     findSig,
     MethodCallOptions,
     PubKey,
     PubKeyHash,
     toHex,
-    bsv,
 } from 'scrypt-ts'
-
 import Transaction = bsv.Transaction
 
 let deployTx: Transaction

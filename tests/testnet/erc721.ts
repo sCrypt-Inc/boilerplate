@@ -1,7 +1,7 @@
 import { Erc721 } from '../../src/contracts/erc721'
-import { getDefaultSigner, randomPrivateKey } from './util/txHelper'
+import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
 import { findSig, HashedMap, MethodCallOptions, PubKey, toHex } from 'scrypt-ts'
-import { myPublicKey } from '../util/privateKey'
+import { myPublicKey } from '../utils/privateKey'
 
 async function main() {
     await Erc721.compile()

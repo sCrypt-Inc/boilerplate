@@ -8,7 +8,7 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { Recallable } from '../../src/contracts/recallable'
-import { getDummySigner, getDummyUTXO, randomPrivateKey } from './util/txHelper'
+import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
 
 use(chaiAsPromised)
 

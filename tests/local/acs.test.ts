@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 import { MethodCallOptions, PubKeyHash, toHex } from 'scrypt-ts'
 import { AnyoneCanSpend } from '../../src/contracts/acs'
-import { myPublicKeyHash } from '../util/privateKey'
-import { getDummySigner, getDummyUTXO } from './util/txHelper'
+import { myPublicKeyHash } from '../utils/privateKey'
+import { getDummySigner, getDummyUTXO } from '../utils/helper'
 
 describe('Test SmartContract `AnyoneCanSpend`', () => {
     before(async () => {

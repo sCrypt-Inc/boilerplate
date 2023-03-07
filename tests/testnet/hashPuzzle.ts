@@ -1,5 +1,5 @@
 import { HashPuzzle } from '../../src/contracts/hashPuzzle'
-import { getDefaultSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from '../utils/helper'
 import { sha256, toByteString } from 'scrypt-ts'
 
 async function main() {

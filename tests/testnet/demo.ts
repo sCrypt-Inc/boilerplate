@@ -1,5 +1,5 @@
 import { Demo } from '../../src/contracts/demo'
-import { getDefaultSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from '../utils/helper'
 
 async function main() {
     await Demo.compile()

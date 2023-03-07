@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { CheckLockTimeVerify } from '../../src/contracts/cltv'
-import { getDummySigner, getDummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from '../utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `CheckLockTimeVerify`', () => {

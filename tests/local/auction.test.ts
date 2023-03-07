@@ -6,8 +6,8 @@ import {
     PubKeyHash,
     toHex,
 } from 'scrypt-ts'
-import { getDummySigner, getDummyUTXO, randomPrivateKey } from './util/txHelper'
 import { expect } from 'chai'
+import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
 
 describe('Test SmartContract `Auction` on testnet', () => {
     const [, , publicKeyHashHighestBidder] = randomPrivateKey()

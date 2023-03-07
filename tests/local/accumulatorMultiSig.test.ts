@@ -11,7 +11,7 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
-import { getDummySigner, randomPrivateKey, getDummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
 
 const [privateKey1, publicKey1, publicKeyHash1] = randomPrivateKey()
 const [privateKey2, publicKey2, publicKeyHash2] = randomPrivateKey()

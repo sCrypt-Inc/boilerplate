@@ -1,4 +1,4 @@
-import { getDefaultSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from '../utils/helper'
 import { Ackermann } from '../../src/contracts/ackermann'
 
 async function main() {

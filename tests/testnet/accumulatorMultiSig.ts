@@ -3,7 +3,7 @@ import {
     getDefaultSigner,
     inputSatoshis,
     randomPrivateKey,
-} from './util/txHelper'
+} from '../utils/helper'
 import {
     bsv,
     findSig,

@@ -1,7 +1,6 @@
 import { Counter } from '../../src/contracts/counter'
-import { getDefaultSigner } from './util/txHelper'
+import { getDefaultSigner } from '../utils/helper'
 import { bsv, MethodCallOptions } from 'scrypt-ts'
-
 import Transaction = bsv.Transaction
 
 async function compileContract() {

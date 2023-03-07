@@ -1,7 +1,7 @@
 import { Ackermann } from '../../src/contracts/ackermann'
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { getDummySigner, getDummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from '../utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 use(chaiAsPromised)

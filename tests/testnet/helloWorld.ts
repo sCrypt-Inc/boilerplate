@@ -1,6 +1,6 @@
 import { HelloWorld } from '../../src/contracts/helloWorld'
-import { getDefaultSigner, inputSatoshis } from './util/txHelper'
-import { toByteString, sha256 } from 'scrypt-ts'
+import { getDefaultSigner, inputSatoshis } from '../utils/helper'
+import { sha256, toByteString } from 'scrypt-ts'
 
 const message = 'hello world, sCrypt!'
 

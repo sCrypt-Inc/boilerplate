@@ -1,27 +1,26 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-use(chaiAsPromised)
 import {
     Allowance,
     AllowanceMap,
-    ERC20,
     BalanceMap,
+    ERC20,
     ERC20Pair,
 } from '../../src/contracts/erc20'
-import { inputSatoshis, dummyUTXO } from './util/txHelper'
 import {
     bsv,
-    HashedMap,
-    toByteString,
-    PubKeyHash,
+    findSig,
     hash160,
+    HashedMap,
     MethodCallOptions,
     PubKey,
-    findSig,
+    PubKeyHash,
+    toByteString,
     toHex,
 } from 'scrypt-ts'
-import { getDummySigner } from './util/txHelper'
+import { dummyUTXO, getDummySigner, inputSatoshis } from '../utils/helper'
 
+use(chaiAsPromised)
 import Transaction = bsv.Transaction
 
 const signer = getDummySigner()

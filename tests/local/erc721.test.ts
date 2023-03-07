@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import { Erc721 } from '../../src/contracts/erc721'
-import { myPublicKey } from '../util/privateKey'
+import { myPublicKey } from '../utils/privateKey'
 import {
     findSig,
     getDummySig,
@@ -9,8 +9,8 @@ import {
     PubKey,
     toHex,
 } from 'scrypt-ts'
-import { dummyUTXO, getDummySigner, randomPrivateKey } from './util/txHelper'
 import chaiAsPromised from 'chai-as-promised'
+import { dummyUTXO, getDummySigner, randomPrivateKey } from '../utils/helper'
 
 use(chaiAsPromised)
 describe('Test SmartContract `Erc721`', () => {

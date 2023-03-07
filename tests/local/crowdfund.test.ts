@@ -6,7 +6,7 @@ import {
     getDummyUTXO,
     inputSatoshis,
     randomPrivateKey,
-} from './util/txHelper'
+} from '../utils/helper'
 
 const [privateKeyRecipient, publicKeyRecipient, ,] = randomPrivateKey()
 const [privateKeyContributor, publicKeyContributor, ,] = randomPrivateKey()

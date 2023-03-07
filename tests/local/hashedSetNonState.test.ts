@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { HashedSetNonState } from '../../src/contracts/hashedSetNonState'
 import { HashedSet, MethodCallOptions } from 'scrypt-ts'
-import { getDummySigner, dummyUTXO } from './util/txHelper'
+import { dummyUTXO, getDummySigner } from '../utils/helper'
 
 describe('Test SmartContract `HashedSetNonState`', () => {
     before(async () => {

@@ -8,8 +8,8 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { getDummySigner, getDummyUTXO, randomPrivateKey } from './util/txHelper'
-import { myPublicKey, myPublicKeyHash } from '../util/privateKey'
+import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
+import { myPublicKey, myPublicKeyHash } from '../utils/privateKey'
 
 use(chaiAsPromised)
 

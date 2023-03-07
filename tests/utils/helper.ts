@@ -1,5 +1,12 @@
-import { bsv, DefaultProvider, TestWallet } from 'scrypt-ts'
-import { myPrivateKey } from '../../util/privateKey'
+import {
+    bsv,
+    DefaultProvider,
+    DummyProvider,
+    TestWallet,
+    UTXO,
+} from 'scrypt-ts'
+import { randomBytes } from 'crypto'
+import { myPrivateKey } from './privateKey'
 
 export const inputSatoshis = 10000
 
@@ -32,4 +39,27 @@ export function getDefaultSigner(
         global.testnetSigner.addPrivateKey(privateKey)
     }
     return global.testnetSigner
+}
+
+export const dummyUTXO = {
+    txId: randomBytes(32).toString('hex'),
+    outputIndex: 0,
+    script: '', // placeholder
+    satoshis: inputSatoshis,
+}
+
+export function getDummyUTXO(satoshis: number = inputSatoshis): UTXO {
+    return Object.assign({}, dummyUTXO, { satoshis })
+}
+
+export function getDummySigner(
+    privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
+): TestWallet {
+    if (global.dummySigner === undefined) {
+        global.dummySigner = new TestWallet(myPrivateKey, new DummyProvider())
+    }
+    if (privateKey !== undefined) {
+        global.dummySigner.addPrivateKey(privateKey)
+    }
+    return global.dummySigner
 }

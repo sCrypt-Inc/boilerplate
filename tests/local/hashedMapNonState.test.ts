@@ -6,7 +6,7 @@ import {
     MethodCallOptions,
     toByteString,
 } from 'scrypt-ts'
-import { dummyUTXO, getDummySigner } from './util/txHelper'
+import { dummyUTXO, getDummySigner } from '../utils/helper'
 
 describe('Test SmartContract `HashedMapNonState`', () => {
     before(async () => {

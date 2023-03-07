@@ -1,5 +1,5 @@
 import { CheckLockTimeVerify } from '../../src/contracts/cltv'
-import { getDefaultSigner, inputSatoshis } from './util/txHelper'
+import { getDefaultSigner, inputSatoshis } from '../utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 async function main() {

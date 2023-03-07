@@ -1,7 +1,6 @@
 import { expect } from 'chai'
 
 import { HashedMapState } from '../../src/contracts/hashedMapState'
-import { inputSatoshis, dummyUTXO, getDummySigner } from './util/txHelper'
 import {
     ByteString,
     HashedMap,
@@ -9,6 +8,7 @@ import {
     MethodCallOptions,
     toByteString,
 } from 'scrypt-ts'
+import { dummyUTXO, getDummySigner, inputSatoshis } from '../utils/helper'
 
 const signer = getDummySigner()
 

@@ -2,7 +2,7 @@ import { expect } from 'chai'
 
 import { HashedSetState } from '../../src/contracts/hashedSetState'
 import { HashedSet, MethodCallOptions } from 'scrypt-ts'
-import { dummyUTXO, getDummySigner, inputSatoshis } from './util/txHelper'
+import { dummyUTXO, getDummySigner, inputSatoshis } from '../utils/helper'
 
 const signer = getDummySigner()
 

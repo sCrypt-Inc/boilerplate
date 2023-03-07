@@ -5,7 +5,7 @@ import {
     toByteString,
 } from 'scrypt-ts'
 import { HashedMapState } from '../../src/contracts/hashedMapState'
-import { getDefaultSigner } from './util/txHelper'
+import { getDefaultSigner } from '../utils/helper'
 
 const initBalance = 1
 

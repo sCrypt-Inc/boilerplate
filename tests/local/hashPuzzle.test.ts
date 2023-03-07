@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { MethodCallOptions, sha256, toByteString } from 'scrypt-ts'
 import { HashPuzzle } from '../../src/contracts/hashPuzzle'
-import { getDummySigner, getDummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from '../utils/helper'
 
 const plainText = 'abc'
 const byteString = toByteString(plainText, true)

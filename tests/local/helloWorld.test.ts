@@ -1,8 +1,9 @@
 import { expect, use } from 'chai'
 import { MethodCallOptions, sha256, toByteString } from 'scrypt-ts'
 import { HelloWorld } from '../../src/contracts/helloWorld'
-import { getDummySigner, getDummyUTXO } from './util/txHelper'
+import { getDummySigner, getDummyUTXO } from '../utils/helper'
 import chaiAsPromised from 'chai-as-promised'
+
 use(chaiAsPromised)
 
 describe('Test SmartContract `HelloWorld`', () => {
