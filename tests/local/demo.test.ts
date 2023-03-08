@@ -11,8 +11,9 @@ describe('Test SmartContract `Demo`', () => {
 
     before(async () => {
         await Demo.compile()
-        demo = new Demo(-2n, 7n)
 
+        demo = new Demo(-2n, 7n)
+        console.log(demo.scriptSize)
         await demo.connect(getDummySigner())
     })
 
