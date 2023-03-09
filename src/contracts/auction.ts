@@ -13,6 +13,7 @@ import {
     Utils,
     UTXO,
     bsv,
+    hash160,
 } from 'scrypt-ts'
 
 import Transaction = bsv.Transaction
@@ -35,13 +36,9 @@ export class Auction extends SmartContract {
     @prop()
     readonly auctionDeadline: bigint
 
-    constructor(
-        bidder: PubKeyHash,
-        auctioneer: PubKey,
-        auctionDeadline: bigint
-    ) {
+    constructor(auctioneer: PubKey, auctionDeadline: bigint) {
         super(...arguments)
-        this.bidder = bidder
+        this.bidder = hash160(auctioneer)
         this.auctioneer = auctioneer
         this.auctionDeadline = auctionDeadline
     }

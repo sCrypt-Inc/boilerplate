@@ -10,7 +10,6 @@ import { expect } from 'chai'
 import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
 
 describe('Test SmartContract `Auction` on testnet', () => {
-    const [, , publicKeyHashHighestBidder] = randomPrivateKey()
     const [privateKeyAuctioneer, publicKeyAuctioneer, ,] = randomPrivateKey()
     const [, , publicKeyHashNewBidder, addressNewBidder] = randomPrivateKey()
 
@@ -23,7 +22,6 @@ describe('Test SmartContract `Auction` on testnet', () => {
         Auction.bindTxBuilder('bid', Auction.bidTxBuilder)
 
         auction = new Auction(
-            PubKeyHash(toHex(publicKeyHashHighestBidder)),
             PubKey(toHex(publicKeyAuctioneer)),
             BigInt(auctionDeadline)
         )

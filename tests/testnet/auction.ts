@@ -18,8 +18,6 @@ async function main() {
     await Auction.compile()
     Auction.bindTxBuilder('bid', Auction.bidTxBuilder)
 
-    const publicKeyHashHighestBidder = myPublicKeyHash
-
     const privateKeyAuctioneer = myPrivateKey
     const publicKeyAuctioneer = myPublicKey
 
@@ -29,7 +27,6 @@ async function main() {
     const auctionDeadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
 
     const auction = new Auction(
-        PubKeyHash(toHex(publicKeyHashHighestBidder)),
         PubKey(toHex(publicKeyAuctioneer)),
         BigInt(auctionDeadline)
     )
