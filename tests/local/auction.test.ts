@@ -1,17 +1,11 @@
 import { Auction } from '../../src/contracts/auction'
-import {
-    findSig,
-    MethodCallOptions,
-    PubKey,
-    PubKeyHash,
-    toHex,
-} from 'scrypt-ts'
+import { findSig, MethodCallOptions, PubKey, toHex } from 'scrypt-ts'
 import { expect } from 'chai'
 import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
 
 describe('Test SmartContract `Auction` on testnet', () => {
     const [privateKeyAuctioneer, publicKeyAuctioneer, ,] = randomPrivateKey()
-    const [, , publicKeyHashNewBidder, addressNewBidder] = randomPrivateKey()
+    const [, publicKeyNewBidder, , addressNewBidder] = randomPrivateKey()
 
     const auctionDeadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
 
@@ -31,7 +25,7 @@ describe('Test SmartContract `Auction` on testnet', () => {
     it('should pass `bid` call', async () => {
         const balance = 1
         const { tx: callTx, atInputIndex } = await auction.methods.bid(
-            PubKeyHash(toHex(publicKeyHashNewBidder)),
+            PubKey(toHex(publicKeyNewBidder)),
             BigInt(balance + 1),
             {
                 fromUTXO: getDummyUTXO(balance),

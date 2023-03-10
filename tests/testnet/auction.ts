@@ -1,18 +1,7 @@
 import { Auction } from '../../src/contracts/auction'
-import { getDefaultSigner, inputSatoshis } from '../utils/helper'
-import {
-    findSig,
-    MethodCallOptions,
-    PubKey,
-    PubKeyHash,
-    toHex,
-} from 'scrypt-ts'
-import {
-    myAddress,
-    myPrivateKey,
-    myPublicKey,
-    myPublicKeyHash,
-} from '../utils/privateKey'
+import { getDefaultSigner } from '../utils/helper'
+import { findSig, MethodCallOptions, PubKey, toHex } from 'scrypt-ts'
+import { myAddress, myPrivateKey, myPublicKey } from '../utils/privateKey'
 
 async function main() {
     await Auction.compile()
@@ -21,7 +10,7 @@ async function main() {
     const privateKeyAuctioneer = myPrivateKey
     const publicKeyAuctioneer = myPublicKey
 
-    const publicKeyHashNewBidder = myPublicKeyHash
+    const publicKeyNewBidder = myPublicKey
     const addressNewBidder = myAddress
 
     const auctionDeadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
@@ -34,13 +23,14 @@ async function main() {
     await auction.connect(getDefaultSigner(privateKeyAuctioneer))
 
     // contract deployment
-    const deployTx = await auction.deploy(inputSatoshis)
+    const minBid = 1
+    const deployTx = await auction.deploy(minBid)
     console.log('Auction contract deployed: ', deployTx.id)
 
     // contract call `bid`
     const { tx: bidTx, next } = await auction.methods.bid(
-        PubKeyHash(toHex(publicKeyHashNewBidder)),
-        BigInt(inputSatoshis + 1),
+        PubKey(toHex(publicKeyNewBidder)),
+        BigInt(minBid + 1),
         {
             changeAddress: addressNewBidder,
         } as MethodCallOptions<Auction>

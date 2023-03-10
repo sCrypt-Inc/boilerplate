@@ -7,7 +7,6 @@ import {
     method,
     prop,
     PubKey,
-    PubKeyHash,
     Sig,
     SmartContract,
     Utils,
@@ -24,9 +23,9 @@ export class Auction extends SmartContract {
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
     static readonly UINT_MAX = 0xffffffffn
 
-    // The bidder's address.
+    // The bidder's public key.
     @prop(true)
-    bidder: PubKeyHash
+    bidder: PubKey
 
     // The auctioneer's public key.
     @prop()
@@ -38,14 +37,14 @@ export class Auction extends SmartContract {
 
     constructor(auctioneer: PubKey, auctionDeadline: bigint) {
         super(...arguments)
-        this.bidder = hash160(auctioneer)
+        this.bidder = auctioneer
         this.auctioneer = auctioneer
         this.auctionDeadline = auctionDeadline
     }
 
     // Call this public method to bid with a higher offer.
     @method()
-    public bid(bidder: PubKeyHash, bid: bigint) {
+    public bid(bidder: PubKey, bid: bigint) {
         const highestBid: bigint = this.ctx.utxo.value
         assert(
             bid > highestBid,
@@ -53,7 +52,7 @@ export class Auction extends SmartContract {
         )
 
         // Change the address of the highest bidder.
-        const highestBidder: PubKeyHash = this.bidder
+        const highestBidder: PubKey = this.bidder
         this.bidder = bidder
 
         // Auction continues with a higher bidder.
@@ -61,7 +60,7 @@ export class Auction extends SmartContract {
 
         // Refund previous highest bidder.
         const refundOutput: ByteString = Utils.buildPublicKeyHashOutput(
-            highestBidder,
+            hash160(highestBidder),
             highestBid
         )
         let outputs: ByteString = auctionOutput + refundOutput
@@ -130,7 +129,7 @@ export class Auction extends SmartContract {
     // User defined transaction builder for calling function `bid`
     static bidTxBuilder(
         options: BuildMethodCallTxOptions<Auction>,
-        bidder: PubKeyHash,
+        bidder: PubKey,
         bid: bigint
     ): Promise<BuildMethodCallTxResult<Auction>> {
         const current = options.current
@@ -154,7 +153,7 @@ export class Auction extends SmartContract {
             .addOutput(
                 new Transaction.Output({
                     script: Script.fromHex(
-                        Utils.buildPublicKeyHashScript(current.bidder)
+                        Utils.buildPublicKeyHashScript(hash160(current.bidder))
                     ),
                     satoshis:
                         options.fromUTXO?.satoshis ??
