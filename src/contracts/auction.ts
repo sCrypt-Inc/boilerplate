@@ -51,7 +51,7 @@ export class Auction extends SmartContract {
             'the auction bid is lower than the current highest bid'
         )
 
-        // Change the address of the highest bidder.
+        // Change the public key of the highest bidder.
         const highestBidder: PubKey = this.bidder
         this.bidder = bidder
 
