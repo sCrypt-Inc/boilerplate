@@ -3,7 +3,7 @@
   "tasks": [
     {
       "label": "Build",
-      "detail": "Build the project which includes `scrypt-ts` smart contracts.",
+      "detail": "Build the project which includes sCrypt smart contracts.",
       "type": "typescript",
       "tsconfig": "./tsconfig.json",
       "option": "watch",

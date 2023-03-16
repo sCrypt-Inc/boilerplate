@@ -1,7 +1,7 @@
 [![CI-Test](https://github.com/sCrypt-Inc/scryptTS-examples/actions/workflows/ci.yml/badge.svg)](https://github.com/sCrypt-Inc/scryptTS-examples/actions/workflows/ci.yml)
 [![Build Status](https://app.travis-ci.com/sCrypt-Inc/scryptTS-examples.svg?branch=master)](https://app.travis-ci.com/sCrypt-Inc/scryptTS-examples)
 
-A collection of smart contract examples along with tests, implemented in [scryptTS](https://scrypt.io/scryptTS), a Typescript framework to write smart contracts on Bitcoin.
+A collection of smart contract examples along with tests, implemented using [sCrypt](https://scrypt.io/scryptTS), a Typescript framework to write smart contracts on Bitcoin.
 
 Install all dependencies first.
 
@@ -25,7 +25,7 @@ To run tests for a specific smart contract, i.e. the `Counter` smart contract, r
 npm run build && npx mocha 'dist/tests/local/counter.test.js'
 ```
 
-To understand how these tests work, please read the [scryptTS docs](https://scrypt.io/scrypt-ts/how-to-test-a-contract).
+To understand how these tests work, please read the [sCrypt docs](https://scrypt.io/scrypt-ts/how-to-test-a-contract).
 
 ## Test on the Bitcoin Testnet
 
@@ -64,3 +64,10 @@ See the [docs](https://scrypt.io/scrypt-ts/how-to-debug-a-contract/#use-visual-s
 - `src/contracts` - This is where all the smart contract code is. Each file is for a separate smart contract example, e.g. the `P2PKH` smart contract is defined inside `src/contracts/p2pkh.ts`.
 - `tests/local` - This is the directory which contains smart contract tests that get executed locally. Each smart contract has its separate test file.
 - `tests/testnet` - This is the directory which contains smart contract tests that get broadcast to the Bitcoin testnet.
+
+
+## Legacy boilerplate
+
+The old boilerplate code which was using the now deprecated legacy sCrypt was deprecated in favour of our new Typescript-based implementation.
+
+You can still find the old code under the [`legacy` branch](https://github.com/sCrypt-Inc/boilerplate/tree/legacy).
