@@ -5,7 +5,7 @@ import {
     FixedArray,
     getDummySig,
     MethodCallOptions,
-    MethodCallResult,
+    ContractTransaction,
     PubKey,
     PubKeyHash,
     toHex,
@@ -57,7 +57,7 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
 
 async function call(
     masks: FixedArray<boolean, typeof AccumulatorMultiSig.N>
-): Promise<MethodCallResult<AccumulatorMultiSig>> {
+): Promise<ContractTransaction> {
     return accumulatorMultiSig.methods.main(
         pubKeys,
         (sigResps) => {

@@ -48,7 +48,16 @@ export const dummyUTXO = {
     satoshis: inputSatoshis,
 }
 
-export function getDummyUTXO(satoshis: number = inputSatoshis): UTXO {
+export function getDummyUTXO(
+    satoshis: number = inputSatoshis,
+    unique = false
+): UTXO {
+    if (unique) {
+        return Object.assign({}, dummyUTXO, {
+            satoshis,
+            txId: randomBytes(32).toString('hex'),
+        })
+    }
     return Object.assign({}, dummyUTXO, { satoshis })
 }
 

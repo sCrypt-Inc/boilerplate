@@ -1,7 +1,7 @@
 import {
     assert,
-    BuildMethodCallTxOptions,
-    BuildMethodCallTxResult,
+    MethodCallOptions,
+    ContractTransaction,
     ByteString,
     hash256,
     method,
@@ -128,20 +128,17 @@ export class Auction extends SmartContract {
 
     // User defined transaction builder for calling function `bid`
     static bidTxBuilder(
-        options: BuildMethodCallTxOptions<Auction>,
+        current: Auction,
+        options: MethodCallOptions<Auction>,
         bidder: PubKey,
         bid: bigint
-    ): Promise<BuildMethodCallTxResult<Auction>> {
-        const current = options.current
-
+    ): Promise<ContractTransaction> {
         const nextInstance = current.next()
         nextInstance.bidder = bidder
 
         const unsignedTx: Transaction = new Transaction()
             // add contract input
             .addInput(current.buildContractInput(options.fromUTXO))
-            // add p2pkh inputs
-            .from(options.utxos)
             // build next instance output
             .addOutput(
                 new Transaction.Output({
@@ -165,7 +162,7 @@ export class Auction extends SmartContract {
             .change(options.changeAddress)
 
         return Promise.resolve({
-            unsignedTx,
+            tx: unsignedTx,
             atInputIndex: 0,
             nexts: [
                 {

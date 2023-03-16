@@ -5,7 +5,6 @@ import { myAddress, myPrivateKey, myPublicKey } from '../utils/privateKey'
 
 async function main() {
     await Auction.compile()
-    Auction.bindTxBuilder('bid', Auction.bidTxBuilder)
 
     const privateKeyAuctioneer = myPrivateKey
     const publicKeyAuctioneer = myPublicKey
@@ -19,7 +18,7 @@ async function main() {
         PubKey(toHex(publicKeyAuctioneer)),
         BigInt(auctionDeadline)
     )
-
+    auction.bindTxBuilder('bid', Auction.bidTxBuilder)
     await auction.connect(getDefaultSigner(privateKeyAuctioneer))
 
     // contract deployment

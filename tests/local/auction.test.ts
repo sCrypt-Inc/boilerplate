@@ -13,12 +13,14 @@ describe('Test SmartContract `Auction` on testnet', () => {
 
     before(async () => {
         await Auction.compile()
-        Auction.bindTxBuilder('bid', Auction.bidTxBuilder)
 
         auction = new Auction(
             PubKey(toHex(publicKeyAuctioneer)),
             BigInt(auctionDeadline)
         )
+
+        auction.bindTxBuilder('bid', Auction.bidTxBuilder)
+
         await auction.connect(getDummySigner(privateKeyAuctioneer))
     })
 
