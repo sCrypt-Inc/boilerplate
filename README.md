@@ -1,3 +1,8 @@
+# IMPORTANT NOTICE: This branch is deprecated!
+
+This branch contains boiler plate code for legacy sCrypt, which was deprecated in favor of the new typescript-based sCrypt.
+
+
 # sCrypt Project Boilerplate
 [![Build Status](https://travis-ci.com/sCrypt-Inc/boilerplate.svg?branch=master)](https://app.travis-ci.com/sCrypt-Inc/boilerplate)
 ## Prerequisites
