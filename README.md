@@ -1,5 +1,5 @@
-[![CI-Test](https://github.com/sCrypt-Inc/scryptTS-examples/actions/workflows/ci.yml/badge.svg)](https://github.com/sCrypt-Inc/scryptTS-examples/actions/workflows/ci.yml)
-[![Build Status](https://app.travis-ci.com/sCrypt-Inc/scryptTS-examples.svg?branch=master)](https://app.travis-ci.com/sCrypt-Inc/scryptTS-examples)
+[![CI-Test](https://github.com/sCrypt-Inc/boilerplate/actions/workflows/ci.yml/badge.svg)](https://github.com/sCrypt-Inc/boilerplate/actions/workflows/ci.yml)
+[![Build Status](https://app.travis-ci.com/sCrypt-Inc/boilerplate.svg?branch=master)](https://app.travis-ci.com/sCrypt-Inc/boilerplate)
 
 A collection of smart contract examples along with tests, implemented using [sCrypt](https://scrypt.io/scryptTS), a Typescript framework to write smart contracts on Bitcoin.
 
