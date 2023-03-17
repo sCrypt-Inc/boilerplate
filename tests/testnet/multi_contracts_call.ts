@@ -94,20 +94,17 @@ async function main() {
         }
     )
 
-    const partialContractTransaction1 = await counter.methods.incrementOnChain({
+    const partialTx = await counter.methods.incrementOnChain({
         multiContractCall: true,
     } as MethodCallOptions<Counter>)
 
-    const partialContractTransaction2 = await hashPuzzle.methods.unlock(
-        byteString,
-        {
-            multiContractCall: true,
-            partialContractTransaction: partialContractTransaction1,
-        } as MethodCallOptions<HashPuzzle>
-    )
+    const finalTx = await hashPuzzle.methods.unlock(byteString, {
+        multiContractCall: true,
+        partialContractTransaction: partialTx,
+    } as MethodCallOptions<HashPuzzle>)
 
     const { tx: callTx, nexts } = await SmartContract.multiContractCall(
-        partialContractTransaction2,
+        finalTx,
         signer
     )
 

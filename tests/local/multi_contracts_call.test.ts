@@ -92,23 +92,19 @@ describe('Test SmartContract `Counter, HashPuzzle` multi call on local', () => {
             }
         )
 
-        const partialContractTransaction1 =
-            await counter1.methods.incrementOnChain({
-                multiContractCall: true,
-                fromUTXO: getDummyUTXO(1, true),
-            } as MethodCallOptions<Counter>)
+        const partialTx = await counter1.methods.incrementOnChain({
+            multiContractCall: true,
+            fromUTXO: getDummyUTXO(1, true),
+        } as MethodCallOptions<Counter>)
 
-        const partialContractTransaction2 = await hashPuzzle.methods.unlock(
-            byteString,
-            {
-                fromUTXO: getDummyUTXO(1, true),
-                multiContractCall: true,
-                partialContractTransaction: partialContractTransaction1,
-            } as MethodCallOptions<HashPuzzle>
-        )
+        const finalTx = await hashPuzzle.methods.unlock(byteString, {
+            fromUTXO: getDummyUTXO(1, true),
+            multiContractCall: true,
+            partialContractTransaction: partialTx,
+        } as MethodCallOptions<HashPuzzle>)
 
         const { tx: callTx, nexts } = await SmartContract.multiContractCall(
-            partialContractTransaction2,
+            finalTx,
             signer
         )
 
