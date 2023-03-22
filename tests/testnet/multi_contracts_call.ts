@@ -77,8 +77,8 @@ async function main() {
             options: MethodCallOptions<HashPuzzle>,
             ...args: any
         ): Promise<ContractTransaction> => {
-            if (options.partialContractTransaction) {
-                const unSignedTx = options.partialContractTransaction.tx
+            if (options.partialContractTx) {
+                const unSignedTx = options.partialContractTx.tx
                 unSignedTx.addInput(
                     current.buildContractInput(options.fromUTXO)
                 )
@@ -90,7 +90,7 @@ async function main() {
                 })
             }
 
-            throw new Error('no partialContractTransaction found')
+            throw new Error('no partialContractTx found')
         }
     )
 
@@ -100,7 +100,7 @@ async function main() {
 
     const finalTx = await hashPuzzle.methods.unlock(byteString, {
         multiContractCall: true,
-        partialContractTransaction: partialTx,
+        partialContractTx: partialTx,
     } as MethodCallOptions<HashPuzzle>)
 
     const { tx: callTx, nexts } = await SmartContract.multiContractCall(

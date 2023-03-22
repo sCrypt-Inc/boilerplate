@@ -75,8 +75,8 @@ describe('Test SmartContract `Counter, HashPuzzle` multi call on local', () => {
                 options: MethodCallOptions<HashPuzzle>,
                 ...args: any
             ): Promise<ContractTransaction> => {
-                if (options.partialContractTransaction) {
-                    const unSignedTx = options.partialContractTransaction.tx
+                if (options.partialContractTx) {
+                    const unSignedTx = options.partialContractTx.tx
                     unSignedTx.addInput(
                         current.buildContractInput(options.fromUTXO)
                     )
@@ -88,7 +88,7 @@ describe('Test SmartContract `Counter, HashPuzzle` multi call on local', () => {
                     })
                 }
 
-                throw new Error('no partialContractTransaction found')
+                throw new Error('no partialContractTx found')
             }
         )
 
@@ -100,7 +100,7 @@ describe('Test SmartContract `Counter, HashPuzzle` multi call on local', () => {
         const finalTx = await hashPuzzle.methods.unlock(byteString, {
             fromUTXO: getDummyUTXO(1, true),
             multiContractCall: true,
-            partialContractTransaction: partialTx,
+            partialContractTx: partialTx,
         } as MethodCallOptions<HashPuzzle>)
 
         const { tx: callTx, nexts } = await SmartContract.multiContractCall(
