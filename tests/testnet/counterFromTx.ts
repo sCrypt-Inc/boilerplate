@@ -30,8 +30,7 @@ async function callIncrementOnChain(
     const { tx: callTx } = await instance.methods.incrementOnChain({
         next: {
             instance: nextInstance,
-            balance:
-                instance.from.tx.outputs[instance.from.outputIndex].satoshis,
+            balance: instance.balance,
         },
     } as MethodCallOptions<Counter>)
     console.log(

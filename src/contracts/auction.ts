@@ -152,10 +152,7 @@ export class Auction extends SmartContract {
                     script: Script.fromHex(
                         Utils.buildPublicKeyHashScript(hash160(current.bidder))
                     ),
-                    satoshis:
-                        options.fromUTXO?.satoshis ??
-                        current.from.tx.outputs[current.from.outputIndex]
-                            .satoshis,
+                    satoshis: current.balance,
                 })
             )
             // build change output
