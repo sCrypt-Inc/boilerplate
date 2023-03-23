@@ -4,6 +4,7 @@ out/
 .vscode/*
 !.vscode/launch.json
 !.vscode/tasks.json
+!.vscode/settings.json
 artifacts/
 .env
 scrypt.index.json

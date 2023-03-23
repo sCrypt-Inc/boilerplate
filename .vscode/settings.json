@@ -1,0 +1,3 @@
+{
+  "mochaExplorer.files": "dist/tests/**/*.test.js"
+}
