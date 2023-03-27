@@ -10,22 +10,9 @@ import {
     toByteString,
     SigHash,
     SmartContract,
-    SmartContractLib,
 } from 'scrypt-ts'
 
-class ArrayUtils extends SmartContractLib {
-    // Get the byte at the given index.
-    @method()
-    static getElemAt(b: ByteString, idx: bigint): ByteString {
-        return b.slice(Number(idx) * 2, Number(idx) * 2 + 2)
-    }
-
-    // Set the byte at the given index.
-    @method()
-    static setElemAt(b: ByteString, idx: bigint, val: ByteString): ByteString {
-        return b.slice(0, Number(idx) * 2) + val + b.slice(Number(idx) * 2 + 2)
-    }
-}
+import { ArrayUtils } from 'scrypt-ts-lib'
 
 // Turing machine state
 export type State = ByteString
