@@ -94,7 +94,9 @@ describe('Test SmartContract `SocialRecovery`', () => {
             await socialRecovery.methods.updateSigningPubKey(
                 next.signingPubKey,
                 (sigResps) => {
-                    const guardianSigs = sigResps.map((sigObj) => Sig(sigObj.sig))
+                    const guardianSigs = sigResps.map((sigObj) =>
+                        Sig(sigObj.sig)
+                    )
                     // Set one wrong sig:
                     guardianSigs[0] = dummySig
                     return guardianSigs as FixedArray<
@@ -132,7 +134,9 @@ describe('Test SmartContract `SocialRecovery`', () => {
             socialRecovery.methods.updateSigningPubKey(
                 next.signingPubKey,
                 (sigResps) => {
-                    const guardianSigs = sigResps.map((sigObj) => Sig(sigObj.sig))
+                    const guardianSigs = sigResps.map((sigObj) =>
+                        Sig(sigObj.sig)
+                    )
                     for (
                         let i = 0;
                         i < SocialRecovery.GUARDIAN_THRESHOLD;

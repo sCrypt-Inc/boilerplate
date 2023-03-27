@@ -31,7 +31,7 @@ class ArrayUtils extends SmartContractLib {
 export type State = ByteString
 
 // Alphabet symbol in each cell, 1 byte long each
-export type Symbol = ByteString
+export type MachineSymbol = ByteString
 
 // Contract state as a struct
 export type StateStruct = {
@@ -44,12 +44,12 @@ export type StateStruct = {
 
 export type Input = {
     oldState: State
-    read: symbol
+    read: MachineSymbol
 }
 
 export type Output = {
     newState: State
-    write: symbol
+    write: MachineSymbol
 
     // Move left or right:
     moveLeft: boolean
@@ -77,13 +77,13 @@ export class TuringMachine extends SmartContract {
 
     // Symbols:
     @prop()
-    static readonly BLANK: symbol = toByteString('00')
+    static readonly BLANK: MachineSymbol = toByteString('00')
     @prop()
-    static readonly OPEN: symbol = toByteString('01')
+    static readonly OPEN: MachineSymbol = toByteString('01')
     @prop()
-    static readonly CLOSE: symbol = toByteString('02')
+    static readonly CLOSE: MachineSymbol = toByteString('02')
     @prop()
-    static readonly X: symbol = toByteString('03')
+    static readonly X: MachineSymbol = toByteString('03')
 
     @prop()
     static readonly LEFT: boolean = true
@@ -202,7 +202,7 @@ export class TuringMachine extends SmartContract {
     @method(SigHash.ANYONECANPAY_SINGLE)
     public transit() {
         // Transition.
-        const head: symbol = ArrayUtils.getElemAt(
+        const head: MachineSymbol = ArrayUtils.getElemAt(
             this.states.tape,
             this.states.headPos
         )
