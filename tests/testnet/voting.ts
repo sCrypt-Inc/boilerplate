@@ -55,8 +55,13 @@ async function main() {
         const nextInstance = currentInstance.next()
 
         const candidate = candidateNames[getRandomInt(0, 10)]
+
+        // read votes Received
+        const count = currentInstance.getVotesReceived(candidate)
+        console.log(`${candidate}'s vote count: ${count}`)
+
         // update state
-        nextInstance.updateVotesReceived(candidate)
+        nextInstance.increaseVotesReceived(candidate)
 
         // call the method of current instance to apply the updates on chain
         const { tx: tx_i, atInputIndex } = await currentInstance.methods.vote(

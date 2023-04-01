@@ -47,7 +47,7 @@ export class Voting extends SmartContract {
      */
     @method()
     public vote(candidate: CandidateName) {
-        this.updateVotesReceived(candidate)
+        this.increaseVotesReceived(candidate)
         // output containing the latest state and the same balance
         let outputs: ByteString = this.buildStateOutput(this.ctx.utxo.value)
         if (this.changeAmount > 0n) {
@@ -57,11 +57,23 @@ export class Voting extends SmartContract {
     }
 
     @method()
-    updateVotesReceived(candidate: CandidateName): void {
+    increaseVotesReceived(candidate: CandidateName): void {
         for (let i = 0; i < 10; i++) {
             if (this.candidates[i].name == candidate) {
                 this.candidates[i].votesReceived++
             }
         }
+    }
+
+    @method()
+    getVotesReceived(candidate: CandidateName): bigint {
+        let votesReceived = 0n
+        for (let i = 0; i < 10; i++) {
+            if (this.candidates[i].name == candidate) {
+                votesReceived = this.candidates[i].votesReceived
+            }
+        }
+
+        return votesReceived
     }
 }
