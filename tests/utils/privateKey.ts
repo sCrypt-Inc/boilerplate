@@ -17,7 +17,7 @@ export function genPrivKey() {
     const newPrivKey = bsv.PrivateKey.fromRandom('testnet')
     console.log(`Missing private key, generating a new one ...
 Private key generated: '${newPrivKey.toWIF()}'
-You can fund its address '${newPrivKey.toAddress()}' from the sCrypt faucet https://scrypt.io/#faucet`)
+You can fund its address '${newPrivKey.toAddress()}' from the sCrypt faucet https://scrypt.io/faucet`)
     // auto generate .env file with new generated key
     fs.writeFileSync(dotenvConfigPath, `PRIVATE_KEY="${newPrivKey}"`)
     privKey = newPrivKey.toWIF()
@@ -25,7 +25,7 @@ You can fund its address '${newPrivKey.toAddress()}' from the sCrypt faucet http
 
 export function showAddr(privKey: bsv.PrivateKey) {
     console.log(`Private key already present ...
-You can fund its address '${privKey.toAddress()}' from the sCrypt faucet https://scrypt.io/#faucet`)
+You can fund its address '${privKey.toAddress()}' from the sCrypt faucet https://scrypt.io/faucet`)
 }
 
 export const myPrivateKey = bsv.PrivateKey.fromWIF(privKey)
