@@ -18,7 +18,7 @@ export class SocialRecovery extends SmartContract {
     @prop(true)
     signingPubKey: PubKey
 
-    @prop(true)
+    @prop()
     guardianPubKeys: FixedArray<PubKey, typeof SocialRecovery.N_GUARDIANS>
 
     constructor(
