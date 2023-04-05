@@ -1,18 +1,11 @@
-import { expect } from 'chai'
 import { CandidateName, Voting, N } from '../../src/contracts/voting'
-import {
-    getDefaultSigner,
-    getRandomInt,
-    sleep,
-    stringify,
-} from '../utils/helper'
+import { getDefaultSigner, getRandomInt } from '../utils/helper'
 import { FixedArray, MethodCallOptions, toByteString, Scrypt } from 'scrypt-ts'
 
 async function main() {
     Scrypt.init({
         apiKey: 'alpha_test_api_key',
-        baseUrl:
-            'https://dev-platform-service-testnet-6q7ze.ondigitalocean.app',
+        baseUrl: 'https://testnet.api.scrypt.io',
     })
 
     await Voting.compile()
@@ -73,15 +66,12 @@ async function main() {
         nextInstance.increaseVotesReceived(candidateName)
 
         // call the method of current instance to apply the updates on chain
-        const { tx: tx_i, atInputIndex } = await currentInstance.methods.vote(
-            candidateName,
-            {
-                next: {
-                    instance: nextInstance,
-                    balance,
-                },
-            } as MethodCallOptions<Voting>
-        )
+        const { tx: tx_i } = await currentInstance.methods.vote(candidateName, {
+            next: {
+                instance: nextInstance,
+                balance,
+            },
+        } as MethodCallOptions<Voting>)
 
         console.log(`Voting call tx: ${tx_i.id}`)
     }
