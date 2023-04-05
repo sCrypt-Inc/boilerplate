@@ -94,15 +94,18 @@ describe('Test SmartContract `SocialRecovery`', () => {
             await socialRecovery.methods.updateSigningPubKey(
                 next.signingPubKey,
                 (sigResps) => {
+                    const sigs: Sig[] = []
                     const guardianSigs = sigResps.map((sigObj) =>
                         Sig(sigObj.sig)
                     )
-                    // Set one wrong sig:
-                    guardianSigs[0] = dummySig
-                    return guardianSigs as FixedArray<
-                        Sig,
-                        typeof SocialRecovery.N_GUARDIANS
-                    >
+                    for (
+                        let i = 0;
+                        i < SocialRecovery.GUARDIAN_THRESHOLD;
+                        i++
+                    ) {
+                        sigs.push(guardianSigs[i])
+                    }
+                    return sigs
                 },
                 // Method call options:
                 {
@@ -134,20 +137,16 @@ describe('Test SmartContract `SocialRecovery`', () => {
             socialRecovery.methods.updateSigningPubKey(
                 next.signingPubKey,
                 (sigResps) => {
-                    const guardianSigs = sigResps.map((sigObj) =>
-                        Sig(sigObj.sig)
-                    )
+                    const guardianSigs: Sig[] = []
                     for (
                         let i = 0;
                         i < SocialRecovery.GUARDIAN_THRESHOLD;
                         i++
                     ) {
-                        guardianSigs[i] = dummySig
+                        // Push same sig three times. This should cause checkMultSig() to fail.
+                        guardianSigs.push(sigResps[0].sig)
                     }
-                    return guardianSigs as FixedArray<
-                        Sig,
-                        typeof SocialRecovery.N_GUARDIANS
-                    >
+                    return guardianSigs
                 },
                 // Method call options:
                 {

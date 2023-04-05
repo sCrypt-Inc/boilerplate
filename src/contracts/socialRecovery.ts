@@ -43,19 +43,11 @@ export class SocialRecovery extends SmartContract {
     @method(SigHash.ANYONECANPAY_SINGLE)
     public updateSigningPubKey(
         newSigningPubKey: PubKey,
-        guardianSigs: FixedArray<Sig, typeof SocialRecovery.N_GUARDIANS>
+        guardianSigs: FixedArray<Sig, typeof SocialRecovery.GUARDIAN_THRESHOLD>
     ) {
-        // Check guarding signatures and count correct ones.
-        let nCorrect = 0n
-        for (let i = 0; i < SocialRecovery.N_GUARDIANS; i++) {
-            if (this.checkSig(guardianSigs[i], this.guardianPubKeys[i])) {
-                nCorrect += 1n
-            }
-        }
-
-        // Assert that the defined guardian threshold was reached.
+        // Check guarding signatures.
         assert(
-            nCorrect >= BigInt(SocialRecovery.GUARDIAN_THRESHOLD),
+            this.checkMultiSig(guardianSigs, this.guardianPubKeys),
             'Guardian threshold not reached.'
         )
 
