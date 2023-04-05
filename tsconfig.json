@@ -24,5 +24,5 @@
       }
     ]
   },
-  "include": ["src/**/voting.ts", "tests/**/voting.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
 }

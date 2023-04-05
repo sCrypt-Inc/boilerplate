@@ -16,24 +16,25 @@ export type Candidate = {
     name: CandidateName
     votesReceived: bigint
 }
+export const N = 10
 
-export type Candidates = FixedArray<Candidate, 10>
+export type Candidates = FixedArray<Candidate, typeof N>
 
 export class Voting extends SmartContract {
     @prop(true)
     candidates: Candidates
 
-    constructor(candidateNames: FixedArray<CandidateName, 10>) {
+    constructor(candidateNames: FixedArray<CandidateName, typeof N>) {
         super(...arguments)
         this.candidates = fill(
             {
                 name: toByteString(''),
                 votesReceived: 0n,
             },
-            10
+            N
         )
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < N; i++) {
             this.candidates[i] = {
                 name: candidateNames[i],
                 votesReceived: 0n,
@@ -58,22 +59,10 @@ export class Voting extends SmartContract {
 
     @method()
     increaseVotesReceived(candidate: CandidateName): void {
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < N; i++) {
             if (this.candidates[i].name == candidate) {
                 this.candidates[i].votesReceived++
             }
         }
-    }
-
-    @method()
-    getVotesReceived(candidate: CandidateName): bigint {
-        let votesReceived = 0n
-        for (let i = 0; i < 10; i++) {
-            if (this.candidates[i].name == candidate) {
-                votesReceived = this.candidates[i].votesReceived
-            }
-        }
-
-        return votesReceived
     }
 }

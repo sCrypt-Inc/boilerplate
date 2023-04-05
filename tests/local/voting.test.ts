@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { CandidateName, Voting } from '../../src/contracts/voting'
+import { CandidateName, Voting, N } from '../../src/contracts/voting'
 import {
     getDummySigner,
     getDummyUTXO,
@@ -13,7 +13,7 @@ describe('Test SmartContract `Voting`', () => {
         await Voting.compile()
     })
 
-    const candidateNames: FixedArray<CandidateName, 10> = [
+    const candidateNames: FixedArray<CandidateName, typeof N> = [
         toByteString('candidate1', true),
         toByteString('candidate2', true),
         toByteString('candidate3', true),
@@ -40,9 +40,9 @@ describe('Test SmartContract `Voting`', () => {
             // create the next instance from the current
             const nextInstance = currentInstance.next()
 
-            const candidate = candidateNames[getRandomInt(0, 10)]
+            const candidate = candidateNames[getRandomInt(0, N)]
             // update state
-            nextInstance.updateVotesReceived(candidate)
+            nextInstance.increaseVotesReceived(candidate)
 
             // call the method of current instance to apply the updates on chain
             const { tx: tx_i, atInputIndex } =

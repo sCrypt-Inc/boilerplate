@@ -1,21 +1,28 @@
 import { expect } from 'chai'
-import { CandidateName, Voting } from '../../src/contracts/voting'
-import { getDefaultSigner, getRandomInt, stringify } from '../utils/helper'
+import { CandidateName, Voting, N } from '../../src/contracts/voting'
+import {
+    getDefaultSigner,
+    getRandomInt,
+    sleep,
+    stringify,
+} from '../utils/helper'
 import { FixedArray, MethodCallOptions, toByteString, Scrypt } from 'scrypt-ts'
 
 async function main() {
     Scrypt.init({
         apiKey: 'alpha_test_api_key',
-        baseUrl: 'http://localhost:3000',
+        baseUrl:
+            'https://dev-platform-service-testnet-6q7ze.ondigitalocean.app',
     })
 
     await Voting.compile()
 
+    // need to upload artifact before deploying contract.
     const hexHash = await Scrypt.contractApi.uploadArtifact(Voting)
 
-    console.log('contract Artifact uploaded, hexHash: ', hexHash)
+    console.log('contract artifact uploaded, hexHash: ', hexHash)
 
-    const candidateNames: FixedArray<CandidateName, 10> = [
+    const candidateNames: FixedArray<CandidateName, typeof N> = [
         toByteString('candidate1', true),
         toByteString('candidate2', true),
         toByteString('candidate3', true),
@@ -44,8 +51,8 @@ async function main() {
     }
 
     // call the method of current instance to apply the updates on chain
-    for (let i = 0; i < 10; ++i) {
-        let currentInstance = await Scrypt.contractApi.getLatestInstance(
+    for (let i = 0; i < 30; ++i) {
+        const currentInstance = await Scrypt.contractApi.getLatestInstance(
             Voting,
             contract_id
         )
@@ -54,18 +61,20 @@ async function main() {
         // create the next instance from the current
         const nextInstance = currentInstance.next()
 
-        const candidate = candidateNames[getRandomInt(0, 10)]
+        const candidateName = candidateNames[getRandomInt(0, N)]
 
         // read votes Received
-        const count = currentInstance.getVotesReceived(candidate)
-        console.log(`${candidate}'s vote count: ${count}`)
+        const count = currentInstance.candidates.find(
+            (candidate) => candidate.name === candidateName
+        )?.votesReceived
+        console.log(`${candidateName}'s vote count: ${count}`)
 
         // update state
-        nextInstance.increaseVotesReceived(candidate)
+        nextInstance.increaseVotesReceived(candidateName)
 
         // call the method of current instance to apply the updates on chain
         const { tx: tx_i, atInputIndex } = await currentInstance.methods.vote(
-            candidate,
+            candidateName,
             {
                 next: {
                     instance: nextInstance,
@@ -75,11 +84,9 @@ async function main() {
         )
 
         console.log(`Voting call tx: ${tx_i.id}`)
-
-        // update the current instance reference
-        currentInstance = nextInstance
     }
 }
+
 describe('Test SmartContract `Voting`  on testnet', () => {
     it('should succeed', async () => {
         await main()
