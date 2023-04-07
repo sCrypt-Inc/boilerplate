@@ -15,13 +15,10 @@ import { expect } from 'chai'
 import { getDummySigner, getDummyUTXO } from '../utils/helper'
 
 import Transaction = bsv.Transaction
-import Address = bsv.Address
 import Script = bsv.Script
 
 // All data was pre-fetched from the WitnessOnChain oracle service.
 // See https://witnessonchain.com/
-
-const witnessServer = 'https://witnessonchain.com/v1'
 
 const RESP_0 = {
     digest: 'fa922e641c9d050000000000044253565f555344430000000000000000',
@@ -40,9 +37,8 @@ const RESP_0 = {
 }
 
 describe('Test SmartContract `PriceBet`', () => {
-    // TODO: Check endian
     const rabinPubKey: bigint = byteString2Int(
-        toByteString(RESP_0.signatures.rabin.public_key + '00')
+        RESP_0.signatures.rabin.public_key + '00'
     )
     let alicePubKey: PubKey
     let bobPubKey: PubKey
@@ -50,10 +46,6 @@ describe('Test SmartContract `PriceBet`', () => {
     let priceBet: PriceBet
 
     before(async () => {
-        // Fetch WitnessOnChain Rabin public key.
-        //const infoResponse = await axios.get(`${witnessServer}/info`)
-        //rabinPubKey = Buffer.from(infoResponse.data.public_key.rabin, 'hex').reverse().toString('hex')
-
         // Prepare inital data.
         alicePubKey = PubKey(
             bsv.PrivateKey.fromRandom('testnet').publicKey.toHex()
@@ -76,7 +68,6 @@ describe('Test SmartContract `PriceBet`', () => {
         await PriceBet.compile()
         priceBet = new PriceBet(
             BigInt(targetPrice),
-            BigInt(decimal),
             symbol,
             timestampFrom,
             timestampTo,
@@ -99,7 +90,7 @@ describe('Test SmartContract `PriceBet`', () => {
         }
 
         const oracleSigS = byteString2Int(
-            toByteString(RESP_0.signatures.rabin.signature + '00')
+            RESP_0.signatures.rabin.signature + '00'
         )
         const oracleSigPadding: ByteString = RESP_0.signatures.rabin.padding
         const oracleSig: RabinSig = {
