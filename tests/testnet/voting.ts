@@ -1,19 +1,9 @@
 import { CandidateName, Voting, N } from '../../src/contracts/voting'
-import { getDefaultSigner, getRandomInt } from '../utils/helper'
+import { getRandomInt, getScryptSigner } from '../utils/helper'
 import { FixedArray, MethodCallOptions, toByteString, Scrypt } from 'scrypt-ts'
 
 async function main() {
-    Scrypt.init({
-        apiKey: 'alpha_test_api_key',
-        baseUrl: 'https://testnet.api.scrypt.io',
-    })
-
     await Voting.compile()
-
-    // need to upload artifact before deploying contract.
-    const hexHash = await Scrypt.contractApi.uploadArtifact(Voting)
-
-    console.log('contract artifact uploaded, hexHash: ', hexHash)
 
     const candidateNames: FixedArray<CandidateName, typeof N> = [
         toByteString('candidate1', true),
@@ -30,27 +20,23 @@ async function main() {
 
     const balance = 1
 
-    const voting = new Voting(candidateNames)
-    await voting.connect(getDefaultSigner())
-
-    const deployTx = await voting.deploy(1)
-    console.log('contract Voting deployed: ', deployTx.id)
+    const signer = getScryptSigner()
 
     const contract_id = {
         /** The deployment transaction id */
-        txId: deployTx.id,
+        txId: '06801e7d5e4894e6c31ccaf306d9ccd99741ee304436a5800a00627763231244',
         /** The output index */
         outputIndex: 0,
     }
 
     // call the method of current instance to apply the updates on chain
-    for (let i = 0; i < 30; ++i) {
+    for (let i = 0; i < 100; ++i) {
         const currentInstance = await Scrypt.contractApi.getLatestInstance(
             Voting,
             contract_id
         )
 
-        await currentInstance.connect(getDefaultSigner())
+        await currentInstance.connect(signer)
         // create the next instance from the current
         const nextInstance = currentInstance.next()
 

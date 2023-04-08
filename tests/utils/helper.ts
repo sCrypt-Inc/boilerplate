@@ -3,6 +3,7 @@ import {
     DefaultProvider,
     DummyProvider,
     TestWallet,
+    ScryptProvider,
     UTXO,
 } from 'scrypt-ts'
 import { randomBytes } from 'crypto'
@@ -41,6 +42,24 @@ export function getDefaultSigner(
         global.testnetSigner.addPrivateKey(privateKey)
     }
     return global.testnetSigner
+}
+
+export function getScryptSigner(
+    privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
+): TestWallet {
+    if (global.scryptSigner === undefined) {
+        global.scryptSigner = new TestWallet(
+            myPrivateKey,
+            new ScryptProvider({
+                apiKey: 'alpha_test_api_key',
+                network: 'testnet',
+            })
+        )
+    }
+    if (privateKey !== undefined) {
+        global.scryptSigner.addPrivateKey(privateKey)
+    }
+    return global.scryptSigner
 }
 
 export const dummyUTXO = {
