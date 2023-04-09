@@ -1,9 +1,26 @@
 import { CandidateName, Voting, N } from '../../src/contracts/voting'
-import { getRandomInt, getScryptSigner } from '../utils/helper'
-import { FixedArray, MethodCallOptions, toByteString, Scrypt } from 'scrypt-ts'
+import { getRandomInt } from '../utils/helper'
+import {
+    FixedArray,
+    MethodCallOptions,
+    toByteString,
+    Scrypt,
+    ScryptProvider,
+    TestWallet,
+} from 'scrypt-ts'
+import { myPrivateKey } from '../utils/privateKey'
 
 async function main() {
     await Voting.compile()
+
+    Scrypt.init({
+        apiKey: 'alpha_test_api_key',
+        network: 'testnet',
+    })
+
+    const signer = new TestWallet(myPrivateKey)
+
+    await signer.connect(new ScryptProvider())
 
     const candidateNames: FixedArray<CandidateName, typeof N> = [
         toByteString('candidate1', true),
@@ -18,13 +35,17 @@ async function main() {
         toByteString('candidate10', true),
     ]
 
+    const voting = new Voting(candidateNames)
+    await voting.connect(signer)
+
     const balance = 1
 
-    const signer = getScryptSigner()
+    const deployTx = await voting.deploy(balance)
+    console.log('contract Voting deployed: ', deployTx.id)
 
     const contract_id = {
         /** The deployment transaction id */
-        txId: '06801e7d5e4894e6c31ccaf306d9ccd99741ee304436a5800a00627763231244',
+        txId: deployTx.id,
         /** The output index */
         outputIndex: 0,
     }

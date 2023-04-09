@@ -44,24 +44,6 @@ export function getDefaultSigner(
     return global.testnetSigner
 }
 
-export function getScryptSigner(
-    privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
-): TestWallet {
-    if (global.scryptSigner === undefined) {
-        global.scryptSigner = new TestWallet(
-            myPrivateKey,
-            new ScryptProvider({
-                apiKey: 'alpha_test_api_key',
-                network: 'testnet',
-            })
-        )
-    }
-    if (privateKey !== undefined) {
-        global.scryptSigner.addPrivateKey(privateKey)
-    }
-    return global.scryptSigner
-}
-
 export const dummyUTXO = {
     txId: randomBytes(32).toString('hex'),
     outputIndex: 0,
