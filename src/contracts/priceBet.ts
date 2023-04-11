@@ -2,11 +2,11 @@ import {
     SmartContract,
     prop,
     ByteString,
-    PubKeyHash,
     method,
     assert,
     Utils,
-    hash256,
+    Sig,
+    PubKey,
 } from 'scrypt-ts'
 import { RabinSig, RabinPubKey, RabinVerifierWOC } from 'scrypt-ts-lib'
 
@@ -35,11 +35,11 @@ export class PriceBet extends SmartContract {
     @prop()
     oraclePubKey: RabinPubKey
 
-    // Addresses of both players.
+    // Public keys of both players.
     @prop()
-    alicePkh: PubKeyHash
+    alicePubKey: PubKey
     @prop()
-    bobPkh: PubKeyHash
+    bobPubKey: PubKey
 
     constructor(
         targetPrice: bigint,
@@ -47,8 +47,8 @@ export class PriceBet extends SmartContract {
         timestampFrom: bigint,
         timestampTo: bigint,
         oraclePubKey: RabinPubKey,
-        alicePkh: PubKeyHash,
-        bobPkh: PubKeyHash
+        alicePubKey: PubKey,
+        bobPubKey: PubKey
     ) {
         super(...arguments)
         this.targetPrice = targetPrice
@@ -56,8 +56,8 @@ export class PriceBet extends SmartContract {
         this.timestampFrom = timestampFrom
         this.timestampTo = timestampTo
         this.oraclePubKey = oraclePubKey
-        this.alicePkh = alicePkh
-        this.bobPkh = bobPkh
+        this.alicePubKey = alicePubKey
+        this.bobPubKey = bobPubKey
     }
 
     // Parses signed message from the oracle.
@@ -72,7 +72,7 @@ export class PriceBet extends SmartContract {
     }
 
     @method()
-    public unlock(msg: ByteString, sig: RabinSig) {
+    public unlock(msg: ByteString, sig: RabinSig, winnerSig: Sig) {
         // Verify oracle signature.
         assert(
             RabinVerifierWOC.verifySig(msg, sig, this.oraclePubKey),
@@ -93,11 +93,11 @@ export class PriceBet extends SmartContract {
         )
         assert(exchangeRate.symbol == this.symbol, 'Wrong symbol.')
 
-        // Include output that pays the winner.
-        const outAmount = this.ctx.utxo.value // Include all sats from contract instance.
+        // Decide winner and check their signature.
         const winner =
-            exchangeRate.price >= this.targetPrice ? this.alicePkh : this.bobPkh
-        const out = Utils.buildPublicKeyHashOutput(winner, outAmount)
-        assert(this.ctx.hashOutputs == hash256(out), 'hashOutputs mismatch')
+            exchangeRate.price >= this.targetPrice
+                ? this.alicePubKey
+                : this.bobPubKey
+        assert(this.checkSig(winnerSig, winner), 'Winner checkSig failed.')
     }
 }

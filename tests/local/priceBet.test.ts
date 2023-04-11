@@ -2,13 +2,11 @@ import { PriceBet } from '../../src/contracts/priceBet'
 import {
     ByteString,
     bsv,
-    hash160,
     PubKey,
     byteString2Int,
     toByteString,
     MethodCallOptions,
-    ContractTransaction,
-    Utils,
+    findSig,
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig } from 'scrypt-ts-lib'
 import { expect } from 'chai'
@@ -40,22 +38,16 @@ describe('Test SmartContract `PriceBet`', () => {
     const rabinPubKey: bigint = byteString2Int(
         RESP_0.signatures.rabin.public_key + '00'
     )
-    let alicePubKey: PubKey
-    let bobPubKey: PubKey
+
+    let alicePrivKey: bsv.PrivateKey
+    let bobPrivKey: bsv.PrivateKey
 
     let priceBet: PriceBet
 
     before(async () => {
         // Prepare inital data.
-        alicePubKey = PubKey(
-            bsv.PrivateKey.fromRandom('testnet').publicKey.toHex()
-        )
-        const alicePkh = hash160(alicePubKey)
-
-        bobPubKey = PubKey(
-            bsv.PrivateKey.fromRandom('testnet').publicKey.toHex()
-        )
-        const bobPkh = hash160(bobPubKey)
+        alicePrivKey = bsv.PrivateKey.fromRandom('testnet')
+        bobPrivKey = bsv.PrivateKey.fromRandom('testnet')
 
         const decimal = 4
         const targetPriceFloat = 36.3 // USDT
@@ -72,22 +64,23 @@ describe('Test SmartContract `PriceBet`', () => {
             timestampFrom,
             timestampTo,
             rabinPubKey as RabinPubKey,
-            alicePkh,
-            bobPkh
+            PubKey(alicePrivKey.publicKey.toHex()),
+            PubKey(bobPrivKey.publicKey.toHex())
         )
-
-        // Connect dummy signer.
-        priceBet.connect(getDummySigner())
     })
 
     it('should pass w correct sig and data.', async () => {
         // Pick winner.
         const decimal = 4
         const currentPrice = Math.round(RESP_0.rate * 10 ** decimal)
-        let winnerPubKey = alicePubKey
+        let winner = alicePrivKey
         if (currentPrice < priceBet.targetPrice) {
-            winnerPubKey = bobPubKey
+            winner = bobPrivKey
         }
+        const winnerPubKey = winner.publicKey
+
+        // Connect signer.
+        priceBet.connect(getDummySigner(winner))
 
         const oracleSigS = byteString2Int(
             RESP_0.signatures.rabin.signature + '00'
@@ -98,45 +91,54 @@ describe('Test SmartContract `PriceBet`', () => {
             padding: oracleSigPadding,
         }
 
-        // User defined transaction builder for calling function `unlock`.
-        priceBet.bindTxBuilder(
-            'unlock',
-            function (
-                current: PriceBet,
-                options: MethodCallOptions<PriceBet>,
-                msg: ByteString,
-                sig: RabinSig
-            ): Promise<ContractTransaction> {
-                const tx: Transaction = new Transaction()
-                    // add contract input
-                    .addInput(current.buildContractInput(options.fromUTXO))
-                    // build output that pays winner
-                    .addOutput(
-                        new Transaction.Output({
-                            script: Script.fromHex(
-                                Utils.buildPublicKeyHashScript(
-                                    hash160(winnerPubKey)
-                                )
-                            ),
-                            satoshis: current.balance,
-                        })
-                    )
-                return Promise.resolve({
-                    tx: tx,
-                    atInputIndex: 0,
-                    nexts: [],
-                })
-            }
-        )
-
         const { tx: callTx, atInputIndex } = await priceBet.methods.unlock(
             RESP_0.digest as ByteString,
             oracleSig,
+            (sigResps) => findSig(sigResps, winnerPubKey),
             // Method call options:
-            { fromUTXO: getDummyUTXO() } as MethodCallOptions<PriceBet>
+            {
+                fromUTXO: getDummyUTXO(),
+                pubKeyOrAddrToSign: winnerPubKey,
+            } as MethodCallOptions<PriceBet>
         )
 
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
+    })
+
+    it('should fail paying wrong player.', async () => {
+        // Pick winner.
+        const decimal = 4
+        const currentPrice = Math.round(RESP_0.rate * 10 ** decimal)
+        let looser = alicePrivKey
+        if (currentPrice >= priceBet.targetPrice) {
+            looser = bobPrivKey
+        }
+        const looserPubKey = looser.publicKey
+
+        // Connect signer.
+        priceBet.connect(getDummySigner(looser))
+
+        const oracleSigS = byteString2Int(
+            RESP_0.signatures.rabin.signature + '00'
+        )
+        const oracleSigPadding: ByteString = RESP_0.signatures.rabin.padding
+        const oracleSig: RabinSig = {
+            s: oracleSigS,
+            padding: oracleSigPadding,
+        }
+
+        return expect(
+            priceBet.methods.unlock(
+                RESP_0.digest as ByteString,
+                oracleSig,
+                (sigResps) => findSig(sigResps, looserPubKey),
+                // Method call options:
+                {
+                    fromUTXO: getDummyUTXO(),
+                    pubKeyOrAddrToSign: looserPubKey,
+                } as MethodCallOptions<PriceBet>
+            )
+        ).to.be.rejectedWith(/signature check failed/)
     })
 })
