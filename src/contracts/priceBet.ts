@@ -10,6 +10,12 @@ import {
 } from 'scrypt-ts'
 import { RabinSig, RabinPubKey, RabinVerifierWOC } from 'scrypt-ts-lib'
 
+export type ExchangeRate = {
+    timestamp: bigint
+    price: bigint
+    symbol: ByteString
+}
+
 export class PriceBet extends SmartContract {
     // Price target that needs to be reached.
     @prop()
@@ -54,6 +60,17 @@ export class PriceBet extends SmartContract {
         this.bobPkh = bobPkh
     }
 
+    // Parses signed message from the oracle.
+    @method()
+    static parseExchangeRate(msg: ByteString): ExchangeRate {
+        // 4 bytes timestamp (LE) + 8 bytes rate (LE) + 1 byte decimal + 16 bytes symbol
+        return {
+            timestamp: Utils.fromLEUnsigned(msg.slice(0, 8)),
+            price: Utils.fromLEUnsigned(msg.slice(8, 24)),
+            symbol: msg.slice(26, 58),
+        }
+    }
+
     @method()
     public unlock(msg: ByteString, sig: RabinSig) {
         // Verify oracle signature.
@@ -63,19 +80,23 @@ export class PriceBet extends SmartContract {
         )
 
         // Decode data.
-        // 4 bytes timestamp (LE) + 8 bytes rate (LE) + 1 byte decimal + 16 bytes symbol
-        const timestamp = Utils.fromLEUnsigned(msg.slice(0, 8))
-        const price = Utils.fromLEUnsigned(msg.slice(8, 24))
-        const symbol: ByteString = msg.slice(26, 58)
+        const exchangeRate = PriceBet.parseExchangeRate(msg)
 
         // Validate data.
-        assert(timestamp >= this.timestampFrom, 'Timestamp too early.')
-        assert(timestamp <= this.timestampTo, 'Timestamp too late.')
-        assert(symbol == this.symbol, 'Wrong symbol.')
+        assert(
+            exchangeRate.timestamp >= this.timestampFrom,
+            'Timestamp too early.'
+        )
+        assert(
+            exchangeRate.timestamp <= this.timestampTo,
+            'Timestamp too late.'
+        )
+        assert(exchangeRate.symbol == this.symbol, 'Wrong symbol.')
 
         // Include output that pays the winner.
         const outAmount = this.ctx.utxo.value // Include all sats from contract instance.
-        const winner = price >= this.targetPrice ? this.alicePkh : this.bobPkh
+        const winner =
+            exchangeRate.price >= this.targetPrice ? this.alicePkh : this.bobPkh
         const out = Utils.buildPublicKeyHashOutput(winner, outAmount)
         assert(this.ctx.hashOutputs == hash256(out), 'hashOutputs mismatch')
     }
