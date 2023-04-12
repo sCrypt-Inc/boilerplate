@@ -4,6 +4,7 @@ import { myPublicKey, myPublicKeyHash } from '../utils/privateKey'
 
 import {
     bsv,
+    DefaultProvider,
     findSig,
     MethodCallOptions,
     PubKey,
@@ -12,7 +13,7 @@ import {
 } from 'scrypt-ts'
 import Transaction = bsv.Transaction
 
-let deployTx: Transaction
+let deployTXID: string
 const atOutputIndex = 0
 
 async function deploy() {
@@ -20,12 +21,15 @@ async function deploy() {
     const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
     await p2pkh.connect(getDefaultSigner())
 
-    deployTx = await p2pkh.deploy(inputSatoshis)
-    console.log('P2PKH contract deployed: ', deployTx.id)
+    const deployTx = await p2pkh.deploy(inputSatoshis)
+    deployTXID = deployTx.id
+    console.log('P2PKH contract deployed: ', deployTXID)
 }
 
 async function call() {
-    // recover instance from tx
+    // Fetch tx using a provider and reconstruct contract instance.
+    const provider = new DefaultProvider()
+    const deployTx = await provider.getTransaction(deployTXID)
     const p2pkh = P2PKH.fromTx(deployTx, atOutputIndex)
 
     await p2pkh.connect(getDefaultSigner())
