@@ -1,25 +1,26 @@
 import { Counter } from '../../src/contracts/counter'
 import { getDefaultSigner } from '../utils/helper'
-import { bsv, MethodCallOptions } from 'scrypt-ts'
-import Transaction = bsv.Transaction
+import { DefaultProvider, MethodCallOptions } from 'scrypt-ts'
 
 async function compileContract() {
     await Counter.compile()
 }
 
-async function deploy(initialCount = 100n): Promise<Transaction> {
+async function deploy(initialCount = 100n): Promise<string> {
     const instance = new Counter(initialCount)
     await instance.connect(getDefaultSigner())
     const tx = await instance.deploy(1)
     console.log(`Counter deployed: ${tx.id}, the count is: ${instance.count}`)
-    return tx
+    return tx.id
 }
 
 async function callIncrementOnChain(
-    tx: Transaction,
+    txId: string,
     atOutputIndex = 0
-): Promise<Transaction> {
-    // recover instance from tx
+): Promise<string> {
+    // Fetch tx via provider and reconstruct contract instance
+    const provider = new DefaultProvider()
+    const tx = await provider.getTransaction(txId)
     const instance = Counter.fromTx(tx, atOutputIndex)
 
     await instance.connect(getDefaultSigner())
@@ -36,14 +37,14 @@ async function callIncrementOnChain(
     console.log(
         `Counter incrementOnChain called: ${callTx.id}, the count now is: ${nextInstance.count}`
     )
-    return callTx
+    return callTx.id
 }
 
 async function main() {
     await compileContract()
-    let lastTx = await deploy()
+    let lastTxId = await deploy()
     for (let i = 0; i < 5; ++i) {
-        lastTx = await callIncrementOnChain(lastTx)
+        lastTxId = await callIncrementOnChain(lastTxId)
     }
 }
 
