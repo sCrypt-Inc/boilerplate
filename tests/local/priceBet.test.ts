@@ -46,8 +46,8 @@ describe('Test SmartContract `PriceBet`', () => {
 
     before(async () => {
         // Prepare inital data.
-        alicePrivKey = bsv.PrivateKey.fromRandom('testnet')
-        bobPrivKey = bsv.PrivateKey.fromRandom('testnet')
+        alicePrivKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
+        bobPrivKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
 
         const decimal = 4
         const targetPriceFloat = 36.3 // USDT
