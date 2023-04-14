@@ -21,7 +21,7 @@ const publicKeys: bsv.PublicKey[] = []
 const addresses: bsv.Address[] = []
 
 for (let i = 0; i < 3; i++) {
-    privateKeys.push(bsv.PrivateKey.fromRandom('testnet'))
+    privateKeys.push(bsv.PrivateKey.fromRandom(bsv.Networks.testnet))
     publicKeys.push(privateKeys[i].publicKey)
     addresses.push(privateKeys[i].publicKey.toAddress())
 }

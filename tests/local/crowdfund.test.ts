@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { findSig, MethodCallOptions, PubKey, toHex } from 'scrypt-ts'
+import { findSig, MethodCallOptions, PubKey, toHex, bsv } from 'scrypt-ts'
 import { Crowdfund } from '../../src/contracts/crowdfund'
 import {
     getDummySigner,
@@ -37,7 +37,9 @@ describe('Test SmartContract `Crowdfund`', () => {
             {
                 fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: publicKeyRecipient,
-                changeAddress: publicKeyRecipient.toAddress('testnet'),
+                changeAddress: publicKeyRecipient.toAddress(
+                    bsv.Networks.testnet
+                ),
             } as MethodCallOptions<Crowdfund>
         )
         const result = callTx.verifyScript(atInputIndex)

@@ -219,7 +219,7 @@ describe('Test SmartContract `ERC20`', () => {
         const address = await signer.getDefaultAddress()
         const issuerAddress = PubKeyHash(address.toObject().hash)
 
-        const aliceKey = bsv.PrivateKey.fromRandom('testnet')
+        const aliceKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         signer.addPrivateKey(aliceKey)
 
         const alicePubkey = PubKey(toHex(aliceKey.publicKey))
@@ -262,7 +262,7 @@ describe('Test SmartContract `ERC20`', () => {
                 .toString()}`
         )
 
-        const bobKey = bsv.PrivateKey.fromRandom('testnet')
+        const bobKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         signer.addPrivateKey(bobKey)
         const bobPubkey = PubKey(toHex(bobKey.publicKey))
 
@@ -319,7 +319,7 @@ describe('Test SmartContract `ERC20`', () => {
         console.log(`alice approve ${111n} Gold to be spend by bob`)
         result = tx5.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
-        const lilyKey = bsv.PrivateKey.fromRandom('testnet')
+        const lilyKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         signer.addPrivateKey(lilyKey)
         const lilyAddress = PubKeyHash(lilyKey.toAddress().toObject().hash)
 

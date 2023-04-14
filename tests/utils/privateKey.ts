@@ -14,7 +14,7 @@ if (!privKey) {
 }
 
 export function genPrivKey() {
-    const newPrivKey = bsv.PrivateKey.fromRandom('testnet')
+    const newPrivKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
     console.log(`Missing private key, generating a new one ...
 Private key generated: '${newPrivKey.toWIF()}'
 You can fund its address '${newPrivKey.toAddress()}' from the sCrypt faucet https://scrypt.io/faucet`)
