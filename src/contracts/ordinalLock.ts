@@ -16,6 +16,11 @@ import {
     UTXO,
 } from 'scrypt-ts'
 
+/*
+ * Source code by 1Sat Ordinals:
+ * https://docs.1satordinals.com/ordinal-lock
+ */
+
 export class OrdinalLock extends SmartContract {
     @prop()
     seller: PubKeyHash
