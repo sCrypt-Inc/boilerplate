@@ -58,7 +58,7 @@ export class SocialRecovery extends SmartContract {
         const amount: bigint = this.ctx.utxo.value
         // Output containing the latest state.
         const output: ByteString = this.buildStateOutput(amount)
-        // Verify current tx has this single output.
+        // Verify unlocking tx has this single output.
         assert(this.ctx.hashOutputs == hash256(output), 'hashOutputs mismatch')
     }
 }

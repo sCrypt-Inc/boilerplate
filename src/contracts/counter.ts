@@ -29,7 +29,7 @@ export class Counter extends SmartContract {
         const amount: bigint = this.ctx.utxo.value
         // output containing the latest state
         const output: ByteString = this.buildStateOutput(amount)
-        // verify current tx has this single output
+        // verify unlocking tx has this single output
         assert(this.ctx.hashOutputs == hash256(output), 'hashOutputs mismatch')
     }
 
