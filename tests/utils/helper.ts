@@ -32,7 +32,9 @@ export function getDefaultSigner(
     if (global.testnetSigner === undefined) {
         global.testnetSigner = new TestWallet(
             myPrivateKey,
-            new DefaultProvider()
+            new DefaultProvider({
+                network: bsv.Networks.testnet,
+            })
         )
     }
     if (privateKey !== undefined) {
