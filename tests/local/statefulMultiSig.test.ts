@@ -2,7 +2,7 @@ import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-import { StatefulMultiSig } from '../../src/contracts/statefulMultiSig'
+import { Owner, StatefulMultiSig } from '../../src/contracts/statefulMultiSig'
 import { getDummySigner, getDummyUTXO } from '../utils/helper'
 import {
     bsv,
@@ -20,39 +20,27 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
 
     const privKeys: bsv.PrivateKey[] = []
     const pubKeys: bsv.PublicKey[] = []
-    let pubKeysArr: FixedArray<PubKey, typeof StatefulMultiSig.M>
-    let validatedArr: FixedArray<boolean, typeof StatefulMultiSig.M>
+    let owners: FixedArray<Owner, typeof StatefulMultiSig.M>
 
     before(async () => {
-        const _pubKeysArr = []
-        const _validatedArr = []
+        const _owners = []
         for (let i = 0; i < StatefulMultiSig.M; i++) {
             const privKey = bsv.PrivateKey.fromRandom()
             const pubKey = privKey.toPublicKey()
             privKeys.push(privKey)
             pubKeys.push(pubKey)
-            _pubKeysArr.push(PubKey(pubKey.toHex()))
-            _validatedArr.push(false)
+            _owners.push({
+                pubKey: PubKey(pubKey.toHex()),
+                validated: false,
+            })
         }
 
-        pubKeysArr = _pubKeysArr as FixedArray<
-            PubKey,
-            typeof StatefulMultiSig.M
-        >
-        validatedArr = _validatedArr as FixedArray<
-            boolean,
-            typeof StatefulMultiSig.M
-        >
-
+        owners = _owners as FixedArray<Owner, typeof StatefulMultiSig.M>
         await StatefulMultiSig.compile()
     })
 
     it('should pass adding valid sig.', async () => {
-        const statefulMultiSig = new StatefulMultiSig(
-            destAddr,
-            pubKeysArr,
-            validatedArr
-        )
+        const statefulMultiSig = new StatefulMultiSig(destAddr, owners)
 
         const pubKeyIdx = 0
 
@@ -61,7 +49,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
 
         // Construct next contract instance and update flag array.
         const next = statefulMultiSig.next()
-        next.validated[pubKeyIdx] = true
+        next.owners[pubKeyIdx].validated = true
 
         const fromUTXO = getDummyUTXO()
 
@@ -85,11 +73,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
     })
 
     it('should pass paying out if threshold reached.', async () => {
-        let statefulMultiSig = new StatefulMultiSig(
-            destAddr,
-            pubKeysArr,
-            validatedArr
-        )
+        let statefulMultiSig = new StatefulMultiSig(destAddr, owners)
 
         let fromUTXO = getDummyUTXO()
 
@@ -101,7 +85,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
 
             // Construct next contract instance and update flag array.
             const next = statefulMultiSig.next()
-            next.validated[pubKeyIdx] = true
+            next.owners[pubKeyIdx].validated = true
 
             await statefulMultiSig.methods.add(
                 (sigResps) => findSig(sigResps, pubKeys[pubKeyIdx]),
@@ -142,11 +126,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
     })
 
     it('should fail adding invalid sig.', async () => {
-        const statefulMultiSig = new StatefulMultiSig(
-            destAddr,
-            pubKeysArr,
-            validatedArr
-        )
+        const statefulMultiSig = new StatefulMultiSig(destAddr, owners)
 
         const pubKeyIdx = 0
 
@@ -156,7 +136,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
 
         // Construct next contract instance and update flag array.
         const next = statefulMultiSig.next()
-        next.validated[pubKeyIdx] = true
+        next.owners[pubKeyIdx].validated = true
 
         const fromUTXO = getDummyUTXO()
 
@@ -179,11 +159,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
     })
 
     it('should fail pay if threshold not reached', async () => {
-        const statefulMultiSig = new StatefulMultiSig(
-            destAddr,
-            pubKeysArr,
-            validatedArr
-        )
+        const statefulMultiSig = new StatefulMultiSig(destAddr, owners)
 
         const fromUTXO = getDummyUTXO()
 

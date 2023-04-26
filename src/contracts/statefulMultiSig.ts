@@ -16,6 +16,11 @@ import {
     bsv,
 } from 'scrypt-ts'
 
+export type Owner = {
+    pubKey: PubKey
+    validated: boolean
+}
+
 export class StatefulMultiSig extends SmartContract {
     // N of M signatures required.
     static readonly N = 2
@@ -25,24 +30,18 @@ export class StatefulMultiSig extends SmartContract {
     @prop()
     dest: PubKeyHash
 
-    // Public keys of the owners.
-    @prop()
-    pubKeys: FixedArray<PubKey, typeof StatefulMultiSig.M>
-
-    // Array of boolean flags to indicate public keys for which
-    // a valid signature was provided.
+    // Public keys of the owners along with boolean flags, that
+    // indicate if their sig was already validated.
     @prop(true)
-    validated: FixedArray<boolean, typeof StatefulMultiSig.M>
+    owners: FixedArray<Owner, typeof StatefulMultiSig.M>
 
     constructor(
         dest: PubKeyHash,
-        pubKeys: FixedArray<PubKey, typeof StatefulMultiSig.M>,
-        validated: FixedArray<boolean, typeof StatefulMultiSig.M>
+        owners: FixedArray<Owner, typeof StatefulMultiSig.M>
     ) {
         super(...arguments)
         this.dest = dest
-        this.pubKeys = pubKeys
-        this.validated = validated
+        this.owners = owners
     }
 
     @method(SigHash.ANYONECANPAY_SINGLE)
@@ -50,7 +49,7 @@ export class StatefulMultiSig extends SmartContract {
         // Check if threshold was reached.
         let nValid = 0n
         for (let i = 0; i < StatefulMultiSig.M; i++) {
-            if (this.validated[i]) {
+            if (this.owners[i].validated) {
                 nValid += 1n
             }
         }
@@ -76,11 +75,11 @@ export class StatefulMultiSig extends SmartContract {
 
         for (let i = 0; i < StatefulMultiSig.M; i++) {
             if (BigInt(i) == pubKeyIdx) {
-                const valid = this.checkSig(sig, this.pubKeys[i])
-                const alreadyValidated = this.validated[i]
-                if (valid && !alreadyValidated) {
+                const owner = this.owners[i]
+                const valid = this.checkSig(sig, owner.pubKey)
+                if (valid && !owner.validated) {
                     // Toggle flag.
-                    this.validated[i] = true
+                    this.owners[i].validated = true
                     added = true
                 }
             }
