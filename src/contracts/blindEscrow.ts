@@ -94,7 +94,7 @@ export class BlindEscrow extends SmartContract {
         assert(hash160(spenderPubKey) == spender, 'Wrong spender pub key')
         assert(hash160(oraclePubKey) == oracle, 'Wrong oracle pub key')
 
-        // Check oracle signature.
+        // Check oracle signature, i.e. "stamp".
         const oracleMsg: ByteString = this.escrowNonce + int2ByteString(action)
         const hashInt = byteString2Int(
             reverseByteString(hash256(oracleMsg), 32) + toByteString('00')
