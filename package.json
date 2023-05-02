@@ -27,7 +27,7 @@
   "license": "MIT",
   "dependencies": {
     "scrypt-ts": "beta",
-    "scrypt-ts-lib": "^0.1.16"
+    "scrypt-ts-lib": "^0.1.17"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",

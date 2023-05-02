@@ -1,18 +1,25 @@
 import {
     assert,
     ByteString,
+    byteString2Int,
     exit,
     hash160,
+    hash256,
     int2ByteString,
     method,
     prop,
     PubKey,
     PubKeyHash,
+    reverseByteString,
     Sig,
     SmartContract,
     toByteString,
 } from 'scrypt-ts'
-import { SECP256K1 as EC } from 'scrypt-ts-lib'
+import { SECP256K1, Signature } from 'scrypt-ts-lib'
+
+// Important to keep in mind:
+// All public keys must be in uncompressed form. This also affects
+// the values of the pub key hashes i.e. addresses.
 
 export class BlindEscrow extends SmartContract {
     // 4 possible actions:
@@ -54,7 +61,7 @@ export class BlindEscrow extends SmartContract {
     public spend(
         spenderSig: Sig,
         spenderPubKey: PubKey,
-        oracleSig: Sig,
+        oracleSig: Signature,
         oraclePubKey: PubKey,
         action: bigint
     ) {
@@ -89,7 +96,17 @@ export class BlindEscrow extends SmartContract {
 
         // Check oracle signature.
         const oracleMsg: ByteString = this.escrowNonce + int2ByteString(action)
-        //assert(EC.verifySig(oracleMsg, oracleSig, oraclePubKey), 'Oracle sig invalid')
+        const hashInt = byteString2Int(
+            reverseByteString(hash256(oracleMsg), 32) + toByteString('00')
+        )
+        assert(
+            SECP256K1.verifySig(
+                hashInt,
+                oracleSig,
+                SECP256K1.pubKey2Point(oraclePubKey)
+            ),
+            'Oracle sig invalid'
+        )
 
         // Check spender signature.
         assert(this.checkSig(spenderSig, spenderPubKey), 'Spender sig invalid')
