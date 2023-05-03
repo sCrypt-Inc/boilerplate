@@ -97,4 +97,91 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
+
+    it('should pass release by arbiter', async () => {
+        //// Sig by buyer, stamp by arbiter.
+
+        const oracleMsg: ByteString =
+            escrowNonce + int2ByteString(BlindEscrow.RELEASE_BY_ARBITER)
+        const hashBuff = Buffer.from(hash256(oracleMsg), 'hex')
+        const oracleSigObj = bsv.crypto.ECDSA.sign(hashBuff, arbiter)
+        const oracleSig: Signature = {
+            r: BigInt(oracleSigObj['r'].toString()),
+            s: BigInt(oracleSigObj['s'].toString()),
+        }
+
+        await blindEscrow.connect(getDummySigner(buyer))
+        const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
+            (sigResps) => findSig(sigResps, buyer.publicKey),
+            PubKey(buyerPubKey.toHex()),
+            oracleSig,
+            PubKey(arbiterPubKey.toHex()),
+            BlindEscrow.RELEASE_BY_ARBITER,
+            {
+                fromUTXO: getDummyUTXO(),
+                pubKeyOrAddrToSign: buyer.publicKey,
+            } as MethodCallOptions<BlindEscrow>
+        )
+
+        const result = callTx.verifyScript(atInputIndex)
+        expect(result.success, result.error).to.eq(true)
+    })
+
+    it('should pass return by buyer', async () => {
+        //// Sig by seller, stamp by buyer.
+
+        const oracleMsg: ByteString =
+            escrowNonce + int2ByteString(BlindEscrow.RETURN_BY_BUYER)
+        const hashBuff = Buffer.from(hash256(oracleMsg), 'hex')
+        const oracleSigObj = bsv.crypto.ECDSA.sign(hashBuff, buyer)
+        const oracleSig: Signature = {
+            r: BigInt(oracleSigObj['r'].toString()),
+            s: BigInt(oracleSigObj['s'].toString()),
+        }
+
+        await blindEscrow.connect(getDummySigner(seller))
+        const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
+            (sigResps) => findSig(sigResps, seller.publicKey),
+            PubKey(sellerPubKey.toHex()),
+            oracleSig,
+            PubKey(buyerPubKey.toHex()),
+            BlindEscrow.RETURN_BY_BUYER,
+            {
+                fromUTXO: getDummyUTXO(),
+                pubKeyOrAddrToSign: seller.publicKey,
+            } as MethodCallOptions<BlindEscrow>
+        )
+
+        const result = callTx.verifyScript(atInputIndex)
+        expect(result.success, result.error).to.eq(true)
+    })
+
+    it('should pass return by arbiter', async () => {
+        //// Sig by seller, stamp by arbiter.
+
+        const oracleMsg: ByteString =
+            escrowNonce + int2ByteString(BlindEscrow.RETURN_BY_ARBITER)
+        const hashBuff = Buffer.from(hash256(oracleMsg), 'hex')
+        const oracleSigObj = bsv.crypto.ECDSA.sign(hashBuff, arbiter)
+        const oracleSig: Signature = {
+            r: BigInt(oracleSigObj['r'].toString()),
+            s: BigInt(oracleSigObj['s'].toString()),
+        }
+
+        await blindEscrow.connect(getDummySigner(seller))
+        const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
+            (sigResps) => findSig(sigResps, seller.publicKey),
+            PubKey(sellerPubKey.toHex()),
+            oracleSig,
+            PubKey(arbiterPubKey.toHex()),
+            BlindEscrow.RETURN_BY_ARBITER,
+            {
+                fromUTXO: getDummyUTXO(),
+                pubKeyOrAddrToSign: seller.publicKey,
+            } as MethodCallOptions<BlindEscrow>
+        )
+
+        const result = callTx.verifyScript(atInputIndex)
+        expect(result.success, result.error).to.eq(true)
+    })
 })
