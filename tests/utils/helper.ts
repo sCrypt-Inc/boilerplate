@@ -3,6 +3,7 @@ import {
     DefaultProvider,
     DummyProvider,
     TestWallet,
+    ScryptProvider,
     UTXO,
 } from 'scrypt-ts'
 import { randomBytes } from 'crypto'
@@ -73,4 +74,18 @@ export function getDummySigner(
         global.dummySigner.addPrivateKey(privateKey)
     }
     return global.dummySigner
+}
+
+export function getRandomInt(min: number, max: number) {
+    min = Math.ceil(min)
+    max = Math.floor(max)
+    return Math.floor(Math.random() * (max - min) + min) // The maximum is exclusive and the minimum is inclusive
+}
+
+export function stringify(obj: unknown) {
+    return JSON.stringify(
+        obj,
+        (key, value) => (typeof value === 'bigint' ? value.toString() : value), // return everything else unchange
+        2
+    )
 }
