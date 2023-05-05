@@ -2,15 +2,18 @@ import {
     assert,
     ByteString,
     byteString2Int,
+    hash256,
     int2ByteString,
     method,
     prop,
     PubKey,
+    PubKeyHash,
     Sha256,
     sha256,
     Sig,
     SmartContract,
     toByteString,
+    Utils,
 } from 'scrypt-ts'
 import { SECP256K1, Signature } from 'scrypt-ts-lib'
 
@@ -27,17 +30,22 @@ export class OrderedSig extends SmartContract {
     @prop()
     signer2: PubKey
 
+    @prop()
+    dest: PubKeyHash
+
     constructor(
         msg: ByteString,
         signer0: PubKey,
         signer1: PubKey,
-        signer2: PubKey
+        signer2: PubKey,
+        dest: PubKeyHash
     ) {
         super(...arguments)
         this.msg = msg
         this.signer0 = signer0
         this.signer1 = signer1
         this.signer2 = signer2
+        this.dest = dest
     }
 
     @method()
@@ -69,6 +77,11 @@ export class OrderedSig extends SmartContract {
             ),
             'sig2 invalid'
         )
+
+        // Ensure the next output pays the specified address.
+        const destScript = Utils.buildPublicKeyHashScript(this.dest)
+        const out = Utils.buildOutput(destScript, this.ctx.utxo.value)
+        assert(hash256(out) == this.ctx.hashOutputs, 'hashOutputs mismatch')
     }
 
     // Hashes Signature object (non-DER)
