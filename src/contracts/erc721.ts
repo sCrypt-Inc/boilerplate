@@ -17,7 +17,7 @@ type OwnerMap = HashedMap<bigint, PubKey>
 export class Erc721 extends SmartContract {
     @prop()
     minter: PubKey
-    s
+
     @prop(true)
     owners: OwnerMap
 
