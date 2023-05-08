@@ -8,9 +8,11 @@ import {
     prop,
     PubKey,
     PubKeyHash,
+    reverseByteString,
     Sha256,
     sha256,
     Sig,
+    SigHash,
     SmartContract,
     toByteString,
     Utils,
@@ -48,7 +50,7 @@ export class OrderedSig extends SmartContract {
         this.dest = dest
     }
 
-    @method()
+    @method(SigHash.ANYONECANPAY_SINGLE)
     public unlock(sig0: Sig, sig1: Signature, sig2: Signature) {
         // First sig is checked by a regular OP_CHECKSIG.
         assert(this.checkSig(sig0, this.signer0), 'sig0 invalid')
@@ -56,7 +58,9 @@ export class OrderedSig extends SmartContract {
         // The subsequent ones get checked by the SECP256K1 lib, as the message is not the tx itself,
         // but the first signature.
         // Signing the previous signature ensures that sig1 was created AFTER sig0.
-        const hash1 = byteString2Int(sha256(sig0) + toByteString('00'))
+        const hash1 = byteString2Int(
+            reverseByteString(hash256(sig0), 32) + toByteString('00')
+        )
         assert(
             SECP256K1.verifySig(
                 hash1,
@@ -67,7 +71,8 @@ export class OrderedSig extends SmartContract {
         )
 
         const hash2 = byteString2Int(
-            OrderedSig.hashSignature(sig1) + toByteString('00')
+            reverseByteString(OrderedSig.hashSignature(sig1), 32) +
+                toByteString('00')
         )
         assert(
             SECP256K1.verifySig(
@@ -87,6 +92,6 @@ export class OrderedSig extends SmartContract {
     // Hashes Signature object (non-DER)
     @method()
     static hashSignature(sig: Signature): Sha256 {
-        return sha256(int2ByteString(sig.r, 32n) + int2ByteString(sig.s, 32n))
+        return hash256(int2ByteString(sig.r, 33n) + int2ByteString(sig.s, 33n))
     }
 }
