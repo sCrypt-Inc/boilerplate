@@ -55,7 +55,10 @@ export class OrderedSigStateful extends SmartContract {
 
         // Check if this was the last sig.
         let destScript: ByteString = toByteString('00')
-        if (this.currentSignerIdx == BigInt(OrderedSigStateful.N_SIGNERS)) {
+        if (
+            this.currentSignerIdx ==
+            BigInt(OrderedSigStateful.N_SIGNERS) - 1n
+        ) {
             // If yes, pay P2PKH to dest address.
             destScript = Utils.buildPublicKeyHashScript(this.dest)
         } else {
@@ -65,7 +68,7 @@ export class OrderedSigStateful extends SmartContract {
         }
 
         // Ensure the next output will be as specified.
-        const out = Utils.buildOutput(destScript, this.ctx.utxo.value)
-        assert(hash256(out) == this.ctx.hashOutputs, 'hashOutputs mismatch')
+        const outputs = Utils.buildOutput(destScript, this.ctx.utxo.value)
+        assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
     }
 }
