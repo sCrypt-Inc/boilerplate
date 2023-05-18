@@ -1,6 +1,7 @@
 import { DefaultProvider, MethodCallOptions, PubKey, Sha256, TestWallet, bsv, findSig, toByteString, toHex } from "scrypt-ts";
 import { Netflix } from "../../src/contracts/netflix";
-import { getDefaultSigner, randomPrivateKey } from "./utils/txHelper";
+import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
+
 
 
 async function main() {

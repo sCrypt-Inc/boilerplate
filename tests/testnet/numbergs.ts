@@ -1,6 +1,7 @@
 import { Numbergs } from '../../src/contracts/numbergs'
 import { myPrivateKey, myPublicKey } from '../utils/privateKey'
-import { getDefaultSigner } from './utils/txHelper'
+import { getDefaultSigner } from '../utils/helper'
+
 import { MethodCallOptions, PubKey, findSig, toHex } from 'scrypt-ts'
 
 

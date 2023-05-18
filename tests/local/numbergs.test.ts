@@ -1,6 +1,7 @@
 import { DefaultProvider, MethodCallOptions, PubKey, Sha256, TestWallet, bsv, findSig, toByteString, toHex } from "scrypt-ts";
 import { Numbergs } from "../../src/contracts/numbergs";
-import { getDummySigner, getDummyUTXO, randomPrivateKey } from "./utils/txHelper";
+import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
+
 import { expect } from "chai";
 
 

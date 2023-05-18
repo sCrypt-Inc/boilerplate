@@ -4,7 +4,8 @@ import {
     getDummySigner,
     getDummyUTXO,
     randomPrivateKey,
-} from './utils/txHelper'
+} from '../utils/helper'
+
 import { myPublicKeyHash, myAddress } from '../utils/privateKey'
 import { expect } from 'chai'
 

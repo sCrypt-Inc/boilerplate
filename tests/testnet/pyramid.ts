@@ -1,5 +1,6 @@
 import { Pyramid } from '../../src/contracts/pyramid'
-import { getDefaultSigner } from './utils/txHelper'
+import { getDefaultSigner } from '../utils/helper'
+
 import { MethodCallOptions, PubKey, PubKeyHash, toHex } from 'scrypt-ts'
 import { myAddress, myPublicKey, myPublicKeyHash, } from '../utils/privateKey'
 
