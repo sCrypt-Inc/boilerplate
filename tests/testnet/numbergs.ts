@@ -23,9 +23,9 @@ async function main() {
     console.log('Numbergs contract deployed: ', deployTx.id)
 
     const {tx: guessTx} = await instance.methods.guess(
-        (sigReps) => findSig(sigReps, publicKeyAlice && publicKeyBob),
+        (sigReps) => findSig(sigReps, publicKeyAlice),
         {
-            pubKeyOrAddrToSign : publicKeyAlice && publicKeyBob,
+            pubKeyOrAddrToSign : publicKeyAlice,
         } as MethodCallOptions<Numbergs>
     )
         console.log('guess method call successfully: ',guessTx.id)
