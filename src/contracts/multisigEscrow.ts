@@ -13,11 +13,11 @@ import {
     hash256,
 } from 'scrypt-ts'
 
+const LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
+const UINT_MAX = 0xffffffffn
+
 export class MultiSigEscrow extends SmartContract {
     static readonly N_ARBITERS = 3
-
-    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
-    static readonly UINT_MAX = 0xffffffffn
 
     @prop()
     readonly buyerAddr: PubKeyHash
@@ -116,17 +116,12 @@ export class MultiSigEscrow extends SmartContract {
         )
 
         // Require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
-        assert(
-            this.ctx.sequence < MultiSigEscrow.UINT_MAX,
-            'require nLocktime enabled'
-        )
+        assert(this.ctx.sequence < UINT_MAX, 'require nLocktime enabled')
 
         // Check if using block height.
-        if (this.deadline < MultiSigEscrow.LOCKTIME_BLOCK_HEIGHT_MARKER) {
+        if (this.deadline < LOCKTIME_BLOCK_HEIGHT_MARKER) {
             // Enforce nLocktime field to also use block height.
-            assert(
-                this.ctx.locktime < MultiSigEscrow.LOCKTIME_BLOCK_HEIGHT_MARKER
-            )
+            assert(this.ctx.locktime < LOCKTIME_BLOCK_HEIGHT_MARKER)
         }
         assert(this.ctx.locktime >= this.deadline, 'deadline not yet reached')
 
