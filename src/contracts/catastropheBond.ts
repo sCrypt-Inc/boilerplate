@@ -16,14 +16,10 @@ import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 const LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
 const UINT_MAX = 0xffffffffn
 
-// TODO: Prevent issuer from defaulting, i.e. not paying after maturation?
-//       - Second oracle to be a guarantor?
-
 export type Investment = {
     investor: PubKeyHash
     amount: bigint
 }
-
 export class CatBond extends SmartContract {
     static readonly MAX_INVESTORS = 3
 
@@ -32,6 +28,9 @@ export class CatBond extends SmartContract {
 
     @prop()
     premium: bigint // for example 800 means 8.00 %
+
+    @prop()
+    startTime: bigint
 
     @prop()
     matureTime: bigint
@@ -45,7 +44,7 @@ export class CatBond extends SmartContract {
     @prop()
     minMagnitude: bigint
 
-    @prop()
+    @prop(true)
     investments: FixedArray<Investment, typeof CatBond.MAX_INVESTORS>
 
     @prop(true)
@@ -54,6 +53,7 @@ export class CatBond extends SmartContract {
     constructor(
         minInvestment: bigint,
         premium: bigint,
+        startTime: bigint,
         matureTime: bigint,
         issuer: PubKeyHash,
         oracle: RabinPubKey,
@@ -63,6 +63,7 @@ export class CatBond extends SmartContract {
         super(...arguments)
         this.minInvestment = minInvestment
         this.premium = premium
+        this.startTime = startTime
         this.matureTime = matureTime
         this.issuer = issuer
         this.oracle = oracle
@@ -101,11 +102,13 @@ export class CatBond extends SmartContract {
         )
 
         // Make sure earthquake was >= this.earthquakeMinMagnitude
-        const magnitude = Utils.fromLEUnsigned(oracleMsg.slice(0, 8))
+        const magnitude = Utils.fromLEUnsigned(oracleMsg.slice(0, 2))
+        const timestamp = Utils.fromLEUnsigned(oracleMsg.slice(2))
         assert(
             magnitude >= this.minMagnitude,
             'earthquake magnitude threshold not reached'
         )
+        assert(timestamp >= this.startTime, 'earthquake timestamp too early')
 
         // Pay issuer.
         const out = Utils.buildPublicKeyHashOutput(
