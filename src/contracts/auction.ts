@@ -19,6 +19,10 @@ import Transaction = bsv.Transaction
 import Address = bsv.Address
 import Script = bsv.Script
 
+/*
+ * Read Medium article about this contract:
+ * https://medium.com/@xiaohuiliu/auction-on-bitcoin-4ba2b6c18ba7
+ */
 export class Auction extends SmartContract {
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
     static readonly UINT_MAX = 0xffffffffn

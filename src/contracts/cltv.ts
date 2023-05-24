@@ -1,5 +1,10 @@
 import { assert, method, prop, SmartContract } from 'scrypt-ts'
 
+/*
+ * The following contracts unlock method can only be called after the
+ * maturation time has passed. It ensures this by constraining the value
+ * of nLocktime (and nSequence) in the unlocking transaction.
+ */
 export class CheckLockTimeVerify extends SmartContract {
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
     static readonly UINT_MAX = 0xffffffffn

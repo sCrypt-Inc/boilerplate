@@ -16,6 +16,9 @@ import {
 const LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
 const UINT_MAX = 0xffffffffn
 
+/*
+ * An escrow contract where a list of arbitrators can resolve a dispute.
+ */
 export class MultiSigEscrow extends SmartContract {
     static readonly N_ARBITERS = 3
 

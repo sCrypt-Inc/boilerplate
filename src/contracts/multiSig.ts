@@ -10,6 +10,10 @@ import {
     FixedArray,
 } from 'scrypt-ts'
 
+/*
+ * A simple multi-sig payment, that can be unlocked using three signatures.
+ * Under the hood, the signatures get validated by OP_CHECKMULTISIG.
+ */
 export class MultiSigPayment extends SmartContract {
     // Public key hashes of the 3 recipients
     @prop()

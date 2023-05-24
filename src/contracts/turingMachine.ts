@@ -49,7 +49,9 @@ export type TransitionFuncEntry = {
 }
 
 /*
- * A Turing Machine checking balanced parentheses
+ * A Turing Machine checking balanced parentheses.
+ * Read Medium article about this contract:
+ * https://medium.com/coinmonks/turing-machine-on-bitcoin-7f0ebe0d52b1
  */
 export class TuringMachine extends SmartContract {
     // States:

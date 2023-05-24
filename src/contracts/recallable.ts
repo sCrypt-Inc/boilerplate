@@ -8,9 +8,9 @@ import {
     SmartContract,
 } from 'scrypt-ts'
 
-/**
- * re-callable satoshis demo
- * users can transfer these satoshis as wish, and issuer can recall them back to himself at anytime
+/*
+ * Re-callable satoshis demo.
+ * Users can transfer these satoshis as they wish, and the issuer can recall them back to himself at anytime.
  */
 export class Recallable extends SmartContract {
     // the public key of issuer

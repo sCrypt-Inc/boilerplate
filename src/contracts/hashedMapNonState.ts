@@ -9,6 +9,11 @@ import {
 
 type MyMap = HashedMap<bigint, ByteString>
 
+/*
+ * A demonstration on how to use HashedMaps in a stateless contract.
+ * See documentation for more details about HashedMaps:
+ * https://docs.scrypt.io/reference/classes/HashedMap/
+ */
 export class HashedMapNonState extends SmartContract {
     @prop()
     map: MyMap

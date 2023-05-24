@@ -10,6 +10,8 @@ import {
     SmartContract,
 } from 'scrypt-ts'
 
+// Read Medium article about this contract:
+// https://medium.com/@xiaohuiliu/accumulator-multisig-d5a5a1b5fc42
 export class AccumulatorMultiSig extends SmartContract {
     // Number of multi sig participants.
     static readonly N = 3

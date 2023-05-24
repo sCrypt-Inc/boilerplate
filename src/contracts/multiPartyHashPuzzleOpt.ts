@@ -12,6 +12,10 @@ import {
 
 type PreimageArray = FixedArray<ByteString, typeof MultiPartyHashPuzzleOpt.N>
 
+/*
+ * A hash puzzle contract that can be unlocked using the preimages
+ * of the hashes.
+ */
 export class MultiPartyHashPuzzleOpt extends SmartContract {
     static readonly N = 10
 

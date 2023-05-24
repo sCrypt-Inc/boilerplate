@@ -26,7 +26,9 @@ export type PerceptronInput = {
 type Output = bigint
 
 /*
- * A simple perceptron classifying gender based on height & weight
+ * A simple perceptron classifying gender based on height & weight.
+ * Read our Medium article for more details:
+ * https://medium.com/@xiaohuiliu/ai-on-bitcoin-96bbc97a62b9
  */
 export class Perceptron extends SmartContract {
     @prop(true)

@@ -1,5 +1,11 @@
 import { assert, method, prop, SmartContract } from 'scrypt-ts'
 
+/*
+ * A demo contract that can be unlocked by either providing the sum or difference
+ * of two values, specified upon the contracts deployment.
+ * See the documentation for more details:
+ * https://docs.scrypt.io/how-to-write-a-contract/
+ */
 export class Demo extends SmartContract {
     @prop()
     readonly x: bigint

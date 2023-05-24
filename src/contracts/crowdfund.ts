@@ -10,6 +10,10 @@ import {
     Utils,
 } from 'scrypt-ts'
 
+/*
+ * Read Medium article about this contract:
+ * https://xiaohuiliu.medium.com/crowdfunding-on-bitcoin-169c1f8b6b63
+ */
 export class Crowdfund extends SmartContract {
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
     static readonly UINT_MAX = 0xffffffffn

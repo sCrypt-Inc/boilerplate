@@ -28,6 +28,12 @@ export type ERC20Pair = {
     balance: bigint
 }
 
+/*
+ * This contract demonstrates an implementation of a fungible token.
+ * Specifically, it implements the ERC-20 interface.
+ * Read our Medium article about this topic:
+ * https://medium.com/coinmonks/defi-on-bitcoin-part-1-fungible-tokens-and-token-swap-f1e86683ee3b
+ */
 export class ERC20 extends SmartContract {
     @prop(true)
     balances: BalanceMap

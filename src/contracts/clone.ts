@@ -8,6 +8,9 @@ import {
     Utils,
 } from 'scrypt-ts'
 
+/*
+ * A demonstration of a contract that simply clones itself to the next output.
+ */
 export class Clone extends SmartContract {
     constructor() {
         super()

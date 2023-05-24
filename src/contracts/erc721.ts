@@ -13,7 +13,12 @@ import {
 // tokenId: ownerPubKey
 type OwnerMap = HashedMap<bigint, PubKey>
 
-// a basic ERC721-like non-fungible token
+/*
+ * This contract demonstrates an implementation of a non-fungible token.
+ * Specifically, it implements the ERC-721 interface.
+ * Read our Medium article about implementing NFT's using sCrypt:
+ * https://medium.com/@xiaohuiliu/non-fungible-tokens-on-bitcoin-sv-4575368f46a
+ */
 export class Erc721 extends SmartContract {
     @prop()
     minter: PubKey

@@ -8,6 +8,10 @@ import {
     SmartContract,
 } from 'scrypt-ts'
 
+/*
+ * See this documentation page for a full explanation on how this contract works:
+ * https://docs.scrypt.io/how-to-write-a-contract/stateful-contract
+ */
 export class Counter extends SmartContract {
     // Stateful prop to store counters value.
     @prop(true)

@@ -10,7 +10,6 @@ import {
     PubKeyHash,
     reverseByteString,
     Sha256,
-    sha256,
     Sig,
     SigHash,
     SmartContract,
@@ -19,6 +18,9 @@ import {
 } from 'scrypt-ts'
 import { SECP256K1, Signature } from 'scrypt-ts-lib'
 
+/*
+ * A multi-sig contract where the order of the signings is enforced.
+ */
 export class OrderedSig extends SmartContract {
     @prop()
     msg: ByteString

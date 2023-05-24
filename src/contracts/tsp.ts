@@ -1,6 +1,11 @@
 import { assert, FixedArray, method, prop, SmartContract } from 'scrypt-ts'
 
-/* Traveling Salesman Problem */
+/*
+ * The Traveling Salesman Problem. The contract pays a reward if
+ * a route of suitable length is provided.
+ * Read our Medium article for more information:
+ * https://medium.com/@xiaohuiliu/outsource-computation-on-bitcoin-sv-3beac7c7771b
+ */
 export class TSP extends SmartContract {
     @prop()
     threshold: bigint

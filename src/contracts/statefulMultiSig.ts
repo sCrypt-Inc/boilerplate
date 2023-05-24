@@ -21,6 +21,13 @@ export type Owner = {
     validated: boolean
 }
 
+/*
+ * A multi-sig contract that collects signatures in separate contract calls.
+ * Once the signature threshold is reached, the funds can be payed to the specified
+ * destination address.
+ * Read Medium article about this contract:
+ * https://xiaohuiliu.medium.com/stateful-multisig-on-bitcoin-f3bb40a7f065
+ */
 export class StatefulMultiSig extends SmartContract {
     // N of M signatures required.
     static readonly N = 2

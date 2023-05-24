@@ -12,7 +12,14 @@ import {
 } from 'scrypt-ts'
 import { MerklePath, MerkleProof } from 'scrypt-ts-lib'
 
-// Merklized Abstract Syntax Trees/Merklized Alternative Script Trees
+/*
+ * Merklized Abstract Syntax Trees/Merklized Alternative Script Trees
+ *
+ * This contract serves as demonstration on how we've implemented Taproot
+ * without any modification to the Bitcoin protocol. Read more about it in
+ * our Medium article:
+ * https://medium.com/@xiaohuiliu/taproot-on-bitcoin-d52fce9201e4
+ */
 export class MAST extends SmartContract {
     @prop()
     merkleRoot: Sha256

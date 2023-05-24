@@ -3,16 +3,11 @@ import {
     ByteString,
     method,
     prop,
-    Sha256,
     SmartContract,
     sha256,
-    Utils,
-    hash256,
-    SigHash,
     PubKey,
     Sig,
 } from 'scrypt-ts'
-import { MerklePath, MerkleProof } from 'scrypt-ts-lib'
 
 export class TimedCommit extends SmartContract {
     @prop()

@@ -11,6 +11,8 @@ import {
     SigHash,
 } from 'scrypt-ts'
 
+// Read Medium article about this contract:
+// https://xiaohuiliu.medium.com/social-recovery-wallets-on-bitcoin-5d7d5be8aae1
 export class SocialRecovery extends SmartContract {
     static readonly N_GUARDIANS = 5
     static readonly GUARDIAN_THRESHOLD = 3

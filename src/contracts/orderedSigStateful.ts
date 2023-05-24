@@ -14,6 +14,11 @@ import {
     Utils,
 } from 'scrypt-ts'
 
+/*
+ * A multi-sig contract where the order of the signings is enforced.
+ * Each signature gets added in a subsequent contract call and once
+ * all are submitted, the specified destination address gets payed.
+ */
 export class OrderedSigStateful extends SmartContract {
     static readonly N_SIGNERS = 3
 

@@ -15,6 +15,10 @@ export type PreimageArray = FixedArray<
     typeof MultiPartyHashPuzzle.N
 >
 
+/*
+ * A hash puzzle contract that can be unlocked using the preimages
+ * of the hashes.
+ */
 export class MultiPartyHashPuzzle extends SmartContract {
     static readonly N = 10
 

@@ -19,7 +19,8 @@ export type Perceptron2Input = {
 type Perceptron2Output = bigint
 
 /*
- * Outsource training of a perceptron
+ * Outsource training of a perceptron.
+ * https://medium.com/@xiaohuiliu/how-to-train-ai-using-bitcoin-3a20ef620143
  */
 export class Perceptron2 extends SmartContract {
     // Sample size.

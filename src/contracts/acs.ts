@@ -10,6 +10,13 @@ import {
     Utils,
 } from 'scrypt-ts'
 
+/*
+ * This contract demonstrates how we can enforce a payment to a
+ * specific address after the contract gets called. Anyone can spend
+ * the UTXO containing this contract, but the contract code makes sure
+ * the next output will be a P2PKH paying the address in the "pubKeyHash"
+ * property.
+ */
 export class AnyoneCanSpend extends SmartContract {
     // Address of the recipient.
     @prop()

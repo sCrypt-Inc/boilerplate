@@ -1,5 +1,10 @@
 import { method, prop, SmartContract, assert, HashedSet } from 'scrypt-ts'
 
+/*
+ * A demonstration on how to use HashedSets in a stateless contract.
+ * See documentation for more details about HashedSets:
+ * https://docs.scrypt.io/reference/classes/HashedSet/
+ */
 export class HashedSetNonState extends SmartContract {
     @prop()
     set: HashedSet<bigint>

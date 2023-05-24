@@ -9,6 +9,11 @@ import {
     SmartContract,
 } from 'scrypt-ts'
 
+/*
+ * This is an implementation of the Ackermann function. It serves
+ * as a demonstration that any computable function can be implemented
+ * in sCrypt, provided that the iteration upper bound is sufficiently large.
+ */
 export class Ackermann extends SmartContract {
     // Maximum number of iterations of the Ackermann function.
     // This needs to be finite due to the constraints of the Bitcoin virtual machine.

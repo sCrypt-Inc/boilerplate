@@ -15,17 +15,18 @@ import {
 } from 'scrypt-ts'
 import { SECP256K1, Signature } from 'scrypt-ts-lib'
 
-// This is an implementation of the idea described here:
-// https://gist.github.com/awemany/619a5722d129dec25abf5de211d971bd
-// It is an attempt for safeguarding 0-conf transactions. Although due
-// to the nature of how Bitcoin works and the first-seen rule it is
-// redundant to use in the real-world.
-// This contract is meant more for demonstration purposes.
-
-// Important to keep in mind:
-// All public keys must be in uncompressed form. This also affects
-// the values of the pub key hashes i.e. addresses.
-
+/*
+ * This is an implementation of the idea described here:
+ * https://gist.github.com/awemany/619a5722d129dec25abf5de211d971bd
+ * It is an attempt for safeguarding 0-conf transactions. Although due
+ * to the nature of how Bitcoin works and the first-seen rule it is
+ * redundant to use in the real-world.
+ * This contract is meant more for demonstration purposes.
+ *
+ * Important to keep in mind:
+ * All public keys must be in uncompressed form. This also affects
+ * the values of the pub key hashes i.e. addresses.
+ */
 export class ZeroConfForfeit extends SmartContract {
     // PKH this tx is spending from.
     @prop()

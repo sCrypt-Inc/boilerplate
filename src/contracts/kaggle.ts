@@ -49,6 +49,8 @@ export type States = {
 
 /*
  * An on-chain Kaggle competition.
+ * Read our Medium article about the contract:
+ * https://medium.com/@xiaohuiliu/machine-learning-marketplace-on-bitcoin-d8eb577be812
  */
 export class Kaggle extends SmartContract {
     @prop(true)

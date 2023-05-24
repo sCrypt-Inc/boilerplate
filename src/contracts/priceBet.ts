@@ -16,6 +16,12 @@ export type ExchangeRate = {
     symbol: ByteString
 }
 
+/*
+ * A betting contract that lets Alice and Bob bet on the price of the BSV-USDC pair
+ * in the future. The price is obtained from a trusted oracle.
+ * Read our Medium article for more information about using oracles in Bitcoin:
+ * https://medium.com/coinmonks/access-external-data-from-bitcoin-smart-contracts-2ecdc7448c43
+ */
 export class PriceBet extends SmartContract {
     // Price target that needs to be reached.
     @prop()

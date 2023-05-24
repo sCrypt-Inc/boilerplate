@@ -10,6 +10,13 @@ import {
     SmartContract,
 } from 'scrypt-ts'
 
+/*
+ * A demonstration on how to use HashedMaps in a stateful contract.
+ * Using method calls we can update the hashed map, which the contract
+ * keeps track of.
+ * See documentation for more details about HashedMaps:
+ * https://docs.scrypt.io/reference/classes/HashedMap/
+ */
 export class HashedMapState extends SmartContract {
     @prop(true)
     hashedmap: HashedMap<bigint, ByteString>

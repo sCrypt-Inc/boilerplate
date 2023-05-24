@@ -9,6 +9,9 @@ import {
     SmartContract,
 } from 'scrypt-ts'
 
+/*
+ * A simple Pay to Public Key Hash (P2PKH) contract.
+ */
 export class P2PKH extends SmartContract {
     // Address of the recipient.
     @prop()
