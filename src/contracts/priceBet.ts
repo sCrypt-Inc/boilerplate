@@ -7,6 +7,7 @@ import {
     Utils,
     Sig,
     PubKey,
+    slice,
 } from 'scrypt-ts'
 import { RabinSig, RabinPubKey, RabinVerifierWOC } from 'scrypt-ts-lib'
 
@@ -71,9 +72,9 @@ export class PriceBet extends SmartContract {
     static parseExchangeRate(msg: ByteString): ExchangeRate {
         // 4 bytes timestamp (LE) + 8 bytes rate (LE) + 1 byte decimal + 16 bytes symbol
         return {
-            timestamp: Utils.fromLEUnsigned(msg.slice(0, 8)),
-            price: Utils.fromLEUnsigned(msg.slice(8, 24)),
-            symbol: msg.slice(26, 58),
+            timestamp: Utils.fromLEUnsigned(slice(msg, 0n, 4n)),
+            price: Utils.fromLEUnsigned(slice(msg, 4n, 12n)),
+            symbol: slice(msg, 13n, 29n),
         }
     }
 

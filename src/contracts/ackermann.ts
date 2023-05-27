@@ -7,6 +7,7 @@ import {
     method,
     prop,
     SmartContract,
+    slice,
 } from 'scrypt-ts'
 
 /*
@@ -37,11 +38,11 @@ export class Ackermann extends SmartContract {
 
         for (let i = 0; i < Ackermann.LOOP_COUNT; i++) {
             if (len(stk) > 0) {
-                const top: ByteString = stk.slice(0, 2)
+                const top: ByteString = slice(stk, 0n, 1n)
                 m = byteString2Int(top)
 
                 // pop
-                stk = stk.slice(2, len(stk) * 2)
+                stk = slice(stk, 1n)
 
                 if (m == 0n) {
                     n = n + m + 1n

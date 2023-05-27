@@ -10,6 +10,7 @@ import {
     method,
     prop,
     toByteString,
+    slice,
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 
@@ -102,8 +103,8 @@ export class CatBond extends SmartContract {
         )
 
         // Make sure earthquake was >= this.earthquakeMinMagnitude
-        const magnitude = Utils.fromLEUnsigned(oracleMsg.slice(0, 2))
-        const timestamp = Utils.fromLEUnsigned(oracleMsg.slice(2))
+        const magnitude = Utils.fromLEUnsigned(slice(oracleMsg, 0n, 1n))
+        const timestamp = Utils.fromLEUnsigned(slice(oracleMsg, 1n))
         assert(
             magnitude >= this.minMagnitude,
             'earthquake magnitude threshold not reached'

@@ -1,5 +1,5 @@
 import { Demo } from '../../src/contracts/demo'
-import { Scrypt, ScryptProvider, TestWallet } from 'scrypt-ts'
+import { Scrypt, ScryptProvider, TestWallet, bsv } from 'scrypt-ts'
 import { myPrivateKey } from '../utils/privateKey'
 
 async function main() {
@@ -7,7 +7,7 @@ async function main() {
 
     Scrypt.init({
         apiKey: 'alpha_test_api_key',
-        network: 'testnet',
+        network: bsv.Networks.testnet,
     })
 
     const signer = new TestWallet(myPrivateKey)

@@ -10,6 +10,7 @@ import {
     bsv,
     FixedArray,
     getDummySig,
+    slice,
 } from 'scrypt-ts'
 import { MultiSigPayment } from '../../src/contracts/multiSig'
 import { getDummySigner, getDummyUTXO } from '../utils/helper'
@@ -34,7 +35,7 @@ describe('Test SmartContract `P2MS`', () => {
     it('should pass if using right private keys', async () => {
         const multiSigPayment = new MultiSigPayment(
             addresses.map((addr) => {
-                return PubKeyHash(addr.toHex().slice(2)) // Ignore address prefix.
+                return PubKeyHash(slice(addr.toHex(), 1n)) // Ignore address prefix.
             }) as FixedArray<PubKeyHash, 3>
         )
 
