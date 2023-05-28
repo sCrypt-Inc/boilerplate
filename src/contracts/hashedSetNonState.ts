@@ -10,7 +10,7 @@ export class HashedSetNonState extends SmartContract {
     set: HashedSet<bigint>
 
     constructor(set: HashedSet<bigint>) {
-        super(set)
+        super(...arguments)
         this.set = set
     }
 

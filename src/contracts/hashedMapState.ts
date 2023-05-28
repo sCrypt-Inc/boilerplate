@@ -22,7 +22,7 @@ export class HashedMapState extends SmartContract {
     hashedmap: HashedMap<bigint, ByteString>
 
     constructor(hashedmap: HashedMap<bigint, ByteString>) {
-        super(hashedmap)
+        super(...arguments)
         this.hashedmap = hashedmap
     }
 

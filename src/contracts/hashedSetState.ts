@@ -20,7 +20,7 @@ export class HashedSetState extends SmartContract {
     hashedset: HashedSet<bigint>
 
     constructor(hashedset: HashedSet<bigint>) {
-        super(hashedset)
+        super(...arguments)
         this.hashedset = hashedset
     }
 

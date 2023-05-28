@@ -19,7 +19,7 @@ export class HashedMapNonState extends SmartContract {
     map: MyMap
 
     constructor(map: MyMap) {
-        super(map)
+        super(...arguments)
         this.map = map
     }
 

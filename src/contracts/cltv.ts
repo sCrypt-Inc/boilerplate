@@ -13,7 +13,7 @@ export class CheckLockTimeVerify extends SmartContract {
     readonly matureTime: bigint // Can be a timestamp or block height.
 
     constructor(matureTime: bigint) {
-        super(matureTime)
+        super(...arguments)
         this.matureTime = matureTime
     }
 

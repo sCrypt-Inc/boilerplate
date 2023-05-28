@@ -13,7 +13,7 @@ import {
  */
 export class Clone extends SmartContract {
     constructor() {
-        super()
+        super(...arguments)
     }
 
     // see https://scrypt.io/scrypt-ts/getting-started/what-is-scriptcontext#sighash-type
