@@ -64,9 +64,7 @@ export class Recallable extends SmartContract {
         }
 
         // the change output for paying the transaction fee
-        if (this.changeAmount > 0) {
-            outputs += this.buildChangeOutput()
-        }
+        outputs += this.buildChangeOutput()
 
         // require all of these outputs are actually in the unlocking transaction
         assert(
@@ -87,9 +85,7 @@ export class Recallable extends SmartContract {
         // the amount is satoshis locked in this UTXO
         let outputs = this.buildStateOutput(this.ctx.utxo.value)
 
-        if (this.changeAmount > 0) {
-            outputs += this.buildChangeOutput()
-        }
+        outputs += this.buildChangeOutput()
 
         // require all of these outputs are actually in the unlocking transaction
         assert(

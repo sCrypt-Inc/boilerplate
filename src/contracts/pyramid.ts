@@ -1,7 +1,16 @@
 import { assert } from 'console'
 import {
-    PubKey, PubKeyHash, SmartContract, Utils, hash256, method, prop, hash160, MethodCallOptions, ContractTransaction,
-     bsv,
+    PubKey,
+    PubKeyHash,
+    SmartContract,
+    Utils,
+    hash256,
+    method,
+    prop,
+    hash160,
+    MethodCallOptions,
+    ContractTransaction,
+    bsv,
     ByteString,
 } from 'scrypt-ts'
 
@@ -22,7 +31,10 @@ export class Pyramid extends SmartContract {
 
     @method()
     public recruit(recruit0: PubKey, recruit1: PubKey) {
-        const commissionOutput = Utils.buildPublicKeyHashOutput(this.schemer, 2n * this.entryFee)
+        const commissionOutput = Utils.buildPublicKeyHashOutput(
+            this.schemer,
+            2n * this.entryFee
+        )
 
         this.schemer = hash160(recruit0)
         const recruit0Output = this.buildStateOutput(Pyramid.DUST)
@@ -30,12 +42,14 @@ export class Pyramid extends SmartContract {
         this.schemer = hash160(recruit1)
         const recruit1Output = this.buildStateOutput(Pyramid.DUST)
 
-        let outputs: ByteString = commissionOutput + recruit0Output + recruit1Output
-        if (this.changeAmount > 0) {
-            outputs += this.buildChangeOutput()
-        }
+        let outputs: ByteString =
+            commissionOutput + recruit0Output + recruit1Output
+        outputs += this.buildChangeOutput()
 
-        assert(hash256(outputs) == this.ctx.hashOutputs, 'hash outputs mismatch')
+        assert(
+            hash256(outputs) == this.ctx.hashOutputs,
+            'hash outputs mismatch'
+        )
     }
 
     static recruitTxBuilder(

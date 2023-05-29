@@ -51,9 +51,7 @@ export class Voting extends SmartContract {
         this.increaseVotesReceived(candidate)
         // output containing the latest state and the same balance
         let outputs: ByteString = this.buildStateOutput(this.ctx.utxo.value)
-        if (this.changeAmount > 0n) {
-            outputs += this.buildChangeOutput()
-        }
+        outputs += this.buildChangeOutput()
         assert(this.ctx.hashOutputs == hash256(outputs), 'hashOutputs mismatch')
     }
 

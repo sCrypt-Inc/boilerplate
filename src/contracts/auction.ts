@@ -70,9 +70,7 @@ export class Auction extends SmartContract {
         let outputs: ByteString = auctionOutput + refundOutput
 
         // Add change output.
-        if (this.changeAmount > 0) {
-            outputs += this.buildChangeOutput()
-        }
+        outputs += this.buildChangeOutput()
 
         assert(
             hash256(outputs) == this.ctx.hashOutputs,

@@ -147,9 +147,7 @@ export class CatBond extends SmartContract {
             }
         }
         // Add change output.
-        if (this.changeAmount > 0n) {
-            outputs += this.buildChangeOutput()
-        }
+        outputs += this.buildChangeOutput()
 
         assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
     }
