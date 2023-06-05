@@ -11,6 +11,7 @@ import {
     FixedArray,
     getDummySig,
     slice,
+    findSigs,
 } from 'scrypt-ts'
 import { MultiSigPayment } from '../../src/contracts/multiSig'
 import { getDummySigner, getDummyUTXO } from '../utils/helper'
@@ -44,15 +45,9 @@ describe('Test SmartContract `P2MS`', () => {
 
         const { tx: callTx, atInputIndex } =
             await multiSigPayment.methods.unlock(
-                (sigResps) => {
-                    // Filter out relevant signatures.
-                    // Be vary of the order (https://scrypt.io/docs/how-to-write-a-contract/built-ins#checkmultisig).
-                    const res: Sig[] = []
-                    publicKeys.map((publicKey) => {
-                        res.push(findSig(sigResps, publicKey))
-                    })
-                    return res
-                },
+                // Filter out relevant signatures.
+                // Be vary of the order (https://scrypt.io/docs/how-to-write-a-contract/built-ins#checkmultisig).
+                (sigResps) => findSigs(sigResps, publicKeys),
                 publicKeys.map((publicKey) => PubKey(toHex(publicKey))),
                 // Method call options:
                 {
@@ -77,10 +72,7 @@ describe('Test SmartContract `P2MS`', () => {
         return expect(
             multiSigPayment.methods.unlock(
                 (sigResps) => {
-                    const res: Sig[] = []
-                    publicKeys.map((publicKey) => {
-                        res.push(findSig(sigResps, publicKey))
-                    })
+                    const res = findSigs(sigResps, publicKeys)
                     res[0] = getDummySig()
                     return res
                 },

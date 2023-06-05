@@ -61,9 +61,7 @@ describe('Test SmartContract `ERC20`', () => {
         newInstance.totalSupply += amount
         const publicKey = bsv.PublicKey.fromString(issuer)
         const { nexts, tx } = await instance.methods.mint(
-            (sigResps) => {
-                return findSig(sigResps, publicKey)
-            },
+            (sigResps) => findSig(sigResps, publicKey),
             issuerBalance,
             amount,
             {
@@ -101,9 +99,7 @@ describe('Test SmartContract `ERC20`', () => {
         const { nexts, tx } = await instance.methods.transfer(
             from,
             pubkey,
-            (sigResps) => {
-                return findSig(sigResps, publicKey)
-            },
+            (sigResps) => findSig(sigResps, publicKey),
             to,
             amount,
             {
@@ -144,9 +140,7 @@ describe('Test SmartContract `ERC20`', () => {
         const publicKey = bsv.PublicKey.fromString(owner)
         const { nexts, tx } = await instance.methods.approve(
             owner,
-            (sigResps) => {
-                return findSig(sigResps, publicKey)
-            },
+            (sigResps) => findSig(sigResps, publicKey),
             spender,
             amount,
             {
@@ -192,9 +186,7 @@ describe('Test SmartContract `ERC20`', () => {
         const publicKey = bsv.PublicKey.fromString(spender)
         const { nexts, tx } = await instance.methods.transferFrom(
             spender,
-            (sigResps) => {
-                return findSig(sigResps, publicKey)
-            },
+            (sigResps) => findSig(sigResps, publicKey),
             currentAllowance,
             from,
             to,

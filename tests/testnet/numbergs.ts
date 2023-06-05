@@ -4,8 +4,6 @@ import { getDefaultSigner } from '../utils/helper'
 
 import { MethodCallOptions, PubKey, findSig, toHex } from 'scrypt-ts'
 
-
-
 async function main() {
     await Numbergs.compile()
     const privateKeyAlice = myPrivateKey
@@ -13,7 +11,12 @@ async function main() {
 
     const privateKeyBob = myPrivateKey
     const publicKeyBob = myPublicKey
-    const instance = new Numbergs(PubKey(toHex(publicKeyAlice)), PubKey(toHex(publicKeyBob)), 3n, 3n)
+    const instance = new Numbergs(
+        PubKey(toHex(publicKeyAlice)),
+        PubKey(toHex(publicKeyBob)),
+        3n,
+        3n
+    )
 
     // connect to a signer
     await instance.connect(getDefaultSigner())
@@ -23,13 +26,13 @@ async function main() {
     const deployTx = await instance.deploy(amount)
     console.log('Numbergs contract deployed: ', deployTx.id)
 
-    const {tx: guessTx} = await instance.methods.guess(
+    const { tx: guessTx } = await instance.methods.guess(
         (sigReps) => findSig(sigReps, publicKeyAlice),
         {
-            pubKeyOrAddrToSign : publicKeyAlice,
+            pubKeyOrAddrToSign: publicKeyAlice,
         } as MethodCallOptions<Numbergs>
     )
-        console.log('guess method call successfully: ',guessTx.id)
+    console.log('guess method call successfully: ', guessTx.id)
 }
 
 describe('Test SmartContract `Numbergs` on testnet', () => {
