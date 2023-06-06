@@ -61,7 +61,7 @@ export class OrderedSig extends SmartContract {
         // but the first signature.
         // Signing the previous signature ensures that sig1 was created AFTER sig0.
         const hash1 = byteString2Int(
-            reverseByteString(hash256(sig0), 32) + toByteString('00')
+            reverseByteString(hash256(sig0), 32n) + toByteString('00')
         )
         assert(
             SECP256K1.verifySig(
@@ -73,7 +73,7 @@ export class OrderedSig extends SmartContract {
         )
 
         const hash2 = byteString2Int(
-            reverseByteString(OrderedSig.hashSignature(sig1), 32) +
+            reverseByteString(OrderedSig.hashSignature(sig1), 32n) +
                 toByteString('00')
         )
         assert(

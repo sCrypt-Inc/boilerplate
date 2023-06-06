@@ -67,7 +67,8 @@ export class ZeroConfForfeit extends SmartContract {
 
         // Check signature of the original payment.
         const msg1HashInt = byteString2Int(
-            reverseByteString(hash256(paymentPreimage), 32) + toByteString('00')
+            reverseByteString(hash256(paymentPreimage), 32n) +
+                toByteString('00')
         )
         assert(
             SECP256K1.verifySig(
@@ -80,7 +81,7 @@ export class ZeroConfForfeit extends SmartContract {
 
         // Check signature of the double spend attempt.
         const msg2HashInt = byteString2Int(
-            reverseByteString(hash256(doubleSpendPreimage), 32) +
+            reverseByteString(hash256(doubleSpendPreimage), 32n) +
                 toByteString('00')
         )
         assert(

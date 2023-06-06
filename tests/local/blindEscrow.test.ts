@@ -10,7 +10,6 @@ import {
     MethodCallOptions,
     PubKey,
     PubKeyHash,
-    reverseByteString,
     toByteString,
 } from 'scrypt-ts'
 import { Signature } from 'scrypt-ts-lib'

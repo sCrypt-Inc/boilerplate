@@ -97,7 +97,7 @@ export class BlindEscrow extends SmartContract {
         // Check oracle signature, i.e. "stamp".
         const oracleMsg: ByteString = this.escrowNonce + int2ByteString(action)
         const hashInt = byteString2Int(
-            reverseByteString(hash256(oracleMsg), 32) + toByteString('00')
+            reverseByteString(hash256(oracleMsg), 32n) + toByteString('00')
         )
         assert(
             SECP256K1.verifySig(
