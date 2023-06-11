@@ -12,7 +12,7 @@ import {
 } from 'scrypt-ts'
 
 // a template to implement any new SIGHASH flags
-export class UniversalSigHash extend SmartContract {
+export class UniversalSigHash extends SmartContract {
     @prop()
     pubKey: PubKey
 
