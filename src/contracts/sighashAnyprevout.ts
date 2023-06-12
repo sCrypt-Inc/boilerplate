@@ -31,7 +31,7 @@ export class SigHashAnyprevout extends SmartContract {
     @method(SigHash.ANYONECANPAY_SINGLE)
     public unlock(sig: Signature) {
         // Reconstruct the sighash preimage, that was signed signed (sig).
-        const preimage = this.ctx.txPreimage
+        const preimage = this.ctx.serialize()
         const preimage1 = slice(preimage, 0n, 4n)
         // Mask hashPrevouts, hashSequence, outpoint.
         const blankedPreimage2to3 = toByteString(
