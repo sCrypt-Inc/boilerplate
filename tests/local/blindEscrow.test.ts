@@ -38,9 +38,9 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
     let blindEscrow: BlindEscrow
 
     before(async () => {
-        seller = bsv.PrivateKey.fromRandom()
-        buyer = bsv.PrivateKey.fromRandom()
-        arbiter = bsv.PrivateKey.fromRandom()
+        seller = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
+        buyer = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
+        arbiter = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
 
         sellerPubKey = new bsv.PublicKey(seller.publicKey.point, {
             compressed: false,

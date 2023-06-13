@@ -83,7 +83,11 @@ describe('Test SmartContract `OrdinalLock`', () => {
 
     it('should fail purchase method w wrong payment out.', async () => {
         const wrongPayOutput = Utils.buildPublicKeyHashOutput(
-            hash160(bsv.PrivateKey.fromRandom().publicKey.toHex()),
+            hash160(
+                bsv.PrivateKey.fromRandom(
+                    bsv.Networks.testnet
+                ).publicKey.toHex()
+            ),
             price
         )
 
@@ -145,7 +149,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
     })
 
     it('should fail cancel method w bad sig.', async () => {
-        const wrongKey = bsv.PrivateKey.fromRandom()
+        const wrongKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         const wrongSigner = getDummySigner(wrongKey)
         instance.connect(wrongSigner)
 

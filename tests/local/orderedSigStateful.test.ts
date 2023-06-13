@@ -28,7 +28,7 @@ describe('Test SmartContract `OrderedSigStateful`', () => {
     before(async () => {
         const _signers = []
         for (let i = 0; i < N_SIGNERS; i++) {
-            const privKey = bsv.PrivateKey.fromRandom()
+            const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
             const pubKey = new bsv.PublicKey(privKey.publicKey.point)
             privKeys.push(privKey)
             pubKeys.push(pubKey)
