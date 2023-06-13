@@ -25,7 +25,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
     before(async () => {
         const _owners = []
         for (let i = 0; i < StatefulMultiSig.M; i++) {
-            const privKey = bsv.PrivateKey.fromRandom()
+            const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
             const pubKey = privKey.toPublicKey()
             privKeys.push(privKey)
             pubKeys.push(pubKey)
@@ -130,7 +130,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
 
         const pubKeyIdx = 0
 
-        const randKey = bsv.PrivateKey.fromRandom()
+        const randKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         const signer = getDummySigner(randKey)
         statefulMultiSig.connect(signer)
 

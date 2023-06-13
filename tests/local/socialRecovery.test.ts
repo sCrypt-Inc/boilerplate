@@ -23,11 +23,11 @@ describe('Test SmartContract `SocialRecovery`', () => {
     let socialRecovery: SocialRecovery
 
     before(async () => {
-        signer = bsv.PrivateKey.fromRandom()
+        signer = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
 
         const _guardianPubKeys = []
         for (let i = 0; i < SocialRecovery.N_GUARDIANS; i++) {
-            const privKey = bsv.PrivateKey.fromRandom()
+            const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
             const pubKey = privKey.toPublicKey()
             guardians.push(privKey)
             guardianPublicKeys.push(pubKey)
@@ -64,7 +64,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
     })
 
     it('should fail signing public key unlock with wrong key.', async () => {
-        const wrongKey = bsv.PrivateKey.fromRandom()
+        const wrongKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         await socialRecovery.connect(getDummySigner(wrongKey))
 
         return expect(
@@ -80,7 +80,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
     })
 
     it('should pass updating signing key when threshold reached.', async () => {
-        const newSigner = bsv.PrivateKey.fromRandom()
+        const newSigner = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         await socialRecovery.connect(getDummySigner(guardians))
 
         // Get next iteration of the contract with updated signer pubkey value.
@@ -124,7 +124,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
     })
 
     it('should fail updating signing key when threshold not reached.', async () => {
-        const newSigner = bsv.PrivateKey.fromRandom()
+        const newSigner = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
 
         // Get next iteration of the contract with updated signer pubkey value.
         const next = socialRecovery.next()

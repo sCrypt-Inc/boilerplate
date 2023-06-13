@@ -25,10 +25,10 @@ describe('Test SmartContract `CatBond`', () => {
     const minMagnitude = 50n // 5.0
 
     // Init private keys.
-    const issuer = bsv.PrivateKey.fromRandom()
+    const issuer = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
     const investors: bsv.PrivateKey[] = []
     for (let i = 0; i < CatBond.MAX_INVESTORS; i++) {
-        investors[i] = bsv.PrivateKey.fromRandom()
+        investors[i] = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
     }
 
     // Define oracle Rabin public key.
