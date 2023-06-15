@@ -7,7 +7,8 @@ import {
     method,
     Sig,
     PubKey,
-    ByteString,SigHash,
+    ByteString,
+    SigHash,
     SmartContract
 } from 'scrypt-ts'
 
@@ -23,7 +24,7 @@ export class UniversalSigHash extends SmartContract {
 
     // sig is with SIGHASH flag SIGHASH_NOINPUT
     @method()
-    public checkSigHashNoInput(Sig: sig) {
+    public checkSigHashNoInput(sig: Sig) {
 
         /* reconstruct the new sighash being signed */
         const sighash1: ByteString = SigHash[: 4];
