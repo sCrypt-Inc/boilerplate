@@ -7,7 +7,7 @@ import {
     method,
     Sig,
     PubKey,
-    ByteString,
+    ByteString,SigHash,
     SmartContract
 } from 'scrypt-ts'
 
@@ -26,10 +26,10 @@ export class UniversalSigHash extends SmartContract {
     public checkSigHashNoInput(Sig: sig) {
 
         /* reconstruct the new sighash being signed */
-        const sighash1: ByteString = sighash[: 4];
+        const sighash1: ByteString = SigHash[: 4];
         // set item 2, 3, and 4 to 0
-        const blankedSighash2to3: ByteString = b'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
-        const sighash5to10: ByteString = sighash[104:];
+        const blankedSighash2to3: ByteString = '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+        const sighash5to10: ByteString = SigHash[104:];
         const sighashNew: ByteString = sighash1 + blankedSighash2to3 + sighash5to10;
 
         // check signature against the new sighash using elliptic curve library
