@@ -81,7 +81,7 @@ describe('Heavy: Test Witness Service Timestamp', () => {
 
 });
 
-describe('Test Witness Service BSV Price', () => {
+describe('Heavy: Test Witness Service BSV Price', () => {
   let witness, result
 
   before(async () => {
