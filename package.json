@@ -40,7 +40,7 @@
     "glob": "^7.1.6",
     "minimist": "^1.2.6",
     "rabinsig": "^1.0.0",
-    "scryptlib": "=2.0.0",
+    "scryptlib": "beta",
     "snarkjs-scrypt": "^0.4.26",
     "watch": "^1.0.2"
   },
