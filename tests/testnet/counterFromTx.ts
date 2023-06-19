@@ -1,6 +1,6 @@
 import { Counter } from '../../src/contracts/counter'
 import { getDefaultSigner } from '../utils/helper'
-import { DefaultProvider, MethodCallOptions } from 'scrypt-ts'
+import { MethodCallOptions } from 'scrypt-ts'
 
 async function compileContract() {
     await Counter.compile()

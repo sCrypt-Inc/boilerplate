@@ -14,7 +14,7 @@ async function main() {
 
     // contract deployment
     const deployTx = await clone.deploy(balance)
-    console.log('Counter deploy tx:', deployTx.id)
+    console.log('Clone deploy tx:', deployTx.id)
 
     // set current instance to be the deployed one
     let currentInstance = clone

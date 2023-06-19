@@ -6,20 +6,20 @@ import {
     toByteString,
     sha256,
 } from 'scrypt-ts'
-import { Counter } from '../../src/contracts/counter'
+import { AdvancedCounter } from '../../src/contracts/advancedCounter'
 import { getDummySigner, getDummyUTXO } from '../utils/helper'
 import { expect } from 'chai'
 import { HashPuzzle } from '../../src/contracts/hashPuzzle'
 
-describe('Test SmartContract `Counter, HashPuzzle` multi call on local', () => {
+describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local', () => {
     before(async () => {
-        await Counter.compile()
+        await AdvancedCounter.compile()
         await HashPuzzle.compile()
     })
 
     it('should succeed', async () => {
         const signer = getDummySigner()
-        let counter1 = new Counter(1n)
+        let counter1 = new AdvancedCounter(1n)
 
         // connect to a signer
         await counter1.connect(signer)
@@ -27,8 +27,8 @@ describe('Test SmartContract `Counter, HashPuzzle` multi call on local', () => {
         counter1.bindTxBuilder(
             'incrementOnChain',
             (
-                current: Counter,
-                options: MethodCallOptions<Counter>,
+                current: AdvancedCounter,
+                options: MethodCallOptions<AdvancedCounter>,
                 ...args: any
             ): Promise<ContractTransaction> => {
                 // create the next instance from the current
@@ -95,7 +95,7 @@ describe('Test SmartContract `Counter, HashPuzzle` multi call on local', () => {
         const partialTx = await counter1.methods.incrementOnChain({
             multiContractCall: true,
             fromUTXO: getDummyUTXO(1, true),
-        } as MethodCallOptions<Counter>)
+        } as MethodCallOptions<AdvancedCounter>)
 
         const finalTx = await hashPuzzle.methods.unlock(byteString, {
             fromUTXO: getDummyUTXO(1, true),

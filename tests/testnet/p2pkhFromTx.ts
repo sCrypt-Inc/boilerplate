@@ -3,7 +3,6 @@ import { getDefaultSigner, inputSatoshis } from '../utils/helper'
 import { myPublicKey, myPublicKeyHash } from '../utils/privateKey'
 
 import {
-    bsv,
     DefaultProvider,
     findSig,
     MethodCallOptions,
@@ -11,7 +10,6 @@ import {
     PubKeyHash,
     toHex,
 } from 'scrypt-ts'
-import Transaction = bsv.Transaction
 
 let deployTXID: string
 const atOutputIndex = 0

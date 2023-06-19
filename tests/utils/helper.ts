@@ -3,7 +3,6 @@ import {
     DefaultProvider,
     DummyProvider,
     TestWallet,
-    ScryptProvider,
     UTXO,
 } from 'scrypt-ts'
 import { randomBytes } from 'crypto'

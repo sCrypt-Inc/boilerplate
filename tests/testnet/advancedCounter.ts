@@ -1,11 +1,11 @@
-import { Counter } from '../../src/contracts/counter'
-import { getDefaultSigner } from '../utils/helper'
+import { AdvancedCounter } from '../../src/contracts/advancedCounter'
+import { getDefaultSigner, sleep } from '../utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 async function main() {
-    await Counter.compile()
+    await AdvancedCounter.compile()
 
-    const counter = new Counter(0n)
+    const counter = new AdvancedCounter(0n)
 
     // connect to a signer
     await counter.connect(getDefaultSigner())
@@ -14,7 +14,7 @@ async function main() {
 
     // contract deployment
     const deployTx = await counter.deploy(balance)
-    console.log('Counter deploy tx:', deployTx.id)
+    console.log('AdvancedCounter deploy tx:', deployTx.id)
 
     // set current instance to be the deployed one
     let currentInstance = counter
@@ -33,10 +33,10 @@ async function main() {
                 instance: nextInstance,
                 balance,
             },
-        } as MethodCallOptions<Counter>)
+        } as MethodCallOptions<AdvancedCounter>)
 
         console.log(
-            `Counter call tx: ${tx_i.id}, count updated to: ${nextInstance.count}`
+            `AdvancedCounter call tx: ${tx_i.id}, count updated to: ${nextInstance.count}`
         )
 
         // update the current instance reference
@@ -44,7 +44,7 @@ async function main() {
     }
 }
 
-describe('Test SmartContract `Counter` on testnet', () => {
+describe('Test SmartContract `AdvancedCounter` on testnet', () => {
     it('should succeed', async () => {
         await main()
     })

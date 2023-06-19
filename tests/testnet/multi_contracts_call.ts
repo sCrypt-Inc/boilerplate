@@ -6,29 +6,29 @@ import {
     toByteString,
     sha256,
 } from 'scrypt-ts'
-import { Counter } from '../../src/contracts/counter'
+import { AdvancedCounter } from '../../src/contracts/advancedCounter'
 import { getDefaultSigner } from '../utils/helper'
 import { HashPuzzle } from '../../src/contracts/hashPuzzle'
 
 async function main() {
-    await Counter.compile()
+    await AdvancedCounter.compile()
     await HashPuzzle.compile()
 
     const signer = getDefaultSigner()
-    let counter = new Counter(1n)
+    let counter = new AdvancedCounter(1n)
 
     // connect to a signer
     await counter.connect(signer)
 
     // contract deployment
     const deployTx = await counter.deploy(1)
-    console.log('Counter contract deployed: ', deployTx.id)
+    console.log('AdvancedCounter contract deployed: ', deployTx.id)
 
     counter.bindTxBuilder(
         'incrementOnChain',
         (
-            current: Counter,
-            options: MethodCallOptions<Counter>,
+            current: AdvancedCounter,
+            options: MethodCallOptions<AdvancedCounter>,
             ...args: any
         ): Promise<ContractTransaction> => {
             // create the next instance from the current
@@ -96,7 +96,7 @@ async function main() {
 
     const partialTx = await counter.methods.incrementOnChain({
         multiContractCall: true,
-    } as MethodCallOptions<Counter>)
+    } as MethodCallOptions<AdvancedCounter>)
 
     const finalTx = await hashPuzzle.methods.unlock(byteString, {
         multiContractCall: true,
@@ -108,13 +108,16 @@ async function main() {
         signer
     )
 
-    console.log('Counter, HashPuzzle contract `unlock` called: ', callTx.id)
+    console.log(
+        'AdvancedCounter, HashPuzzle contract `unlock` called: ',
+        callTx.id
+    )
 
     // hashPuzzle has terminated, but counter can still be called
     counter = nexts[0].instance
 }
 
-describe('Test SmartContract `Counter, HashPuzzle ` multi called on testnet', () => {
+describe('Test SmartContract `AdvancedCounter, HashPuzzle ` multi called on testnet', () => {
     it('should succeed', async () => {
         await main()
     })

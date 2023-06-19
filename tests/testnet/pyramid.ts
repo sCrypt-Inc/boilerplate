@@ -2,14 +2,13 @@ import { Pyramid } from '../../src/contracts/pyramid'
 import { getDefaultSigner } from '../utils/helper'
 
 import { MethodCallOptions, PubKey, PubKeyHash, toHex } from 'scrypt-ts'
-import { myAddress, myPublicKey, myPublicKeyHash, } from '../utils/privateKey'
-
+import { myAddress, myPublicKey, myPublicKeyHash } from '../utils/privateKey'
 
 async function main() {
-     await Pyramid.compile()
+    await Pyramid.compile()
 
-     const recruit0PubKey = myPublicKey
-     const recruit1PubKey = myPublicKey
+    const recruit0PubKey = myPublicKey
+    const recruit1PubKey = myPublicKey
 
     const pyramid = new Pyramid(PubKeyHash(toHex(myPublicKeyHash)), 1000n)
     pyramid.bindTxBuilder('recruit', Pyramid.recruitTxBuilder)
@@ -21,10 +20,11 @@ async function main() {
     console.log('Pyramid contract deployed: ', deployTx.id)
 
     // contract call `recruit`
-    const { tx: callTx, next } = await pyramid.methods.recruit(
-        PubKey(toHex(recruit0PubKey)), PubKey(toHex(recruit1PubKey)),
+    const { tx: callTx } = await pyramid.methods.recruit(
+        PubKey(toHex(recruit0PubKey)),
+        PubKey(toHex(recruit1PubKey)),
         {
-            changeAddress : myAddress,
+            changeAddress: myAddress,
         } as MethodCallOptions<Pyramid>
     )
     console.log(' `recruit` method called : ', callTx.id)
