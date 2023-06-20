@@ -1,4 +1,4 @@
-import 'ec.ts;
+import 'ec.ts';
 import {
     assert
 } from 'console'
