@@ -10,6 +10,8 @@ import {
     SigHash,
     SmartContract,
      toByteString,
+    slice,
+    SECP256K1,
       byteString2Int,
 hash256,
     reverseByteString
