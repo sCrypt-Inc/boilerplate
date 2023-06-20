@@ -9,8 +9,13 @@ export class L extends SmartContractLib{
 
 @prop()
 x : bigint
+@prop()
+a : bigint
+@prop()
+b : bigint
 
-constructor(a : bigint, b : bigint){
+
+constructor(x : bigint, a : bigint, b : bigint){
    super(...arguments)
    this.x = a + b
 
