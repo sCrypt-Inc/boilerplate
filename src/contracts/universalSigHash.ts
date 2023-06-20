@@ -1,4 +1,3 @@
-import 'ec.ts';
 import {
     assert
 } from 'console'
@@ -9,7 +8,11 @@ import {
     PubKey,
     ByteString,
     SigHash,
-    SmartContract
+    SmartContract,
+     toByteString,
+      byteString2Int,
+hash256,
+    reverseByteString
 } from 'scrypt-ts'
 
 // a template to implement any new SIGHASH flags
@@ -22,18 +25,29 @@ export class UniversalSigHash extends SmartContract {
         this.pubKey = pubKey
     }
 
-    // sig is with SIGHASH flag SIGHASH_NOINPUT
-    @method()
-    public checkSigHashNoInput(sig : Sig) {
+    @method(SigHash.ANYONECANPAY_SINGLE)
+    public unlock(sig: Sig) {
+        
+        let sighash = this.ctx.serialize()
+        let sighash1 = slice(sighash, 0n, 4n)
+        
+        let blankedsighash2to3 = toByteString(
+            '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+        )
+        let sighash5to10 = slice(sighash, 104n)
+        let sighashNew = ((sighash1 as ByteString) +
+            blankedsighash2to3 +
+            sighash5to10) as ByteString
 
-        /* reconstruct the new sighash being signed */
-        const sighash1: ByteString = SigHash[: 4];
-        // set item 2, 3, and 4 to 0
-        const blankedSighash2to3: ByteString = b'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
-        const sighash5to10: ByteString = SigHash[104:];
-        const sighashNew: ByteString = sighash1 + blankedSighash2to3 + sighash5to10;
+        
+        let hash = byteString2Int(
+            reverseByteString(hash256(sighashNew), 32n) + toByteString('00')
+        )
 
-        // check signature against the new sighash using elliptic curve library
-        assert(EC.verifySig(sighashNew, sig, this.pubKey));
+        // Veriy signature against the new sighash using the sCrypt SECP256K1 library.
+        assert(
+            SECP256K1.verifySig(hash, sig, this.pubKey),
+            'sig failed'
+        )
     }
 }
