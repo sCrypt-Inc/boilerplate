@@ -1,3 +1,4 @@
+import 'ec.ts';
 import {
     assert
 } from 'console'
@@ -28,7 +29,7 @@ export class UniversalSigHash extends SmartContract {
     }
 
     @method(SigHash.ANYONECANPAY_SINGLE)
-    public unlock(sig: Sig) {
+    public unlock(sig: Sig) : void{
         
         let sighash = this.ctx.serialize()
         let sighash1 = slice(sighash, 0n, 4n)
@@ -48,7 +49,7 @@ export class UniversalSigHash extends SmartContract {
 
         // Veriy signature against the new sighash using the sCrypt SECP256K1 library.
         assert(
-            SECP256K1.verifySig(hash, sig, this.pubKey),
+            EC.verifySig(hash, sig, this.pubKey),
             'sig failed'
         )
     }
