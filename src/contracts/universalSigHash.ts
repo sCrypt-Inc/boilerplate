@@ -1,4 +1,4 @@
-import "ec.scrypt";
+import 'ec.ts;
 import {
     assert
 } from 'console'
@@ -24,7 +24,7 @@ export class UniversalSigHash extends SmartContract {
 
     // sig is with SIGHASH flag SIGHASH_NOINPUT
     @method()
-    public checkSigHashNoInput(sig: Sig) {
+    public checkSigHashNoInput(sig : Sig) {
 
         /* reconstruct the new sighash being signed */
         const sighash1: ByteString = SigHash[: 4];
