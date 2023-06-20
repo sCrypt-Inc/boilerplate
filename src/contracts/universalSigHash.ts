@@ -1,4 +1,4 @@
-import 'ec.ts';
+import {EC} from 'ec.ts';
 import {
     assert
 } from 'console'
@@ -12,7 +12,6 @@ import {
     SmartContract,
      toByteString,
     slice,
-    SECP256K1,
       byteString2Int,
 hash256,
     reverseByteString
@@ -29,7 +28,7 @@ export class UniversalSigHash extends SmartContract {
     }
 
     @method(SigHash.ANYONECANPAY_SINGLE)
-    public unlock(sig: Sig) : void{
+    public unlock(sig: Sig) {
         
         let sighash = this.ctx.serialize()
         let sighash1 = slice(sighash, 0n, 4n)
