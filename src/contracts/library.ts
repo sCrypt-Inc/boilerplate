@@ -3,7 +3,7 @@ import {
    prop,
    SmartContractLib,
    SmartContract,
-   method,
+   method} from 'scrypt-ts'
 
 export class L extends SmartContractLib{
 
