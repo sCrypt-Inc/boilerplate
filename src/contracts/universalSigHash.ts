@@ -1,4 +1,4 @@
-import {EC} from 'ec.ts';
+import {EC} from 'ec';
 import {
     assert
 } from 'console'
