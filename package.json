@@ -27,7 +27,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "scrypt-ts": "beta",
+    "scrypt-ts": "^0.2.2-beta.2",
     "scrypt-ts-lib": "^0.1.17"
   },
   "devDependencies": {
