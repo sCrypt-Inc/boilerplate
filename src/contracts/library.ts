@@ -1,4 +1,9 @@
-
+import {assert} from 'console'
+import {
+   prop,
+   SmartContractLib,
+   SmartContract,
+   method,
 
 export class L extends SmartContractLib{
 
