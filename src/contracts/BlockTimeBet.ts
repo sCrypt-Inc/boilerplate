@@ -1,10 +1,17 @@
-import {assert, prop, method, SmartContract,Sha256, PubKey, Sig, FixedArray, checkSig} from 'scrypt-ts'
-import { Blockchain, BlockHeader, MerkleProof } from 'scrypt-ts-lib'
+import {assert, 
+        prop, 
+        method, 
+        SmartContract,
+        Sha256, 
+        PubKey, 
+        Sig, 
+        FixedArray
+       } from 'scrypt-ts'
 import 'blockchain.ts'
 
 export class BlockTimeBet extends SmartContract {
   @prop()
-  static readonly N = 7n
+  static readonly N : bigint = 7n
 
   // 10 minutes in seconds
   @prop()
@@ -27,12 +34,12 @@ export class BlockTimeBet extends SmartContract {
   }
 
   @method()
-  public main(headers: FixedArray<BlockHeader, N>, merkleProof: MerkleProof, sig: Sig) {
+  public main(headers: FixedArray<BlockHeader, BlockTimeBet.N>, merkleProof: MerkleProof, sig: Sig) {
     // Get the ID of previous transaction.
     let prevTxid = Sha256(this.ctx.utxo.outpoint.txid)
 
     // Validate a block headers.
-    assert(Blockchain.isBlockHeaderChainValid(this.N, headers, this.blockchainTarget))
+    assert(Blockchain.isBlockHeaderChainValid(BlockTimeBet.N, headers, this.blockchainTarget))
 
     assert(Blockchain.txInBlock(prevTxid, headers[1], merkleProof))
 
@@ -41,6 +48,6 @@ export class BlockTimeBet extends SmartContract {
 
     // Alice wins if block is mined within 10 mins, otherwise Bob wins.
     let winner = blockTime < this.AVG_BLOCK_TIME ? this.alice : this.bob
-    assert(checkSig(sig, winner))
+    assert(this.checkSig(sig, winner))
   }
 }
