@@ -1,0 +1,5 @@
+{
+  "AsmDemo": {
+    "unlock": "OP_ADD $x OP_GREATERTHAN OP_1 OP_EQUALVERIFY OP_1"
+  }
+}
