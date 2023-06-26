@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import { AsmDemo } from '../../src/contracts/asmDemo'
-import { MethodCallOptions, int2ByteString, toHex } from 'scrypt-ts'
+import { MethodCallOptions } from 'scrypt-ts'
 import { getDummySigner, getDummyUTXO } from '../utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 
