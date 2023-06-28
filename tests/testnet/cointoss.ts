@@ -1,15 +1,15 @@
-import { Cointoss } from '../../src/contracts/cointoss'
+import { CoinToss } from '../../src/contracts/cointoss'
 import { getDefaultSigner, inputSatoshis, randomPrivateKey } from '../utils/helper'
 import { toByteString, sha256, PubKey, toHex, hash256, findSig } from 'scrypt-ts'
 
 
 async function main() {
     
-    await Cointoss.compile()
+    await CoinToss.compile()
 
     const [aliceprivatekey,alicepublickey] = randomPrivateKey()
 const [bobprivatekey,bobpublickey] = randomPrivateKey()
-   let instance = new Cointoss(PubKey(toHex(alicepublickey)),PubKey(toHex(bobpublickey)),
+   let instance = new CoinToss(PubKey(toHex(alicepublickey)),PubKey(toHex(bobpublickey)),
         hash256(toByteString('alice',true)),hash256(toByteString('bob',true)),toByteString('n',true))
         await instance.connect(getDefaultSigner([aliceprivatekey,bobprivatekey]))
 
