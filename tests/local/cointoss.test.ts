@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import { MethodCallOptions, PubKey, Sha256, findSig, hash256, sha256, toByteString, toHex } from 'scrypt-ts'
 import { CoinToss } from '../../src/contracts/cointoss'
-import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/txHelper'
+import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
