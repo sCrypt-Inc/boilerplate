@@ -73,7 +73,7 @@ describe('Test SmartContract `CatBond`', () => {
         catBond.connect(getDummySigner())
 
         let currentInstance = catBond
-        let alreadyInvested = 0
+        let alreadyInvested = 1
 
         // Add investments:
         for (let i = 0; i < CatBond.MAX_INVESTORS; i++) {

@@ -1,0 +1,5 @@
+{
+  "P2PKH_ASM": {
+    "unlock": "op_dup op_hash160 $pubKeyHash op_equalverify op_checksig"
+  }
+}
