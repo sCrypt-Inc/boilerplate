@@ -1,5 +1,5 @@
 {
-  "AsmDemo": {
-    "unlock": "OP_ADD $x OP_GREATERTHAN OP_1 OP_EQUALVERIFY OP_1"
+  "P2PKH_ASM": {
+    "unlock": "op_dup op_hash160 $pubKeyHash op_equalverify op_checksig"
   }
 }

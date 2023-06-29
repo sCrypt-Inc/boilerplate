@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "tsc",
+    "build": "tsc && npm run apply-asm",
+    "apply-asm": "node .asm/apply_asm.js",
     "clean": "rimraf scrypt.index.json && rimraf dist && rimraf artifacts",
     "pretest": "npm run build",
     "test": "mocha 'dist/tests/**/*.test.js' --timeout 1200000 -i -f 'Heavy'",
