@@ -1,18 +1,29 @@
-import { assert, method, prop, SmartContract } from 'scrypt-ts'
+import {
+    assert,
+    hash160,
+    method,
+    prop,
+    PubKey,
+    PubKeyHash,
+    Sig,
+    SmartContract,
+} from 'scrypt-ts'
 
-export class AsmDemo extends SmartContract {
+export class P2PKH_ASM extends SmartContract {
     @prop()
-    x: bigint
+    readonly pubKeyHash: PubKeyHash
 
-    constructor(x: bigint) {
+    constructor(pubKeyHash: PubKeyHash) {
         super(...arguments)
-        this.x = x
+        this.pubKeyHash = pubKeyHash
     }
 
     @method()
-    public unlock(a: bigint, b: bigint) {
-        // Body will be replaced by inline ASM during building of the project.
-        // Check artifacts/src/contracts/asm.scrypt
-        assert(a + b > this.x)
+    public unlock(sig: Sig, pubkey: PubKey) {
+        assert(
+            hash160(pubkey) == this.pubKeyHash,
+            'public key hashes are not equal'
+        )
+        assert(this.checkSig(sig, pubkey), 'signature check failed')
     }
 }
