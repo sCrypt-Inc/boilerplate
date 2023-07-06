@@ -12,6 +12,12 @@ import {
     prop,
 } from 'scrypt-ts'
 
+/*
+ *  A private key puzzle, which can only be unlocked by providing the private key for a
+ *  corresponding public key. This is achieved by re-using the nonce 'k' while signing.
+ *
+ *  Medium article: https://xiaohuiliu.medium.com/private-key-puzzles-cdb2f05a5fbc
+ */
 export class PrivateKeyPuzzle extends SmartContract {
     @prop()
     pubKey: PubKey
