@@ -8,10 +8,9 @@ import {
     findSig,
     sha256,
     toByteString,
-    toHex,
 } from 'scrypt-ts'
 
-describe('Test SmartContract `CheckLockTimeVerify`', () => {
+describe('Test SmartContract `CrossChainSwap`', () => {
     let crossChainSwap: CrossChainSwap
     const lockTimeMin = 1673510000n
 

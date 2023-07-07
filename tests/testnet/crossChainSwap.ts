@@ -66,7 +66,7 @@ async function main(methodName: string) {
     }
 }
 
-describe('Test SmartContract `CheckLockTimeVerify` on testnet', () => {
+describe('Test SmartContract `CrossChainSwap` on testnet', () => {
     it('should succeed', async () => {
         await main('unlock')
         await main('cancel')
