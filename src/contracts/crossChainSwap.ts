@@ -10,6 +10,7 @@ import {
     SmartContract,
 } from 'scrypt-ts'
 
+// cross chain atomic swap https://xiaohuiliu.medium.com/cross-chain-atomic-swaps-f13e874fcaa7
 export class CrossChainSwap extends SmartContract {
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
     static readonly UINT_MAX = 0xffffffffn
