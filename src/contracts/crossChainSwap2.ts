@@ -9,7 +9,6 @@ import {
     prop,
     PubKey,
     PubKeyHash,
-    rshift,
     Sha256,
     Sig,
     slice,
@@ -17,17 +16,7 @@ import {
     toByteString,
     Utils,
 } from 'scrypt-ts'
-import { MerklePath, MerkleProof } from 'scrypt-ts-lib'
-
-// TODO: Import this from scrypt-ts-lib, once it includes it.
-export type BlockHeader = {
-    version: ByteString
-    prevBlockHash: Sha256
-    merkleRoot: Sha256
-    time: bigint
-    bits: ByteString // Difficulty target
-    nonce: bigint
-}
+import { Blockchain, MerklePath, MerkleProof, BlockHeader } from 'scrypt-ts-lib'
 
 export type VarIntRes = {
     val: bigint
@@ -48,6 +37,9 @@ export class CrossChainSwap2 extends SmartContract {
     readonly bobAddr: PubKeyHash
 
     @prop()
+    readonly bobP2WPKHAddr: PubKeyHash
+
+    @prop()
     readonly timeout: bigint // Can be a timestamp or block height.
 
     @prop()
@@ -62,6 +54,7 @@ export class CrossChainSwap2 extends SmartContract {
     constructor(
         aliceAddr: PubKeyHash,
         bobAddr: PubKeyHash,
+        bobP2WPKHAddr: PubKeyHash,
         timeout: bigint,
         targetDifficulty: bigint,
         amountBTC: bigint,
@@ -70,6 +63,7 @@ export class CrossChainSwap2 extends SmartContract {
         super(...arguments)
         this.aliceAddr = aliceAddr
         this.bobAddr = bobAddr
+        this.bobP2WPKHAddr = bobP2WPKHAddr
         this.timeout = timeout
         this.targetDifficulty = targetDifficulty
         this.amountBTC = amountBTC
@@ -80,13 +74,13 @@ export class CrossChainSwap2 extends SmartContract {
     static parseVarInt(btcTx: ByteString, idx: bigint): VarIntRes {
         let res: VarIntRes = {
             val: 0n,
-            newIdx: 0n,
+            newIdx: idx, // In case its 0x00, just continue from this index on.
         }
         const first = Utils.fromLEUnsigned(slice(btcTx, idx, idx + 1n))
         if (first < 0xfdn) {
             res = {
                 val: first,
-                newIdx: idx + 2n,
+                newIdx: idx + 1n,
             }
         } else if (first == 0xfdn) {
             res = {
@@ -98,8 +92,7 @@ export class CrossChainSwap2 extends SmartContract {
                 val: Utils.fromLEUnsigned(slice(btcTx, idx + 1n, idx + 5n)),
                 newIdx: idx + 5n,
             }
-        } else {
-            // 0xFF
+        } else if (first == 0xffn) {
             res = {
                 val: Utils.fromLEUnsigned(slice(btcTx, idx + 1n, idx + 9n)),
                 newIdx: idx + 9n,
@@ -109,18 +102,19 @@ export class CrossChainSwap2 extends SmartContract {
     }
 
     @method()
-    checkBtcTx(btcTx: ByteString): boolean {
-        const res = false
-
-        // TODO: Most things should be the same as in BSV except the witness data and flag.
-        //       - Check (first) output is P2WPK to Bobs public key.
-        //       - Check (first) output amount is equal to this.amountBTC
+    checkBtcTx(btcTx: ByteString): void {
+        // Most things should be the same as in BSV except the witness data and flag.
+        // - Check (first) output is P2WPKH to Bobs public key.
+        // - Check (first) output amount is equal to this.amountBTC
 
         let idx = 4n
-        if (slice(btcTx, idx, idx + 2n) == toByteString('0001')) {
-            // Witness flag present.
-            idx += 2n
-        }
+
+        // Make sure to serialize BTC tx without witness data.
+        // See https://github.com/karask/python-bitcoin-utils/blob/a41c7a1e546985b759e6eb2ae4524f466be809ca/bitcoinutils/transactions.py#L913
+        assert(
+            slice(btcTx, idx, idx + 2n) != toByteString('0001'),
+            'Witness data present. Please serialize without witness data.'
+        )
 
         //// INPUTS:
         const inLen = CrossChainSwap2.parseVarInt(btcTx, idx)
@@ -144,7 +138,7 @@ export class CrossChainSwap2 extends SmartContract {
         }
 
         //// FIRST OUTPUT:
-        // Check if (first) output pays Alice the right amount and terminate and set res to true.
+        // Check if (first) output pays Bob the right amount and terminate and set res to true.
         const outLen = CrossChainSwap2.parseVarInt(btcTx, idx)
         idx = outLen.newIdx
         const amount = Utils.fromLEUnsigned(slice(btcTx, idx, idx + 8n))
@@ -152,16 +146,14 @@ export class CrossChainSwap2 extends SmartContract {
         idx += 8n
         const scriptLen = CrossChainSwap2.parseVarInt(btcTx, idx)
         idx = scriptLen.newIdx
-        const script = slice(btcTx, idx, scriptLen.val)
+        const script = slice(btcTx, idx, idx + scriptLen.val)
         assert(len(script) == 22n, 'Invalid locking script length.')
         assert(
-            script == toByteString('0014') + this.aliceAddr,
+            script == toByteString('0014') + this.bobP2WPKHAddr,
             'Invalid locking script.'
         )
 
         // Data past this point is not relevant in our use-case.
-
-        return res
     }
 
     @method()
@@ -173,7 +165,7 @@ export class CrossChainSwap2 extends SmartContract {
         aliceSig: Sig
     ) {
         // Check btc tx.
-        assert(this.checkBtcTx(btcTx), 'BTC TX check failed.')
+        this.checkBtcTx(btcTx)
 
         // Calc merkle root.
         const txID = hash256(btcTx)
@@ -188,19 +180,27 @@ export class CrossChainSwap2 extends SmartContract {
         // Check target diff for headers.
         for (let i = 0; i < CrossChainSwap2.MIN_CONF; i++) {
             assert(
-                CrossChainSwap2.isValidBH(headers[i], this.targetDifficulty),
+                Blockchain.isValidBlockHeader(
+                    headers[i],
+                    this.targetDifficulty
+                ),
                 `${i}-nth BH doesn't meet target difficulty`
             )
         }
 
         // Check header chain.
-        let h = CrossChainSwap2.hashBH(headers[0])
-        for (let i = 1; i < CrossChainSwap2.MIN_CONF; i++) {
-            const header = headers[i]
-            // Check if prev block hash matches.
-            assert(header.prevBlockHash == h, `${i}-th BH wrong prevBlockHash`)
-            // Update header hash.
-            h = CrossChainSwap2.hashBH(header)
+        let h = Blockchain.blockHeaderHash(headers[0])
+        for (let i = 0; i < CrossChainSwap2.MIN_CONF; i++) {
+            if (i >= 1n) {
+                const header = headers[i]
+                // Check if prev block hash matches.
+                assert(
+                    header.prevBlockHash == h,
+                    `${i}-th BH wrong prevBlockHash`
+                )
+                // Update header hash.
+                h = Blockchain.blockHeaderHash(header)
+            }
         }
 
         // Verify Alices signature.
@@ -233,50 +233,5 @@ export class CrossChainSwap2 extends SmartContract {
         // Verify Bobs signature.
         assert(hash160(bobPubKey) == this.bobAddr, 'Bob wrong pub key.')
         assert(this.checkSig(bobSig, bobPubKey))
-    }
-
-    // TODO: Import functions below from 'scrypt-ts-lib' once ready.
-
-    // Serialize a block header.
-    @method()
-    static serializeBH(bh: BlockHeader): ByteString {
-        return (
-            bh.version +
-            bh.prevBlockHash +
-            bh.merkleRoot +
-            Utils.toLEUnsigned(bh.time, 4n) +
-            bh.bits +
-            Utils.toLEUnsigned(bh.nonce, 4n)
-        )
-    }
-
-    // Convert difficulty from bits to target.
-    @method()
-    static bits2Target(bits: ByteString): bigint {
-        const exponent = Utils.fromLEUnsigned(bits.slice(6))
-        const coefficient = Utils.fromLEUnsigned(bits.slice(0, 6))
-        const n = 8n * (exponent - 3n)
-        return rshift(coefficient, n)
-    }
-
-    // Block header hash.
-    @method()
-    static hashBH(bh: BlockHeader): Sha256 {
-        return Sha256(hash256(CrossChainSwap2.serializeBH(bh)))
-    }
-
-    // Block header hash, but converted to a positive integer.
-    @method()
-    static hashBH2Int(bh: BlockHeader): bigint {
-        return Utils.fromLEUnsigned(CrossChainSwap2.hashBH(bh))
-    }
-
-    // Is block header valid with difficulty meeting target.
-    @method()
-    static isValidBH(bh: BlockHeader, blockchainTarget: bigint): boolean {
-        const bhHash = CrossChainSwap2.hashBH2Int(bh)
-        const target = CrossChainSwap2.bits2Target(bh.bits)
-        // Block hash below target and target below blockchain difficulty target.
-        return bhHash <= target && target <= blockchainTarget
     }
 }

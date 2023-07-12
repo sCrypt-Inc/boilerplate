@@ -52,7 +52,7 @@ describe('Test SmartContract `CrossChainSwap`', () => {
         expect(result.success, result.error).to.eq(true)
     })
 
-    it('should pass withdraw', async () => {
+    it('should pass cancel', async () => {
         await crossChainSwap.connect(getDummySigner(bobPrivKey))
 
         const { tx: callTx, atInputIndex } =
