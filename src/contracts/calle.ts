@@ -1,0 +1,31 @@
+import { assert } from "console"
+import { ByteString, SigHash, SmartContract, Utils, hash256, int2ByteString, method, prop } from "scrypt-ts"
+
+type Coeff = {
+  a : bigint
+  b : bigint
+  c : bigint
+}
+
+export class Calle extends SmartContract{
+  @prop()
+  static readonly N : bigint = 2n
+
+  @method(SigHash.SINGLE)
+  public solve(co : Coeff, x : bigint){
+    assert(
+      co.a * x * x + co.b * x + co.c == 0n
+    )
+
+    const data : ByteString = int2ByteString(co.a, Calle.N) + int2ByteString(co.b, Calle.N) + int2ByteString(co.c, Calle.N)
+
+    const outputScript : ByteString = Utils.buildOpreturnScript(data)
+
+    const output : ByteString = Utils.buildOutput(outputScript, 0n)
+
+    assert(
+      hash256(output) == this.ctx.hashOutputs
+    )
+
+  }
+}
