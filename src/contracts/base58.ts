@@ -14,7 +14,7 @@ export class Base58 extends SmartContractLib{
 
         const bebytes : ByteString = payload + hash256(payload)
 
-        let addrInt : bigint = Utils.fromLEUnsigned(reverseByteString(bebytes, 24))
+        let addrInt : bigint = Utils.fromLEUnsigned(reverseByteString(bebytes, 24n))
 
         let res : ByteString = toByteString('',true)
 
