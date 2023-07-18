@@ -1,7 +1,7 @@
 import { assert } from "console";
 import { ByteString, PubKey, Sha256, Sig, SmartContract, hash256, len, method, prop, toByteString } from "scrypt-ts";
 
-export class CoinToss extends SmartContract{
+export class CoinTossXor extends SmartContract{
     @prop()
     alice : PubKey
     @prop()
@@ -24,14 +24,14 @@ export class CoinToss extends SmartContract{
         // nonce can be of any lenght as long as its resistant to brute-force attack
         // we use 256 bits / 32 bytes as an example here
 
-        assert(len(aliceNonce) == 32)
+        assert(BigInt(len(aliceNonce)) == 32n)
         assert(hash256(aliceNonce) == this.aliceHash)
-        assert(len(bobNonce) == 32)
+        assert(BigInt(len(bobNonce) == 32n))
         assert(hash256(bobNonce) == this.bobHash)
 
         // last bit of XOR
 
-        const head : ByteString = (BigInt(aliceNonce) ^ BigInt(bobNonce)) && toByteString('0000000000000000000000000000000000000000000000000000000000000001')
+        const head : ByteString = (BigInt(aliceNonce) * BigInt(bobNonce)) && toByteString('0000000000000000000000000000000000000000000000000000000000000001')
 
         // head -> Alice; tails bob -> wins
 
