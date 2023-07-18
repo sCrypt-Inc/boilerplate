@@ -23,14 +23,14 @@ export class Lottery extends SmartContract{
     }
 
     @method()
-    public reveal(nonce : FixedArray<number, 5>, sig : Sig){
+    public reveal(nonce : FixedArray<bigint, 5>, sig : Sig){
         let i = 0
         let sum = 0
 
         for(let i = 0; i < 5; i ++){
             assert(hash256(int2ByteString(BigInt(nonce[i]))) == this.nonceHashes[i])
 
-            sum += nonce[i]
+            sum += Number(nonce[i])
             i++ 
         }
 
