@@ -1,8 +1,10 @@
-// Read Medium article about this contract
-//https://xiaohuiliu.medium.com/inter-contract-call-on-bitcoin-f51869c08be
+
 
 import { assert } from "console"
 import { ByteString, SigHash, SmartContract, Utils, hash256, int2ByteString, method, prop } from "scrypt-ts"
+
+// Read Medium article about this contract
+//https://xiaohuiliu.medium.com/inter-contract-call-on-bitcoin-f51869c08be
 
 type Coeff = {
   a : bigint
