@@ -1,6 +1,7 @@
 // a fair secure multiparty lottery
 // each player i choose a random number n_i and the winner is the w-th player
 // where w = (n_0 + n_1 + ... + n_(N-1)) mod N
+
 // Read a Medium article about this contract
 //https://xiaohuiliu.medium.com/secure-multiparty-computations-on-bitcoin-953a64843b94
 
