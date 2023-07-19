@@ -10,9 +10,6 @@ import { FixedArray, PubKey, Sha256, Sig, SmartContract, hash256, int2ByteString
 
 
 export class Lottery extends SmartContract{
-    // number of players
-    @prop()
-    static readonly N : bigint = 5n
     @prop()
     readonly players : FixedArray<PubKey, 5>
     
