@@ -1,7 +1,5 @@
 
-
-import { assert } from "console"
-import { ByteString, SigHash, SmartContract, Utils, hash256, int2ByteString, method, prop } from "scrypt-ts"
+import { ByteString, assert, SigHash, SmartContract, Utils, hash256, int2ByteString, method, prop } from "scrypt-ts"
 
 //Read Medium article about this contract
 //https://xiaohuiliu.medium.com/inter-contract-call-on-bitcoin-f51869c08be
@@ -22,7 +20,7 @@ export class Callee extends SmartContract{
       co.a * x * x + co.b * x + co.c == 0n
     )
 
-    const data : ByteString = int2ByteString(co.a, Calle.N) + int2ByteString(co.b, Calle.N) + int2ByteString(co.c, Calle.N)
+    const data : ByteString = int2ByteString(co.a, Callee.N) + int2ByteString(co.b, Callee.N) + int2ByteString(co.c, Callee.N)
 
     const outputScript : ByteString = Utils.buildOpreturnScript(data)
 
