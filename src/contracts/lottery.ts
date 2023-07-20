@@ -5,8 +5,7 @@
 // Read a Medium article about this contract
 //https://xiaohuiliu.medium.com/secure-multiparty-computations-on-bitcoin-953a64843b94
 
-import { assert } from "console";
-import { FixedArray, PubKey, Sha256, Sig, SmartContract, hash256, int2ByteString, method, prop } from "scrypt-ts";
+import { FixedArray, assert, PubKey, Sha256, Sig, SmartContract, hash256, int2ByteString, method, prop } from "scrypt-ts";
 
 
 export class Lottery extends SmartContract{
