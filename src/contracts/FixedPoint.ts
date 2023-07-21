@@ -35,7 +35,7 @@ export class FixedPoint extends SmartContractLib{
 
     @method()
     abs(x : bigint) : bigint{
-        return this.abs(x)
+        return x 
     }
 
     @method()
