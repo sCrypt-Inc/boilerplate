@@ -23,7 +23,7 @@ export class Lottery extends SmartContract{
 
     @method()
     public reveal(nonce : FixedArray<bigint, 5>, sig : Sig){
-        let i = 0
+        
         let sum = 0
 
         for(let i = 0; i < 5; i ++){
