@@ -1,5 +1,5 @@
-import { assert } from "console";
-import { ByteString, PubKey, Sha256, Sig, SmartContract, hash256, len, method, prop, toByteString } from "scrypt-ts";
+
+import { assert, ByteString, PubKey, Sha256, Sig, SmartContract, hash256, len, method, prop, toByteString } from "scrypt-ts";
 
 export class CoinTossXor extends SmartContract{
     @prop()
@@ -31,7 +31,7 @@ export class CoinTossXor extends SmartContract{
 
         // last bit of XOR
 
-        const head : ByteString = (BigInt(aliceNonce) * BigInt(bobNonce)) && toByteString('0000000000000000000000000000000000000000000000000000000000000001')
+        const head : ByteString = xor(BigInt(aliceNonce) , BigInt(bobNonce)) && toByteString('0000000000000000000000000000000000000000000000000000000000000001', true)
 
         // head -> Alice; tails bob -> wins
 
