@@ -31,7 +31,7 @@ export class CoinTossXor extends SmartContract{
 
         // last bit of XOR
 
-        const head : ByteString = xor(BigInt(aliceNonce) , BigInt(bobNonce)) && toByteString('0000000000000000000000000000000000000000000000000000000000000001', true)
+        const head : ByteString = xor(BigInt(aliceNonce) , BigInt(bobNonce)) && toByteString('0000000000000000000000000000000000000000000000000000000000000001')
 
         // head -> Alice; tails bob -> wins
 
