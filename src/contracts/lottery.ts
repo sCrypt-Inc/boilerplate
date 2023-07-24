@@ -5,35 +5,46 @@
 // Read a Medium article about this contract
 //https://xiaohuiliu.medium.com/secure-multiparty-computations-on-bitcoin-953a64843b94
 
-import { FixedArray, assert, PubKey, Sha256, Sig, SmartContract, hash256, int2ByteString, method, prop } from "scrypt-ts";
+import {
+    FixedArray,
+    assert,
+    PubKey,
+    Sha256,
+    Sig,
+    SmartContract,
+    hash256,
+    int2ByteString,
+    method,
+    prop,
+} from 'scrypt-ts'
 
-
-export class Lottery extends SmartContract{
+export class Lottery extends SmartContract {
     @prop()
-    readonly players : FixedArray<PubKey, 5>
-    
-    @prop()
-    readonly nonceHashes : FixedArray<Sha256, 5>
+    readonly players: FixedArray<PubKey, 5>
 
-    constructor(players : FixedArray<PubKey, 5>, nonceHashes : FixedArray<Sha256, 5>){
+    @prop()
+    readonly nonceHashes: FixedArray<Sha256, 5>
+
+    constructor(
+        players: FixedArray<PubKey, 5>,
+        nonceHashes: FixedArray<Sha256, 5>
+    ) {
         super(...arguments)
         this.players = players
         this.nonceHashes = nonceHashes
     }
 
     @method()
-    public reveal(nonce : FixedArray<bigint, 5>, sig : Sig){
-        
-        let sum = 0
+    public reveal(nonce: FixedArray<bigint, 5>, sig: Sig) {
+        let sum = 0n
 
-        for(let i = 0; i < 5; i ++){
-            assert(hash256(int2ByteString(BigInt(nonce[i]))) == this.nonceHashes[i])
+        for (let i = 0; i < 5; i++) {
+            assert(hash256(int2ByteString(nonce[i])) == this.nonceHashes[i])
 
-            sum += Number(nonce[i])
-            i++ 
+            sum += nonce[i]
         }
 
-        const winner : PubKey = this.players[sum % 5]
+        const winner: PubKey = this.players[Number(sum % 5n)]
 
         assert(this.checkSig(sig, winner))
     }
