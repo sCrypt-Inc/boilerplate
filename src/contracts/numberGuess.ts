@@ -1,3 +1,6 @@
+// this is a contract of number Guessing game where alice will  choose a number between 0-3 
+//and then bob will guess the number if the number matches then bob wins other wise alice wins
+
 import {
     assert,
     hash160,
@@ -9,7 +12,7 @@ import {
     Utils,
 } from 'scrypt-ts'
 
-export class Numbergs extends SmartContract {
+export class NumberGuess extends SmartContract {
     @prop()
     alice : PubKey  // alice public key
 
