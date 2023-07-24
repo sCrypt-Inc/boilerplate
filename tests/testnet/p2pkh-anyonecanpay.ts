@@ -48,17 +48,13 @@ async function main() {
         }
     )
     // call
+    const sigHashType = bsv.crypto.Signature.ANYONECANPAY_SINGLE
     const { tx: callTx } = await p2pkh.methods.unlock(
         // pass signature, the first parameter, to `unlock`
         // after the signer signs the transaction, the signatures are returned in `SignatureResponse[]`
         // you need to find the signature or signatures you want in the return through the public key or address
         // here we use `myPublicKey` to find the signature because we signed the transaction with `myPrivateKey` before
-        (sigResps) =>
-            findSig(
-                sigResps,
-                myPublicKey,
-                bsv.crypto.Signature.ANYONECANPAY_SINGLE
-            ),
+        (sigResps) => findSig(sigResps, myPublicKey, sigHashType),
         // pass public key, the second parameter, to `unlock`
         PubKey(toHex(myPublicKey)),
         // method call options
@@ -67,7 +63,7 @@ async function main() {
             // that is using `myPrivateKey` to sign the transaction
             pubKeyOrAddrToSign: {
                 pubKeyOrAddr: myPublicKey,
-                sigHashType: bsv.crypto.Signature.ANYONECANPAY_SINGLE,
+                sigHashType: sigHashType,
             },
             partiallySigned: true,
             autoPayFee: false,
