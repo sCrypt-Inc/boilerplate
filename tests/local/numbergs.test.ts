@@ -1,16 +1,16 @@
 import { MethodCallOptions, PubKey, findSig, toHex } from 'scrypt-ts'
-import { Numbergs } from '../../src/contracts/numbergs'
+import { NumberGuess } from '../../src/contracts/numberGuess'
 import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
 
 import { expect } from 'chai'
 
 async function main() {
-    await Numbergs.compile()
+    await NumberGuess.compile()
 
     const [privateKeyalice, publicKeyalice] = randomPrivateKey()
     const [privateKeybob, publicKeybob] = randomPrivateKey()
 
-    const numbergs = new Numbergs(
+    const numbergs = new NumberGuess(
         PubKey(toHex(publicKeyalice)),
         PubKey(toHex(publicKeybob)),
         3n,
@@ -24,7 +24,7 @@ async function main() {
         {
             fromUTXO: getDummyUTXO(),
             pubKeyOrAddrToSign: publicKeyalice && publicKeybob,
-        } as MethodCallOptions<Numbergs>
+        } as MethodCallOptions<NumberGuess>
     )
     const result = callTx.verifyScript(atInputIndex)
     expect(result.success, result.error).to.eq(true)

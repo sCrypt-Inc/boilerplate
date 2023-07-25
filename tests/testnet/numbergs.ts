@@ -1,17 +1,17 @@
-import { Numbergs } from '../../src/contracts/numbergs'
+import { NumberGuess } from '../../src/contracts/numberGuess'
 import { myPrivateKey, myPublicKey } from '../utils/privateKey'
 import { getDefaultSigner } from '../utils/helper'
 
 import { MethodCallOptions, PubKey, findSig, toHex } from 'scrypt-ts'
 
 async function main() {
-    await Numbergs.compile()
+    await NumberGuess.compile()
     const privateKeyAlice = myPrivateKey
     const publicKeyAlice = myPublicKey
 
     const privateKeyBob = myPrivateKey
     const publicKeyBob = myPublicKey
-    const instance = new Numbergs(
+    const instance = new NumberGuess(
         PubKey(toHex(publicKeyAlice)),
         PubKey(toHex(publicKeyBob)),
         3n,
@@ -30,7 +30,7 @@ async function main() {
         (sigReps) => findSig(sigReps, publicKeyAlice),
         {
             pubKeyOrAddrToSign: publicKeyAlice,
-        } as MethodCallOptions<Numbergs>
+        } as MethodCallOptions<NumberGuess>
     )
     console.log('guess method call successfully: ', guessTx.id)
 }
