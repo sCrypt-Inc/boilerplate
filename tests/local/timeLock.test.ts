@@ -1,34 +1,34 @@
 import { expect } from 'chai'
-import { CheckLockTimeVerify } from '../../src/contracts/cltv'
+import { TimeLock } from '../../src/contracts/timeLock'
 import { getDummySigner, getDummyUTXO } from '../utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
-describe('Test SmartContract `CheckLockTimeVerify`', () => {
-    let cltv: CheckLockTimeVerify
+describe('Test SmartContract `TimeLock`', () => {
+    let timeLock: TimeLock
     const lockTimeMin = 1673510000n
 
     before(async () => {
-        await CheckLockTimeVerify.compile()
+        await TimeLock.compile()
 
-        cltv = new CheckLockTimeVerify(lockTimeMin)
-        await cltv.connect(getDummySigner())
+        timeLock = new TimeLock(lockTimeMin)
+        await timeLock.connect(getDummySigner())
     })
 
     it('should pass the public method unit test successfully.', async () => {
-        const { tx: callTx, atInputIndex } = await cltv.methods.unlock({
+        const { tx: callTx, atInputIndex } = await timeLock.methods.unlock({
             fromUTXO: getDummyUTXO(),
             lockTime: 1673523720,
-        } as MethodCallOptions<CheckLockTimeVerify>)
+        } as MethodCallOptions<TimeLock>)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
     it('should fail when nLocktime is too low.', async () => {
         return expect(
-            cltv.methods.unlock({
+            timeLock.methods.unlock({
                 fromUTXO: getDummyUTXO(),
                 lockTime: 1673500100,
-            } as MethodCallOptions<CheckLockTimeVerify>)
+            } as MethodCallOptions<TimeLock>)
         ).to.be.rejectedWith(/locktime has not yet expired/)
     })
 })
