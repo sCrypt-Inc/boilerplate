@@ -16,14 +16,24 @@ async function main() {
     await P2PKH.compile()
     const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
 
-    // connect to a signer
-    const signer = getDefaultSigner()
-    await p2pkh.connect(signer)
+    // Signer who unlocks / signs P2PKH UTXO.
+    const mainSigner = getDefaultSigner()
 
-    // deploy
+    // Signer who pays fee.
+    // For simplicity here, we just again use the same default signer, but it
+    // could be any other signer.
+    const feeSigner = getDefaultSigner()
+
+    // Connect the signer.
+    await p2pkh.connect(mainSigner)
+
+    // Deploy the P2PKH contract.
     const deployTx = await p2pkh.deploy(1)
     console.log('P2PKH contract deployed: ', deployTx.id)
 
+    // Bind custom call tx builder. It adds a single input, which will call
+    // our deployed smart contracts "unlock" method. Additionally, it adds an
+    // unspendable OP_RETURN output.
     p2pkh.bindTxBuilder(
         'unlock',
         async (
@@ -47,7 +57,9 @@ async function main() {
             }
         }
     )
-    // call
+
+    // Construct the call tx locally (notice the "pratiallySigned" flag).
+    // Use the ANYONECANPAY_SINGLE sighash flag to sign the first input.
     const sigHashType = bsv.crypto.Signature.ANYONECANPAY_SINGLE
     const { tx: callTx } = await p2pkh.methods.unlock(
         // pass signature, the first parameter, to `unlock`
@@ -65,18 +77,26 @@ async function main() {
                 pubKeyOrAddr: myPublicKey,
                 sigHashType: sigHashType,
             },
+            // this flag will make the call tx not broadcast, but only be created locally
             partiallySigned: true,
+            // don't auto-add any fee inputs
             autoPayFee: false,
         } as MethodCallOptions<P2PKH>
     )
 
-    const address = await signer.getDefaultAddress()
+    // Get UTXOs for for the signer, who will pay the fee.
+    const address = await feeSigner.getDefaultAddress()
+    const utxos = await feeSigner.listUnspent(address)
 
-    const utxos = await signer.listUnspent(address)
-
+    // Spend retrieved UTXOs to pay the transaction fee. Any change will
+    // be returned to the fee signers address.
     callTx.from(utxos)
     callTx.change(address)
-    await signer.signAndsendTransaction(callTx, { address })
+
+    // Finally, sign the newly added inputs and broadcast the modified transaction.
+    // Notice, that if the main singer wouldn't use the ANYONECANPAY_SINGLE sighash flag,
+    // Then the call to the "unlock" method (first input) wouldn't successfully evaluate anymore.
+    await feeSigner.signAndsendTransaction(callTx, { address })
 
     console.log('P2PKH contract called: ', callTx.id)
 }
