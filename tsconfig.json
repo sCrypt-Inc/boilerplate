@@ -16,13 +16,8 @@
     /* "strict": true,                                       Enable all strict type-checking options. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "sourceMap": true,
-    "plugins": [
-      {
-        "transform": "scrypt-ts/dist/transformation/transformer",
-        "outDir": "./artifacts",
-        "transformProgram": true
-      }
-    ]
+    "noEmit": true
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"]
+  "include": ["src/contracts/**/*.ts"],
+  "exclude": ["src/contracts/perceptron2.ts"]
 }
