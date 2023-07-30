@@ -36,7 +36,7 @@ jobs:
 
 script:
   - npm run genprivkey
-  - npm run test-all
+  - npm t
   - echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
   - if [ "$TRAVIS_EVENT_TYPE" == "cron" ] ; then sh ./scripts/testnet.sh; fi
 
