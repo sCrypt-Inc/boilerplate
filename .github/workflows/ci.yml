@@ -28,4 +28,4 @@ jobs:
       - name: gen Env
         run: echo "PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}"" > .env
       - name: Test
-        run: npm run test-all
+        run: npm t
