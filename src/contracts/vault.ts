@@ -41,7 +41,7 @@ export class Vault extends SmartContract{
         public withdraw(sig : Sig, utxoBh : BlockHeader, latestBh : BlockHeader, merkleproof : MerkleProof){
             assert(this.unvaulted)
             assert(this.checkSig(sig, this.vaultKey))
-            this.validateHelper(utxoBh, latestBh, merkleproof)
+            this.validateHelper(utxoBh, latestBh, merkleproof, txPreimage)
             assert(latestBh.time - utxoBh.time >= this.unvaultingPeriod)
         }
 
@@ -55,7 +55,7 @@ export class Vault extends SmartContract{
     // @utxoBh: block header containing the UTXO containing the contract
     // @latestBh: latest block header
         @method()
-        validateHelper(utxoBh : BlockHeader, latestBh : BlockHeader, merkleproof : MerkleProof) : boolean {
+        validateHelper(utxoBh : BlockHeader, latestBh : BlockHeader, merkleproof : MerkleProof, txPreimage : SigHashPreimage) : boolean {
             let prevTxid : Sha256 = Sha256(this.ctx.utxo.outpoint.txid)
             assert(Blockchain.txInBlock(prevTxid, utxoBh,merkleproof))
             assert(Blockchain.isValidBlockHeader(utxoBh, this.blockchainTarget))
