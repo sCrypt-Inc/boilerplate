@@ -55,11 +55,13 @@ export class Vault extends SmartContract{
     // @utxoBh: block header containing the UTXO containing the contract
     // @latestBh: latest block header
         @method()
-        public validateHelper(utxoBh : BlockHeader, latestBh : BlockHeader, merkleproof : MerkleProof){
+        validateHelper(utxoBh : BlockHeader, latestBh : BlockHeader, merkleproof : MerkleProof) : boolean {
             let prevTxid : Sha256 = Sha256(this.ctx.utxo.outpoint.txid)
             assert(Blockchain.txInBlock(prevTxid, utxoBh,merkleproof))
             assert(Blockchain.isValidBlockHeader(utxoBh, this.blockchainTarget))
             assert(Blockchain.isValidBlockHeader(latestBh, this.blockchainTarget))
+
+            return true
         }
 
 }
