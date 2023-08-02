@@ -6,7 +6,6 @@ import {
     hash160,
     int2ByteString,
     MethodCallOptions,
-    or,
     PubKey,
     reverseByteString,
     Sig,
@@ -60,7 +59,6 @@ describe('Test SmartContract `OrdinalAuction` on testnet', () => {
         let currentInstance = auction
 
         // Perform bidding.
-        let contractTx = undefined
         for (let i = 0; i < 3; i++) {
             const highestBidder = PubKey(toHex(publicKeyNewBidder))
             const bid = BigInt(balance + 100)
@@ -68,7 +66,7 @@ describe('Test SmartContract `OrdinalAuction` on testnet', () => {
             const nextInstance = currentInstance.next()
             nextInstance.bidder = highestBidder
 
-            contractTx = await auction.methods.bid(highestBidder, bid, {
+            const contractTx = await auction.methods.bid(highestBidder, bid, {
                 fromUTXO: getDummyUTXO(balance),
                 changeAddress: addressNewBidder,
                 next: {
@@ -111,7 +109,7 @@ describe('Test SmartContract `OrdinalAuction` on testnet', () => {
                         new bsv.Transaction.Input({
                             prevTxId: ordinalUTXO.txId,
                             outputIndex: ordinalUTXO.outputIndex,
-                            script: bsv.Script.fromHex('00'.repeat(200000)),
+                            script: bsv.Script.fromHex('00'),
                         }),
                         bsv.Script.fromHex(ordinalUTXO.script),
                         ordinalUTXO.satoshis
@@ -149,8 +147,13 @@ describe('Test SmartContract `OrdinalAuction` on testnet', () => {
                     unsignedTx.change(options.changeAddress)
                 }
 
-                unsignedTx.inputs[1].sequenceNumber = options.sequence
-                unsignedTx.nLockTime = options.lockTime
+                if (options.sequence !== undefined) {
+                    unsignedTx.inputs[1].sequenceNumber = options.sequence
+                }
+
+                if (options.lockTime !== undefined) {
+                    unsignedTx.nLockTime = options.lockTime
+                }
 
                 return Promise.resolve({
                     tx: unsignedTx,
@@ -160,7 +163,7 @@ describe('Test SmartContract `OrdinalAuction` on testnet', () => {
             }
         )
 
-        contractTx = await auction.methods.close(
+        const contractTx = await auction.methods.close(
             (sigResps) => findSig(sigResps, publicKeyAuctioneer),
             prevouts,
             {
