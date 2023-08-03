@@ -21,7 +21,17 @@ import { randomBytes } from 'crypto'
 describe('Test SmartContract `OrdinalAuction`', () => {
     const [privateKeyAuctioneer, publicKeyAuctioneer, , addressAuctioneer] =
         randomPrivateKey()
-    const [, publicKeyNewBidder, , addressNewBidder] = randomPrivateKey()
+
+    const bidderPrivateKeys: bsv.PrivateKey[] = []
+    const bidderPublicKeys: bsv.PublicKey[] = []
+    const bidderAddresses: bsv.Address[] = []
+    for (let i = 0; i < 3; i++) {
+        const [privateKeyBidder, publicKeyBidder, , addressBidder] =
+            randomPrivateKey()
+        bidderPrivateKeys.push(privateKeyBidder)
+        bidderPublicKeys.push(publicKeyBidder)
+        bidderAddresses.push(addressBidder)
+    }
 
     const auctionDeadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
 
@@ -60,18 +70,18 @@ describe('Test SmartContract `OrdinalAuction`', () => {
 
         // Perform bidding.
         for (let i = 0; i < 3; i++) {
-            const highestBidder = PubKey(toHex(publicKeyNewBidder))
+            const newHighestBidder = PubKey(toHex(bidderPublicKeys[i]))
             const bid = BigInt(balance + 100)
 
             const nextInstance = currentInstance.next()
-            nextInstance.bidder = highestBidder
+            nextInstance.bidder = newHighestBidder
 
             const contractTx = await currentInstance.methods.bid(
-                highestBidder,
+                newHighestBidder,
                 bid,
                 {
                     fromUTXO: getDummyUTXO(balance),
-                    changeAddress: addressNewBidder,
+                    changeAddress: bidderAddresses[i],
                     next: {
                         instance: nextInstance,
                         balance: Number(bid),
