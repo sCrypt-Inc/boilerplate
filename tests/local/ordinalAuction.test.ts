@@ -66,14 +66,18 @@ describe('Test SmartContract `OrdinalAuction`', () => {
             const nextInstance = currentInstance.next()
             nextInstance.bidder = highestBidder
 
-            const contractTx = await auction.methods.bid(highestBidder, bid, {
-                fromUTXO: getDummyUTXO(balance),
-                changeAddress: addressNewBidder,
-                next: {
-                    instance: nextInstance,
-                    balance: Number(bid),
-                },
-            } as MethodCallOptions<OrdinalAuction>)
+            const contractTx = await currentInstance.methods.bid(
+                highestBidder,
+                bid,
+                {
+                    fromUTXO: getDummyUTXO(balance),
+                    changeAddress: addressNewBidder,
+                    next: {
+                        instance: nextInstance,
+                        balance: Number(bid),
+                    },
+                } as MethodCallOptions<OrdinalAuction>
+            )
 
             const result = contractTx.tx.verifyScript(contractTx.atInputIndex)
             expect(result.success, result.error).to.eq(true)
@@ -83,19 +87,9 @@ describe('Test SmartContract `OrdinalAuction`', () => {
         }
 
         const fromUTXO = getDummyUTXO(balance)
-        const feeUTXO = getDummyUTXO(9999999, true)
-
-        // Assemble prevouts byte string.
-        let prevouts = ordinalPrevout
-
-        prevouts += reverseByteString(toByteString(fromUTXO.txId), 32n)
-        prevouts += int2ByteString(BigInt(fromUTXO.outputIndex), 4n)
-
-        prevouts += reverseByteString(toByteString(feeUTXO.txId), 32n)
-        prevouts += int2ByteString(BigInt(feeUTXO.outputIndex), 4n)
 
         // Close the auction.
-        auction.bindTxBuilder(
+        currentInstance.bindTxBuilder(
             'close',
             async (
                 current: OrdinalAuction,
@@ -105,26 +99,21 @@ describe('Test SmartContract `OrdinalAuction`', () => {
             ) => {
                 const unsignedTx: bsv.Transaction = new bsv.Transaction()
 
-                const provider = current.signer.provider
-                if (provider) {
-                    unsignedTx.feePerKb((await provider.getFeePerKb()) * 30)
-                }
-
                 // add input that unlocks ordinal UTXO
                 unsignedTx
                     .addInput(
                         new bsv.Transaction.Input({
                             prevTxId: ordinalUTXO.txId,
                             outputIndex: ordinalUTXO.outputIndex,
-                            script: bsv.Script.fromHex(''),
+                            script: bsv.Script.fromHex('00'.repeat(34)),
                         }),
                         bsv.Script.fromHex(ordinalUTXO.script),
                         ordinalUTXO.satoshis
                     )
                     .addInput(current.buildContractInput(options.fromUTXO))
 
-                    // Add all fee inputs here as well.
-                    .from(feeUTXO)
+                //// Add all fee inputs here as well.
+                //.from(feeUTXO)
 
                 // build ordinal destination output
                 unsignedTx
@@ -170,7 +159,46 @@ describe('Test SmartContract `OrdinalAuction`', () => {
             }
         )
 
-        const contractTx = await auction.methods.close(
+        let contractTx = await currentInstance.methods.close(
+            (sigResps) => findSig(sigResps, publicKeyAuctioneer),
+            toByteString('00'.repeat(128)), // Fill with some dummy data to compensate for the fee after we pass the real data.
+            {
+                fromUTXO,
+                pubKeyOrAddrToSign: publicKeyAuctioneer,
+                changeAddress: addressAuctioneer,
+                lockTime: auctionDeadline + 1,
+                sequence: 0,
+                exec: false,
+            } as MethodCallOptions<OrdinalAuction>
+        )
+
+        currentInstance.bindTxBuilder(
+            'close',
+            async (
+                current: OrdinalAuction,
+                options: MethodCallOptions<OrdinalAuction>,
+                sigAuctioneer: Sig,
+                prevouts: ByteString
+            ) => {
+                return Promise.resolve({
+                    tx: contractTx.tx,
+                    atInputIndex: 1,
+                    nexts: [],
+                })
+            }
+        )
+
+        // Assemble prevouts byte string.
+        let prevouts = toByteString('')
+        contractTx.tx.inputs.forEach((input) => {
+            prevouts += reverseByteString(
+                toByteString(input.prevTxId.toString('hex')),
+                32n
+            )
+            prevouts += int2ByteString(BigInt(input.outputIndex), 4n)
+        })
+
+        contractTx = await currentInstance.methods.close(
             (sigResps) => findSig(sigResps, publicKeyAuctioneer),
             prevouts,
             {
@@ -186,7 +214,6 @@ describe('Test SmartContract `OrdinalAuction`', () => {
         const result = contractTx.tx.verifyScript(contractTx.atInputIndex)
         expect(result.success, result.error).to.eq(true)
 
-        // TODO: Sign ordinal UTXO input.
-        // TODO: Sign funding inputs
+        // If we would like to broadcast, here we need to sign ordinal UTXO input.
     })
 })
