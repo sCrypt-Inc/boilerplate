@@ -18,7 +18,7 @@ import { expect } from 'chai'
 import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
 import { randomBytes } from 'crypto'
 
-describe('Test SmartContract `OrdinalAuction` on testnet', () => {
+describe('Test SmartContract `OrdinalAuction`', () => {
     const [privateKeyAuctioneer, publicKeyAuctioneer, , addressAuctioneer] =
         randomPrivateKey()
     const [, publicKeyNewBidder, , addressNewBidder] = randomPrivateKey()
@@ -104,12 +104,19 @@ describe('Test SmartContract `OrdinalAuction` on testnet', () => {
                 prevouts: ByteString
             ) => {
                 const unsignedTx: bsv.Transaction = new bsv.Transaction()
-                    // add input that unlocks ordinal UTXO
+
+                const provider = current.signer.provider
+                if (provider) {
+                    unsignedTx.feePerKb((await provider.getFeePerKb()) * 30)
+                }
+
+                // add input that unlocks ordinal UTXO
+                unsignedTx
                     .addInput(
                         new bsv.Transaction.Input({
                             prevTxId: ordinalUTXO.txId,
                             outputIndex: ordinalUTXO.outputIndex,
-                            script: bsv.Script.fromHex('00'),
+                            script: bsv.Script.fromHex(''),
                         }),
                         bsv.Script.fromHex(ordinalUTXO.script),
                         ordinalUTXO.satoshis
@@ -136,7 +143,7 @@ describe('Test SmartContract `OrdinalAuction` on testnet', () => {
                         new bsv.Transaction.Output({
                             script: bsv.Script.fromHex(
                                 Utils.buildPublicKeyHashScript(
-                                    hash160(current.bidder)
+                                    hash160(current.auctioneer)
                                 )
                             ),
                             satoshis: current.utxo.satoshis,
