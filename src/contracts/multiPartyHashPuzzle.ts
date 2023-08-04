@@ -35,6 +35,5 @@ export class MultiPartyHashPuzzle extends SmartContract {
         for (let i = 0; i < MultiPartyHashPuzzle.N; i++) {
             assert(sha256(preimages[i]) == this.hashes[i], 'hash mismatch')
         }
-        assert(true)
     }
 }
