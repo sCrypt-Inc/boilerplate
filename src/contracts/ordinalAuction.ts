@@ -14,6 +14,7 @@ import {
     hash160,
     slice,
     StatefulNext,
+    TxOutputRef,
 } from 'scrypt-ts'
 
 import Transaction = bsv.Transaction
@@ -175,7 +176,7 @@ export class OrdinalAuction extends SmartContract {
             nexts: [
                 {
                     instance: next.instance,
-                    atOutputIndex: next.atOutputIndex,
+                    atOutputIndex: 0,
                     balance: next.balance,
                 },
             ],

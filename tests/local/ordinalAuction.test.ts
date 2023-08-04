@@ -178,7 +178,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
                 changeAddress: addressAuctioneer,
                 lockTime: auctionDeadline + 1,
                 sequence: 0,
-                exec: false,
+                exec: false, // Do not execute the contract yet, only get the created calling transaction.
             } as MethodCallOptions<OrdinalAuction>
         )
 
