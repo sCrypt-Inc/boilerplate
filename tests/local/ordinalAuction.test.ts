@@ -122,9 +122,6 @@ describe('Test SmartContract `OrdinalAuction`', () => {
                     )
                     .addInput(current.buildContractInput(options.fromUTXO))
 
-                //// Add all fee inputs here as well.
-                //.from(feeUTXO)
-
                 // build ordinal destination output
                 unsignedTx
                     .addOutput(
@@ -210,14 +207,12 @@ describe('Test SmartContract `OrdinalAuction`', () => {
 
         contractTx = await currentInstance.methods.close(
             (sigResps) => findSig(sigResps, publicKeyAuctioneer),
-            prevouts,
             {
                 fromUTXO,
                 pubKeyOrAddrToSign: publicKeyAuctioneer,
                 changeAddress: addressAuctioneer,
                 lockTime: auctionDeadline + 1,
                 sequence: 0,
-                autoPayFee: false,
             } as MethodCallOptions<OrdinalAuction>
         )
 

@@ -86,7 +86,7 @@ export class OrdinalAuction extends SmartContract {
 
     // Close the auction if deadline is reached.
     @method()
-    public close(sigAuctioneer: Sig, prevouts: ByteString) {
+    public close(sigAuctioneer: Sig) {
         // Check if using block height.
         if (
             this.auctionDeadline < OrdinalAuction.LOCKTIME_BLOCK_HEIGHT_MARKER
@@ -113,13 +113,13 @@ export class OrdinalAuction extends SmartContract {
 
         // Check the passed prevouts byte string is correct.
         assert(
-            hash256(prevouts) == this.ctx.hashPrevouts,
+            hash256(this.prevouts) == this.ctx.hashPrevouts,
             'hashPrevouts mismatch'
         )
 
         // Ensure the first input in spending the auctioned ordinal UTXO.
         assert(
-            slice(prevouts, 0n, 36n) == this.ordnialPrevout,
+            slice(this.prevouts, 0n, 36n) == this.ordnialPrevout,
             'first input is not spending specified ordinal UTXO'
         )
 
