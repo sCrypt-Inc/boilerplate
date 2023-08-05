@@ -72,8 +72,6 @@ export class Perceptron2 extends SmartContract {
             // Prediction must match actual label.
             assert(this.outputs[i] == prediction, 'Wrong prediction.')
         }
-
-        assert(true)
     }
 
     // Binary step function.
