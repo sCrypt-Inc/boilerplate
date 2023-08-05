@@ -168,7 +168,6 @@ describe('Test SmartContract `OrdinalAuction`', () => {
 
         let contractTx = await currentInstance.methods.close(
             (sigResps) => findSig(sigResps, publicKeyAuctioneer),
-            toByteString('00'.repeat(128)), // Fill with some dummy data to compensate for the fee after we pass the real data.
             {
                 fromUTXO,
                 pubKeyOrAddrToSign: publicKeyAuctioneer,
