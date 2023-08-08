@@ -10,6 +10,8 @@ import {
     len,
     byteString2Int,
     prop,
+    UTXO,
+    bsv,
 } from 'scrypt-ts'
 
 export class LogicalUTXO extends SmartContract {
@@ -76,7 +78,7 @@ export class LogicalUTXO extends SmartContract {
                 if (isLastInput || isMiddleInput) {
                     // If the last or an in-between input is being executed, check the prior input is unlocking
                     // the prior output index from the same transaction.
-                    const prevPrevout = slice(prevout, start - 36n, start)
+                    const prevPrevout = slice(prevouts, start - 36n, start)
                     const prevPrevoutTXID = slice(prevPrevout, 0n, 32n)
                     const prevPrevoutOutputIndex = byteString2Int(
                         slice(prevPrevout, 32n, 36n)
@@ -97,5 +99,36 @@ export class LogicalUTXO extends SmartContract {
         // Propagate contract.
         const outputs = this.buildStateOutput(this.ctx.utxo.value)
         assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
+    }
+
+    // Customize the deployment TX to include multiple instances of this smart contract,
+    // equal to the specified size of our logical UTXO.
+    override async buildDeployTransaction(
+        utxos: UTXO[],
+        amount: number,
+        changeAddress?: bsv.Address | string
+    ): Promise<bsv.Transaction> {
+        const deployTx = new bsv.Transaction()
+            // Add p2pkh inputs for paying tx fees.
+            .from(utxos)
+
+        // Add logical UTXO outputs.
+        for (let i = 0; i < LogicalUTXO.LOGICAL_UTXO_SIZE; i++) {
+            deployTx.addOutput(
+                new bsv.Transaction.Output({
+                    script: this.lockingScript,
+                    satoshis: amount,
+                })
+            )
+        }
+
+        if (changeAddress) {
+            deployTx.change(changeAddress)
+            if (this._provider) {
+                deployTx.feePerKb(await this.provider.getFeePerKb())
+            }
+        }
+
+        return deployTx
     }
 }
