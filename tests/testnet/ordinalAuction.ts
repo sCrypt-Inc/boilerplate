@@ -242,9 +242,7 @@ async function main() {
         'close',
         async (
             current: OrdinalAuction,
-            options: MethodCallOptions<OrdinalAuction>,
-            sigAuctioneer: Sig,
-            prevouts: ByteString
+            options: MethodCallOptions<OrdinalAuction>
         ) => {
             return Promise.resolve({
                 tx: contractTx.tx,
@@ -254,19 +252,8 @@ async function main() {
         }
     )
 
-    // Assemble prevouts byte string.
-    let prevouts = toByteString('')
-    contractTx.tx.inputs.forEach((input) => {
-        prevouts += reverseByteString(
-            toByteString(input.prevTxId.toString('hex')),
-            32n
-        )
-        prevouts += int2ByteString(BigInt(input.outputIndex), 4n)
-    })
-
     contractTx = await currentInstance.methods.close(
         (sigResps) => findSig(sigResps, publicKeyAuctioneer),
-        prevouts,
         {
             pubKeyOrAddrToSign: publicKeyAuctioneer,
             changeAddress: addressAuctioneer,

@@ -8,7 +8,6 @@ import {
     MethodCallOptions,
     PubKey,
     reverseByteString,
-    Sig,
     toByteString,
     toHex,
     Utils,
@@ -103,9 +102,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
             'close',
             async (
                 current: OrdinalAuction,
-                options: MethodCallOptions<OrdinalAuction>,
-                sigAuctioneer: Sig,
-                prevouts: ByteString
+                options: MethodCallOptions<OrdinalAuction>
             ) => {
                 const unsignedTx: bsv.Transaction = new bsv.Transaction()
 
@@ -166,45 +163,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
             }
         )
 
-        let contractTx = await currentInstance.methods.close(
-            (sigResps) => findSig(sigResps, publicKeyAuctioneer),
-            {
-                fromUTXO,
-                pubKeyOrAddrToSign: publicKeyAuctioneer,
-                changeAddress: addressAuctioneer,
-                lockTime: auctionDeadline + 1,
-                sequence: 0,
-                exec: false, // Do not execute the contract yet, only get the created calling transaction.
-            } as MethodCallOptions<OrdinalAuction>
-        )
-
-        currentInstance.bindTxBuilder(
-            'close',
-            async (
-                current: OrdinalAuction,
-                options: MethodCallOptions<OrdinalAuction>,
-                sigAuctioneer: Sig,
-                prevouts: ByteString
-            ) => {
-                return Promise.resolve({
-                    tx: contractTx.tx,
-                    atInputIndex: 1,
-                    nexts: [],
-                })
-            }
-        )
-
-        // Assemble prevouts byte string.
-        let prevouts = toByteString('')
-        contractTx.tx.inputs.forEach((input) => {
-            prevouts += reverseByteString(
-                toByteString(input.prevTxId.toString('hex')),
-                32n
-            )
-            prevouts += int2ByteString(BigInt(input.outputIndex), 4n)
-        })
-
-        contractTx = await currentInstance.methods.close(
+        const contractTx = await currentInstance.methods.close(
             (sigResps) => findSig(sigResps, publicKeyAuctioneer),
             {
                 fromUTXO,
