@@ -105,7 +105,7 @@ export class StatefulMultiSig extends SmartContract {
 
     // Custom tx builder for calling function `pay`.
     // Includes P2PKH output that pays set destination address.
-    static payTxBuilder(
+    static buildTxForPay(
         current: StatefulMultiSig,
         options: MethodCallOptions<StatefulMultiSig>
     ): Promise<ContractTransaction> {

@@ -11,7 +11,6 @@ async function main() {
     const recruit1PubKey = myPublicKey
 
     const pyramid = new Pyramid(PubKeyHash(toHex(myPublicKeyHash)), 1000n)
-    pyramid.bindTxBuilder('recruit', Pyramid.recruitTxBuilder)
 
     await pyramid.connect(getDefaultSigner())
 

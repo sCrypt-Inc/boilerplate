@@ -95,8 +95,6 @@ async function main() {
         BigInt(auctionDeadline)
     )
 
-    auction.bindTxBuilder('bid', OrdinalAuction.bidTxBuilder)
-
     await auction.connect(getDefaultSigner(privateKeyAuctioneer))
 
     // contract deployment

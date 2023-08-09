@@ -52,7 +52,7 @@ export class Pyramid extends SmartContract {
         )
     }
 
-    static recruitTxBuilder(
+    static buildTxForRecruit(
         current: Pyramid,
         options: MethodCallOptions<Pyramid>,
         recruit0PubKey: PubKey,
