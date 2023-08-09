@@ -19,8 +19,6 @@ describe('Test SmartContract `Auction` on testnet', () => {
             BigInt(auctionDeadline)
         )
 
-        auction.bindTxBuilder('bid', Auction.bidTxBuilder)
-
         await auction.connect(getDummySigner(privateKeyAuctioneer))
     })
 

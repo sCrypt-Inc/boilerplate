@@ -129,7 +129,7 @@ export class Auction extends SmartContract {
     }
 
     // User defined transaction builder for calling function `bid`
-    static bidTxBuilder(
+    static buildTxForBid(
         current: Auction,
         options: MethodCallOptions<Auction>,
         bidder: PubKey,

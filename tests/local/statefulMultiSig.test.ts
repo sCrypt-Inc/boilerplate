@@ -109,9 +109,6 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
         const signer = getDummySigner()
         statefulMultiSig.connect(signer)
 
-        // Bind tx builder:
-        statefulMultiSig.bindTxBuilder('pay', StatefulMultiSig.payTxBuilder)
-
         const { tx: callTx, atInputIndex } = await statefulMultiSig.methods.pay(
             // Method call options:
             {
@@ -165,9 +162,6 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
 
         const signer = getDummySigner()
         statefulMultiSig.connect(signer)
-
-        // Bind tx builder:
-        statefulMultiSig.bindTxBuilder('pay', StatefulMultiSig.payTxBuilder)
 
         return expect(
             statefulMultiSig.methods.pay(
