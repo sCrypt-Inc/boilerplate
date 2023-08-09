@@ -139,6 +139,10 @@ describe('Test SmartContract `LogicalUTXO`', () => {
                             })
                         )
 
+                    if (options.changeAddress) {
+                        unSignedTx.change(options.changeAddress)
+                    }
+
                     return Promise.resolve({
                         tx: unSignedTx,
                         atInputIndex: 2,
@@ -150,6 +154,7 @@ describe('Test SmartContract `LogicalUTXO`', () => {
             }
         )
 
+        const changeAddress = await instance2.signer.getDefaultAddress()
         contractTx = await instance2.methods.unlock({
             fromUTXO: fromUTXO_2,
             multiContractCall: true,
@@ -159,6 +164,7 @@ describe('Test SmartContract `LogicalUTXO`', () => {
                 balance: 1,
                 atOutputIndex: 2,
             },
+            changeAddress,
         } as MethodCallOptions<LogicalUTXO>)
 
         const { tx: callTx, nexts } = await SmartContract.multiContractCall(
