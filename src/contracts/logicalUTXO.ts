@@ -44,7 +44,6 @@ export class LogicalUTXO extends SmartContract {
             const end = start + 36n
             const prevout = slice(prevouts, start, end)
 
-            // TODO: Move this outside the loop, so script can be smaller?
             // Within the prevouts array, find the prevout for the currently executed input.
             if (prevout == currentPrevout) {
                 const currentPrevoutTXID = slice(currentPrevout, 0n, 32n)
@@ -52,47 +51,26 @@ export class LogicalUTXO extends SmartContract {
                     slice(currentPrevout, 32n, 36n)
                 )
 
-                const isFirstInput = i == 0
                 const isLastInput = i == LogicalUTXO.LOGICAL_UTXO_SIZE - 1
-                const isMiddleInput = !isFirstInput && !isLastInput
 
-                if (isFirstInput || isMiddleInput) {
-                    // If the first or an in-between input is being executed, check the subsequent input is unlocking
-                    // the subsequent output index from the same transaction.
-                    const nextPrevout = slice(prevouts, end, end + 36n)
-                    const nextPrevoutTXID = slice(nextPrevout, 0n, 32n)
-                    const nextPrevoutOutputIndex = byteString2Int(
-                        slice(nextPrevout, 32n, 36n)
-                    )
-                    assert(
-                        currentPrevoutTXID == nextPrevoutTXID,
-                        'next input TXID mismatch'
-                    )
-                    assert(
-                        nextPrevoutOutputIndex ==
-                            currentPrevoutOutputIndex + 1n,
-                        'next input not unlocking subsequent output idx'
-                    )
-                }
-
-                if (isLastInput || isMiddleInput) {
-                    // If the last or an in-between input is being executed, check the prior input is unlocking
-                    // the prior output index from the same transaction.
-                    const prevPrevout = slice(prevouts, start - 36n, start)
-                    const prevPrevoutTXID = slice(prevPrevout, 0n, 32n)
-                    const prevPrevoutOutputIndex = byteString2Int(
-                        slice(prevPrevout, 32n, 36n)
-                    )
-                    assert(
-                        prevPrevoutTXID == currentPrevoutTXID,
-                        'previous input TXID mismatch'
-                    )
-                    assert(
-                        prevPrevoutOutputIndex ==
-                            currentPrevoutOutputIndex - 1n,
-                        'previous input not unlocking prior output idx'
-                    )
-                }
+                // Check the subsequent input is unlocking the subsequent output index from the same transaction.
+                // If the last input is being executed, the subsequent input is the FIRST one. This ensures a circular
+                // verification structure.
+                const startNext = isLastInput ? 0n : end
+                const nextPrevout = slice(prevouts, startNext, startNext + 36n)
+                const nextPrevoutTXID = slice(nextPrevout, 0n, 32n)
+                const nextPrevoutOutputIndex = byteString2Int(
+                    slice(nextPrevout, 32n, 36n)
+                )
+                assert(
+                    currentPrevoutTXID == nextPrevoutTXID,
+                    'next input TXID mismatch'
+                )
+                assert(
+                    nextPrevoutOutputIndex ==
+                        (isLastInput ? 0n : currentPrevoutOutputIndex + 1n),
+                    'next input not unlocking subsequent output idx'
+                )
             }
         }
 
