@@ -4,13 +4,7 @@ import { ByteString, SmartContractLib, Utils, hash256, len, method, sha256 } fro
 
 //Rabin Public Key
 export type RabinPubKey = bigint
-
-//Rabin signature is combination of (S, U).
-
-export type RabinSig = {
-    s : bigint  // S
-    padding : ByteString //U
-}
+import { RabinSig, RabinPubKey } from 'scrypt-ts-lib'
     export class RabinSignature extends SmartContractLib{
 
         @method()
