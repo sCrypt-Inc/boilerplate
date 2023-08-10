@@ -1,6 +1,7 @@
 import "rabin.ts";
 import { ByteString, PubKeyHash, SmartContract, Utils, assert, hash256, int2ByteString, method, prop } from "scrypt-ts";
-import { RabinPubKey, RabinSig, RabinSignature } from "./rabin";
+import { RabinSignature } from "./rabin";
+import { RabinSig, RabinPubKey } from 'scrypt-ts-lib'
 
 // price info published by oracle
 type OraclePrice = {
