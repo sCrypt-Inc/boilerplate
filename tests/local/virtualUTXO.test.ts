@@ -1,17 +1,7 @@
 import { VirtualUTXO } from '../../src/contracts/virtualUTXO'
-import {
-    bsv,
-    findSig,
-    hash160,
-    MethodCallOptions,
-    PubKey,
-    SmartContract,
-    StatefulNext,
-    toHex,
-    Utils,
-} from 'scrypt-ts'
+import { bsv, MethodCallOptions, SmartContract, StatefulNext } from 'scrypt-ts'
 import { expect } from 'chai'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDummySigner } from '../utils/helper'
 import { randomBytes } from 'crypto'
 
 describe('Test SmartContract `VirtualUTXO`', () => {
@@ -139,6 +129,10 @@ describe('Test SmartContract `VirtualUTXO`', () => {
                             })
                         )
 
+                    if (options.changeAddress) {
+                        unSignedTx.change(options.changeAddress)
+                    }
+
                     return Promise.resolve({
                         tx: unSignedTx,
                         atInputIndex: 2,
@@ -150,6 +144,7 @@ describe('Test SmartContract `VirtualUTXO`', () => {
             }
         )
 
+        const changeAddress = await instance2.signer.getDefaultAddress()
         contractTx = await instance2.methods.unlock({
             fromUTXO: fromUTXO_2,
             multiContractCall: true,

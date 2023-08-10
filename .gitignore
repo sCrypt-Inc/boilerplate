@@ -9,4 +9,3 @@ artifacts/
 .env
 scrypt.index.json
 .eslintcache
-tsconfig-scryptTS.json
