@@ -14,7 +14,7 @@ import {
     bsv,
 } from 'scrypt-ts'
 
-export class LogicalUTXO extends SmartContract {
+export class VirtualUTXO extends SmartContract {
     static readonly LOGICAL_UTXO_SIZE = 3
 
     @prop(true)
@@ -37,9 +37,9 @@ export class LogicalUTXO extends SmartContract {
         // The prevout of the current input which is being executed.
         const currentPrevout =
             this.ctx.utxo.outpoint.txid +
-            int2ByteString(this.ctx.utxo.outpoint.outputIndex, 4n) // TODO: Check endian
+            int2ByteString(this.ctx.utxo.outpoint.outputIndex, 4n)
 
-        for (let i = 0; i < LogicalUTXO.LOGICAL_UTXO_SIZE; i++) {
+        for (let i = 0; i < VirtualUTXO.LOGICAL_UTXO_SIZE; i++) {
             const start = BigInt(i) * 36n
             const end = start + 36n
             const prevout = slice(prevouts, start, end)
@@ -51,7 +51,7 @@ export class LogicalUTXO extends SmartContract {
                     slice(currentPrevout, 32n, 36n)
                 )
 
-                const isLastInput = i == LogicalUTXO.LOGICAL_UTXO_SIZE - 1
+                const isLastInput = i == VirtualUTXO.LOGICAL_UTXO_SIZE - 1
 
                 // Check the subsequent input is unlocking the subsequent output index from the same transaction.
                 // If the last input is being executed, the subsequent input is the FIRST one. This ensures a circular
@@ -91,7 +91,7 @@ export class LogicalUTXO extends SmartContract {
             .from(utxos)
 
         // Add logical UTXO outputs.
-        for (let i = 0; i < LogicalUTXO.LOGICAL_UTXO_SIZE; i++) {
+        for (let i = 0; i < VirtualUTXO.LOGICAL_UTXO_SIZE; i++) {
             deployTx.addOutput(
                 new bsv.Transaction.Output({
                     script: this.lockingScript,

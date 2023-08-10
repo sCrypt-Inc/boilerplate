@@ -1,4 +1,4 @@
-import { LogicalUTXO } from '../../src/contracts/logicalUTXO'
+import { VirtualUTXO } from '../../src/contracts/virtualUTXO'
 import {
     bsv,
     findSig,
@@ -14,17 +14,17 @@ import { expect } from 'chai'
 import { getDummySigner, getDummyUTXO } from '../utils/helper'
 import { randomBytes } from 'crypto'
 
-describe('Test SmartContract `LogicalUTXO`', () => {
-    let instance0: LogicalUTXO
-    let instance1: LogicalUTXO
-    let instance2: LogicalUTXO
+describe('Test SmartContract `VirtualUTXO`', () => {
+    let instance0: VirtualUTXO
+    let instance1: VirtualUTXO
+    let instance2: VirtualUTXO
 
     before(async () => {
-        await LogicalUTXO.compile()
+        await VirtualUTXO.compile()
 
-        instance0 = new LogicalUTXO()
-        instance1 = new LogicalUTXO()
-        instance2 = new LogicalUTXO()
+        instance0 = new VirtualUTXO()
+        instance1 = new VirtualUTXO()
+        instance2 = new VirtualUTXO()
 
         await instance0.connect(getDummySigner())
         await instance1.connect(getDummySigner())
@@ -54,8 +54,8 @@ describe('Test SmartContract `LogicalUTXO`', () => {
 
         instance0.bindTxBuilder(
             'unlock',
-            (current: LogicalUTXO, options: MethodCallOptions<LogicalUTXO>) => {
-                const next = options.next as StatefulNext<LogicalUTXO>
+            (current: VirtualUTXO, options: MethodCallOptions<VirtualUTXO>) => {
+                const next = options.next as StatefulNext<VirtualUTXO>
 
                 const unsignedTx: bsv.Transaction = new bsv.Transaction()
                     .addInput(current.buildContractInput(options.fromUTXO))
@@ -83,12 +83,12 @@ describe('Test SmartContract `LogicalUTXO`', () => {
                 balance: 1,
                 atOutputIndex: 0,
             },
-        } as MethodCallOptions<LogicalUTXO>)
+        } as MethodCallOptions<VirtualUTXO>)
 
         instance1.bindTxBuilder(
             'unlock',
-            (current: LogicalUTXO, options: MethodCallOptions<LogicalUTXO>) => {
-                const next = options.next as StatefulNext<LogicalUTXO>
+            (current: VirtualUTXO, options: MethodCallOptions<VirtualUTXO>) => {
+                const next = options.next as StatefulNext<VirtualUTXO>
 
                 if (options.partialContractTx) {
                     const unSignedTx = options.partialContractTx.tx
@@ -121,12 +121,12 @@ describe('Test SmartContract `LogicalUTXO`', () => {
                 balance: 1,
                 atOutputIndex: 1,
             },
-        } as MethodCallOptions<LogicalUTXO>)
+        } as MethodCallOptions<VirtualUTXO>)
 
         instance2.bindTxBuilder(
             'unlock',
-            (current: LogicalUTXO, options: MethodCallOptions<LogicalUTXO>) => {
-                const next = options.next as StatefulNext<LogicalUTXO>
+            (current: VirtualUTXO, options: MethodCallOptions<VirtualUTXO>) => {
+                const next = options.next as StatefulNext<VirtualUTXO>
 
                 if (options.partialContractTx) {
                     const unSignedTx = options.partialContractTx.tx
@@ -159,7 +159,7 @@ describe('Test SmartContract `LogicalUTXO`', () => {
                 balance: 1,
                 atOutputIndex: 2,
             },
-        } as MethodCallOptions<LogicalUTXO>)
+        } as MethodCallOptions<VirtualUTXO>)
 
         const { tx: callTx, nexts } = await SmartContract.multiContractCall(
             contractTx,
