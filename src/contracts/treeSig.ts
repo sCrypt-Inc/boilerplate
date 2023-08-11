@@ -1,5 +1,5 @@
 import { ByteString, FixedArray, PubKey, Sha256, Sig, SmartContract, assert, method, prop, sha256, toByteString } from "scrypt-ts";
-import { MerklePath, MerkleProof } from "./merklePath";
+import { MerklePath, MerkleProof } from 'scrypt-ts-lib';
 
 // tree signatures: Merkle tree-based multisig
 export class TreeSig extends SmartContract{
