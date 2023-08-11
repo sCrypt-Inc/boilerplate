@@ -1,7 +1,5 @@
-import "rabin.ts";
 import { ByteString, PubKeyHash, SmartContract, Utils, assert, hash256, int2ByteString, method, prop } from "scrypt-ts";
-import { RabinSignature } from "./rabin";
-import { RabinSig, RabinPubKey } from 'scrypt-ts-lib'
+import { RabinSig, RabinPubKey, RabinVerifier } from 'scrypt-ts-lib'
 
 // price info published by oracle
 type OraclePrice = {
@@ -51,7 +49,7 @@ export class Forward extends SmartContract{
         // oracle signs serialized price data
         const msg : ByteString = Forward.serializePrice(op);
         // verify price info
-        assert(RabinSignature.checkSig(msg, sig, this.oraclePubKey));
+        assert(RabinVerifier.verifySig(msg, sig, this.oraclePubKey));
 
         // verify price is for the agreed-on matrue time
         assert(op.time == this.matureTime);
