@@ -10,8 +10,8 @@ import {
     PubKeyHash,
     toHex,
 } from 'scrypt-ts'
-import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
-import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
+import { AccumulatorMultiSig } from '../src/contracts/accumulatorMultiSig'
+import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)
