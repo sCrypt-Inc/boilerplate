@@ -14,7 +14,6 @@ import {
     hash160,
     slice,
     StatefulNext,
-    TxOutputRef,
 } from 'scrypt-ts'
 
 import Transaction = bsv.Transaction
@@ -150,7 +149,7 @@ export class OrdinalAuction extends SmartContract {
 
         const unsignedTx: Transaction = new Transaction()
             // add contract input
-            .addInput(current.buildContractInput(options.fromUTXO))
+            .addInput(current.buildContractInput())
             // build next instance output
             .addOutput(
                 new Transaction.Output({
