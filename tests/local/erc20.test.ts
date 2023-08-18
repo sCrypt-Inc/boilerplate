@@ -18,12 +18,12 @@ import {
     toByteString,
     toHex,
 } from 'scrypt-ts'
-import { dummyUTXO, getDummySigner, inputSatoshis } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 
 use(chaiAsPromised)
 import Transaction = bsv.Transaction
 
-const signer = getDummySigner()
+const signer = getDefaultSigner()
 
 const initialSupply = 1000000n
 
@@ -65,11 +65,10 @@ describe('Test SmartContract `ERC20`', () => {
             issuerBalance,
             amount,
             {
-                fromUTXO: dummyUTXO,
                 pubKeyOrAddrToSign: publicKey,
                 next: {
                     instance: newInstance,
-                    balance: inputSatoshis,
+                    balance: instance.balance,
                 },
             } as MethodCallOptions<ERC20>
         )
@@ -103,11 +102,10 @@ describe('Test SmartContract `ERC20`', () => {
             to,
             amount,
             {
-                fromUTXO: dummyUTXO,
                 pubKeyOrAddrToSign: publicKey,
                 next: {
                     instance: newInstance,
-                    balance: inputSatoshis,
+                    balance: instance.balance,
                 },
             } as MethodCallOptions<ERC20>
         )
@@ -144,11 +142,10 @@ describe('Test SmartContract `ERC20`', () => {
             spender,
             amount,
             {
-                fromUTXO: dummyUTXO,
                 pubKeyOrAddrToSign: publicKey,
                 next: {
                     instance: newInstance,
-                    balance: inputSatoshis,
+                    balance: instance.balance,
                 },
             } as MethodCallOptions<ERC20>
         )
@@ -192,11 +189,10 @@ describe('Test SmartContract `ERC20`', () => {
             to,
             amount,
             {
-                fromUTXO: dummyUTXO,
                 pubKeyOrAddrToSign: publicKey,
                 next: {
                     instance: newInstance,
-                    balance: inputSatoshis,
+                    balance: instance.balance,
                 },
             } as MethodCallOptions<ERC20>
         )
@@ -207,6 +203,9 @@ describe('Test SmartContract `ERC20`', () => {
     }
 
     it('mint,transfer,approve,transferFrom', async () => {
+        const deployTx = await erc20.deploy(1)
+        console.log('Erc20 contract deployed: ', deployTx.id)
+
         const issuer = PubKey(toHex(await signer.getDefaultPubKey()))
         const address = await signer.getDefaultAddress()
         const issuerAddress = PubKeyHash(address.toObject().hash)
@@ -226,6 +225,7 @@ describe('Test SmartContract `ERC20`', () => {
             0n,
             initialSupply
         )
+        console.log('Erc20 contract called (mint): ', tx1.id)
         console.log(
             `mint ${initialSupply} Gold to issuer: ${address.toString()}`
         )
@@ -247,7 +247,7 @@ describe('Test SmartContract `ERC20`', () => {
         )
         result = tx2.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
-
+        console.log('Erc20 contract called (transfer): ', tx2.id)
         console.log(
             `transfer ${1000n} Gold to alice: ${aliceKey
                 .toAddress()
@@ -277,6 +277,8 @@ describe('Test SmartContract `ERC20`', () => {
         )
         result = tx3.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
+
+        console.log('Erc20 contract called (transfer): ', tx3.id)
         console.log(
             `transfer ${100n} Gold to bob: ${bobKey.toAddress().toString()}`
         )
@@ -296,6 +298,7 @@ describe('Test SmartContract `ERC20`', () => {
         )
         result = tx4.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
+        console.log('Erc20 contract called (transfer): ', tx4.id)
         console.log(
             `transfer ${10n} Gold to back to alice: ${aliceKey
                 .toAddress()
@@ -309,6 +312,7 @@ describe('Test SmartContract `ERC20`', () => {
             111n
         )
         console.log(`alice approve ${111n} Gold to be spend by bob`)
+        console.log('Erc20 contract called (approve): ', tx5.id)
         result = tx5.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
         const lilyKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
@@ -332,7 +336,7 @@ describe('Test SmartContract `ERC20`', () => {
         result = tx6.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
         console.log(`bob transfer ${50n} Gold from alice balance`)
-
+        console.log('Erc20 contract called (transferFrom): ', tx6.id)
         return expect(
             transferFrom(
                 erc20_5,

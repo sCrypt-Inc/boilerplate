@@ -1,14 +1,8 @@
 import { expect, use } from 'chai'
-import {
-    ByteString,
-    FixedArray,
-    MethodCallOptions,
-    Sha256,
-    sha256,
-} from 'scrypt-ts'
+import { ByteString, FixedArray, Sha256, sha256 } from 'scrypt-ts'
 import { MultiPartyHashPuzzle } from '../../src/contracts/multiPartyHashPuzzle'
 import chaiAsPromised from 'chai-as-promised'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 use(chaiAsPromised)
 
 function generateRandomHex(length) {
@@ -30,8 +24,8 @@ describe('Test SmartContract `MultiPartyHashPuzzle`', () => {
     let hashes: FixedArray<Sha256, typeof MultiPartyHashPuzzle.N>
 
     before(async () => {
-        const _preimages = []
-        const _hashes = []
+        const _preimages: Array<ByteString> = []
+        const _hashes: Array<Sha256> = []
         for (let i = 0; i < MultiPartyHashPuzzle.N; i++) {
             const preimage = generateRandomHex(32)
             _preimages.push(preimage)
@@ -46,17 +40,17 @@ describe('Test SmartContract `MultiPartyHashPuzzle`', () => {
         await MultiPartyHashPuzzle.compile()
         instance = new MultiPartyHashPuzzle(hashes)
 
-        await instance.connect(getDummySigner())
+        await instance.connect(getDefaultSigner())
+
+        const deployTx = await instance.deploy(1)
+        console.log('MultiPartyHashPuzzle contract deployed: ', deployTx.id)
     })
 
     it('should pass using correct preimages.', async () => {
         const { tx: callTx, atInputIndex } = await instance.methods.unlock(
-            preimages,
-            {
-                fromUTXO: getDummyUTXO(),
-            } as MethodCallOptions<MultiPartyHashPuzzle>
+            preimages
         )
-
+        console.log('MultiPartyHashPuzzle contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
@@ -66,9 +60,7 @@ describe('Test SmartContract `MultiPartyHashPuzzle`', () => {
         preimagesWrong[0] = sha256('aabbcc')
 
         return expect(
-            instance.methods.unlock(preimagesWrong, {
-                fromUTXO: getDummyUTXO(),
-            } as MethodCallOptions<MultiPartyHashPuzzle>)
+            instance.methods.unlock(preimagesWrong)
         ).to.be.rejectedWith(/hash mismatch/)
     })
 })

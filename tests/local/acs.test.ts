@@ -1,8 +1,8 @@
 import { expect } from 'chai'
-import { MethodCallOptions, PubKeyHash, toHex } from 'scrypt-ts'
+import { PubKeyHash, toHex } from 'scrypt-ts'
 import { AnyoneCanSpend } from '../../src/contracts/acs'
 import { myPublicKeyHash } from '../utils/privateKey'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 
 describe('Test SmartContract `AnyoneCanSpend`', () => {
     before(async () => {
@@ -13,13 +13,12 @@ describe('Test SmartContract `AnyoneCanSpend`', () => {
         const anyoneCanSpend = new AnyoneCanSpend(
             PubKeyHash(toHex(myPublicKeyHash))
         )
-        await anyoneCanSpend.connect(getDummySigner())
-
+        await anyoneCanSpend.connect(getDefaultSigner())
+        const deployTx = await anyoneCanSpend.deploy(1)
+        console.log('AnyoneCanSpend contract deployed: ', deployTx.id)
         const { tx: callTx, atInputIndex } =
-            await anyoneCanSpend.methods.unlock({
-                fromUTXO: getDummyUTXO(),
-            } as MethodCallOptions<AnyoneCanSpend>)
-
+            await anyoneCanSpend.methods.unlock()
+        console.log('AnyoneCanSpend contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })

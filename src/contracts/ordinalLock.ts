@@ -99,7 +99,7 @@ export function purchaseTxBuilder(
     )
 
     const unsignedTx: bsv.Transaction = new bsv.Transaction()
-        .addInput(current.buildContractInput(options.fromUTXO))
+        .addInput(current.buildContractInput())
         .addOutput(bsv.Transaction.Output.fromBufferReader(destOutputBR))
         .addOutput(bsv.Transaction.Output.fromBufferReader(payOutputBR))
 

@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
 import { Owner, StatefulMultiSig } from '../../src/contracts/statefulMultiSig'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 import {
     bsv,
     FixedArray,
@@ -11,7 +11,6 @@ import {
     PubKey,
     findSig,
     hash160,
-    getDummySig,
 } from 'scrypt-ts'
 import { myPublicKey } from '../utils/privateKey'
 
@@ -23,7 +22,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
     let owners: FixedArray<Owner, typeof StatefulMultiSig.M>
 
     before(async () => {
-        const _owners = []
+        const _owners: Array<Owner> = []
         for (let i = 0; i < StatefulMultiSig.M; i++) {
             const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
             const pubKey = privKey.toPublicKey()
@@ -44,29 +43,29 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
 
         const pubKeyIdx = 0
 
-        const signer = getDummySigner(privKeys[pubKeyIdx])
-        statefulMultiSig.connect(signer)
+        const signer = getDefaultSigner(privKeys[pubKeyIdx])
+        await statefulMultiSig.connect(signer)
+
+        const deployTx = await statefulMultiSig.deploy(1)
+        console.log('StatefulMultiSig contract deployed: ', deployTx.id)
 
         // Construct next contract instance and update flag array.
         const next = statefulMultiSig.next()
         next.owners[pubKeyIdx].validated = true
-
-        const fromUTXO = getDummyUTXO()
 
         const { tx: callTx, atInputIndex } = await statefulMultiSig.methods.add(
             (sigResps) => findSig(sigResps, pubKeys[pubKeyIdx]),
             BigInt(pubKeyIdx),
             // Method call options:
             {
-                fromUTXO: fromUTXO,
                 pubKeyOrAddrToSign: pubKeys[pubKeyIdx],
                 next: {
                     instance: next,
-                    balance: fromUTXO.satoshis,
-                    atOutputIndex: fromUTXO.outputIndex,
+                    balance: statefulMultiSig.balance,
                 },
             } as MethodCallOptions<StatefulMultiSig>
         )
+        console.log('StatefulMultiSig contract called: ', callTx.id)
 
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
@@ -74,49 +73,45 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
 
     it('should pass paying out if threshold reached.', async () => {
         let statefulMultiSig = new StatefulMultiSig(destAddr, owners)
-
-        let fromUTXO = getDummyUTXO()
+        await statefulMultiSig.connect(getDefaultSigner())
+        const deployTx = await statefulMultiSig.deploy(1)
+        console.log('StatefulMultiSig contract deployed: ', deployTx.id)
 
         for (let i = 0; i < StatefulMultiSig.N; i++) {
             const pubKeyIdx = i
 
-            const signer = getDummySigner(privKeys[pubKeyIdx])
-            statefulMultiSig.connect(signer)
+            const signer = getDefaultSigner(privKeys[pubKeyIdx])
+            await statefulMultiSig.connect(signer)
 
             // Construct next contract instance and update flag array.
             const next = statefulMultiSig.next()
             next.owners[pubKeyIdx].validated = true
 
-            await statefulMultiSig.methods.add(
+            const { tx: callTx } = await statefulMultiSig.methods.add(
                 (sigResps) => findSig(sigResps, pubKeys[pubKeyIdx]),
                 BigInt(pubKeyIdx),
                 // Method call options:
                 {
-                    fromUTXO: fromUTXO,
                     pubKeyOrAddrToSign: pubKeys[pubKeyIdx],
                     next: {
                         instance: next,
-                        balance: fromUTXO.satoshis,
-                        atOutputIndex: fromUTXO.outputIndex,
+                        balance: statefulMultiSig.balance,
                     },
                 } as MethodCallOptions<StatefulMultiSig>
             )
+            console.log('StatefulMultiSig contract called: ', callTx.id)
 
             statefulMultiSig = next
-            fromUTXO = statefulMultiSig.utxo
         }
-
-        const signer = getDummySigner()
-        statefulMultiSig.connect(signer)
 
         const { tx: callTx, atInputIndex } = await statefulMultiSig.methods.pay(
             // Method call options:
             {
-                fromUTXO: fromUTXO,
                 changeAddress:
                     await statefulMultiSig.signer.getDefaultAddress(),
             } as MethodCallOptions<StatefulMultiSig>
         )
+        console.log('StatefulMultiSig contract called: ', callTx.id)
 
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
@@ -128,14 +123,14 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
         const pubKeyIdx = 0
 
         const randKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
-        const signer = getDummySigner(randKey)
-        statefulMultiSig.connect(signer)
+        const signer = getDefaultSigner(randKey)
+        await statefulMultiSig.connect(signer)
+        const deployTx = await statefulMultiSig.deploy(1)
+        console.log('StatefulMultiSig contract deployed: ', deployTx.id)
 
         // Construct next contract instance and update flag array.
         const next = statefulMultiSig.next()
         next.owners[pubKeyIdx].validated = true
-
-        const fromUTXO = getDummyUTXO()
 
         return expect(
             statefulMultiSig.methods.add(
@@ -143,12 +138,10 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
                 BigInt(pubKeyIdx),
                 // Method call options:
                 {
-                    fromUTXO: fromUTXO,
                     pubKeyOrAddrToSign: randKey.publicKey,
                     next: {
                         instance: next,
-                        balance: fromUTXO.satoshis,
-                        atOutputIndex: fromUTXO.outputIndex,
+                        balance: statefulMultiSig.balance,
                     },
                 } as MethodCallOptions<StatefulMultiSig>
             )
@@ -158,16 +151,15 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
     it('should fail pay if threshold not reached', async () => {
         const statefulMultiSig = new StatefulMultiSig(destAddr, owners)
 
-        const fromUTXO = getDummyUTXO()
-
-        const signer = getDummySigner()
-        statefulMultiSig.connect(signer)
+        const signer = getDefaultSigner()
+        await statefulMultiSig.connect(signer)
+        const deployTx = await statefulMultiSig.deploy(1)
+        console.log('StatefulMultiSig contract deployed: ', deployTx.id)
 
         return expect(
             statefulMultiSig.methods.pay(
                 // Method call options:
                 {
-                    fromUTXO: fromUTXO,
                     changeAddress:
                         await statefulMultiSig.signer.getDefaultAddress(),
                 } as MethodCallOptions<StatefulMultiSig>

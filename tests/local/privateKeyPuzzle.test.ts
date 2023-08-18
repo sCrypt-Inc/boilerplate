@@ -1,8 +1,15 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { FixedArray, PubKey, Sig, bsv } from 'scrypt-ts'
+import {
+    FixedArray,
+    PubKey,
+    Sig,
+    bsv,
+    MethodCallOptions,
+    SignatureResponse,
+} from 'scrypt-ts'
 import { PrivateKeyPuzzle } from '../../src/contracts/privateKeyPuzzle'
-import { dummyUTXO, inputSatoshis } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 import { myPrivateKey, myPublicKey } from '../utils/privateKey'
 import { DEFAULT_SIGHASH_TYPE, DEFAULT_FLAGS } from 'scryptlib'
 
@@ -14,69 +21,79 @@ describe('Test SmartContract `PrivateKeyPuzzle`', () => {
     })
 
     it('should pass using codeseparator', async () => {
-        const tx = new bsv.Transaction().from(dummyUTXO)
-
         const p2pkh = new PrivateKeyPuzzle(PubKey(myPublicKey.toHex()))
 
-        const inputIndex = 0
-        p2pkh.to = { tx, inputIndex }
+        await p2pkh.connect(getDefaultSigner())
+
+        const deployTx = await p2pkh.deploy(1)
+        console.log('PrivateKeyPuzzle contract deployed: ', deployTx.id)
 
         const k = new bsv.crypto.BN(123) // Sigs must use same k value.
 
-        const sig0 = signTxCustomK(
-            k,
-            tx,
-            myPrivateKey,
-            p2pkh.lockingScript,
-            inputSatoshis
-        )
-        const sig1 = signTxCustomK(
-            k,
-            tx,
-            myPrivateKey,
-            p2pkh.lockingScript.subScript(0),
-            inputSatoshis
-        )
+        // call public function `unlockCodeSep` of this contract
+        const { tx: callTx, atInputIndex } = await p2pkh.methods.unlockCodeSep(
+            (sigResponses: SignatureResponse[]) => {
+                const sig0 = signTxCustomK(
+                    k,
+                    p2pkh.to?.tx as bsv.Transaction,
+                    myPrivateKey,
+                    p2pkh.lockingScript,
+                    p2pkh.balance
+                )
+                const sig1 = signTxCustomK(
+                    k,
+                    p2pkh.to?.tx as bsv.Transaction,
+                    myPrivateKey,
+                    p2pkh.lockingScript.subScript(0),
+                    p2pkh.balance
+                )
 
-        const result = await p2pkh.verify(async () => {
-            const sigs = [sig0, sig1] as FixedArray<Sig, 2>
-            p2pkh.unlockCodeSep(sigs)
-        })
-        expect(result.success).to.be.true
+                return [sig0, sig1] as FixedArray<Sig, 2>
+            }
+        )
+        console.log('PrivateKeyPuzzle contract called: ', callTx.id)
+        // check if the unlock transaction built above is correct
+        const result = callTx.verifyScript(atInputIndex)
+        expect(result.success, result.error).to.eq(true)
     })
 
     it('should pass using different sighash flag', async () => {
-        const tx = new bsv.Transaction().from(dummyUTXO)
-
         const p2pkh = new PrivateKeyPuzzle(PubKey(myPublicKey.toHex()))
 
-        const inputIndex = 0
-        p2pkh.to = { tx, inputIndex }
+        await p2pkh.connect(getDefaultSigner())
+
+        const deployTx = await p2pkh.deploy(1)
+        console.log('PrivateKeyPuzzle contract deployed: ', deployTx.id)
 
         const k = new bsv.crypto.BN(123) // Sigs must use same k value.
 
-        const sig0 = signTxCustomK(
-            k,
-            tx,
-            myPrivateKey,
-            p2pkh.lockingScript,
-            inputSatoshis,
-            bsv.crypto.Signature.ANYONECANPAY_SINGLE
-        )
-        const sig1 = signTxCustomK(
-            k,
-            tx,
-            myPrivateKey,
-            p2pkh.lockingScript,
-            inputSatoshis,
-            bsv.crypto.Signature.NONE
-        )
+        // call public function `unlockCodeSep` of this contract
+        const { tx: callTx, atInputIndex } = await p2pkh.methods.unlockSigHash(
+            (sigResponses: SignatureResponse[]) => {
+                const sig0 = signTxCustomK(
+                    k,
+                    p2pkh.to?.tx as bsv.Transaction,
+                    myPrivateKey,
+                    p2pkh.lockingScript,
+                    p2pkh.balance,
+                    bsv.crypto.Signature.ANYONECANPAY_SINGLE
+                )
+                const sig1 = signTxCustomK(
+                    k,
+                    p2pkh.to?.tx as bsv.Transaction,
+                    myPrivateKey,
+                    p2pkh.lockingScript,
+                    p2pkh.balance,
+                    bsv.crypto.Signature.NONE
+                )
 
-        const result = await p2pkh.verify(async () => {
-            const sigs = [sig0, sig1] as FixedArray<Sig, 2>
-            p2pkh.unlockSigHash(sigs)
-        })
-        expect(result.success).to.be.true
+                return [sig0, sig1] as FixedArray<Sig, 2>
+            }
+        )
+        console.log('PrivateKeyPuzzle contract called: ', callTx.id)
+        // check if the unlock transaction built above is correct
+        const result = callTx.verifyScript(atInputIndex)
+        expect(result.success, result.error).to.eq(true)
     })
 })
 

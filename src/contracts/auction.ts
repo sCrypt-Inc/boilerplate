@@ -140,7 +140,7 @@ export class Auction extends SmartContract {
 
         const unsignedTx: Transaction = new Transaction()
             // add contract input
-            .addInput(current.buildContractInput(options.fromUTXO))
+            .addInput(current.buildContractInput())
             // build next instance output
             .addOutput(
                 new Transaction.Output({

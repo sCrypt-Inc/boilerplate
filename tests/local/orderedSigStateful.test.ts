@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { OrderedSigStateful } from '../../src/contracts/orderedSigStateful'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 import {
     ContractTransaction,
     FixedArray,
@@ -26,7 +26,7 @@ describe('Test SmartContract `OrderedSigStateful`', () => {
     const msg = toByteString('Hello, sCrypt!', true)
 
     before(async () => {
-        const _signers = []
+        const _signers: Array<PubKey> = []
         for (let i = 0; i < N_SIGNERS; i++) {
             const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
             const pubKey = new bsv.PublicKey(privKey.publicKey.point)
@@ -40,9 +40,11 @@ describe('Test SmartContract `OrderedSigStateful`', () => {
     })
 
     it('should pass w correct sigs', async () => {
-        const balance = 1000
         const orderedSig = new OrderedSigStateful(msg, signers, destAddr)
-        orderedSig.connect(getDummySigner(privKeys))
+        await orderedSig.connect(getDefaultSigner(privKeys))
+
+        const deployTx = await orderedSig.deploy(1)
+        console.log('OrderedSigStateful contract deployed: ', deployTx.id)
 
         let currentInstance = orderedSig
 
@@ -67,9 +69,7 @@ describe('Test SmartContract `OrderedSigStateful`', () => {
                     ): Promise<ContractTransaction> => {
                         const tx = new bsv.Transaction()
                             // add contract input
-                            .addInput(
-                                current.buildContractInput(options.fromUTXO)
-                            )
+                            .addInput(current.buildContractInput())
                             // add a p2pkh output
                             .addOutput(
                                 new bsv.Transaction.Output({
@@ -78,11 +78,13 @@ describe('Test SmartContract `OrderedSigStateful`', () => {
                                             current.dest
                                         )
                                     ),
-                                    satoshis: balance,
+                                    satoshis: current.balance,
                                 })
                             )
+                        if (options.changeAddress) {
                             // add change output
-                            .change(options.changeAddress)
+                            tx.change(options.changeAddress)
+                        }
 
                         const result = {
                             tx: tx,
@@ -100,10 +102,9 @@ describe('Test SmartContract `OrderedSigStateful`', () => {
                 await currentInstance.methods.unlock(
                     (sigResps) => findSig(sigResps, pubKeys[i]),
                     {
-                        fromUTXO: getDummyUTXO(balance),
                         next: {
                             instance: nextInstance,
-                            balance,
+                            balance: currentInstance.balance,
                         },
                         pubKeyOrAddrToSign: pubKeys[i],
                         changeAddress: myAddress,
@@ -111,6 +112,7 @@ describe('Test SmartContract `OrderedSigStateful`', () => {
                 )
             const result = tx_i.verifyScript(atInputIndex)
             expect(result.success, result.error).to.eq(true)
+            console.log('OrderedSigStateful contract called: ', tx_i.id)
 
             // Update the current instance reference.
             currentInstance = nextInstance

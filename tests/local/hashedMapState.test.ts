@@ -8,9 +8,7 @@ import {
     MethodCallOptions,
     toByteString,
 } from 'scrypt-ts'
-import { dummyUTXO, getDummySigner, inputSatoshis } from '../utils/helper'
-
-const signer = getDummySigner()
+import { getDefaultSigner } from '../utils/helper'
 
 describe('Test SmartContract `HashedMapState`', () => {
     let map: HashedMap<bigint, ByteString>, stateMap: HashedMapState
@@ -20,7 +18,7 @@ describe('Test SmartContract `HashedMapState`', () => {
         map = new HashedMap<bigint, ByteString>()
 
         stateMap = new HashedMapState(map)
-        await stateMap.connect(signer)
+        await stateMap.connect(getDefaultSigner())
     })
 
     async function insert(
@@ -33,10 +31,9 @@ describe('Test SmartContract `HashedMapState`', () => {
         newInstance.hashedmap.set(key, val)
 
         const { nexts, tx } = await instance.methods.insert(key, val, {
-            fromUTXO: dummyUTXO,
             next: {
                 instance: newInstance,
-                balance: inputSatoshis,
+                balance: instance.balance,
             },
         } as MethodCallOptions<HashedMapState>)
 
@@ -54,10 +51,9 @@ describe('Test SmartContract `HashedMapState`', () => {
         const newInstance = instance.next()
 
         const { nexts, tx } = await instance.methods.canGet(key, val, {
-            fromUTXO: dummyUTXO,
             next: {
                 instance: newInstance,
-                balance: inputSatoshis,
+                balance: instance.balance,
             },
         } as MethodCallOptions<HashedMapState>)
 
@@ -71,10 +67,9 @@ describe('Test SmartContract `HashedMapState`', () => {
         const newInstance = instance.next()
 
         const { nexts, tx } = await instance.methods.notExist(key, {
-            fromUTXO: dummyUTXO,
             next: {
                 instance: newInstance,
-                balance: inputSatoshis,
+                balance: instance.balance,
             },
         } as MethodCallOptions<HashedMapState>)
 
@@ -93,10 +88,9 @@ describe('Test SmartContract `HashedMapState`', () => {
         newInstance.hashedmap.set(key, val)
 
         const { nexts, tx } = await instance.methods.update(key, val, {
-            fromUTXO: dummyUTXO,
             next: {
                 instance: newInstance,
-                balance: inputSatoshis,
+                balance: instance.balance,
             },
         } as MethodCallOptions<HashedMapState>)
 
@@ -110,10 +104,9 @@ describe('Test SmartContract `HashedMapState`', () => {
         const newInstance = instance.next()
         newInstance.hashedmap.delete(key)
         const { nexts, tx } = await instance.methods.delete(key, {
-            fromUTXO: dummyUTXO,
             next: {
                 instance: newInstance,
-                balance: inputSatoshis,
+                balance: instance.balance,
             },
         } as MethodCallOptions<HashedMapState>)
 
@@ -124,11 +117,16 @@ describe('Test SmartContract `HashedMapState`', () => {
     }
 
     it('insert, canGet, update, delete should pass', async () => {
+        const deployTx = await stateMap.deploy(1)
+        console.log('HashedMapState contract deployed: ', deployTx.id)
+
         const { tx: tx1, newInstance: newInstance1 } = await insert(
             stateMap,
             1n,
             toByteString('0001')
         )
+        console.log('HashedMapState contract called: ', tx1.id)
+
         let result = tx1.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
 
@@ -137,7 +135,7 @@ describe('Test SmartContract `HashedMapState`', () => {
             2n,
             toByteString('0002')
         )
-
+        console.log('HashedMapState contract called: ', tx2.id)
         result = tx2.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
 
@@ -146,6 +144,7 @@ describe('Test SmartContract `HashedMapState`', () => {
             2n,
             toByteString('0002')
         )
+        console.log('HashedMapState contract called: ', tx3.id)
         result = tx3.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
 
@@ -154,6 +153,7 @@ describe('Test SmartContract `HashedMapState`', () => {
             1n,
             toByteString('0001')
         )
+        console.log('HashedMapState contract called: ', tx4.id)
         result = tx4.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
 
@@ -162,6 +162,7 @@ describe('Test SmartContract `HashedMapState`', () => {
             1n,
             toByteString('000001')
         )
+        console.log('HashedMapState contract called: ', tx5.id)
         result = tx5.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
 
@@ -170,6 +171,7 @@ describe('Test SmartContract `HashedMapState`', () => {
             2n,
             toByteString('000002')
         )
+        console.log('HashedMapState contract called: ', tx6.id)
         result = tx6.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
 
@@ -178,6 +180,7 @@ describe('Test SmartContract `HashedMapState`', () => {
             1n,
             toByteString('000001')
         )
+        console.log('HashedMapState contract called: ', tx7.id)
         result = tx7.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
 
@@ -188,15 +191,17 @@ describe('Test SmartContract `HashedMapState`', () => {
         )
         result = tx8.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
-
+        console.log('HashedMapState contract called: ', tx8.id)
         const { tx: tx9, newInstance: newInstance9 } = await deleteKey(
             newInstance8,
             2n
         )
+        console.log('HashedMapState contract called: ', tx9.id)
         result = tx9.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
 
         const { tx: tx10 } = await notExist(newInstance9, 2n)
+        console.log('HashedMapState contract called: ', tx10.id)
         result = tx10.verifyScript(0)
         expect(result.success, result.error).to.eq(true)
     })
@@ -208,7 +213,10 @@ describe('Test SmartContract `HashedMapState`', () => {
         const val = toByteString('0a0a0a0a0a')
 
         const instance = new HashedMapState(map)
-        await instance.connect(signer)
+        await instance.connect(getDefaultSigner())
+
+        const deployTx = await instance.deploy(1)
+        console.log('HashedMapState contract deployed: ', deployTx.id)
 
         const newInstance = instance.next()
 
@@ -228,12 +236,12 @@ describe('Test SmartContract `HashedMapState`', () => {
         }
 
         const { tx } = await instance.methods.unlock(key, val, {
-            fromUTXO: dummyUTXO,
             next: {
                 instance: newInstance,
-                balance: inputSatoshis,
+                balance: instance.balance,
             },
         } as MethodCallOptions<HashedMapState>)
+        console.log('HashedMapState contract called: ', tx.id)
 
         const result = tx.verifyScript(0)
         expect(result.success, result.error).to.eq(true)

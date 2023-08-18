@@ -1,15 +1,7 @@
 import { expect } from 'chai'
 import { TuringMachine, StateStruct } from '../../src/contracts/turingMachine'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
-import {
-    bsv,
-    FixedArray,
-    MethodCallOptions,
-    PubKey,
-    findSig,
-    Sig,
-    ByteString,
-} from 'scrypt-ts'
+import { getDefaultSigner } from '../utils/helper'
+import { MethodCallOptions } from 'scrypt-ts'
 
 const allStates: StateStruct[] = [
     {
@@ -128,16 +120,18 @@ const allStates: StateStruct[] = [
 ]
 
 describe('Test SmartContract `TuringMachine`', () => {
-    const balance = 10000
     let turingMachine: TuringMachine
 
     before(async () => {
         await TuringMachine.compile()
         turingMachine = new TuringMachine(allStates[0])
-        await turingMachine.connect(getDummySigner())
+        await turingMachine.connect(getDefaultSigner())
     })
 
     it('should pass whole run', async () => {
+        const deployTx = await turingMachine.deploy(1)
+        console.log('TuringMachine contract deployed: ', deployTx.id)
+
         for (let step = 1; step < 19; step++) {
             const newState = allStates[step]
 
@@ -149,13 +143,16 @@ describe('Test SmartContract `TuringMachine`', () => {
                 await turingMachine.methods.transit(
                     // Method call options:
                     {
-                        fromUTXO: getDummyUTXO(),
                         next: {
                             instance: nextInstance,
-                            balance,
+                            balance: turingMachine.balance,
                         },
                     } as MethodCallOptions<TuringMachine>
                 )
+            console.log(
+                `TuringMachine contract called, step=${step}: `,
+                callTx.id
+            )
 
             const result = callTx.verifyScript(atInputIndex)
             expect(result.success, result.error).to.eq(true)

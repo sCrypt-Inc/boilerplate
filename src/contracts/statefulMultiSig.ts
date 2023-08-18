@@ -111,14 +111,14 @@ export class StatefulMultiSig extends SmartContract {
     ): Promise<ContractTransaction> {
         const tx: bsv.Transaction = new bsv.Transaction()
             // add contract input
-            .addInput(current.buildContractInput(options.fromUTXO))
+            .addInput(current.buildContractInput())
             // add a p2pkh output
             .addOutput(
                 new bsv.Transaction.Output({
                     script: bsv.Script.fromHex(
                         Utils.buildPublicKeyHashScript(current.dest)
                     ),
-                    satoshis: options.fromUTXO.satoshis,
+                    satoshis: current.balance,
                 })
             )
             // add change output

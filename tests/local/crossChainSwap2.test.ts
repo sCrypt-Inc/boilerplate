@@ -13,8 +13,8 @@ import {
     toByteString,
     toHex,
 } from 'scrypt-ts'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
-import { BlockHeader, MerklePath, MerkleProof } from 'scrypt-ts-lib'
+import { getDefaultSigner } from '../utils/helper'
+import { BlockHeader, MerklePath, MerkleProof, Node } from 'scrypt-ts-lib'
 
 describe('Test SmartContract `CrossChainSwap2`', () => {
     let crossChainSwap: CrossChainSwap2
@@ -140,7 +140,10 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
     })
 
     it('should pass swap', async () => {
-        await crossChainSwap.connect(getDummySigner(alicePrivKey))
+        await crossChainSwap.connect(getDefaultSigner(alicePrivKey))
+
+        const deployTx = await crossChainSwap.deploy(1)
+        console.log('CrossChainSwap2 contract deployed: ', deployTx.id)
 
         const { tx: callTx, atInputIndex } = await crossChainSwap.methods.swap(
             btcTx,
@@ -149,27 +152,30 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
             PubKey(toHex(alicePubKey)),
             (sigResps) => findSig(sigResps, alicePubKey),
             {
-                fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: alicePubKey,
             } as MethodCallOptions<CrossChainSwap2>
         )
+        console.log('CrossChainSwap2 contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
     it('should pass cancel', async () => {
-        await crossChainSwap.connect(getDummySigner(bobPrivKey))
+        await crossChainSwap.connect(getDefaultSigner(bobPrivKey))
+
+        const deployTx = await crossChainSwap.deploy(1)
+        console.log('CrossChainSwap2 contract deployed: ', deployTx.id)
 
         const { tx: callTx, atInputIndex } =
             await crossChainSwap.methods.cancel(
                 PubKey(toHex(bobPubKey)),
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
-                    fromUTXO: getDummyUTXO(),
                     lockTime: Number(timeout) + 1000,
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<CrossChainSwap2>
             )
+        console.log('CrossChainSwap2 contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
@@ -203,7 +209,7 @@ function toTarget(bitsHex) {
 }
 
 function prepProofFromElectrum(proof: any): MerkleProof {
-    const res = []
+    const res: Array<Node> = []
     const directions = numToBoolList(proof.pos)
 
     proof.merkle.forEach((hash, i) => {
@@ -233,7 +239,7 @@ function prepProofFromElectrum(proof: any): MerkleProof {
 
 function numToBoolList(num) {
     const binaryStr = num.toString(2)
-    const boolArray = []
+    const boolArray: boolean[] = []
 
     for (let i = binaryStr.length - 1; i >= 0; i--) {
         boolArray.push(binaryStr[i] === '1')

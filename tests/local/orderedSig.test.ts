@@ -3,26 +3,17 @@ import chaiAsPromised from 'chai-as-promised'
 import {
     bsv,
     ContractTransaction,
-    findSig,
     hash160,
     hash256,
     MethodCallOptions,
     PubKey,
-    PubKeyHash,
-    sha256,
     toByteString,
-    toHex,
     Utils,
 } from 'scrypt-ts'
 import { signTx } from 'scryptlib'
 import { OrderedSig } from '../../src/contracts/orderedSig'
-import {
-    getDummySigner,
-    getDummyUTXO,
-    inputSatoshis,
-    randomPrivateKey,
-} from '../utils/helper'
-import { myPublicKey, myPublicKeyHash } from '../utils/privateKey'
+import { getDefaultSigner } from '../utils/helper'
+import { myPublicKey } from '../utils/privateKey'
 import { Signature } from 'scrypt-ts-lib'
 
 use(chaiAsPromised)
@@ -58,24 +49,34 @@ describe('Heavy: Test SmartContract `OrderedSig`', () => {
             PubKey(pubKeys[2].toHex()),
             destAddr
         )
-        orderedSig.connect(getDummySigner(privKeys[0]))
+        await orderedSig.connect(getDefaultSigner(privKeys[0]))
+
+        const deployTx = await orderedSig.deploy(1)
+        console.log('OrderedSig contract deployed: ', deployTx.id)
 
         // sig0 is a regular transaction sig. The other two
         // are non-standard signatures and are created manually.
-        const dummyUTXO = getDummyUTXO()
-        const tx = new bsv.Transaction().from(dummyUTXO).addOutput(
-            new bsv.Transaction.Output({
-                script: bsv.Script.fromHex(
-                    Utils.buildPublicKeyHashScript(destAddr)
-                ),
-                satoshis: dummyUTXO.satoshis,
+
+        const tx = new bsv.Transaction()
+            .from({
+                txId: deployTx.id,
+                outputIndex: 0,
+                script: '',
+                satoshis: orderedSig.balance,
             })
-        )
+            .addOutput(
+                new bsv.Transaction.Output({
+                    script: bsv.Script.fromHex(
+                        Utils.buildPublicKeyHashScript(destAddr)
+                    ),
+                    satoshis: orderedSig.balance,
+                })
+            )
         const sig0 = signTx(
             tx,
             privKeys[0],
             orderedSig.lockingScript,
-            dummyUTXO.satoshis,
+            orderedSig.balance,
             0,
             bsv.crypto.Signature.ANYONECANPAY_SINGLE
         )
@@ -105,18 +106,20 @@ describe('Heavy: Test SmartContract `OrderedSig`', () => {
             ): Promise<ContractTransaction> => {
                 const tx = new bsv.Transaction()
                     // add contract input
-                    .addInput(current.buildContractInput(options.fromUTXO))
+                    .addInput(current.buildContractInput())
                     // add a p2pkh output
                     .addOutput(
                         new bsv.Transaction.Output({
                             script: bsv.Script.fromHex(
                                 Utils.buildPublicKeyHashScript(current.dest)
                             ),
-                            satoshis: dummyUTXO.satoshis,
+                            satoshis: current.balance,
                         })
                     )
+                if (options.changeAddress) {
                     // add change output
-                    .change(options.changeAddress)
+                    tx.change(options.changeAddress)
+                }
 
                 const result = {
                     tx: tx,
@@ -134,10 +137,10 @@ describe('Heavy: Test SmartContract `OrderedSig`', () => {
             sig2,
             // Method call options:
             {
-                fromUTXO: dummyUTXO,
                 changeAddress: await orderedSig.signer.getDefaultAddress(),
             } as MethodCallOptions<OrderedSig>
         )
+        console.log('OrderedSig contract called: ', callTx.id)
 
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)

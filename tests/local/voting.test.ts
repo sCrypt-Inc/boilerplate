@@ -1,11 +1,6 @@
 import { expect } from 'chai'
 import { CandidateName, Voting, N } from '../../src/contracts/voting'
-import {
-    getDummySigner,
-    getDummyUTXO,
-    getRandomInt,
-    stringify,
-} from '../utils/helper'
+import { getDefaultSigner, getRandomInt } from '../utils/helper'
 import { FixedArray, MethodCallOptions, toByteString } from 'scrypt-ts'
 
 describe('Test SmartContract `Voting`', () => {
@@ -30,7 +25,9 @@ describe('Test SmartContract `Voting`', () => {
         const balance = 1
 
         const voting = new Voting(candidateNames)
-        await voting.connect(getDummySigner())
+        await voting.connect(getDefaultSigner())
+        const deployTx = await voting.deploy(1)
+        console.log('Voting contract deployed: ', deployTx.id)
 
         // set current instance to be the deployed one
         let currentInstance = voting
@@ -47,12 +44,13 @@ describe('Test SmartContract `Voting`', () => {
             // call the method of current instance to apply the updates on chain
             const { tx: tx_i, atInputIndex } =
                 await currentInstance.methods.vote(candidate, {
-                    fromUTXO: getDummyUTXO(balance),
                     next: {
                         instance: nextInstance,
                         balance,
                     },
                 } as MethodCallOptions<Voting>)
+
+            console.log('Voting contract called: ', tx_i.id)
 
             const result = tx_i.verifyScript(atInputIndex)
             expect(result.success, result.error).to.eq(true)
@@ -61,6 +59,9 @@ describe('Test SmartContract `Voting`', () => {
             currentInstance = nextInstance
         }
 
-        console.log('candidates: ', stringify(currentInstance.candidates))
+        console.log(
+            'candidates: ',
+            JSON.stringify(currentInstance.candidates, null, 1)
+        )
     })
 })

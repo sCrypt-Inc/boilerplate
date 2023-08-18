@@ -1,8 +1,7 @@
 import { VirtualUTXO } from '../../src/contracts/virtualUTXO'
 import { bsv, MethodCallOptions, SmartContract, StatefulNext } from 'scrypt-ts'
 import { expect } from 'chai'
-import { getDummySigner } from '../utils/helper'
-import { randomBytes } from 'crypto'
+import { getDefaultSigner } from '../utils/helper'
 
 describe('Test SmartContract `VirtualUTXO`', () => {
     let instance0: VirtualUTXO
@@ -13,34 +12,18 @@ describe('Test SmartContract `VirtualUTXO`', () => {
         await VirtualUTXO.compile()
 
         instance0 = new VirtualUTXO()
-        instance1 = new VirtualUTXO()
-        instance2 = new VirtualUTXO()
 
-        await instance0.connect(getDummySigner())
-        await instance1.connect(getDummySigner())
-        await instance2.connect(getDummySigner())
+        await instance0.connect(getDefaultSigner())
     })
 
     it('should pass unlock', async () => {
-        const fromTXID = randomBytes(32).toString('hex')
-        const fromUTXO_0 = {
-            txId: fromTXID,
-            outputIndex: 0,
-            script: '', // placeholder
-            satoshis: 1,
-        }
-        const fromUTXO_1 = {
-            txId: fromTXID,
-            outputIndex: 1,
-            script: '', // placeholder
-            satoshis: 1,
-        }
-        const fromUTXO_2 = {
-            txId: fromTXID,
-            outputIndex: 2,
-            script: '', // placeholder
-            satoshis: 1,
-        }
+        const deployTx = await instance0.deploy(1)
+        console.log('VirtualUTXO contract deployed: ', deployTx.id)
+
+        instance1 = VirtualUTXO.fromTx(deployTx, 1)
+        await instance1.connect(getDefaultSigner())
+        instance2 = VirtualUTXO.fromTx(deployTx, 2)
+        await instance2.connect(getDefaultSigner())
 
         instance0.bindTxBuilder(
             'unlock',
@@ -48,7 +31,7 @@ describe('Test SmartContract `VirtualUTXO`', () => {
                 const next = options.next as StatefulNext<VirtualUTXO>
 
                 const unsignedTx: bsv.Transaction = new bsv.Transaction()
-                    .addInput(current.buildContractInput(options.fromUTXO))
+                    .addInput(current.buildContractInput())
                     // add contract output
                     .addOutput(
                         new bsv.Transaction.Output({
@@ -66,11 +49,10 @@ describe('Test SmartContract `VirtualUTXO`', () => {
         )
 
         let contractTx = await instance0.methods.unlock({
-            fromUTXO: fromUTXO_0,
             multiContractCall: true,
             next: {
                 instance: instance0.next(),
-                balance: 1,
+                balance: instance0.balance,
                 atOutputIndex: 0,
             },
         } as MethodCallOptions<VirtualUTXO>)
@@ -82,14 +64,12 @@ describe('Test SmartContract `VirtualUTXO`', () => {
 
                 if (options.partialContractTx) {
                     const unSignedTx = options.partialContractTx.tx
-                    unSignedTx
-                        .addInput(current.buildContractInput(options.fromUTXO))
-                        .addOutput(
-                            new bsv.Transaction.Output({
-                                script: next.instance.lockingScript,
-                                satoshis: current.balance,
-                            })
-                        )
+                    unSignedTx.addInput(current.buildContractInput()).addOutput(
+                        new bsv.Transaction.Output({
+                            script: next.instance.lockingScript,
+                            satoshis: current.balance,
+                        })
+                    )
 
                     return Promise.resolve({
                         tx: unSignedTx,
@@ -103,12 +83,11 @@ describe('Test SmartContract `VirtualUTXO`', () => {
         )
 
         contractTx = await instance1.methods.unlock({
-            fromUTXO: fromUTXO_1,
             multiContractCall: true,
             partialContractTx: contractTx,
             next: {
                 instance: instance1.next(),
-                balance: 1,
+                balance: instance1.balance,
                 atOutputIndex: 1,
             },
         } as MethodCallOptions<VirtualUTXO>)
@@ -120,14 +99,12 @@ describe('Test SmartContract `VirtualUTXO`', () => {
 
                 if (options.partialContractTx) {
                     const unSignedTx = options.partialContractTx.tx
-                    unSignedTx
-                        .addInput(current.buildContractInput(options.fromUTXO))
-                        .addOutput(
-                            new bsv.Transaction.Output({
-                                script: next.instance.lockingScript,
-                                satoshis: current.balance,
-                            })
-                        )
+                    unSignedTx.addInput(current.buildContractInput()).addOutput(
+                        new bsv.Transaction.Output({
+                            script: next.instance.lockingScript,
+                            satoshis: current.balance,
+                        })
+                    )
 
                     if (options.changeAddress) {
                         unSignedTx.change(options.changeAddress)
@@ -144,22 +121,22 @@ describe('Test SmartContract `VirtualUTXO`', () => {
             }
         )
 
-        const changeAddress = await instance2.signer.getDefaultAddress()
         contractTx = await instance2.methods.unlock({
-            fromUTXO: fromUTXO_2,
             multiContractCall: true,
             partialContractTx: contractTx,
             next: {
-                instance: instance1.next(),
-                balance: 1,
+                instance: instance2.next(),
+                balance: instance2.balance,
                 atOutputIndex: 2,
             },
         } as MethodCallOptions<VirtualUTXO>)
 
-        const { tx: callTx, nexts } = await SmartContract.multiContractCall(
+        const { tx: callTx } = await SmartContract.multiContractCall(
             contractTx,
-            getDummySigner()
+            getDefaultSigner()
         )
+
+        console.log('VirtualUTXO contract called: ', callTx.id)
 
         const result = callTx.verify()
         expect(result).to.be.true

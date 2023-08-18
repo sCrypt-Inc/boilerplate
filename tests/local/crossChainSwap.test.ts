@@ -1,6 +1,6 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { CrossChainSwap } from '../../src/contracts/crossChainSwap'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 import {
     MethodCallOptions,
     PubKey,
@@ -9,6 +9,9 @@ import {
     sha256,
     toByteString,
 } from 'scrypt-ts'
+import chaiAsPromised from 'chai-as-promised'
+
+use(chaiAsPromised)
 
 describe('Test SmartContract `CrossChainSwap`', () => {
     let crossChainSwap: CrossChainSwap
@@ -37,45 +40,53 @@ describe('Test SmartContract `CrossChainSwap`', () => {
     })
 
     it('should pass unlock', async () => {
-        await crossChainSwap.connect(getDummySigner(alicePrivKey))
+        await crossChainSwap.connect(getDefaultSigner(alicePrivKey))
+
+        const deployTx = await crossChainSwap.deploy(1)
+        console.log('CrossChainSwap contract deployed: ', deployTx.id)
 
         const { tx: callTx, atInputIndex } =
             await crossChainSwap.methods.unlock(
                 x,
                 (sigResps) => findSig(sigResps, alicePubKey),
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: alicePubKey,
                 } as MethodCallOptions<CrossChainSwap>
             )
+        console.log('CrossChainSwap contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
     it('should pass cancel', async () => {
-        await crossChainSwap.connect(getDummySigner(bobPrivKey))
+        await crossChainSwap.connect(getDefaultSigner(bobPrivKey))
+
+        const deployTx = await crossChainSwap.deploy(1)
+        console.log('CrossChainSwap contract deployed: ', deployTx.id)
 
         const { tx: callTx, atInputIndex } =
             await crossChainSwap.methods.cancel(
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
-                    fromUTXO: getDummyUTXO(),
                     lockTime: 1673523720,
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<CrossChainSwap>
             )
+        console.log('CrossChainSwap contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
     it('should fail withdraw when nLocktime is too low.', async () => {
-        await crossChainSwap.connect(getDummySigner(bobPrivKey))
+        await crossChainSwap.connect(getDefaultSigner(bobPrivKey))
+
+        const deployTx = await crossChainSwap.deploy(1)
+        console.log('CrossChainSwap contract deployed: ', deployTx.id)
 
         return expect(
             crossChainSwap.methods.cancel(
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
-                    fromUTXO: getDummyUTXO(),
                     lockTime: 1673500100,
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<CrossChainSwap>

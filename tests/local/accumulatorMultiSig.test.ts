@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import {
     bsv,
     findSig,
@@ -11,7 +11,10 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { AccumulatorMultiSig } from '../../src/contracts/accumulatorMultiSig'
-import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
+import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
+import chaiAsPromised from 'chai-as-promised'
+
+use(chaiAsPromised)
 
 const [privateKey1, publicKey1, publicKeyHash1] = randomPrivateKey()
 const [privateKey2, publicKey2, publicKeyHash2] = randomPrivateKey()
@@ -32,18 +35,24 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
         await AccumulatorMultiSig.compile()
         accumulatorMultiSig = new AccumulatorMultiSig(2n, pubKeyHashes)
 
-        const signer = getDummySigner([privateKey1, privateKey2, privateKey3])
+        const signer = getDefaultSigner([privateKey1, privateKey2, privateKey3])
         await accumulatorMultiSig.connect(signer)
     })
 
     it('should successfully with all three right.', async () => {
+        const deployTx = await accumulatorMultiSig.deploy(1)
+        console.log('AccumulatorMultiSig contract deployed: ', deployTx.id)
         const { tx: callTx, atInputIndex } = await call([true, true, true])
+        console.log('AccumulatorMultiSig contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
     it('should successfully with two right.', async () => {
+        const deployTx = await accumulatorMultiSig.deploy(1)
+        console.log('AccumulatorMultiSig contract deployed: ', deployTx.id)
         const { tx: callTx, atInputIndex } = await call([true, false, true])
+        console.log('AccumulatorMultiSig contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
@@ -71,7 +80,6 @@ async function call(
         },
         masks,
         {
-            fromUTXO: getDummyUTXO(),
             pubKeyOrAddrToSign: pubKeys
                 .filter((_, idx) => masks[idx])
                 .map((pubkey) => bsv.PublicKey.fromString(pubkey)),

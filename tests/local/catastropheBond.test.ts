@@ -11,8 +11,7 @@ import {
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig } from 'scrypt-ts-lib'
 import { CatBond, Investment } from '../../src/contracts/catastropheBond'
-import { getDummyUTXO } from '../utils/helper'
-import { getDummySigner } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 
 use(chaiAsPromised)
 
@@ -70,7 +69,10 @@ describe('Test SmartContract `CatBond`', () => {
             minMagnitude,
             investments
         )
-        catBond.connect(getDummySigner())
+        await catBond.connect(getDefaultSigner())
+
+        const deployTx = await catBond.deploy(1)
+        console.log('CatBond contract deployed: ', deployTx.id)
 
         let currentInstance = catBond
         let alreadyInvested = 1
@@ -94,14 +96,13 @@ describe('Test SmartContract `CatBond`', () => {
                     investorAddr,
                     BigInt(amount),
                     {
-                        fromUTXO: getDummyUTXO(alreadyInvested),
                         next: {
                             instance: nextInstance,
                             balance: alreadyInvested + amount,
                         },
                     } as MethodCallOptions<CatBond>
                 )
-
+            console.log('CatBond contract called: ', callTx.id)
             const result = callTx.verifyScript(atInputIndex)
             expect(result.success, result.error).to.eq(true)
 
@@ -125,7 +126,7 @@ describe('Test SmartContract `CatBond`', () => {
             ) => {
                 const unsignedTx: bsv.Transaction = new bsv.Transaction()
                     // add contract input
-                    .addInput(current.buildContractInput(options.fromUTXO))
+                    .addInput(current.buildContractInput())
                     // add a p2pkh output
                     .addOutput(
                         new bsv.Transaction.Output({
@@ -134,11 +135,13 @@ describe('Test SmartContract `CatBond`', () => {
                                     currentInstance.issuer
                                 )
                             ),
-                            satoshis: options.fromUTXO.satoshis,
+                            satoshis: current.balance,
                         })
                     )
-                    // add change output
-                    .change(options.changeAddress)
+                // add change output
+                if (options.changeAddress) {
+                    unsignedTx.change(options.changeAddress)
+                }
 
                 return Promise.resolve({
                     tx: unsignedTx,
@@ -150,10 +153,9 @@ describe('Test SmartContract `CatBond`', () => {
 
         const { tx: callTx, atInputIndex } =
             await currentInstance.methods.payout(oracleMsg, oracleSig, {
-                fromUTXO: getDummyUTXO(alreadyInvested),
                 changeAddress: issuer.publicKey.toAddress(),
             } as MethodCallOptions<CatBond>)
-
+        console.log('CatBond contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })

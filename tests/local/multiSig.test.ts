@@ -1,11 +1,9 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import {
-    findSig,
     MethodCallOptions,
     PubKey,
     PubKeyHash,
-    Sig,
     toHex,
     bsv,
     FixedArray,
@@ -14,7 +12,7 @@ import {
     findSigs,
 } from 'scrypt-ts'
 import { MultiSigPayment } from '../../src/contracts/multiSig'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 
 use(chaiAsPromised)
 
@@ -41,7 +39,10 @@ describe('Test SmartContract `P2MS`', () => {
         )
 
         // Dummy signer can take an array of signing private keys.
-        await multiSigPayment.connect(getDummySigner(privateKeys))
+        await multiSigPayment.connect(getDefaultSigner(privateKeys))
+
+        const deployTx = await multiSigPayment.deploy(1)
+        console.log('MultiSigPayment contract deployed: ', deployTx.id)
 
         const { tx: callTx, atInputIndex } =
             await multiSigPayment.methods.unlock(
@@ -51,10 +52,10 @@ describe('Test SmartContract `P2MS`', () => {
                 publicKeys.map((publicKey) => PubKey(toHex(publicKey))),
                 // Method call options:
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: publicKeys,
                 } as MethodCallOptions<MultiSigPayment>
             )
+        console.log('MultiSigPayment contract called: ', callTx.id)
 
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
@@ -67,7 +68,10 @@ describe('Test SmartContract `P2MS`', () => {
             }) as FixedArray<PubKeyHash, 3>
         )
 
-        await multiSigPayment.connect(getDummySigner(privateKeys))
+        await multiSigPayment.connect(getDefaultSigner(privateKeys))
+
+        const deployTx = await multiSigPayment.deploy(1)
+        console.log('MultiSigPayment contract deployed: ', deployTx.id)
 
         return expect(
             multiSigPayment.methods.unlock(
@@ -78,7 +82,6 @@ describe('Test SmartContract `P2MS`', () => {
                 },
                 publicKeys.map((publicKey) => PubKey(toHex(publicKey))),
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: publicKeys,
                 } as MethodCallOptions<MultiSigPayment>
             )

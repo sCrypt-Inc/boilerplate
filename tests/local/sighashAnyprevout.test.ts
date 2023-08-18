@@ -4,7 +4,6 @@ import {
     ByteString,
     MethodCallOptions,
     PubKey,
-    UTXO,
     Utils,
     bsv,
     hash160,
@@ -12,7 +11,7 @@ import {
     slice,
     toByteString,
 } from 'scrypt-ts'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 import { Point, SECP256K1, Signature } from 'scrypt-ts-lib'
 import { myAddress } from '../utils/privateKey'
@@ -21,18 +20,17 @@ use(chaiAsPromised)
 
 function getUnsignedTx(
     current: SigHashAnyprevout,
-    fromUTXO: UTXO,
     changeAddress: bsv.Address
 ): bsv.Transaction {
     const destAddr = hash160(SECP256K1.point2PubKey(current.pubKey)) // Note that the provided pub key will need to be in uncompressed form again.
     return new bsv.Transaction()
-        .addInput(current.buildContractInput(fromUTXO))
+        .addInput(current.buildContractInput())
         .addOutput(
             new bsv.Transaction.Output({
                 script: bsv.Script.fromHex(
                     Utils.buildPublicKeyHashScript(destAddr)
                 ),
-                satoshis: fromUTXO.satoshis,
+                satoshis: current.balance,
             })
         )
         .change(changeAddress)
@@ -41,10 +39,9 @@ function getUnsignedTx(
 function getSig(
     signingKey: bsv.PrivateKey,
     current: SigHashAnyprevout,
-    fromUTXO: UTXO,
     changeAddress: bsv.Address
 ): Signature {
-    const unsignedTx = getUnsignedTx(current, fromUTXO, changeAddress)
+    const unsignedTx = getUnsignedTx(current, changeAddress)
 
     // Get preimage and modify it by blanking out excluded parts (w zero bytes).
     const preimage = toByteString(
@@ -85,11 +82,14 @@ describe('Heavy: Test SmartContract `SigHashAnyprevout`', () => {
         await SigHashAnyprevout.compile()
 
         sighashAnyprevout = new SigHashAnyprevout(pubKeyP)
-        await sighashAnyprevout.connect(getDummySigner())
+        await sighashAnyprevout.connect(getDefaultSigner())
     })
 
     it('should pass `unlock`', async () => {
-        const sig = getSig(key, sighashAnyprevout, getDummyUTXO(), myAddress)
+        const deployTx = await sighashAnyprevout.deploy(1)
+        console.log('SigHashAnyprevout contract deployed: ', deployTx.id)
+
+        const sig = getSig(key, sighashAnyprevout, myAddress)
 
         sighashAnyprevout.bindTxBuilder(
             'unlock',
@@ -101,8 +101,7 @@ describe('Heavy: Test SmartContract `SigHashAnyprevout`', () => {
                 // This ensures the SIGHASH_ANYPREVOUT signature used the same tx template.
                 const unsignedTx: bsv.Transaction = getUnsignedTx(
                     current,
-                    options.fromUTXO,
-                    options.changeAddress
+                    options.changeAddress as bsv.Address
                 )
 
                 return Promise.resolve({
@@ -116,8 +115,10 @@ describe('Heavy: Test SmartContract `SigHashAnyprevout`', () => {
         const { tx: callTx, atInputIndex } =
             await sighashAnyprevout.methods.unlock(sig, {
                 changeAddress: myAddress,
-                fromUTXO: getDummyUTXO(),
             } as MethodCallOptions<SigHashAnyprevout>)
+
+        console.log('SigHashAnyprevout contract called: ', callTx.id)
+
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })

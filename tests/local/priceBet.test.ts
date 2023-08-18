@@ -9,9 +9,10 @@ import {
     findSig,
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig } from 'scrypt-ts-lib'
-import { expect } from 'chai'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
-
+import { expect, use } from 'chai'
+import { getDefaultSigner } from '../utils/helper'
+import chaiAsPromised from 'chai-as-promised'
+use(chaiAsPromised)
 import Transaction = bsv.Transaction
 import Script = bsv.Script
 
@@ -80,7 +81,9 @@ describe('Test SmartContract `PriceBet`', () => {
         const winnerPubKey = winner.publicKey
 
         // Connect signer.
-        priceBet.connect(getDummySigner(winner))
+        await priceBet.connect(getDefaultSigner(winner))
+        const deployTx = await priceBet.deploy(1)
+        console.log('PriceBet contract deployed: ', deployTx.id)
 
         const oracleSigS = byteString2Int(
             RESP_0.signatures.rabin.signature + '00'
@@ -97,10 +100,10 @@ describe('Test SmartContract `PriceBet`', () => {
             (sigResps) => findSig(sigResps, winnerPubKey),
             // Method call options:
             {
-                fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: winnerPubKey,
             } as MethodCallOptions<PriceBet>
         )
+        console.log('PriceBet contract called: ', callTx.id)
 
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
@@ -117,7 +120,9 @@ describe('Test SmartContract `PriceBet`', () => {
         const looserPubKey = looser.publicKey
 
         // Connect signer.
-        priceBet.connect(getDummySigner(looser))
+        await priceBet.connect(getDefaultSigner(looser))
+        const deployTx = await priceBet.deploy(1)
+        console.log('PriceBet contract deployed: ', deployTx.id)
 
         const oracleSigS = byteString2Int(
             RESP_0.signatures.rabin.signature + '00'
@@ -135,7 +140,6 @@ describe('Test SmartContract `PriceBet`', () => {
                 (sigResps) => findSig(sigResps, looserPubKey),
                 // Method call options:
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: looserPubKey,
                 } as MethodCallOptions<PriceBet>
             )

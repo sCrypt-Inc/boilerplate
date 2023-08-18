@@ -11,7 +11,7 @@ import {
 } from 'scrypt-ts'
 import { OrdinalLock, purchaseTxBuilder } from '../../src/contracts/ordinalLock'
 import chaiAsPromised from 'chai-as-promised'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 use(chaiAsPromised)
 
 // Listing price.
@@ -35,14 +35,17 @@ describe('Test SmartContract `OrdinalLock`', () => {
             PubKeyHash(hash160(seller.publicKey.toHex())),
             payOutput
         )
-        await instance.connect(getDummySigner(seller))
+        await instance.connect(getDefaultSigner(seller))
 
         // Bind tx builder for public method "purchase"
         instance.bindTxBuilder('purchase', purchaseTxBuilder)
     })
 
     it('should pass purchase method call successfully.', async () => {
-        const buyerSigner = getDummySigner()
+        const deployTx = await instance.deploy(1)
+        console.log('OrdinalLock contract deployed: ', deployTx.id)
+
+        const buyerSigner = getDefaultSigner()
 
         const inscriptionScript = bsv.Script.fromASM(
             'OP_FALSE OP_IF 6f7264 OP_TRUE 746578742f706c61696e OP_FALSE 48656c6c6f2c2073437279707421 OP_ENDIF'
@@ -59,24 +62,28 @@ describe('Test SmartContract `OrdinalLock`', () => {
         const { tx: callTx, atInputIndex } = await instance.methods.purchase(
             destOutputStr,
             {
-                fromUTXO: getDummyUTXO(),
                 changeAddress: await buyerSigner.getDefaultAddress(),
             } as MethodCallOptions<OrdinalLock>
         )
+        console.log('OrdinalLock contract called: ', callTx.id)
+
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
     it('should pass cancel method call successfully.', async () => {
+        const deployTx = await instance.deploy(1)
+        console.log('OrdinalLock contract deployed: ', deployTx.id)
+
         const { tx: callTx, atInputIndex } = await instance.methods.cancel(
             (sigResp) => findSig(sigResp, seller.publicKey),
             PubKey(seller.publicKey.toHex()),
             {
-                fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: seller.publicKey,
                 changeAddress: seller.toAddress(),
             } as MethodCallOptions<OrdinalLock>
         )
+        console.log('OrdinalLock contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
@@ -118,7 +125,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
                 )
 
                 const unsignedTx: bsv.Transaction = new bsv.Transaction()
-                    .addInput(current.buildContractInput(options.fromUTXO))
+                    .addInput(current.buildContractInput())
                     .addOutput(
                         bsv.Transaction.Output.fromBufferReader(destOutputBR)
                     )
@@ -138,11 +145,10 @@ describe('Test SmartContract `OrdinalLock`', () => {
                 return Promise.resolve(result)
             }
         )
-        const buyerSigner = getDummySigner()
+        const buyerSigner = getDefaultSigner()
 
         return expect(
             instance.methods.purchase(destOutputStr, {
-                fromUTXO: getDummyUTXO(),
                 changeAddress: await buyerSigner.getDefaultAddress(),
             } as MethodCallOptions<OrdinalLock>)
         ).to.be.rejectedWith(/Execution failed/)
@@ -150,15 +156,16 @@ describe('Test SmartContract `OrdinalLock`', () => {
 
     it('should fail cancel method w bad sig.', async () => {
         const wrongKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
-        const wrongSigner = getDummySigner(wrongKey)
-        instance.connect(wrongSigner)
+        const wrongSigner = getDefaultSigner(wrongKey)
+        await instance.connect(wrongSigner)
+        const deployTx = await instance.deploy(1)
+        console.log('OrdinalLock contract deployed: ', deployTx.id)
 
         return expect(
             instance.methods.cancel(
                 (sigResp) => findSig(sigResp, wrongKey.publicKey),
                 PubKey(wrongKey.publicKey.toHex()),
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: wrongKey.publicKey,
                     changeAddress: wrongKey.toAddress(),
                 } as MethodCallOptions<OrdinalLock>

@@ -8,7 +8,7 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
+import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
 import { myPublicKey, myPublicKeyHash } from '../utils/privateKey'
 
 use(chaiAsPromised)
@@ -24,7 +24,10 @@ describe('Test SmartContract `P2PKH`', () => {
         const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
         // connect contract instance to a signer
         // dummySigner() has one private key in it by default, it's `myPrivateKey`
-        await p2pkh.connect(getDummySigner())
+        await p2pkh.connect(getDefaultSigner())
+        const deployTx = await p2pkh.deploy(1)
+        console.log('P2PKH contract deployed: ', deployTx.id)
+
         // call public function `unlock` of this contract
         const { tx: callTx, atInputIndex } = await p2pkh.methods.unlock(
             // pass signature, the first parameter, to `unlock`
@@ -36,12 +39,13 @@ describe('Test SmartContract `P2PKH`', () => {
             PubKey(toHex(myPublicKey)),
             // method call options
             {
-                fromUTXO: getDummyUTXO(),
                 // tell the signer to use the private key corresponding to `myPublicKey` to sign this transaction
                 // that is using `myPrivateKey` to sign the transaction
                 pubKeyOrAddrToSign: myPublicKey,
             } as MethodCallOptions<P2PKH>
         )
+        console.log('P2PKH contract called: ', callTx.id)
+
         // check if the unlock transaction built above is correct
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
@@ -53,7 +57,11 @@ describe('Test SmartContract `P2PKH`', () => {
         const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
         // add a new private key, `wrongPrivateKey`, into the signer
         // now the signer has two private keys in it
-        await p2pkh.connect(getDummySigner(wrongPrivateKey))
+        await p2pkh.connect(getDefaultSigner(wrongPrivateKey))
+
+        const deployTx = await p2pkh.deploy(1)
+        console.log('P2PKH contract deployed: ', deployTx.id)
+
         return expect(
             p2pkh.methods.unlock(
                 // pass the signature signed by `wrongPrivateKey`
@@ -61,7 +69,6 @@ describe('Test SmartContract `P2PKH`', () => {
                 // pass the correct public key
                 PubKey(toHex(myPublicKey)),
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: wrongPublicKey, // use `wrongPrivateKey` to sign
                 } as MethodCallOptions<P2PKH>
             )
@@ -72,7 +79,11 @@ describe('Test SmartContract `P2PKH`', () => {
         const [, wrongPublicKey, ,] = randomPrivateKey()
         // contract instance was paid to `myPublicKeyHash`
         const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
-        await p2pkh.connect(getDummySigner())
+        await p2pkh.connect(getDefaultSigner())
+
+        const deployTx = await p2pkh.deploy(1)
+        console.log('P2PKH contract deployed: ', deployTx.id)
+
         return expect(
             p2pkh.methods.unlock(
                 // pass the correct signature signed by `myPrivateKey`
@@ -80,7 +91,6 @@ describe('Test SmartContract `P2PKH`', () => {
                 // but pass the wrong public key
                 PubKey(toHex(wrongPublicKey)),
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: myPublicKey, // use the correct private key, `myPrivateKey`, to sign
                 } as MethodCallOptions<P2PKH>
             )

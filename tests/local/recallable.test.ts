@@ -8,7 +8,7 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { Recallable } from '../../src/contracts/recallable'
-import { getDummySigner, getDummyUTXO, randomPrivateKey } from '../utils/helper'
+import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
 
 use(chaiAsPromised)
 
@@ -24,7 +24,10 @@ describe('Test SmartContract `Recallable`', () => {
         await Recallable.compile()
 
         recallable = new Recallable(PubKey(toHex(alicePublicKey)))
-        await recallable.connect(getDummySigner(alicePrivateKey))
+        await recallable.connect(getDefaultSigner(alicePrivateKey))
+
+        const deployTx = await recallable.deploy(100)
+        console.log('Recallable contract deployed: ', deployTx.id)
     })
 
     it('should fail with `satoshisSent` that is less than 1', () => {
@@ -34,7 +37,6 @@ describe('Test SmartContract `Recallable`', () => {
                 PubKey(toHex(bobPublicKey)),
                 BigInt(0), // less than 1
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: alicePublicKey,
                 } as MethodCallOptions<Recallable>
             )
@@ -46,9 +48,8 @@ describe('Test SmartContract `Recallable`', () => {
             recallable.methods.transfer(
                 (sigResps) => findSig(sigResps, alicePublicKey),
                 PubKey(toHex(bobPublicKey)),
-                BigInt(getDummyUTXO().satoshis + 1), // more than the total satoshis
+                BigInt(recallable.balance + 1), // more than the total satoshis
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: alicePublicKey,
                 } as MethodCallOptions<Recallable>
             )
@@ -60,10 +61,7 @@ describe('Test SmartContract `Recallable`', () => {
             recallable.methods.transfer(
                 () => getDummySig(),
                 PubKey(toHex(bobPublicKey)),
-                BigInt(1),
-                {
-                    fromUTXO: getDummyUTXO(),
-                } as MethodCallOptions<Recallable>
+                BigInt(1)
             )
         ).to.be.rejectedWith(/user's signature check failed/)
     })
@@ -78,9 +76,8 @@ describe('Test SmartContract `Recallable`', () => {
         const bobNextInstance = recallable.next()
         bobNextInstance.userPubKey = PubKey(toHex(bobPublicKey))
 
-        const dummyUTXO = getDummyUTXO()
-        const satoshiSent = 3000
-        const satoshisLeft = dummyUTXO.satoshis - satoshiSent
+        const satoshiSent = 50
+        const satoshisLeft = recallable.balance - satoshiSent
 
         // transfer method calling tx
         const { tx: transferTx, atInputIndex: transferAtInputIndex } =
@@ -89,7 +86,6 @@ describe('Test SmartContract `Recallable`', () => {
                 PubKey(toHex(bobPublicKey)),
                 BigInt(satoshiSent),
                 {
-                    fromUTXO: dummyUTXO,
                     pubKeyOrAddrToSign: alicePublicKey,
                     next: [
                         {
@@ -103,10 +99,12 @@ describe('Test SmartContract `Recallable`', () => {
                     ],
                 } as MethodCallOptions<Recallable>
             )
+        console.log('Recallable contract called (transfer) : ', transferTx.id)
 
         let result = transferTx.verifyScript(transferAtInputIndex)
         expect(result.success, result.error).to.eq(true)
 
+        recallable = aliceNextInstance
         /**
          * alice recall 3000 from bob
          */
@@ -126,7 +124,7 @@ describe('Test SmartContract `Recallable`', () => {
                     },
                 } as MethodCallOptions<Recallable>
             )
-
+        console.log('Recallable contract called (recall) : ', transferTx.id)
         result = recallTx.verifyScript(recallAtInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
@@ -137,8 +135,7 @@ describe('Test SmartContract `Recallable`', () => {
         const bobNextInstance = recallable.next()
         bobNextInstance.userPubKey = PubKey(toHex(bobPublicKey))
 
-        const dummyUTXO = getDummyUTXO()
-        const satoshiSent = dummyUTXO.satoshis
+        const satoshiSent = recallable.balance
 
         // transfer method calling tx
         const { tx: callTx, atInputIndex } = await recallable.methods.transfer(
@@ -146,7 +143,6 @@ describe('Test SmartContract `Recallable`', () => {
             PubKey(toHex(bobPublicKey)),
             BigInt(satoshiSent),
             {
-                fromUTXO: dummyUTXO,
                 pubKeyOrAddrToSign: alicePublicKey,
                 next: {
                     instance: bobNextInstance,
@@ -155,7 +151,7 @@ describe('Test SmartContract `Recallable`', () => {
                 },
             } as MethodCallOptions<Recallable>
         )
-
+        console.log('Recallable contract called (transfer) : ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })

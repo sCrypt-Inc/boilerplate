@@ -1,7 +1,6 @@
 import { expect, use } from 'chai'
 import { Demo } from '../../src/contracts/demo'
-import { MethodCallOptions } from 'scrypt-ts'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)
@@ -13,39 +12,44 @@ describe('Test SmartContract `Demo`', () => {
         await Demo.compile()
 
         demo = new Demo(-2n, 7n)
-        console.log(demo.scriptSize)
-        await demo.connect(getDummySigner())
+        await demo.connect(getDefaultSigner())
     })
 
     it('should pass `add`', async () => {
-        const { tx: callTx, atInputIndex } = await demo.methods.add(5n, {
-            fromUTXO: getDummyUTXO(),
-        } as MethodCallOptions<Demo>)
+        const deployTx = await demo.deploy(1)
+        console.log('Demo contract deployed: ', deployTx.id)
+
+        const { tx: callTx, atInputIndex } = await demo.methods.add(5n)
+        console.log('Demo contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
     it('should pass `sub`', async () => {
-        const { tx: callTx, atInputIndex } = await demo.methods.sub(-9n, {
-            fromUTXO: getDummyUTXO(),
-        } as MethodCallOptions<Demo>)
+        const deployTx = await demo.deploy(1)
+        console.log('Demo contract deployed: ', deployTx.id)
+
+        const { tx: callTx, atInputIndex } = await demo.methods.sub(-9n)
+        console.log('Demo contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
-    it('should throw when calling `add`', () => {
-        return expect(
-            demo.methods.add(-5n, {
-                fromUTXO: getDummyUTXO(),
-            } as MethodCallOptions<Demo>)
-        ).to.be.rejectedWith(/add check failed/)
+    it('should throw when calling `add`', async () => {
+        const deployTx = await demo.deploy(1)
+        console.log('Demo contract deployed: ', deployTx.id)
+
+        return expect(demo.methods.add(-5n)).to.be.rejectedWith(
+            /add check failed/
+        )
     })
 
-    it('should throw when calling `sub`', () => {
-        return expect(
-            demo.methods.sub(9n, {
-                fromUTXO: getDummyUTXO(),
-            } as MethodCallOptions<Demo>)
-        ).to.be.rejectedWith(/sub check failed/)
+    it('should throw when calling `sub`', async () => {
+        const deployTx = await demo.deploy(1)
+        console.log('Demo contract deployed: ', deployTx.id)
+
+        return expect(demo.methods.sub(9n)).to.be.rejectedWith(
+            /sub check failed/
+        )
     })
 })

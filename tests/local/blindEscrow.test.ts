@@ -14,7 +14,7 @@ import {
 } from 'scrypt-ts'
 import { Signature } from 'scrypt-ts-lib'
 import { BlindEscrow } from '../../src/contracts/blindEscrow'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 
 use(chaiAsPromised)
 
@@ -80,7 +80,11 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             s: BigInt(oracleSigObj['s'].toString()),
         }
 
-        await blindEscrow.connect(getDummySigner(buyer))
+        await blindEscrow.connect(getDefaultSigner(buyer))
+
+        const deployTx = await blindEscrow.deploy(1)
+        console.log('BlindEscrow contract deployed: ', deployTx.id)
+
         const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
             (sigResps) => findSig(sigResps, buyer.publicKey),
             PubKey(buyerPubKey.toHex()),
@@ -88,11 +92,10 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             PubKey(sellerPubKey.toHex()),
             BlindEscrow.RELEASE_BY_SELLER,
             {
-                fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: buyer.publicKey,
             } as MethodCallOptions<BlindEscrow>
         )
-
+        console.log('BlindEscrow contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
@@ -109,7 +112,11 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             s: BigInt(oracleSigObj['s'].toString()),
         }
 
-        await blindEscrow.connect(getDummySigner(buyer))
+        await blindEscrow.connect(getDefaultSigner(buyer))
+
+        const deployTx = await blindEscrow.deploy(1)
+        console.log('BlindEscrow contract deployed: ', deployTx.id)
+
         const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
             (sigResps) => findSig(sigResps, buyer.publicKey),
             PubKey(buyerPubKey.toHex()),
@@ -117,11 +124,10 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             PubKey(arbiterPubKey.toHex()),
             BlindEscrow.RELEASE_BY_ARBITER,
             {
-                fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: buyer.publicKey,
             } as MethodCallOptions<BlindEscrow>
         )
-
+        console.log('BlindEscrow contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
@@ -138,7 +144,10 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             s: BigInt(oracleSigObj['s'].toString()),
         }
 
-        await blindEscrow.connect(getDummySigner(seller))
+        await blindEscrow.connect(getDefaultSigner(seller))
+        const deployTx = await blindEscrow.deploy(1)
+        console.log('BlindEscrow contract deployed: ', deployTx.id)
+
         const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
             (sigResps) => findSig(sigResps, seller.publicKey),
             PubKey(sellerPubKey.toHex()),
@@ -146,11 +155,10 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             PubKey(buyerPubKey.toHex()),
             BlindEscrow.RETURN_BY_BUYER,
             {
-                fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: seller.publicKey,
             } as MethodCallOptions<BlindEscrow>
         )
-
+        console.log('BlindEscrow contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
@@ -167,7 +175,10 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             s: BigInt(oracleSigObj['s'].toString()),
         }
 
-        await blindEscrow.connect(getDummySigner(seller))
+        await blindEscrow.connect(getDefaultSigner(seller))
+        const deployTx = await blindEscrow.deploy(1)
+        console.log('BlindEscrow contract deployed: ', deployTx.id)
+
         const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
             (sigResps) => findSig(sigResps, seller.publicKey),
             PubKey(sellerPubKey.toHex()),
@@ -175,11 +186,10 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             PubKey(arbiterPubKey.toHex()),
             BlindEscrow.RETURN_BY_ARBITER,
             {
-                fromUTXO: getDummyUTXO(),
                 pubKeyOrAddrToSign: seller.publicKey,
             } as MethodCallOptions<BlindEscrow>
         )
-
+        console.log('BlindEscrow contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })

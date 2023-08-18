@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Counter2 } from '../../src/contracts/counter2'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `Counter`', () => {
@@ -12,7 +12,10 @@ describe('Test SmartContract `Counter`', () => {
         const balance = 1
 
         const counter = new Counter2(0n)
-        await counter.connect(getDummySigner())
+        await counter.connect(getDefaultSigner())
+
+        const deployTx = await counter.deploy(1)
+        console.log('Counter2 contract deployed: ', deployTx.id)
 
         // set current instance to be the deployed one
         let currentInstance = counter
@@ -28,7 +31,6 @@ describe('Test SmartContract `Counter`', () => {
             // call the method of current instance to apply the updates on chain
             const { tx: tx_i, atInputIndex } =
                 await currentInstance.methods.incrementOnChain({
-                    fromUTXO: getDummyUTXO(balance),
                     next: {
                         instance: nextInstance,
                         balance,
@@ -37,7 +39,7 @@ describe('Test SmartContract `Counter`', () => {
 
             const result = tx_i.verifyScript(atInputIndex)
             expect(result.success, result.error).to.eq(true)
-
+            console.log('Counter2 contract called: ', tx_i.id)
             // update the current instance reference
             currentInstance = nextInstance
         }
@@ -47,7 +49,10 @@ describe('Test SmartContract `Counter`', () => {
         const balance = 1
 
         const counter = new Counter2(2n)
-        await counter.connect(getDummySigner())
+        await counter.connect(getDefaultSigner())
+
+        const deployTx = await counter.deploy(1)
+        console.log('Counter2 contract deployed: ', deployTx.id)
 
         // set current instance to be the deployed one
         let currentInstance = counter
@@ -63,13 +68,12 @@ describe('Test SmartContract `Counter`', () => {
             // call the method of current instance to apply the updates on chain
             const { tx: tx_i, atInputIndex } =
                 await currentInstance.methods.resetOnChain({
-                    fromUTXO: getDummyUTXO(balance),
                     next: {
                         instance: nextInstance,
                         balance,
                     },
                 } as MethodCallOptions<Counter2>)
-
+            console.log('Counter2 contract called: ', tx_i.id)
             const result = tx_i.verifyScript(atInputIndex)
             expect(result.success, result.error).to.eq(true)
 
@@ -82,7 +86,10 @@ describe('Test SmartContract `Counter`', () => {
         const balance = 1
 
         const counter = new Counter2(2n)
-        await counter.connect(getDummySigner())
+        await counter.connect(getDefaultSigner())
+
+        const deployTx = await counter.deploy(1)
+        console.log('Counter2 contract deployed: ', deployTx.id)
 
         // set current instance to be the deployed one
         let currentInstance = counter
@@ -98,7 +105,6 @@ describe('Test SmartContract `Counter`', () => {
             // call the method of current instance to apply the updates on chain
             const { tx: tx_i, atInputIndex } =
                 await currentInstance.methods.decreamentOnChain({
-                    fromUTXO: getDummyUTXO(balance),
                     next: {
                         instance: nextInstance,
                         balance,
@@ -107,7 +113,7 @@ describe('Test SmartContract `Counter`', () => {
 
             const result = tx_i.verifyScript(atInputIndex)
             expect(result.success, result.error).to.eq(true)
-
+            console.log('Counter2 contract called: ', tx_i.id)
             // update the current instance reference
             currentInstance = nextInstance
         }

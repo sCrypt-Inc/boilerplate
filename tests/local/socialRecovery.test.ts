@@ -1,6 +1,7 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
+import chaiAsPromised from 'chai-as-promised'
 import { SocialRecovery } from '../../src/contracts/socialRecovery'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 import {
     bsv,
     FixedArray,
@@ -8,11 +9,9 @@ import {
     PubKey,
     findSig,
     Sig,
-    ByteString,
 } from 'scrypt-ts'
 
-const dummySig = '' as ByteString // Must be empty ByteString. See https://scrypt.io/docs/how-to-write-a-contract/built-ins/#checksig
-
+use(chaiAsPromised)
 describe('Test SmartContract `SocialRecovery`', () => {
     let signer: bsv.PrivateKey
 
@@ -25,7 +24,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
     before(async () => {
         signer = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
 
-        const _guardianPubKeys = []
+        const _guardianPubKeys: Array<PubKey> = []
         for (let i = 0; i < SocialRecovery.N_GUARDIANS; i++) {
             const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
             const pubKey = privKey.toPublicKey()
@@ -47,32 +46,32 @@ describe('Test SmartContract `SocialRecovery`', () => {
     })
 
     it('should pass signing public key unlock.', async () => {
-        await socialRecovery.connect(getDummySigner(signer))
-
+        await socialRecovery.connect(getDefaultSigner(signer))
+        const deployTx = await socialRecovery.deploy(1)
+        console.log('SocialRecovery contract deployed: ', deployTx.id)
         const { tx: callTx, atInputIndex } =
             await socialRecovery.methods.unlock(
                 (sigResps) => findSig(sigResps, signer.toPublicKey()),
                 // Method call options:
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: signer.toPublicKey(),
                 } as MethodCallOptions<SocialRecovery>
             )
-
+        console.log('SocialRecovery contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
 
     it('should fail signing public key unlock with wrong key.', async () => {
         const wrongKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
-        await socialRecovery.connect(getDummySigner(wrongKey))
-
+        await socialRecovery.connect(getDefaultSigner(wrongKey))
+        const deployTx = await socialRecovery.deploy(1)
+        console.log('SocialRecovery contract deployed: ', deployTx.id)
         return expect(
             socialRecovery.methods.unlock(
                 (sigResps) => findSig(sigResps, wrongKey.toPublicKey()),
                 // Method call options:
                 {
-                    fromUTXO: getDummyUTXO(),
                     pubKeyOrAddrToSign: wrongKey.toPublicKey(),
                 } as MethodCallOptions<SocialRecovery>
             )
@@ -81,14 +80,12 @@ describe('Test SmartContract `SocialRecovery`', () => {
 
     it('should pass updating signing key when threshold reached.', async () => {
         const newSigner = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
-        await socialRecovery.connect(getDummySigner(guardians))
-
+        await socialRecovery.connect(getDefaultSigner(guardians))
+        const deployTx = await socialRecovery.deploy(1)
+        console.log('SocialRecovery contract deployed: ', deployTx.id)
         // Get next iteration of the contract with updated signer pubkey value.
         const next = socialRecovery.next()
         next.signingPubKey = PubKey(newSigner.toPublicKey().toHex())
-
-        const balance = 1000
-        const fromUTXO = getDummyUTXO(balance)
 
         const { tx: callTx, atInputIndex } =
             await socialRecovery.methods.updateSigningPubKey(
@@ -109,16 +106,14 @@ describe('Test SmartContract `SocialRecovery`', () => {
                 },
                 // Method call options:
                 {
-                    fromUTXO: fromUTXO,
                     pubKeyOrAddrToSign: guardianPublicKeys,
                     next: {
                         instance: next,
-                        balance: balance,
-                        atOutputIndex: fromUTXO.outputIndex,
+                        balance: socialRecovery.balance,
                     },
                 } as MethodCallOptions<SocialRecovery>
             )
-
+        console.log('SocialRecovery contract called: ', callTx.id)
         const result = callTx.verifyScript(atInputIndex)
         expect(result.success, result.error).to.eq(true)
     })
@@ -129,9 +124,6 @@ describe('Test SmartContract `SocialRecovery`', () => {
         // Get next iteration of the contract with updated signer pubkey value.
         const next = socialRecovery.next()
         next.signingPubKey = PubKey(newSigner.toPublicKey().toHex())
-
-        const balance = 1000
-        const fromUTXO = getDummyUTXO(balance)
 
         return expect(
             socialRecovery.methods.updateSigningPubKey(
@@ -150,12 +142,10 @@ describe('Test SmartContract `SocialRecovery`', () => {
                 },
                 // Method call options:
                 {
-                    fromUTXO: fromUTXO,
                     pubKeyOrAddrToSign: guardianPublicKeys,
                     next: {
                         instance: next,
-                        balance: balance,
-                        atOutputIndex: fromUTXO.outputIndex,
+                        balance: socialRecovery.balance,
                     },
                 } as MethodCallOptions<SocialRecovery>
             )

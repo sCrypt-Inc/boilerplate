@@ -10,7 +10,7 @@ import {
     toHex,
 } from 'scrypt-ts'
 import chaiAsPromised from 'chai-as-promised'
-import { dummyUTXO, getDummySigner, randomPrivateKey } from '../utils/helper'
+import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
 
 use(chaiAsPromised)
 describe('Test SmartContract `Erc721`', () => {
@@ -24,7 +24,9 @@ describe('Test SmartContract `Erc721`', () => {
             PubKey
         >()
         const erc721 = new Erc721(PubKey(toHex(myPublicKey)), owners)
-        await erc721.connect(getDummySigner())
+        await erc721.connect(getDefaultSigner())
+        const deployTx = await erc721.deploy(1)
+        console.log('Erc721 contract deployed: ', deployTx.id)
 
         const [, alicePubKey, ,] = randomPrivateKey()
 
@@ -32,10 +34,7 @@ describe('Test SmartContract `Erc721`', () => {
             erc721.methods.mint(
                 1n, // tokenId
                 PubKey(toHex(alicePubKey)), // mintTo
-                () => getDummySig(), // mint without correct minter sig
-                {
-                    fromUTXO: dummyUTXO,
-                } as MethodCallOptions<Erc721>
+                () => getDummySig() // mint without correct minter sig
             )
         ).to.be.rejectedWith(/minter signature check failed/)
     })
@@ -51,17 +50,14 @@ describe('Test SmartContract `Erc721`', () => {
         owners.set(tokenId, PubKey(toHex(alicePubKey))) // token has already in the owners map
 
         const erc721 = new Erc721(PubKey(toHex(myPublicKey)), owners)
-        await erc721.connect(getDummySigner())
-
+        await erc721.connect(getDefaultSigner())
+        const deployTx = await erc721.deploy(1)
+        console.log('Erc721 contract deployed: ', deployTx.id)
         return expect(
             erc721.methods.mint(
                 tokenId, // token already minted before
                 PubKey(toHex(alicePubKey)), // mintTo
-                (sigResps) => findSig(sigResps, myPublicKey), // minterSig
-                {
-                    fromUTXO: dummyUTXO,
-                    pubKeyOrAddrToSign: myPublicKey,
-                } as MethodCallOptions<Erc721>
+                (sigResps) => findSig(sigResps, myPublicKey) // minterSig
             )
         ).to.be.rejectedWith(/token was already minted before/)
     })
@@ -78,8 +74,9 @@ describe('Test SmartContract `Erc721`', () => {
         owners.set(tokenId, PubKey(toHex(alicePubKey))) // alice has the token
 
         const erc721 = new Erc721(PubKey(toHex(myPublicKey)), owners)
-        await erc721.connect(getDummySigner(bobPrivateKey))
-
+        await erc721.connect(getDefaultSigner(bobPrivateKey))
+        const deployTx = await erc721.deploy(1)
+        console.log('Erc721 contract deployed: ', deployTx.id)
         // bob burn the token will fail
         return expect(
             erc721.methods.burn(
@@ -87,7 +84,6 @@ describe('Test SmartContract `Erc721`', () => {
                 PubKey(toHex(bobPublicKey)),
                 (sigResps) => findSig(sigResps, bobPublicKey),
                 {
-                    fromUTXO: dummyUTXO,
                     pubKeyOrAddrToSign: bobPublicKey,
                 } as MethodCallOptions<Erc721>
             )
@@ -105,7 +101,10 @@ describe('Test SmartContract `Erc721`', () => {
         >()
 
         const erc721 = new Erc721(PubKey(toHex(myPublicKey)), owners)
-        await erc721.connect(getDummySigner([alicePrivateKey, bobPrivateKey]))
+        await erc721.connect(getDefaultSigner([alicePrivateKey, bobPrivateKey]))
+
+        const deployTx = await erc721.deploy(1)
+        console.log('Erc721 contract deployed: ', deployTx.id)
 
         // mint to alice
 
@@ -118,16 +117,15 @@ describe('Test SmartContract `Erc721`', () => {
                 PubKey(toHex(alicePubKey)), // mintTo
                 (sigResps) => findSig(sigResps, myPublicKey), // minterSig
                 {
-                    fromUTXO: dummyUTXO,
                     pubKeyOrAddrToSign: myPublicKey,
                     next: {
                         instance: aliceInstance,
-                        balance: dummyUTXO.satoshis,
+                        balance: erc721.balance,
                         atOutputIndex: 0,
                     },
                 } as MethodCallOptions<Erc721>
             )
-
+        console.log('Erc721 contract called (mint): ', mintTx.id)
         let result = mintTx.verifyScript(mintAtInputIndex)
         expect(result.success, result.error).to.eq(true)
 
@@ -146,12 +144,12 @@ describe('Test SmartContract `Erc721`', () => {
                     pubKeyOrAddrToSign: alicePubKey,
                     next: {
                         instance: bobInstance,
-                        balance: dummyUTXO.satoshis,
+                        balance: aliceInstance.balance,
                         atOutputIndex: 0,
                     },
                 } as MethodCallOptions<Erc721>
             )
-
+        console.log('Erc721 contract called (transferFrom): ', transferTx.id)
         result = transferTx.verifyScript(transferAtInputIndex)
         expect(result.success, result.error).to.eq(true)
 
@@ -168,12 +166,12 @@ describe('Test SmartContract `Erc721`', () => {
                     pubKeyOrAddrToSign: bobPubKey,
                     next: {
                         instance: burnInstance,
-                        balance: dummyUTXO.satoshis,
+                        balance: bobInstance.balance,
                         atOutputIndex: 0,
                     },
                 } as MethodCallOptions<Erc721>
             )
-
+        console.log('Erc721 contract called (burn): ', burnTx.id)
         result = burnTx.verifyScript(burnAtInputIndex)
         expect(result.success, result.error).to.eq(true)
     })

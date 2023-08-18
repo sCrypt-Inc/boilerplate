@@ -2,9 +2,7 @@ import { expect } from 'chai'
 
 import { HashedSetState } from '../../src/contracts/hashedSetState'
 import { HashedSet, MethodCallOptions } from 'scrypt-ts'
-import { dummyUTXO, getDummySigner, inputSatoshis } from '../utils/helper'
-
-const signer = getDummySigner()
+import { getDefaultSigner } from '../utils/helper'
 
 describe('Test SmartContract `HashedSetState`', () => {
     let set: HashedSet<bigint>, stateSet: HashedSetState
@@ -14,7 +12,7 @@ describe('Test SmartContract `HashedSetState`', () => {
         set = new HashedSet<bigint>()
 
         stateSet = new HashedSetState(set)
-        await stateSet.connect(signer)
+        await stateSet.connect(getDefaultSigner())
     })
 
     async function add(instance: HashedSetState, key: bigint) {
@@ -22,13 +20,12 @@ describe('Test SmartContract `HashedSetState`', () => {
         newInstance.hashedset.add(key)
 
         const { nexts, tx, atInputIndex } = await instance.methods.add(key, {
-            fromUTXO: dummyUTXO,
             next: {
                 instance: newInstance,
-                balance: inputSatoshis,
+                balance: instance.balance,
             },
         } as MethodCallOptions<HashedSetState>)
-
+        console.log('HashedSetState contract called (add): ', tx.id)
         return {
             tx,
             atInputIndex,
@@ -40,13 +37,12 @@ describe('Test SmartContract `HashedSetState`', () => {
         const newInstance = instance.next()
 
         const { nexts, tx, atInputIndex } = await instance.methods.has(key, {
-            fromUTXO: dummyUTXO,
             next: {
                 instance: newInstance,
-                balance: inputSatoshis,
+                balance: instance.balance,
             },
         } as MethodCallOptions<HashedSetState>)
-
+        console.log('HashedSetState contract called (has): ', tx.id)
         return {
             tx,
             atInputIndex,
@@ -60,13 +56,14 @@ describe('Test SmartContract `HashedSetState`', () => {
         const { nexts, tx, atInputIndex } = await instance.methods.notExist(
             key,
             {
-                fromUTXO: dummyUTXO,
                 next: {
                     instance: newInstance,
-                    balance: inputSatoshis,
+                    balance: instance.balance,
                 },
             } as MethodCallOptions<HashedSetState>
         )
+
+        console.log('HashedSetState contract called (notExist): ', tx.id)
 
         return {
             tx,
@@ -80,12 +77,12 @@ describe('Test SmartContract `HashedSetState`', () => {
         newInstance.hashedset.delete(key)
 
         const { nexts, tx, atInputIndex } = await instance.methods.delete(key, {
-            fromUTXO: dummyUTXO,
             next: {
                 instance: newInstance,
-                balance: inputSatoshis,
+                balance: instance.balance,
             },
         } as MethodCallOptions<HashedSetState>)
+        console.log('HashedSetState contract called (delete): ', tx.id)
 
         return {
             tx,
@@ -95,6 +92,9 @@ describe('Test SmartContract `HashedSetState`', () => {
     }
 
     it('add, has, delete should pass', async () => {
+        const deployTx = await stateSet.deploy(1)
+        console.log('HashedSetState contract deployed: ', deployTx.id)
+
         const {
             tx: tx1,
             newInstance: newInstance1,

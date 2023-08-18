@@ -7,7 +7,7 @@ import {
     sha256,
 } from 'scrypt-ts'
 import { AdvancedCounter } from '../../src/contracts/advancedCounter'
-import { getDummySigner, getDummyUTXO } from '../utils/helper'
+import { getDefaultSigner } from '../utils/helper'
 import { expect } from 'chai'
 import { HashPuzzle } from '../../src/contracts/hashPuzzle'
 
@@ -18,11 +18,13 @@ describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local',
     })
 
     it('should succeed', async () => {
-        const signer = getDummySigner()
+        const signer = getDefaultSigner()
         let counter1 = new AdvancedCounter(1n)
 
         // connect to a signer
         await counter1.connect(signer)
+        const deployTx1 = await counter1.deploy(1)
+        console.log('AdvancedCounter contract deployed: ', deployTx1.id)
 
         counter1.bindTxBuilder(
             'incrementOnChain',
@@ -37,9 +39,7 @@ describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local',
                 nextInstance.count++
 
                 const tx = new bsv.Transaction()
-                tx.addInput(
-                    current.buildContractInput(options.fromUTXO)
-                ).addOutput(
+                tx.addInput(current.buildContractInput()).addOutput(
                     new bsv.Transaction.Output({
                         script: nextInstance.lockingScript,
                         satoshis: current.balance,
@@ -68,6 +68,10 @@ describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local',
 
         // connect to a signer
         await hashPuzzle.connect(signer)
+
+        const deployTx2 = await hashPuzzle.deploy(1)
+        console.log('HashPuzzle contract deployed: ', deployTx2.id)
+
         hashPuzzle.bindTxBuilder(
             'unlock',
             (
@@ -77,9 +81,7 @@ describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local',
             ): Promise<ContractTransaction> => {
                 if (options.partialContractTx) {
                     const unSignedTx = options.partialContractTx.tx
-                    unSignedTx.addInput(
-                        current.buildContractInput(options.fromUTXO)
-                    )
+                    unSignedTx.addInput(current.buildContractInput())
 
                     return Promise.resolve({
                         tx: unSignedTx,
@@ -94,11 +96,9 @@ describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local',
 
         const partialTx = await counter1.methods.incrementOnChain({
             multiContractCall: true,
-            fromUTXO: getDummyUTXO(1, true),
         } as MethodCallOptions<AdvancedCounter>)
 
         const finalTx = await hashPuzzle.methods.unlock(byteString, {
-            fromUTXO: getDummyUTXO(1, true),
             multiContractCall: true,
             partialContractTx: partialTx,
         } as MethodCallOptions<HashPuzzle>)
@@ -107,6 +107,8 @@ describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local',
             finalTx,
             signer
         )
+
+        console.log('AdvancedCounter,HashPuzzle multiContractCall: ', callTx.id)
 
         const result = callTx.verify()
         expect(result).to.be.true
