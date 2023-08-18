@@ -35,6 +35,14 @@ export function getDefaultSigner(
     return wallet
 }
 
+export function resetDefaultSigner() {
+    const network = process.env.NETWORK || 'local'
+    const wallet = wallets[network]
+    if (wallet['_utxoManagers']) {
+        wallet['_utxoManagers'].clear()
+    }
+}
+
 export const sleep = async (seconds: number) => {
     return new Promise((resolve) => {
         setTimeout(() => {

@@ -259,7 +259,7 @@ async function main() {
     console.log('Close Tx: ', contractTx.tx.id)
 }
 
-describe('Test SmartContract `OrdinalAuction` on testnet', () => {
+describe('Test SmartContract `OrdinalAuction`', () => {
     it('should succeed', async () => {
         await main()
     })

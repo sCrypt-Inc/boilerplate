@@ -195,7 +195,7 @@ async function main2() {
     console.log('main2 P2PKH contract called: ', callTx.id)
 }
 
-describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE  on testnet', () => {
+describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE', () => {
     it('should succeed', async () => {
         await P2PKH.compile()
         // contract at first inputIndex

@@ -3,13 +3,6 @@
   "include": ["src/contracts/**/*.ts"],
   "compilerOptions": {
     "noEmit": true,
-    "experimentalDecorators": true,
-    "plugins": [
-      {
-        "transform": "/home/miha/.npm/_npx/2c137b5e74e84b07/node_modules/scrypt-ts-transpiler/dist/index.js",
-        "transformProgram": true,
-        "outDir": "artifacts"
-      }
-    ]
+    "experimentalDecorators": true
   }
 }
