@@ -1,6 +1,6 @@
 import { P2PKH } from '../../src/contracts/p2pkh'
-import { getDefaultSigner, sleep } from '../utils/helper'
-import { myPrivateKey, myPublicKey, myPublicKeyHash } from '../utils/privateKey'
+import { getDefaultSigner, resetDefaultSigner, sleep } from '../utils/helper'
+import { myPublicKey, myPublicKeyHash } from '../utils/privateKey'
 
 import {
     findSig,
@@ -10,8 +10,6 @@ import {
     toHex,
     bsv,
     ContractTransaction,
-    DefaultProvider,
-    TestWallet,
 } from 'scrypt-ts'
 
 async function main() {
@@ -19,23 +17,12 @@ async function main() {
     const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
 
     // Signer who unlocks / signs P2PKH UTXO.
-    const mainSigner = new TestWallet(
-        myPrivateKey,
-        new DefaultProvider({
-            network: bsv.Networks.testnet,
-        })
-    )
+    const mainSigner = getDefaultSigner()
 
     // Signer who pays fee.
     // For simplicity here, we just again use the same default signer, but it
     // could be any other signer.
-    const feeSigner = new TestWallet(myPrivateKey)
-
-    await feeSigner.connect(
-        new DefaultProvider({
-            network: bsv.Networks.testnet,
-        })
-    )
+    const feeSigner = getDefaultSigner()
 
     // Connect the signer.
     await p2pkh.connect(mainSigner)
@@ -119,30 +106,19 @@ async function main2() {
     const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
 
     // Signer who unlocks / signs P2PKH UTXO.
-    const mainSigner = new TestWallet(
-        myPrivateKey,
-        new DefaultProvider({
-            network: bsv.Networks.testnet,
-        })
-    )
+    const mainSigner = getDefaultSigner()
 
     // Signer who pays fee.
     // For simplicity here, we just again use the same default signer, but it
     // could be any other signer.
-    const feeSigner = new TestWallet(myPrivateKey)
-
-    await feeSigner.connect(
-        new DefaultProvider({
-            network: bsv.Networks.testnet,
-        })
-    )
+    const feeSigner = getDefaultSigner()
 
     // Connect the signer.
     await p2pkh.connect(mainSigner)
 
     // Deploy the P2PKH contract.
     const deployTx = await p2pkh.deploy(1)
-    console.log('P2PKH contract deployed: ', deployTx.id)
+    console.log('main2 P2PKH contract deployed: ', deployTx.id)
 
     // Bind custom call tx builder. It adds a single input, which will call
     // our deployed smart contracts "unlock" method. Additionally, it adds an
@@ -216,7 +192,7 @@ async function main2() {
 
     await feeSigner.signAndsendTransaction(callTx, { address })
 
-    console.log('P2PKH contract called: ', callTx.id)
+    console.log('main2 P2PKH contract called: ', callTx.id)
 }
 
 describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE  on testnet', () => {
@@ -224,8 +200,10 @@ describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE  on testnet', () =
         await P2PKH.compile()
         // contract at first inputIndex
         await main()
+        resetDefaultSigner()
         await sleep(5)
         // contract at third inputIndex
         await main2()
+        resetDefaultSigner()
     })
 })
