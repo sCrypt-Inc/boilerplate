@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { SocialRecovery } from '../../src/contracts/socialRecovery'
-import { getDefaultSigner } from '../utils/helper'
+import { SocialRecovery } from '../src/contracts/socialRecovery'
+import { getDefaultSigner } from './utils/helper'
 import {
     bsv,
     FixedArray,

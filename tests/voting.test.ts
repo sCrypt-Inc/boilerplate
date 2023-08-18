@@ -1,6 +1,6 @@
 import { expect } from 'chai'
-import { CandidateName, Voting, N } from '../../src/contracts/voting'
-import { getDefaultSigner, getRandomInt } from '../utils/helper'
+import { CandidateName, Voting, N } from '../src/contracts/voting'
+import { getDefaultSigner, getRandomInt } from './utils/helper'
 import { FixedArray, MethodCallOptions, toByteString } from 'scrypt-ts'
 
 describe('Test SmartContract `Voting`', () => {

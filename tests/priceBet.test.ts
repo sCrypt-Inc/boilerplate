@@ -1,4 +1,4 @@
-import { PriceBet } from '../../src/contracts/priceBet'
+import { PriceBet } from '../src/contracts/priceBet'
 import {
     ByteString,
     bsv,
@@ -10,7 +10,7 @@ import {
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig } from 'scrypt-ts-lib'
 import { expect, use } from 'chai'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 import Transaction = bsv.Transaction

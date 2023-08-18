@@ -6,8 +6,8 @@ import {
     toByteString,
     toHex,
 } from 'scrypt-ts'
-import { Netflix } from '../../src/contracts/netflix'
-import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
+import { Netflix } from '../src/contracts/netflix'
+import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 
 import { expect } from 'chai'
 

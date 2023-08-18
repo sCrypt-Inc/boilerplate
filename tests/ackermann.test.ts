@@ -1,7 +1,7 @@
-import { Ackermann } from '../../src/contracts/ackermann'
+import { Ackermann } from '../src/contracts/ackermann'
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 
 use(chaiAsPromised)
 

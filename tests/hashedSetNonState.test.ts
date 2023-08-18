@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
-import { HashedSetNonState } from '../../src/contracts/hashedSetNonState'
+import { HashedSetNonState } from '../src/contracts/hashedSetNonState'
 import { HashedSet } from 'scrypt-ts'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)

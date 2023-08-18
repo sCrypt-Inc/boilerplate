@@ -1,6 +1,6 @@
 import { expect } from 'chai'
-import { Counter } from '../../src/contracts/counter'
-import { getDefaultSigner } from '../utils/helper'
+import { Counter } from '../src/contracts/counter'
+import { getDefaultSigner } from './utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `Counter`', () => {

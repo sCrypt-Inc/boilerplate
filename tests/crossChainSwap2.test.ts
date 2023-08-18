@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { CrossChainSwap2 } from '../../src/contracts/crossChainSwap2'
+import { CrossChainSwap2 } from '../src/contracts/crossChainSwap2'
 import {
     FixedArray,
     MethodCallOptions,
@@ -13,7 +13,7 @@ import {
     toByteString,
     toHex,
 } from 'scrypt-ts'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 import { BlockHeader, MerklePath, MerkleProof, Node } from 'scrypt-ts-lib'
 
 describe('Test SmartContract `CrossChainSwap2`', () => {

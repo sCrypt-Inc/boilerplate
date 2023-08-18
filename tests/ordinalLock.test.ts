@@ -9,9 +9,9 @@ import {
     hash160,
     ByteString,
 } from 'scrypt-ts'
-import { OrdinalLock, purchaseTxBuilder } from '../../src/contracts/ordinalLock'
+import { OrdinalLock, purchaseTxBuilder } from '../src/contracts/ordinalLock'
 import chaiAsPromised from 'chai-as-promised'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 use(chaiAsPromised)
 
 // Listing price.

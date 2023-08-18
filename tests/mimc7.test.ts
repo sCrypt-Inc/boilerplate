@@ -1,6 +1,6 @@
 import { expect } from 'chai'
-import { Mimc7Test } from '../../src/contracts/mimc7'
-import { getDefaultSigner } from '../utils/helper'
+import { Mimc7Test } from '../src/contracts/mimc7'
+import { getDefaultSigner } from './utils/helper'
 
 describe('Test SmartContract `Mimc7Test`', () => {
     before(async () => {

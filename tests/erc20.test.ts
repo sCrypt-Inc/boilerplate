@@ -6,7 +6,7 @@ import {
     BalanceMap,
     ERC20,
     ERC20Pair,
-} from '../../src/contracts/erc20'
+} from '../src/contracts/erc20'
 import {
     bsv,
     findSig,
@@ -18,7 +18,7 @@ import {
     toByteString,
     toHex,
 } from 'scrypt-ts'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 
 use(chaiAsPromised)
 import Transaction = bsv.Transaction

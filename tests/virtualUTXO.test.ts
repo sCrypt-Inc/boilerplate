@@ -1,7 +1,7 @@
-import { VirtualUTXO } from '../../src/contracts/virtualUTXO'
+import { VirtualUTXO } from '../src/contracts/virtualUTXO'
 import { bsv, MethodCallOptions, SmartContract, StatefulNext } from 'scrypt-ts'
 import { expect } from 'chai'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 
 describe('Test SmartContract `VirtualUTXO`', () => {
     let instance0: VirtualUTXO

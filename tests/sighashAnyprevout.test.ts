@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { SigHashAnyprevout } from '../../src/contracts/sighashAnyprevout'
+import { SigHashAnyprevout } from '../src/contracts/sighashAnyprevout'
 import {
     ByteString,
     MethodCallOptions,
@@ -11,10 +11,10 @@ import {
     slice,
     toByteString,
 } from 'scrypt-ts'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 import { Point, SECP256K1, Signature } from 'scrypt-ts-lib'
-import { myAddress } from '../utils/privateKey'
+import { myAddress } from './utils/privateKey'
 
 use(chaiAsPromised)
 

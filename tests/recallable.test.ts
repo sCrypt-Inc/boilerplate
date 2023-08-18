@@ -7,8 +7,8 @@ import {
     PubKey,
     toHex,
 } from 'scrypt-ts'
-import { Recallable } from '../../src/contracts/recallable'
-import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
+import { Recallable } from '../src/contracts/recallable'
+import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 
 use(chaiAsPromised)
 

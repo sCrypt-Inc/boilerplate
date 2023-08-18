@@ -1,8 +1,8 @@
 import { expect, use } from 'chai'
 import { ByteString, FixedArray, Sha256, sha256, toByteString } from 'scrypt-ts'
-import { MultiPartyHashPuzzleOpt } from '../../src/contracts/multiPartyHashPuzzleOpt'
+import { MultiPartyHashPuzzleOpt } from '../src/contracts/multiPartyHashPuzzleOpt'
 import chaiAsPromised from 'chai-as-promised'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 use(chaiAsPromised)
 
 function generateRandomHex(length) {

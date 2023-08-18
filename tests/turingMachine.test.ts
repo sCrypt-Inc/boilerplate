@@ -1,6 +1,6 @@
 import { expect } from 'chai'
-import { TuringMachine, StateStruct } from '../../src/contracts/turingMachine'
-import { getDefaultSigner } from '../utils/helper'
+import { TuringMachine, StateStruct } from '../src/contracts/turingMachine'
+import { getDefaultSigner } from './utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 const allStates: StateStruct[] = [

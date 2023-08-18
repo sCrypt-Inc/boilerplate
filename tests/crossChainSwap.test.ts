@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
-import { CrossChainSwap } from '../../src/contracts/crossChainSwap'
-import { getDefaultSigner } from '../utils/helper'
+import { CrossChainSwap } from '../src/contracts/crossChainSwap'
+import { getDefaultSigner } from './utils/helper'
 import {
     MethodCallOptions,
     PubKey,

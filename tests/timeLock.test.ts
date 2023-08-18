@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
-import { TimeLock } from '../../src/contracts/timeLock'
-import { getDefaultSigner } from '../utils/helper'
+import { TimeLock } from '../src/contracts/timeLock'
+import { getDefaultSigner } from './utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)

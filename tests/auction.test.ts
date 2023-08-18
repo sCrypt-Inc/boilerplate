@@ -1,7 +1,7 @@
-import { Auction } from '../../src/contracts/auction'
+import { Auction } from '../src/contracts/auction'
 import { findSig, MethodCallOptions, PubKey, toHex } from 'scrypt-ts'
 import { expect } from 'chai'
-import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
+import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 
 describe('Test SmartContract `Auction` on testnet', () => {
     const [privateKeyAuctioneer, publicKeyAuctioneer, ,] = randomPrivateKey()

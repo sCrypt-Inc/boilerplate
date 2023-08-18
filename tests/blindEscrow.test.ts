@@ -13,8 +13,8 @@ import {
     toByteString,
 } from 'scrypt-ts'
 import { Signature } from 'scrypt-ts-lib'
-import { BlindEscrow } from '../../src/contracts/blindEscrow'
-import { getDefaultSigner } from '../utils/helper'
+import { BlindEscrow } from '../src/contracts/blindEscrow'
+import { getDefaultSigner } from './utils/helper'
 
 use(chaiAsPromised)
 

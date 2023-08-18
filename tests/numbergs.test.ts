@@ -1,6 +1,6 @@
 import { MethodCallOptions, PubKey, findSig, toHex } from 'scrypt-ts'
-import { NumberGuess } from '../../src/contracts/numberGuess'
-import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
+import { NumberGuess } from '../src/contracts/numberGuess'
+import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 
 import { expect } from 'chai'
 

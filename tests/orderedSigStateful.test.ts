@@ -1,6 +1,6 @@
 import { expect } from 'chai'
-import { OrderedSigStateful } from '../../src/contracts/orderedSigStateful'
-import { getDefaultSigner } from '../utils/helper'
+import { OrderedSigStateful } from '../src/contracts/orderedSigStateful'
+import { getDefaultSigner } from './utils/helper'
 import {
     ContractTransaction,
     FixedArray,
@@ -12,7 +12,7 @@ import {
     hash160,
     toByteString,
 } from 'scrypt-ts'
-import { myAddress, myPublicKey } from '../utils/privateKey'
+import { myAddress, myPublicKey } from './utils/privateKey'
 
 const N_SIGNERS = OrderedSigStateful.N_SIGNERS
 

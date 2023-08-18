@@ -11,9 +11,9 @@ import {
     Utils,
 } from 'scrypt-ts'
 import { signTx } from 'scryptlib'
-import { OrderedSig } from '../../src/contracts/orderedSig'
-import { getDefaultSigner } from '../utils/helper'
-import { myPublicKey } from '../utils/privateKey'
+import { OrderedSig } from '../src/contracts/orderedSig'
+import { getDefaultSigner } from './utils/helper'
+import { myPublicKey } from './utils/privateKey'
 import { Signature } from 'scrypt-ts-lib'
 
 use(chaiAsPromised)

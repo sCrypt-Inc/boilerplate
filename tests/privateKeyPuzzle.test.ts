@@ -1,16 +1,9 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import {
-    FixedArray,
-    PubKey,
-    Sig,
-    bsv,
-    MethodCallOptions,
-    SignatureResponse,
-} from 'scrypt-ts'
-import { PrivateKeyPuzzle } from '../../src/contracts/privateKeyPuzzle'
-import { getDefaultSigner } from '../utils/helper'
-import { myPrivateKey, myPublicKey } from '../utils/privateKey'
+import { FixedArray, PubKey, Sig, bsv, SignatureResponse } from 'scrypt-ts'
+import { PrivateKeyPuzzle } from '../src/contracts/privateKeyPuzzle'
+import { getDefaultSigner } from './utils/helper'
+import { myPrivateKey, myPublicKey } from './utils/privateKey'
 import { DEFAULT_SIGHASH_TYPE, DEFAULT_FLAGS } from 'scryptlib'
 
 use(chaiAsPromised)

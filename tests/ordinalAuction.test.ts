@@ -1,4 +1,4 @@
-import { getDefaultSigner, randomPrivateKey, sleep } from '../utils/helper'
+import { getDefaultSigner, randomPrivateKey, sleep } from './utils/helper'
 import {
     bsv,
     ByteString,
@@ -15,8 +15,8 @@ import {
     Utils,
     UTXO,
 } from 'scrypt-ts'
-import { myPrivateKey, myPublicKey } from '../utils/privateKey'
-import { OrdinalAuction } from '../../src/contracts/ordinalAuction'
+import { myPrivateKey, myPublicKey } from './utils/privateKey'
+import { OrdinalAuction } from '../src/contracts/ordinalAuction'
 import { signTx } from 'scryptlib'
 
 async function deployOrdinal(dest: PubKeyHash, msg: string): Promise<UTXO> {

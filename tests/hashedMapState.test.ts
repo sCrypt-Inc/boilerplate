@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 
-import { HashedMapState } from '../../src/contracts/hashedMapState'
+import { HashedMapState } from '../src/contracts/hashedMapState'
 import {
     ByteString,
     HashedMap,
@@ -8,7 +8,7 @@ import {
     MethodCallOptions,
     toByteString,
 } from 'scrypt-ts'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 
 describe('Test SmartContract `HashedMapState`', () => {
     let map: HashedMap<bigint, ByteString>, stateMap: HashedMapState

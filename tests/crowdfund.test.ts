@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import { findSig, MethodCallOptions, PubKey, toHex, bsv } from 'scrypt-ts'
-import { Crowdfund } from '../../src/contracts/crowdfund'
-import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
+import { Crowdfund } from '../src/contracts/crowdfund'
+import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 

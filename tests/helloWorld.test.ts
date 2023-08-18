@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import { sha256, toByteString } from 'scrypt-ts'
-import { HelloWorld } from '../../src/contracts/helloWorld'
-import { getDefaultSigner } from '../utils/helper'
+import { HelloWorld } from '../src/contracts/helloWorld'
+import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)

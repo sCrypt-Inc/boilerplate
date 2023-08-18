@@ -9,8 +9,8 @@ import {
     toByteString,
     toHex,
 } from 'scrypt-ts'
-import { CoinToss } from '../../src/contracts/cointoss'
-import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
+import { CoinToss } from '../src/contracts/cointoss'
+import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 

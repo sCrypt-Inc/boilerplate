@@ -2,8 +2,8 @@ import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-import { Owner, StatefulMultiSig } from '../../src/contracts/statefulMultiSig'
-import { getDefaultSigner } from '../utils/helper'
+import { Owner, StatefulMultiSig } from '../src/contracts/statefulMultiSig'
+import { getDefaultSigner } from './utils/helper'
 import {
     bsv,
     FixedArray,
@@ -12,7 +12,7 @@ import {
     findSig,
     hash160,
 } from 'scrypt-ts'
-import { myPublicKey } from '../utils/privateKey'
+import { myPublicKey } from './utils/privateKey'
 
 describe('Test SmartContract `StatefulMultiSig`', () => {
     const destAddr = hash160(myPublicKey.toHex())

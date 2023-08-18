@@ -1,6 +1,6 @@
-import { P2PKH } from '../../src/contracts/p2pkh'
-import { getDefaultSigner, resetDefaultSigner, sleep } from '../utils/helper'
-import { myPublicKey, myPublicKeyHash } from '../utils/privateKey'
+import { P2PKH } from '../src/contracts/p2pkh'
+import { getDefaultSigner, resetDefaultSigner, sleep } from './utils/helper'
+import { myPublicKey, myPublicKeyHash } from './utils/privateKey'
 
 import {
     findSig,

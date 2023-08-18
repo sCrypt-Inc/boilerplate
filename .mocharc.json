@@ -2,11 +2,11 @@
   "diff": true,
   "require": "ts-node/register",
   "extensions": ["ts"],
-  "spec": ["./tests/local/**/*.test.ts"],
+  "spec": ["./tests/**/*.test.ts"],
   "package": "./package.json",
   "reporter": "spec",
   "slow": "75",
   "timeout": "30000",
   "ui": "bdd",
-  "watch-files": ["./tests/local/**/*.test.ts"]
+  "watch-files": ["./tests/**/*.test.ts"]
 }

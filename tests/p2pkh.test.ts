@@ -7,9 +7,9 @@ import {
     PubKeyHash,
     toHex,
 } from 'scrypt-ts'
-import { P2PKH } from '../../src/contracts/p2pkh'
-import { getDefaultSigner, randomPrivateKey } from '../utils/helper'
-import { myPublicKey, myPublicKeyHash } from '../utils/privateKey'
+import { P2PKH } from '../src/contracts/p2pkh'
+import { getDefaultSigner, randomPrivateKey } from './utils/helper'
+import { myPublicKey, myPublicKeyHash } from './utils/privateKey'
 
 use(chaiAsPromised)
 

@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
-import { Demo } from '../../src/contracts/demo'
-import { getDefaultSigner } from '../utils/helper'
+import { Demo } from '../src/contracts/demo'
+import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)

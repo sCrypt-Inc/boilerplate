@@ -11,8 +11,8 @@ import {
     slice,
     findSigs,
 } from 'scrypt-ts'
-import { MultiSigPayment } from '../../src/contracts/multiSig'
-import { getDefaultSigner } from '../utils/helper'
+import { MultiSigPayment } from '../src/contracts/multiSig'
+import { getDefaultSigner } from './utils/helper'
 
 use(chaiAsPromised)
 

@@ -10,8 +10,8 @@ import {
     Utils,
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig } from 'scrypt-ts-lib'
-import { CatBond, Investment } from '../../src/contracts/catastropheBond'
-import { getDefaultSigner } from '../utils/helper'
+import { CatBond, Investment } from '../src/contracts/catastropheBond'
+import { getDefaultSigner } from './utils/helper'
 
 use(chaiAsPromised)
 

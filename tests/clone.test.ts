@@ -1,6 +1,6 @@
 import { expect } from 'chai'
-import { Clone } from '../../src/contracts/clone'
-import { getDefaultSigner } from '../utils/helper'
+import { Clone } from '../src/contracts/clone'
+import { getDefaultSigner } from './utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `Clone`', () => {

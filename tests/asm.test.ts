@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { P2PKH_ASM } from '../../src/contracts/asmDemo'
+import { P2PKH_ASM } from '../src/contracts/asmDemo'
 import {
     MethodCallOptions,
     PubKey,
@@ -7,9 +7,9 @@ import {
     findSig,
     toHex,
 } from 'scrypt-ts'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
-import { myPublicKey, myPublicKeyHash } from '../utils/privateKey'
+import { myPublicKey, myPublicKeyHash } from './utils/privateKey'
 
 use(chaiAsPromised)
 

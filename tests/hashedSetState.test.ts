@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 
-import { HashedSetState } from '../../src/contracts/hashedSetState'
+import { HashedSetState } from '../src/contracts/hashedSetState'
 import { HashedSet, MethodCallOptions } from 'scrypt-ts'
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 
 describe('Test SmartContract `HashedSetState`', () => {
     let set: HashedSet<bigint>, stateSet: HashedSetState

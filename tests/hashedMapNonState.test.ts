@@ -1,9 +1,9 @@
 import { expect, use } from 'chai'
-import { HashedMapNonState } from '../../src/contracts/hashedMapNonState'
+import { HashedMapNonState } from '../src/contracts/hashedMapNonState'
 import { ByteString, HashedMap, toByteString } from 'scrypt-ts'
 import chaiAsPromised from 'chai-as-promised'
 
-import { getDefaultSigner } from '../utils/helper'
+import { getDefaultSigner } from './utils/helper'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashedMapNonState`', () => {

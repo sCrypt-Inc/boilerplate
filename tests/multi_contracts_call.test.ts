@@ -6,10 +6,10 @@ import {
     toByteString,
     sha256,
 } from 'scrypt-ts'
-import { AdvancedCounter } from '../../src/contracts/advancedCounter'
-import { getDefaultSigner } from '../utils/helper'
+import { AdvancedCounter } from '../src/contracts/advancedCounter'
+import { getDefaultSigner } from './utils/helper'
 import { expect } from 'chai'
-import { HashPuzzle } from '../../src/contracts/hashPuzzle'
+import { HashPuzzle } from '../src/contracts/hashPuzzle'
 
 describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local', () => {
     before(async () => {
