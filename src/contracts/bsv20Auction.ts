@@ -14,19 +14,33 @@ import {
     hash160,
     slice,
     StatefulNext,
+    toByteString,
 } from 'scrypt-ts'
 
 import Transaction = bsv.Transaction
 import Address = bsv.Address
 import Script = bsv.Script
 
-export class OrdinalAuction extends SmartContract {
+export class BSV20Auction extends SmartContract {
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
     static readonly UINT_MAX = 0xffffffffn
 
     // Output of auctioned ordinal (txid + vout).
     @prop()
     ordnialPrevout: ByteString
+
+    // Inscription for the BSV-20 transfer.
+    // Example:
+    // OP_FALSE OP_IF 6f7264 OP_TRUE application/bsv-20 OP_FALSE
+    // {
+    //   "p": "bsv-20",
+    //   "op": "transfer",
+    //   "tick": "ordi",
+    //   "amt": "1000"
+    // }
+    // OP_ENDIF
+    @prop()
+    transferInscription: ByteString
 
     // The bidder's public key.
     @prop(true)
@@ -42,11 +56,13 @@ export class OrdinalAuction extends SmartContract {
 
     constructor(
         ordinalPrevout: ByteString,
+        transferInscription: ByteString,
         auctioneer: PubKey,
         auctionDeadline: bigint
     ) {
         super(...arguments)
         this.ordnialPrevout = ordinalPrevout
+        this.transferInscription = transferInscription
         this.bidder = auctioneer
         this.auctioneer = auctioneer
         this.auctionDeadline = auctionDeadline
@@ -88,16 +104,14 @@ export class OrdinalAuction extends SmartContract {
     @method()
     public close(sigAuctioneer: Sig) {
         // Check if using block height.
-        if (
-            this.auctionDeadline < OrdinalAuction.LOCKTIME_BLOCK_HEIGHT_MARKER
-        ) {
+        if (this.auctionDeadline < BSV20Auction.LOCKTIME_BLOCK_HEIGHT_MARKER) {
             // Enforce nLocktime field to also use block height.
             assert(
-                this.ctx.locktime < OrdinalAuction.LOCKTIME_BLOCK_HEIGHT_MARKER
+                this.ctx.locktime < BSV20Auction.LOCKTIME_BLOCK_HEIGHT_MARKER
             )
         }
         assert(
-            this.ctx.sequence < OrdinalAuction.UINT_MAX,
+            this.ctx.sequence < BSV20Auction.UINT_MAX,
             'input sequence should less than UINT_MAX'
         )
         assert(
@@ -124,7 +138,9 @@ export class OrdinalAuction extends SmartContract {
         )
 
         // Ensure the ordinal is being payed out to the winning bidder.
-        let outputs = Utils.buildPublicKeyHashOutput(hash160(this.bidder), 1n)
+        let outScript = Utils.buildPublicKeyHashScript(hash160(this.bidder))
+        outScript += this.transferInscription
+        let outputs = Utils.buildOutput(outScript, 1n)
 
         // Ensure the second output is paying the bid to the auctioneer.
         outputs += Utils.buildPublicKeyHashOutput(
@@ -141,12 +157,12 @@ export class OrdinalAuction extends SmartContract {
 
     // User defined transaction builder for calling function `bid`
     static buildTxForBid(
-        current: OrdinalAuction,
-        options: MethodCallOptions<OrdinalAuction>,
+        current: BSV20Auction,
+        options: MethodCallOptions<BSV20Auction>,
         bidder: PubKey,
         bid: bigint
     ): Promise<ContractTransaction> {
-        const next = options.next as StatefulNext<OrdinalAuction>
+        const next = options.next as StatefulNext<BSV20Auction>
 
         const unsignedTx: Transaction = new Transaction()
             // add contract input
