@@ -2,33 +2,66 @@ import { bsv } from 'scrypt-ts'
 import * as dotenv from 'dotenv'
 import * as fs from 'fs'
 
-const dotenvConfigPath = '.env'
-dotenv.config({ path: dotenvConfigPath })
+export function genPrivKey(network: bsv.Networks.Network): bsv.PrivateKey {
+    const testnetConfigPath = '.env'
+    const mainnetConfigPath = '.env.mainnet'
 
-// fill in private key on testnet in WIF here
-let privKey = process.env.PRIVATE_KEY
-if (!privKey) {
-    genPrivKey()
-} else {
-    showAddr(bsv.PrivateKey.fromWIF(privKey))
+    dotenv.config({
+        path:
+            network === bsv.Networks.testnet
+                ? testnetConfigPath
+                : mainnetConfigPath,
+    })
+
+    const privKeyStr = process.env.PRIVATE_KEY
+    let privKey: bsv.PrivateKey
+    if (privKeyStr) {
+        privKey = bsv.PrivateKey.fromWIF(privKeyStr as string)
+        console.log(
+            `${
+                network === bsv.Networks.testnet ? 'Testnet' : 'Mainnet'
+            } private key already present ...`
+        )
+    } else {
+        privKey = bsv.PrivateKey.fromRandom(network)
+        console.log(
+            `${
+                network === bsv.Networks.testnet ? 'Testnet' : 'Mainnet'
+            } private key generated and saved in "${
+                network == bsv.Networks.testnet
+                    ? testnetConfigPath
+                    : mainnetConfigPath
+            }"`
+        )
+        console.log(`Publickey: ${privKey.publicKey}`)
+        console.log(`Address: ${privKey.toAddress()}`)
+        fs.writeFileSync(
+            network === bsv.Networks.testnet
+                ? testnetConfigPath
+                : mainnetConfigPath,
+            `PRIVATE_KEY="${privKey}"`
+        )
+    }
+
+    const fundMessage =
+        network === bsv.Networks.testnet
+            ? `You can fund its address '${privKey.toAddress()}' from the sCrypt faucet https://scrypt.io/faucet`
+            : `You can fund its address '${privKey.toAddress()}' with your wallet.`
+
+    console.log(fundMessage)
+
+    if (network === bsv.Networks.mainnet) {
+        console.log(
+            'Be careful: do NOT fund too much coin. Only for testing in development, no security guarantees.'
+        )
+    }
+
+    return privKey
 }
 
-export function genPrivKey() {
-    const newPrivKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
-    console.log(`Missing private key, generating a new one ...
-Private key generated: '${newPrivKey.toWIF()}'
-You can fund its address '${newPrivKey.toAddress()}' from the sCrypt faucet https://scrypt.io/faucet`)
-    // auto generate .env file with new generated key
-    fs.writeFileSync(dotenvConfigPath, `PRIVATE_KEY="${newPrivKey}"`)
-    privKey = newPrivKey.toWIF()
-}
-
-export function showAddr(privKey: bsv.PrivateKey) {
-    console.log(`Private key already present ...
-You can fund its address '${privKey.toAddress()}' from the sCrypt faucet https://scrypt.io/faucet`)
-}
-
-export const myPrivateKey = bsv.PrivateKey.fromWIF(privKey)
+export const myPrivateKey = genPrivKey(
+    bsv.Networks.get(process.env.NETWORK || 'testnet')
+)
 export const myPublicKey = bsv.PublicKey.fromPrivateKey(myPrivateKey)
 export const myPublicKeyHash = bsv.crypto.Hash.sha256ripemd160(
     myPublicKey.toBuffer()

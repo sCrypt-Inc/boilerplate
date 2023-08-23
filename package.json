@@ -9,11 +9,14 @@
     "pretest": "npm run compile",
     "test": "mocha -i -f 'Heavy'",
     "test-all": "mocha --no-timeouts",
-    "testnet": "cross-env NETWORK=testnet mocha --no-timeouts",
+    "testnet": "cross-env NETWORK=testnet mocha -i -f 'Heavy' --no-timeouts",
+    "mainnet": "cross-env NETWORK=mainnet mocha -i -f 'Heavy' --no-timeouts",
     "lint": "eslint . --ext .js,.ts --fix && prettier --write --ignore-unknown \"**/*\"",
     "lint-check": "eslint . --ext .js,.ts && prettier --check --ignore-unknown \"**/*\"",
     "prepare": "husky install",
-    "genprivkey": "npx ts-node tests/utils/privateKey.ts"
+    "genTestnetPrivkey": "cross-env NETWORK=testnet npx ts-node tests/utils/privateKey.ts",
+    "genMainnetPrivkey": "cross-env NETWORK=mainnet npx ts-node tests/utils/privateKey.ts",
+    "genprivkey": "npm run genTestnetPrivkey && npm run genMainnetPrivkey"
   },
   "lint-staged": {
     "**/*": [

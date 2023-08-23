@@ -52,7 +52,11 @@ export const sleep = async (seconds: number) => {
 }
 
 export function randomPrivateKey() {
-    const privateKey = bsv.PrivateKey.fromRandom('testnet')
+    const privateKey = bsv.PrivateKey.fromRandom(
+        process.env.NETWORK === 'mainnet'
+            ? bsv.Networks.mainnet
+            : bsv.Networks.testnet
+    )
     const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
     const address = publicKey.toAddress()

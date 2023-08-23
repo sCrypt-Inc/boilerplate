@@ -7,5 +7,6 @@ out/
 !.vscode/settings.json
 artifacts/
 .env
+.env.mainnet
 scrypt.index.json
 .eslintcache
