@@ -23,9 +23,9 @@ async function main() {
     console.log('NumberGuess contract deployed: ', deployTx.id)
 
     const { tx: callTx, atInputIndex } = await numbergs.methods.guess(
-        (sigResps) => findSig(sigResps, publicKeyalice && publicKeybob),
+        (sigResps) => findSig(sigResps, publicKeybob),
         {
-            pubKeyOrAddrToSign: publicKeyalice && publicKeybob,
+            pubKeyOrAddrToSign: publicKeybob,
         } as MethodCallOptions<NumberGuess>
     )
     console.log('NumberGuess contract called: ', callTx.id)
