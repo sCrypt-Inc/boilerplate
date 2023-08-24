@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import { MethodCallOptions} from 'scrypt-ts'
 import { ModExp } from '../src/contracts/modEXP'
-import { getDefaultSigner } from './utils/txHelper'
+import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 import { describe } from 'mocha'
 
