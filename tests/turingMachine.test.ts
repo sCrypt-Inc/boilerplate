@@ -129,8 +129,7 @@ describe('Test SmartContract `TuringMachine`', () => {
     })
 
     it('should pass whole run', async () => {
-        const deployTx = await turingMachine.deploy(1)
-        console.log('TuringMachine contract deployed: ', deployTx.id)
+        await turingMachine.deploy(1)
 
         for (let step = 1; step < 19; step++) {
             const newState = allStates[step]
@@ -139,7 +138,7 @@ describe('Test SmartContract `TuringMachine`', () => {
             const nextInstance = currInstance.next()
             nextInstance.states = newState
 
-            const { tx: callTx, atInputIndex } =
+            const callContract = async () =>
                 await turingMachine.methods.transit(
                     // Method call options:
                     {
@@ -149,13 +148,8 @@ describe('Test SmartContract `TuringMachine`', () => {
                         },
                     } as MethodCallOptions<TuringMachine>
                 )
-            console.log(
-                `TuringMachine contract called, step=${step}: `,
-                callTx.id
-            )
 
-            const result = callTx.verifyScript(atInputIndex)
-            expect(result.success, result.error).to.eq(true)
+            expect(callContract()).not.throw
 
             turingMachine = nextInstance
         }

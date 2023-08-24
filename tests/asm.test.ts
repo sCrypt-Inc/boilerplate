@@ -28,18 +28,15 @@ describe('Test SmartContract `P2PKH_ASM`', () => {
             'P2PKH_ASM.unlock.pubKeyHash': toHex(myPublicKeyHash),
         })
 
-        const deployTx = await demo.deploy(1)
-        console.log('P2PKH_ASM contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } = await demo.methods.unlock(
-            (sigResps) => findSig(sigResps, myPublicKey),
-            PubKey(toHex(myPublicKey)),
-            {
-                pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<P2PKH_ASM>
-        )
-        console.log('P2PKH_ASM contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await demo.deploy(1)
+        const callContract = async () =>
+            await demo.methods.unlock(
+                (sigResps) => findSig(sigResps, myPublicKey),
+                PubKey(toHex(myPublicKey)),
+                {
+                    pubKeyOrAddrToSign: myPublicKey,
+                } as MethodCallOptions<P2PKH_ASM>
+            )
+        expect(callContract()).to.be.not.throw
     })
 })

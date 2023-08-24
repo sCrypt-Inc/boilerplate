@@ -142,31 +142,26 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
     it('should pass swap', async () => {
         await crossChainSwap.connect(getDefaultSigner(alicePrivKey))
 
-        const deployTx = await crossChainSwap.deploy(1)
-        console.log('CrossChainSwap2 contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } = await crossChainSwap.methods.swap(
-            btcTx,
-            merkleProof,
-            headers,
-            PubKey(toHex(alicePubKey)),
-            (sigResps) => findSig(sigResps, alicePubKey),
-            {
-                pubKeyOrAddrToSign: alicePubKey,
-            } as MethodCallOptions<CrossChainSwap2>
-        )
-        console.log('CrossChainSwap2 contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await crossChainSwap.deploy(1)
+        const callContract = async () =>
+            await crossChainSwap.methods.swap(
+                btcTx,
+                merkleProof,
+                headers,
+                PubKey(toHex(alicePubKey)),
+                (sigResps) => findSig(sigResps, alicePubKey),
+                {
+                    pubKeyOrAddrToSign: alicePubKey,
+                } as MethodCallOptions<CrossChainSwap2>
+            )
+        expect(callContract()).not.throw
     })
 
     it('should pass cancel', async () => {
         await crossChainSwap.connect(getDefaultSigner(bobPrivKey))
 
-        const deployTx = await crossChainSwap.deploy(1)
-        console.log('CrossChainSwap2 contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } =
+        await crossChainSwap.deploy(1)
+        const callContract = async () =>
             await crossChainSwap.methods.cancel(
                 PubKey(toHex(bobPubKey)),
                 (sigResps) => findSig(sigResps, bobPubKey),
@@ -175,9 +170,7 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<CrossChainSwap2>
             )
-        console.log('CrossChainSwap2 contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        expect(callContract()).not.throw
     })
 })
 

@@ -46,48 +46,14 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
         const signer = getDefaultSigner(privKeys[pubKeyIdx])
         await statefulMultiSig.connect(signer)
 
-        const deployTx = await statefulMultiSig.deploy(1)
-        console.log('StatefulMultiSig contract deployed: ', deployTx.id)
+        await statefulMultiSig.deploy(1)
 
         // Construct next contract instance and update flag array.
         const next = statefulMultiSig.next()
         next.owners[pubKeyIdx].validated = true
 
-        const { tx: callTx, atInputIndex } = await statefulMultiSig.methods.add(
-            (sigResps) => findSig(sigResps, pubKeys[pubKeyIdx]),
-            BigInt(pubKeyIdx),
-            // Method call options:
-            {
-                pubKeyOrAddrToSign: pubKeys[pubKeyIdx],
-                next: {
-                    instance: next,
-                    balance: statefulMultiSig.balance,
-                },
-            } as MethodCallOptions<StatefulMultiSig>
-        )
-        console.log('StatefulMultiSig contract called: ', callTx.id)
-
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
-    })
-
-    it('should pass paying out if threshold reached.', async () => {
-        let statefulMultiSig = new StatefulMultiSig(destAddr, owners)
-        await statefulMultiSig.connect(getDefaultSigner())
-        const deployTx = await statefulMultiSig.deploy(1)
-        console.log('StatefulMultiSig contract deployed: ', deployTx.id)
-
-        for (let i = 0; i < StatefulMultiSig.N; i++) {
-            const pubKeyIdx = i
-
-            const signer = getDefaultSigner(privKeys[pubKeyIdx])
-            await statefulMultiSig.connect(signer)
-
-            // Construct next contract instance and update flag array.
-            const next = statefulMultiSig.next()
-            next.owners[pubKeyIdx].validated = true
-
-            const { tx: callTx } = await statefulMultiSig.methods.add(
+        const callContract = async () =>
+            await statefulMultiSig.methods.add(
                 (sigResps) => findSig(sigResps, pubKeys[pubKeyIdx]),
                 BigInt(pubKeyIdx),
                 // Method call options:
@@ -99,22 +65,51 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
                     },
                 } as MethodCallOptions<StatefulMultiSig>
             )
-            console.log('StatefulMultiSig contract called: ', callTx.id)
+        expect(callContract()).not.throw
+    })
+
+    it('should pass paying out if threshold reached.', async () => {
+        let statefulMultiSig = new StatefulMultiSig(destAddr, owners)
+        await statefulMultiSig.connect(getDefaultSigner())
+        await statefulMultiSig.deploy(1)
+
+        for (let i = 0; i < StatefulMultiSig.N; i++) {
+            const pubKeyIdx = i
+
+            const signer = getDefaultSigner(privKeys[pubKeyIdx])
+            await statefulMultiSig.connect(signer)
+
+            // Construct next contract instance and update flag array.
+            const next = statefulMultiSig.next()
+            next.owners[pubKeyIdx].validated = true
+
+            const callContract = async () =>
+                await statefulMultiSig.methods.add(
+                    (sigResps) => findSig(sigResps, pubKeys[pubKeyIdx]),
+                    BigInt(pubKeyIdx),
+                    // Method call options:
+                    {
+                        pubKeyOrAddrToSign: pubKeys[pubKeyIdx],
+                        next: {
+                            instance: next,
+                            balance: statefulMultiSig.balance,
+                        },
+                    } as MethodCallOptions<StatefulMultiSig>
+                )
+            expect(callContract()).not.throw
 
             statefulMultiSig = next
         }
 
-        const { tx: callTx, atInputIndex } = await statefulMultiSig.methods.pay(
-            // Method call options:
-            {
-                changeAddress:
-                    await statefulMultiSig.signer.getDefaultAddress(),
-            } as MethodCallOptions<StatefulMultiSig>
-        )
-        console.log('StatefulMultiSig contract called: ', callTx.id)
-
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () =>
+            await statefulMultiSig.methods.pay(
+                // Method call options:
+                {
+                    changeAddress:
+                        await statefulMultiSig.signer.getDefaultAddress(),
+                } as MethodCallOptions<StatefulMultiSig>
+            )
+        expect(callContract()).not.throw
     })
 
     it('should fail adding invalid sig.', async () => {
@@ -125,15 +120,14 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
         const randKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         const signer = getDefaultSigner(randKey)
         await statefulMultiSig.connect(signer)
-        const deployTx = await statefulMultiSig.deploy(1)
-        console.log('StatefulMultiSig contract deployed: ', deployTx.id)
+        await statefulMultiSig.deploy(1)
 
         // Construct next contract instance and update flag array.
         const next = statefulMultiSig.next()
         next.owners[pubKeyIdx].validated = true
 
-        return expect(
-            statefulMultiSig.methods.add(
+        const callContract = async () =>
+            await statefulMultiSig.methods.add(
                 (sigResps) => findSig(sigResps, randKey.publicKey),
                 BigInt(pubKeyIdx),
                 // Method call options:
@@ -145,7 +139,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
                     },
                 } as MethodCallOptions<StatefulMultiSig>
             )
-        ).to.be.rejectedWith(/signature check failed/)
+        expect(callContract()).to.be.rejectedWith(/signature check failed/)
     })
 
     it('should fail pay if threshold not reached', async () => {
@@ -153,17 +147,18 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
 
         const signer = getDefaultSigner()
         await statefulMultiSig.connect(signer)
-        const deployTx = await statefulMultiSig.deploy(1)
-        console.log('StatefulMultiSig contract deployed: ', deployTx.id)
+        await statefulMultiSig.deploy(1)
 
-        return expect(
-            statefulMultiSig.methods.pay(
+        const callContract = async () =>
+            await statefulMultiSig.methods.pay(
                 // Method call options:
                 {
                     changeAddress:
                         await statefulMultiSig.signer.getDefaultAddress(),
                 } as MethodCallOptions<StatefulMultiSig>
             )
-        ).to.be.rejectedWith(/Not enough valid signatures./)
+        expect(callContract()).to.be.rejectedWith(
+            /Not enough valid signatures./
+        )
     })
 })

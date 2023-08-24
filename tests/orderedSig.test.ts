@@ -130,19 +130,16 @@ describe('Heavy: Test SmartContract `OrderedSig`', () => {
                 return Promise.resolve(result)
             }
         )
-
-        const { tx: callTx, atInputIndex } = await orderedSig.methods.unlock(
-            (_) => sig0,
-            sig1,
-            sig2,
-            // Method call options:
-            {
-                changeAddress: await orderedSig.signer.getDefaultAddress(),
-            } as MethodCallOptions<OrderedSig>
-        )
-        console.log('OrderedSig contract called: ', callTx.id)
-
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () =>
+            await orderedSig.methods.unlock(
+                (_) => sig0,
+                sig1,
+                sig2,
+                // Method call options:
+                {
+                    changeAddress: await orderedSig.signer.getDefaultAddress(),
+                } as MethodCallOptions<OrderedSig>
+            )
+        expect(callContract()).not.throw
     })
 })

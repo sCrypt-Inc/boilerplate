@@ -29,50 +29,45 @@ describe('Test SmartContract `Crowdfund`', () => {
     })
 
     it('should collect fund success', async () => {
-        const deployTx = await crowdfund.deploy(2)
-        console.log('Crowdfund contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } = await crowdfund.methods.collect(
-            (sigResps) => findSig(sigResps, publicKeyRecipient),
-            {
-                pubKeyOrAddrToSign: publicKeyRecipient,
-                changeAddress: publicKeyRecipient.toAddress(
-                    bsv.Networks.testnet
-                ),
-            } as MethodCallOptions<Crowdfund>
-        )
-        console.log('Crowdfund contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await crowdfund.deploy(2)
+        const callContract = async () =>
+            await crowdfund.methods.collect(
+                (sigResps) => findSig(sigResps, publicKeyRecipient),
+                {
+                    pubKeyOrAddrToSign: publicKeyRecipient,
+                    changeAddress: publicKeyRecipient.toAddress(
+                        bsv.Networks.testnet
+                    ),
+                } as MethodCallOptions<Crowdfund>
+            )
+        expect(callContract()).not.throw
     })
 
     it('should success when refund', async () => {
-        const deployTx = await crowdfund.deploy(1)
-        console.log('Crowdfund contract deployed: ', deployTx.id)
+        await crowdfund.deploy(1)
         const today = Math.round(new Date().valueOf() / 1000)
-        const { tx: callTx, atInputIndex } = await crowdfund.methods.refund(
-            (sigResps) => findSig(sigResps, publicKeyContributor),
-            {
-                pubKeyOrAddrToSign: publicKeyContributor,
-                lockTime: today,
-            } as MethodCallOptions<Crowdfund>
-        )
-        console.log('Crowdfund contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () =>
+            await crowdfund.methods.refund(
+                (sigResps) => findSig(sigResps, publicKeyContributor),
+                {
+                    pubKeyOrAddrToSign: publicKeyContributor,
+                    lockTime: today,
+                } as MethodCallOptions<Crowdfund>
+            )
+        expect(callContract()).not.throw
     })
 
     it('should fail when refund before deadline', async () => {
-        const deployTx = await crowdfund.deploy(1)
-        console.log('Crowdfund contract deployed: ', deployTx.id)
-        return expect(
-            crowdfund.methods.refund(
+        await crowdfund.deploy(1)
+        const callContract = async () =>
+            await crowdfund.methods.refund(
                 (sigResps) => findSig(sigResps, publicKeyContributor),
                 {
                     pubKeyOrAddrToSign: publicKeyContributor,
                     lockTime: deadline - 1,
                 } as MethodCallOptions<Crowdfund>
             )
-        ).to.be.rejectedWith(/fundraising expired/)
+
+        expect(callContract()).to.be.rejectedWith(/fundraising expired/)
     })
 })

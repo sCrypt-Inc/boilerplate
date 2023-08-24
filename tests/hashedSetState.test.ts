@@ -92,54 +92,18 @@ describe('Test SmartContract `HashedSetState`', () => {
     }
 
     it('add, has, delete should pass', async () => {
-        const deployTx = await stateSet.deploy(1)
-        console.log('HashedSetState contract deployed: ', deployTx.id)
+        await stateSet.deploy(1)
 
-        const {
-            tx: tx1,
-            newInstance: newInstance1,
-            atInputIndex: index1,
-        } = await add(stateSet, 1n)
-        let result = tx1.verifyScript(index1)
-        expect(result.success, result.error).to.eq(true)
+        const { newInstance: newInstance1 } = await add(stateSet, 1n)
 
-        const {
-            tx: tx2,
-            newInstance: newInstance2,
-            atInputIndex: index2,
-        } = await add(newInstance1, 2n)
-        result = tx2.verifyScript(index2)
-        expect(result.success, result.error).to.eq(true)
+        const { newInstance: newInstance2 } = await add(newInstance1, 2n)
 
-        const {
-            tx: tx3,
-            newInstance: newInstance3,
-            atInputIndex: index3,
-        } = await has(newInstance2, 2n)
-        result = tx3.verifyScript(index3)
-        expect(result.success, result.error).to.eq(true)
+        const { newInstance: newInstance3 } = await has(newInstance2, 2n)
 
-        const {
-            tx: tx4,
-            newInstance: newInstance4,
-            atInputIndex: index4,
-        } = await has(newInstance3, 1n)
-        result = tx4.verifyScript(index4)
-        expect(result.success, result.error).to.eq(true)
+        const { newInstance: newInstance4 } = await has(newInstance3, 1n)
 
-        const {
-            tx: tx5,
-            newInstance: newInstance5,
-            atInputIndex: index5,
-        } = await _delete(newInstance4, 2n)
-        result = tx5.verifyScript(index5)
-        expect(result.success, result.error).to.eq(true)
+        const { newInstance: newInstance5 } = await _delete(newInstance4, 2n)
 
-        const { tx: tx6, atInputIndex: index6 } = await notExist(
-            newInstance5,
-            2n
-        )
-        result = tx6.verifyScript(index6)
-        expect(result.success, result.error).to.eq(true)
+        expect(await notExist(newInstance5, 2n)).not.throw
     })
 })

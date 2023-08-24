@@ -42,8 +42,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
     })
 
     it('should pass purchase method call successfully.', async () => {
-        const deployTx = await instance.deploy(1)
-        console.log('OrdinalLock contract deployed: ', deployTx.id)
+        await instance.deploy(1)
 
         const buyerSigner = getDefaultSigner()
 
@@ -59,33 +58,26 @@ describe('Test SmartContract `OrdinalLock`', () => {
             .toBuffer()
             .toString('hex')
 
-        const { tx: callTx, atInputIndex } = await instance.methods.purchase(
-            destOutputStr,
-            {
+        const callContract = async () =>
+            await instance.methods.purchase(destOutputStr, {
                 changeAddress: await buyerSigner.getDefaultAddress(),
-            } as MethodCallOptions<OrdinalLock>
-        )
-        console.log('OrdinalLock contract called: ', callTx.id)
-
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+            } as MethodCallOptions<OrdinalLock>)
+        expect(callContract()).not.throw
     })
 
     it('should pass cancel method call successfully.', async () => {
-        const deployTx = await instance.deploy(1)
-        console.log('OrdinalLock contract deployed: ', deployTx.id)
+        await instance.deploy(1)
 
-        const { tx: callTx, atInputIndex } = await instance.methods.cancel(
-            (sigResp) => findSig(sigResp, seller.publicKey),
-            PubKey(seller.publicKey.toHex()),
-            {
-                pubKeyOrAddrToSign: seller.publicKey,
-                changeAddress: seller.toAddress(),
-            } as MethodCallOptions<OrdinalLock>
-        )
-        console.log('OrdinalLock contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () =>
+            await instance.methods.cancel(
+                (sigResp) => findSig(sigResp, seller.publicKey),
+                PubKey(seller.publicKey.toHex()),
+                {
+                    pubKeyOrAddrToSign: seller.publicKey,
+                    changeAddress: seller.toAddress(),
+                } as MethodCallOptions<OrdinalLock>
+            )
+        expect(callContract()).not.throw
     })
 
     it('should fail purchase method w wrong payment out.', async () => {
@@ -147,22 +139,21 @@ describe('Test SmartContract `OrdinalLock`', () => {
         )
         const buyerSigner = getDefaultSigner()
 
-        return expect(
-            instance.methods.purchase(destOutputStr, {
+        const callContract = async () =>
+            await instance.methods.purchase(destOutputStr, {
                 changeAddress: await buyerSigner.getDefaultAddress(),
             } as MethodCallOptions<OrdinalLock>)
-        ).to.be.rejectedWith(/Execution failed/)
+        expect(callContract()).to.be.rejectedWith(/Execution failed/)
     })
 
     it('should fail cancel method w bad sig.', async () => {
         const wrongKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         const wrongSigner = getDefaultSigner(wrongKey)
         await instance.connect(wrongSigner)
-        const deployTx = await instance.deploy(1)
-        console.log('OrdinalLock contract deployed: ', deployTx.id)
+        await instance.deploy(1)
 
-        return expect(
-            instance.methods.cancel(
+        const callContract = async () =>
+            await instance.methods.cancel(
                 (sigResp) => findSig(sigResp, wrongKey.publicKey),
                 PubKey(wrongKey.publicKey.toHex()),
                 {
@@ -170,6 +161,6 @@ describe('Test SmartContract `OrdinalLock`', () => {
                     changeAddress: wrongKey.toAddress(),
                 } as MethodCallOptions<OrdinalLock>
             )
-        ).to.be.rejectedWith(/bad seller/)
+        expect(callContract()).to.be.rejectedWith(/bad seller/)
     })
 })

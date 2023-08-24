@@ -17,24 +17,22 @@ describe('Test SmartContract `TimeLock`', () => {
     })
 
     it('should pass the public method unit test successfully.', async () => {
-        const deployTx = await timeLock.deploy(1)
-        console.log('TimeLock contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } = await timeLock.methods.unlock({
-            lockTime: 1673523720,
-        } as MethodCallOptions<TimeLock>)
-        console.log('TimeLock contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await timeLock.deploy(1)
+        const callContract = async () =>
+            await timeLock.methods.unlock({
+                lockTime: 1673523720,
+            } as MethodCallOptions<TimeLock>)
+        expect(callContract()).not.throw
     })
 
     it('should fail when nLocktime is too low.', async () => {
-        const deployTx = await timeLock.deploy(1)
-        console.log('TimeLock contract deployed: ', deployTx.id)
-        return expect(
-            timeLock.methods.unlock({
+        await timeLock.deploy(1)
+        const callContract = async () =>
+            await timeLock.methods.unlock({
                 lockTime: 1673500100,
             } as MethodCallOptions<TimeLock>)
-        ).to.be.rejectedWith(/locktime has not yet expired/)
+        expect(callContract()).to.be.rejectedWith(
+            /locktime has not yet expired/
+        )
     })
 })

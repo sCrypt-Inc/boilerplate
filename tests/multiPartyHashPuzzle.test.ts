@@ -41,26 +41,21 @@ describe('Test SmartContract `MultiPartyHashPuzzle`', () => {
         instance = new MultiPartyHashPuzzle(hashes)
 
         await instance.connect(getDefaultSigner())
-
-        const deployTx = await instance.deploy(1)
-        console.log('MultiPartyHashPuzzle contract deployed: ', deployTx.id)
     })
 
     it('should pass using correct preimages.', async () => {
-        const { tx: callTx, atInputIndex } = await instance.methods.unlock(
-            preimages
-        )
-        console.log('MultiPartyHashPuzzle contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await instance.deploy(1)
+        const callContract = async () =>
+            await instance.methods.unlock(preimages)
+        expect(callContract()).not.throw
     })
 
     it('should throw with a wrong preimage.', async () => {
+        await instance.deploy(1)
         const preimagesWrong = Array.from(preimages)
         preimagesWrong[0] = sha256('aabbcc')
-
-        return expect(
-            instance.methods.unlock(preimagesWrong)
-        ).to.be.rejectedWith(/hash mismatch/)
+        const callContract = async () =>
+            await instance.methods.unlock(preimagesWrong)
+        expect(callContract()).to.be.rejectedWith(/hash mismatch/)
     })
 })

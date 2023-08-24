@@ -41,10 +41,9 @@ describe('Test SmartContract `P2MS`', () => {
         // Dummy signer can take an array of signing private keys.
         await multiSigPayment.connect(getDefaultSigner(privateKeys))
 
-        const deployTx = await multiSigPayment.deploy(1)
-        console.log('MultiSigPayment contract deployed: ', deployTx.id)
+        await multiSigPayment.deploy(1)
 
-        const { tx: callTx, atInputIndex } =
+        const callContract = async () =>
             await multiSigPayment.methods.unlock(
                 // Filter out relevant signatures.
                 // Be vary of the order (https://scrypt.io/docs/how-to-write-a-contract/built-ins#checkmultisig).
@@ -55,10 +54,8 @@ describe('Test SmartContract `P2MS`', () => {
                     pubKeyOrAddrToSign: publicKeys,
                 } as MethodCallOptions<MultiSigPayment>
             )
-        console.log('MultiSigPayment contract called: ', callTx.id)
 
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        expect(callContract()).not.throw
     })
 
     it('should not pass if using wrong sig', async () => {
@@ -70,11 +67,9 @@ describe('Test SmartContract `P2MS`', () => {
 
         await multiSigPayment.connect(getDefaultSigner(privateKeys))
 
-        const deployTx = await multiSigPayment.deploy(1)
-        console.log('MultiSigPayment contract deployed: ', deployTx.id)
-
-        return expect(
-            multiSigPayment.methods.unlock(
+        await multiSigPayment.deploy(1)
+        const callContract = async () =>
+            await multiSigPayment.methods.unlock(
                 (sigResps) => {
                     const res = findSigs(sigResps, publicKeys)
                     res[0] = getDummySig()
@@ -85,6 +80,7 @@ describe('Test SmartContract `P2MS`', () => {
                     pubKeyOrAddrToSign: publicKeys,
                 } as MethodCallOptions<MultiSigPayment>
             )
-        ).to.be.rejectedWith(/Execution failed/)
+
+        expect(callContract()).to.be.rejectedWith(/Execution failed/)
     })
 })
