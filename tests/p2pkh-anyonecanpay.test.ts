@@ -1,5 +1,5 @@
 import { P2PKH } from '../src/contracts/p2pkh'
-import { getDefaultSigner, resetDefaultSigner, sleep } from './utils/helper'
+import { getDefaultSigner } from './utils/helper'
 import { myPublicKey, myPublicKeyHash } from './utils/privateKey'
 
 import {
@@ -108,6 +108,5 @@ describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE', () => {
 
     it('should succeed', async () => {
         await main()
-        resetDefaultSigner()
     })
 })

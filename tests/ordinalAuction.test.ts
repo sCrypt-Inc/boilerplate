@@ -1,9 +1,4 @@
-import {
-    getDefaultSigner,
-    randomPrivateKey,
-    resetDefaultSigner,
-    sleep,
-} from './utils/helper'
+import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import {
     bsv,
     ByteString,
@@ -55,7 +50,6 @@ async function deployOrdinal(dest: PubKeyHash, msg: string): Promise<UTXO> {
 
     const resp = await signer.signAndsendTransaction(unsignedTx, { address })
 
-    resetDefaultSigner()
     return {
         txId: resp.id,
         outputIndex: 0,
@@ -224,7 +218,8 @@ describe('Test SmartContract `OrdinalAuction`', () => {
             privateKeyAuctioneer,
             bsv.Script.fromHex(ordinalUTXO.script),
             ordinalUTXO.satoshis,
-            0
+            0,
+            bsv.crypto.Signature.ANYONECANPAY_SINGLE
         )
 
         // set ordinal unlocking script
