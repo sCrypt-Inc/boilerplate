@@ -14,12 +14,6 @@ const wallets: Record<string, TestWallet> = {
         })
     ),
     local: new TestWallet(myPrivateKey, new DummyProvider()),
-    mainnet: new TestWallet(
-        myPrivateKey,
-        new DefaultProvider({
-            network: bsv.Networks.mainnet,
-        })
-    ),
 }
 export function getDefaultSigner(
     privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
@@ -31,6 +25,24 @@ export function getDefaultSigner(
     if (privateKey) {
         wallet.addPrivateKey(privateKey)
     }
+
+    return wallet
+}
+
+export function getNewSigner(privateKey: bsv.PrivateKey): TestWallet {
+    const network = process.env.NETWORK || 'local'
+
+    const wallets: Record<string, TestWallet> = {
+        testnet: new TestWallet(
+            privateKey,
+            new DefaultProvider({
+                network: bsv.Networks.testnet,
+            })
+        ),
+        local: new TestWallet(privateKey, new DummyProvider()),
+    }
+
+    const wallet = wallets[network]
 
     return wallet
 }
