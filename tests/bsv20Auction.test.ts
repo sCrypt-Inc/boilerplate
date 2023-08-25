@@ -247,19 +247,13 @@ async function main() {
         privateKeyAuctioneer,
         bsv.Script.fromHex(ordinalUTXO.script),
         ordinalUTXO.satoshis,
-        0
+        0,
+        bsv.crypto.Signature.ANYONECANPAY_SINGLE
     )
-    contractTx.tx.inputs[0] = new bsv.Transaction.Input({
-        prevTxId: ordinalUTXO.txId,
-        outputIndex: ordinalUTXO.outputIndex,
-        script: bsv.Script.fromASM(
-            `${ordinalSig} ${publicKeyAuctioneer.toHex()}`
-        ),
-    })
-    contractTx.tx.inputs[0].output = new bsv.Transaction.Output({
-        script: bsv.Script.fromHex(ordinalUTXO.script),
-        satoshis: ordinalUTXO.satoshis,
-    })
+
+    contractTx.tx.inputs[0].setScript(
+        bsv.Script.fromASM(`${ordinalSig} ${publicKeyAuctioneer.toHex()}`)
+    )
 
     // Bind tx builder, that just simply re-uses the tx we created above.
     currentInstance.bindTxBuilder(
