@@ -131,7 +131,7 @@ export class BSV20Auction extends SmartContract {
             'hashPrevouts mismatch'
         )
 
-        // Ensure the first input in spending the auctioned ordinal UTXO.
+        // Ensure the first input is spending the auctioned ordinal UTXO.
         assert(
             slice(this.prevouts, 0n, 36n) == this.ordnialPrevout,
             'first input is not spending specified ordinal UTXO'
