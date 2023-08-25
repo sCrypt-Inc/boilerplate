@@ -59,8 +59,8 @@ async function main() {
     )
 
     // Construct the call tx locally (notice the "pratiallySigned" flag).
-    // Use the ANYONECANPAY_SINGLE sighash flag to sign the first input.
-    const sigHashType = bsv.crypto.Signature.ANYONECANPAY_SINGLE
+    // Use the ANYONECANPAY_ALL sighash flag to sign the first input.
+    const sigHashType = bsv.crypto.Signature.ANYONECANPAY_ALL
     const { tx: callTx } = await p2pkh.methods.unlock(
         // pass signature, the first parameter, to `unlock`
         // after the signer signs the transaction, the signatures are returned in `SignatureResponse[]`
@@ -95,7 +95,7 @@ async function main() {
     callTx.change(address)
 
     // Finally, sign the newly added inputs and broadcast the modified transaction.
-    // Notice, that if the main singer wouldn't use the ANYONECANPAY_SINGLE sighash flag,
+    // Notice, that if the main singer wouldn't use the ANYONECANPAY sighash flag,
     // Then the call to the "unlock" method (first input) wouldn't successfully evaluate anymore.
     await feeSigner.signAndsendTransaction(callTx, { address })
 
@@ -158,8 +158,8 @@ async function main2() {
     )
 
     // Construct the call tx locally (notice the "pratiallySigned" flag).
-    // Use the ANYONECANPAY_SINGLE sighash flag to sign the first input.
-    const sigHashType = bsv.crypto.Signature.ANYONECANPAY_SINGLE
+    // Use the ANYONECANPAY_ALL sighash flag to sign the first input.
+    const sigHashType = bsv.crypto.Signature.ANYONECANPAY_ALL
     const { tx: callTx } = await p2pkh.methods.unlock(
         // pass signature, the first parameter, to `unlock`
         // after the signer signs the transaction, the signatures are returned in `SignatureResponse[]`
@@ -187,7 +187,7 @@ async function main2() {
     callTx.change(address)
 
     // Finally, sign the newly added inputs and broadcast the modified transaction.
-    // Notice, that if the main singer wouldn't use the ANYONECANPAY_SINGLE sighash flag,
+    // Notice, that if the main singer wouldn't use the ANYONECANPAY sighash flag,
     // Then the call to the "unlock" method (first input) wouldn't successfully evaluate anymore.
 
     await feeSigner.signAndsendTransaction(callTx, { address })
@@ -195,7 +195,7 @@ async function main2() {
     console.log('main2 P2PKH contract called: ', callTx.id)
 }
 
-describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE', () => {
+describe('Test SmartContract `P2PKH` with ANYONECANPAY', () => {
     it('should succeed', async () => {
         await P2PKH.compile()
         // contract at first inputIndex
