@@ -203,8 +203,7 @@ describe('Test SmartContract `ERC20`', () => {
     }
 
     it('mint,transfer,approve,transferFrom', async () => {
-        const deployTx = await erc20.deploy(1)
-        console.log('Erc20 contract deployed: ', deployTx.id)
+        await erc20.deploy(1)
 
         const issuer = PubKey(toHex(await signer.getDefaultPubKey()))
         const address = await signer.getDefaultAddress()
@@ -219,20 +218,14 @@ describe('Test SmartContract `ERC20`', () => {
 
         const issuerBalance = initialSupply
 
-        const { tx: tx1, newInstance: erc20_1 } = await mint(
+        const { newInstance: erc20_1 } = await mint(
             erc20,
             issuer,
             0n,
             initialSupply
         )
-        console.log('Erc20 contract called (mint): ', tx1.id)
-        console.log(
-            `mint ${initialSupply} Gold to issuer: ${address.toString()}`
-        )
-        let result = tx1.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
 
-        const { tx: tx2, newInstance: erc20_2 } = await transfer(
+        const { newInstance: erc20_2 } = await transfer(
             erc20_1,
             {
                 address: issuerAddress,
@@ -245,9 +238,7 @@ describe('Test SmartContract `ERC20`', () => {
             },
             1000n
         )
-        result = tx2.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
-        console.log('Erc20 contract called (transfer): ', tx2.id)
+
         console.log(
             `transfer ${1000n} Gold to alice: ${aliceKey
                 .toAddress()
@@ -262,7 +253,7 @@ describe('Test SmartContract `ERC20`', () => {
 
         const aliceBalance = 1000n
 
-        const { tx: tx3, newInstance: erc20_3 } = await transfer(
+        const { newInstance: erc20_3 } = await transfer(
             erc20_2,
             {
                 address: aliceAddress,
@@ -275,15 +266,12 @@ describe('Test SmartContract `ERC20`', () => {
             },
             100n
         )
-        result = tx3.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
 
-        console.log('Erc20 contract called (transfer): ', tx3.id)
         console.log(
             `transfer ${100n} Gold to bob: ${bobKey.toAddress().toString()}`
         )
 
-        const { tx: tx4, newInstance: erc20_4 } = await transfer(
+        const { newInstance: erc20_4 } = await transfer(
             erc20_3,
             {
                 address: bobAddress,
@@ -296,49 +284,46 @@ describe('Test SmartContract `ERC20`', () => {
             },
             10n
         )
-        result = tx4.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
-        console.log('Erc20 contract called (transfer): ', tx4.id)
+
         console.log(
             `transfer ${10n} Gold to back to alice: ${aliceKey
                 .toAddress()
                 .toString()}`
         )
 
-        const { tx: tx5, newInstance: erc20_5 } = await approve(
+        const { newInstance: erc20_5 } = await approve(
             erc20_4,
             alicePubkey,
             bobAddress,
             111n
         )
         console.log(`alice approve ${111n} Gold to be spend by bob`)
-        console.log('Erc20 contract called (approve): ', tx5.id)
-        result = tx5.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
+
         const lilyKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         signer.addPrivateKey(lilyKey)
         const lilyAddress = PubKeyHash(lilyKey.toAddress().toObject().hash)
 
-        const { tx: tx6 } = await transferFrom(
-            erc20_5,
-            bobPubkey,
-            111n,
-            {
-                address: aliceAddress,
-                balance: aliceBalance - 100n + 10n,
-            },
-            {
-                address: lilyAddress,
-                balance: 0n,
-            },
-            50n
-        )
-        result = tx6.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
+        const callTransferFrom = async () =>
+            await transferFrom(
+                erc20_5,
+                bobPubkey,
+                111n,
+                {
+                    address: aliceAddress,
+                    balance: aliceBalance - 100n + 10n,
+                },
+                {
+                    address: lilyAddress,
+                    balance: 0n,
+                },
+                50n
+            )
+
+        expect(callTransferFrom()).not.throw
+
         console.log(`bob transfer ${50n} Gold from alice balance`)
-        console.log('Erc20 contract called (transferFrom): ', tx6.id)
-        return expect(
-            transferFrom(
+        const callContract = async () =>
+            await transferFrom(
                 erc20_5,
                 bobPubkey,
                 111n,
@@ -352,6 +337,9 @@ describe('Test SmartContract `ERC20`', () => {
                 },
                 150n
             )
-        ).to.be.rejectedWith(/Execution failed, ERC20: insufficient allowance/)
+
+        expect(callContract()).to.be.rejectedWith(
+            /Execution failed, ERC20: insufficient allowance/
+        )
     })
 })

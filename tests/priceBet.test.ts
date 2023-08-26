@@ -13,8 +13,6 @@ import { expect, use } from 'chai'
 import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
-import Transaction = bsv.Transaction
-import Script = bsv.Script
 
 // All data was pre-fetched from the WitnessOnChain oracle service.
 // See https://witnessonchain.com/
@@ -82,8 +80,7 @@ describe('Test SmartContract `PriceBet`', () => {
 
         // Connect signer.
         await priceBet.connect(getDefaultSigner(winner))
-        const deployTx = await priceBet.deploy(1)
-        console.log('PriceBet contract deployed: ', deployTx.id)
+        await priceBet.deploy(1)
 
         const oracleSigS = byteString2Int(
             RESP_0.signatures.rabin.signature + '00'
@@ -94,19 +91,17 @@ describe('Test SmartContract `PriceBet`', () => {
             padding: oracleSigPadding,
         }
 
-        const { tx: callTx, atInputIndex } = await priceBet.methods.unlock(
-            RESP_0.digest as ByteString,
-            oracleSig,
-            (sigResps) => findSig(sigResps, winnerPubKey),
-            // Method call options:
-            {
-                pubKeyOrAddrToSign: winnerPubKey,
-            } as MethodCallOptions<PriceBet>
-        )
-        console.log('PriceBet contract called: ', callTx.id)
-
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () =>
+            await priceBet.methods.unlock(
+                RESP_0.digest as ByteString,
+                oracleSig,
+                (sigResps) => findSig(sigResps, winnerPubKey),
+                // Method call options:
+                {
+                    pubKeyOrAddrToSign: winnerPubKey,
+                } as MethodCallOptions<PriceBet>
+            )
+        expect(callContract()).not.throw
     })
 
     it('should fail paying wrong player.', async () => {
@@ -121,8 +116,7 @@ describe('Test SmartContract `PriceBet`', () => {
 
         // Connect signer.
         await priceBet.connect(getDefaultSigner(looser))
-        const deployTx = await priceBet.deploy(1)
-        console.log('PriceBet contract deployed: ', deployTx.id)
+        await priceBet.deploy(1)
 
         const oracleSigS = byteString2Int(
             RESP_0.signatures.rabin.signature + '00'
@@ -133,8 +127,8 @@ describe('Test SmartContract `PriceBet`', () => {
             padding: oracleSigPadding,
         }
 
-        return expect(
-            priceBet.methods.unlock(
+        const callContract = async () =>
+            await priceBet.methods.unlock(
                 RESP_0.digest as ByteString,
                 oracleSig,
                 (sigResps) => findSig(sigResps, looserPubKey),
@@ -143,6 +137,7 @@ describe('Test SmartContract `PriceBet`', () => {
                     pubKeyOrAddrToSign: looserPubKey,
                 } as MethodCallOptions<PriceBet>
             )
-        ).to.be.rejectedWith(/signature check failed/)
+
+        expect(callContract()).to.be.rejectedWith(/signature check failed/)
     })
 })

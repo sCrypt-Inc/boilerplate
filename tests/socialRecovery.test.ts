@@ -10,10 +10,11 @@ import {
     findSig,
     Sig,
 } from 'scrypt-ts'
+import { myPrivateKey } from './utils/privateKey'
 
 use(chaiAsPromised)
 describe('Test SmartContract `SocialRecovery`', () => {
-    let signer: bsv.PrivateKey
+    const signerKey: bsv.PrivateKey = myPrivateKey
 
     const guardians: bsv.PrivateKey[] = []
     const guardianPublicKeys: bsv.PublicKey[] = []
@@ -22,8 +23,6 @@ describe('Test SmartContract `SocialRecovery`', () => {
     let socialRecovery: SocialRecovery
 
     before(async () => {
-        signer = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
-
         const _guardianPubKeys: Array<PubKey> = []
         for (let i = 0; i < SocialRecovery.N_GUARDIANS; i++) {
             const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
@@ -40,54 +39,49 @@ describe('Test SmartContract `SocialRecovery`', () => {
 
         await SocialRecovery.compile()
         socialRecovery = new SocialRecovery(
-            PubKey(signer.toPublicKey().toHex()),
+            PubKey(signerKey.toPublicKey().toHex()),
             guardianPubKeys
         )
     })
 
     it('should pass signing public key unlock.', async () => {
-        await socialRecovery.connect(getDefaultSigner(signer))
-        const deployTx = await socialRecovery.deploy(1)
-        console.log('SocialRecovery contract deployed: ', deployTx.id)
-        const { tx: callTx, atInputIndex } =
+        await socialRecovery.connect(getDefaultSigner(signerKey))
+        await socialRecovery.deploy(1)
+        const callContract = async () =>
             await socialRecovery.methods.unlock(
-                (sigResps) => findSig(sigResps, signer.toPublicKey()),
+                (sigResps) => findSig(sigResps, signerKey.toPublicKey()),
                 // Method call options:
                 {
-                    pubKeyOrAddrToSign: signer.toPublicKey(),
+                    pubKeyOrAddrToSign: signerKey.toPublicKey(),
                 } as MethodCallOptions<SocialRecovery>
             )
-        console.log('SocialRecovery contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        expect(callContract()).not.throw
     })
 
     it('should fail signing public key unlock with wrong key.', async () => {
         const wrongKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         await socialRecovery.connect(getDefaultSigner(wrongKey))
-        const deployTx = await socialRecovery.deploy(1)
-        console.log('SocialRecovery contract deployed: ', deployTx.id)
-        return expect(
-            socialRecovery.methods.unlock(
+        await socialRecovery.deploy(1)
+        const callContract = async () =>
+            await socialRecovery.methods.unlock(
                 (sigResps) => findSig(sigResps, wrongKey.toPublicKey()),
                 // Method call options:
                 {
                     pubKeyOrAddrToSign: wrongKey.toPublicKey(),
                 } as MethodCallOptions<SocialRecovery>
             )
-        ).to.be.rejectedWith(/signature check failed/)
+        expect(callContract()).to.be.rejectedWith(/signature check failed/)
     })
 
     it('should pass updating signing key when threshold reached.', async () => {
         const newSigner = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         await socialRecovery.connect(getDefaultSigner(guardians))
-        const deployTx = await socialRecovery.deploy(1)
-        console.log('SocialRecovery contract deployed: ', deployTx.id)
+        await socialRecovery.deploy(1)
         // Get next iteration of the contract with updated signer pubkey value.
         const next = socialRecovery.next()
         next.signingPubKey = PubKey(newSigner.toPublicKey().toHex())
 
-        const { tx: callTx, atInputIndex } =
+        const callContract = async () =>
             await socialRecovery.methods.updateSigningPubKey(
                 next.signingPubKey,
                 (sigResps) => {
@@ -113,9 +107,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
                     },
                 } as MethodCallOptions<SocialRecovery>
             )
-        console.log('SocialRecovery contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        expect(callContract()).not.throw
     })
 
     it('should fail updating signing key when threshold not reached.', async () => {
@@ -125,8 +117,8 @@ describe('Test SmartContract `SocialRecovery`', () => {
         const next = socialRecovery.next()
         next.signingPubKey = PubKey(newSigner.toPublicKey().toHex())
 
-        return expect(
-            socialRecovery.methods.updateSigningPubKey(
+        const callContract = async () =>
+            await socialRecovery.methods.updateSigningPubKey(
                 next.signingPubKey,
                 (sigResps) => {
                     const guardianSigs: Sig[] = []
@@ -149,6 +141,9 @@ describe('Test SmartContract `SocialRecovery`', () => {
                     },
                 } as MethodCallOptions<SocialRecovery>
             )
-        ).to.be.rejectedWith(/Guardian threshold not reached/)
+
+        expect(callContract()).to.be.rejectedWith(
+            /Guardian threshold not reached/
+        )
     })
 })

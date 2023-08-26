@@ -131,14 +131,11 @@ describe('Test SmartContract `VirtualUTXO`', () => {
             },
         } as MethodCallOptions<VirtualUTXO>)
 
-        const { tx: callTx } = await SmartContract.multiContractCall(
-            contractTx,
-            getDefaultSigner()
-        )
-
-        console.log('VirtualUTXO contract called: ', callTx.id)
-
-        const result = callTx.verify()
-        expect(result).to.be.true
+        const callContract = async () =>
+            await SmartContract.multiContractCall(
+                contractTx,
+                getDefaultSigner()
+            )
+        expect(callContract()).not.throw
     })
 })

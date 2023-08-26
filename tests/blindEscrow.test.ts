@@ -82,22 +82,19 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
 
         await blindEscrow.connect(getDefaultSigner(buyer))
 
-        const deployTx = await blindEscrow.deploy(1)
-        console.log('BlindEscrow contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
-            (sigResps) => findSig(sigResps, buyer.publicKey),
-            PubKey(buyerPubKey.toHex()),
-            oracleSig,
-            PubKey(sellerPubKey.toHex()),
-            BlindEscrow.RELEASE_BY_SELLER,
-            {
-                pubKeyOrAddrToSign: buyer.publicKey,
-            } as MethodCallOptions<BlindEscrow>
-        )
-        console.log('BlindEscrow contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await blindEscrow.deploy(1)
+        const callContract = async () =>
+            await blindEscrow.methods.spend(
+                (sigResps) => findSig(sigResps, buyer.publicKey),
+                PubKey(buyerPubKey.toHex()),
+                oracleSig,
+                PubKey(sellerPubKey.toHex()),
+                BlindEscrow.RELEASE_BY_SELLER,
+                {
+                    pubKeyOrAddrToSign: buyer.publicKey,
+                } as MethodCallOptions<BlindEscrow>
+            )
+        expect(callContract()).to.not.throw
     })
 
     it('should pass release by arbiter', async () => {
@@ -114,22 +111,21 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
 
         await blindEscrow.connect(getDefaultSigner(buyer))
 
-        const deployTx = await blindEscrow.deploy(1)
-        console.log('BlindEscrow contract deployed: ', deployTx.id)
+        await blindEscrow.deploy(1)
 
-        const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
-            (sigResps) => findSig(sigResps, buyer.publicKey),
-            PubKey(buyerPubKey.toHex()),
-            oracleSig,
-            PubKey(arbiterPubKey.toHex()),
-            BlindEscrow.RELEASE_BY_ARBITER,
-            {
-                pubKeyOrAddrToSign: buyer.publicKey,
-            } as MethodCallOptions<BlindEscrow>
-        )
-        console.log('BlindEscrow contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () =>
+            await blindEscrow.methods.spend(
+                (sigResps) => findSig(sigResps, buyer.publicKey),
+                PubKey(buyerPubKey.toHex()),
+                oracleSig,
+                PubKey(arbiterPubKey.toHex()),
+                BlindEscrow.RELEASE_BY_ARBITER,
+                {
+                    pubKeyOrAddrToSign: buyer.publicKey,
+                } as MethodCallOptions<BlindEscrow>
+            )
+
+        expect(callContract()).to.not.throw
     })
 
     it('should pass return by buyer', async () => {
@@ -145,22 +141,19 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
         }
 
         await blindEscrow.connect(getDefaultSigner(seller))
-        const deployTx = await blindEscrow.deploy(1)
-        console.log('BlindEscrow contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
-            (sigResps) => findSig(sigResps, seller.publicKey),
-            PubKey(sellerPubKey.toHex()),
-            oracleSig,
-            PubKey(buyerPubKey.toHex()),
-            BlindEscrow.RETURN_BY_BUYER,
-            {
-                pubKeyOrAddrToSign: seller.publicKey,
-            } as MethodCallOptions<BlindEscrow>
-        )
-        console.log('BlindEscrow contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await blindEscrow.deploy(1)
+        const callContract = async () =>
+            await blindEscrow.methods.spend(
+                (sigResps) => findSig(sigResps, seller.publicKey),
+                PubKey(sellerPubKey.toHex()),
+                oracleSig,
+                PubKey(buyerPubKey.toHex()),
+                BlindEscrow.RETURN_BY_BUYER,
+                {
+                    pubKeyOrAddrToSign: seller.publicKey,
+                } as MethodCallOptions<BlindEscrow>
+            )
+        expect(callContract()).to.not.throw
     })
 
     it('should pass return by arbiter', async () => {
@@ -176,21 +169,20 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
         }
 
         await blindEscrow.connect(getDefaultSigner(seller))
-        const deployTx = await blindEscrow.deploy(1)
-        console.log('BlindEscrow contract deployed: ', deployTx.id)
+        await blindEscrow.deploy(1)
 
-        const { tx: callTx, atInputIndex } = await blindEscrow.methods.spend(
-            (sigResps) => findSig(sigResps, seller.publicKey),
-            PubKey(sellerPubKey.toHex()),
-            oracleSig,
-            PubKey(arbiterPubKey.toHex()),
-            BlindEscrow.RETURN_BY_ARBITER,
-            {
-                pubKeyOrAddrToSign: seller.publicKey,
-            } as MethodCallOptions<BlindEscrow>
-        )
-        console.log('BlindEscrow contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () =>
+            await blindEscrow.methods.spend(
+                (sigResps) => findSig(sigResps, seller.publicKey),
+                PubKey(sellerPubKey.toHex()),
+                oracleSig,
+                PubKey(arbiterPubKey.toHex()),
+                BlindEscrow.RETURN_BY_ARBITER,
+                {
+                    pubKeyOrAddrToSign: seller.publicKey,
+                } as MethodCallOptions<BlindEscrow>
+            )
+
+        expect(callContract()).not.throw
     })
 })

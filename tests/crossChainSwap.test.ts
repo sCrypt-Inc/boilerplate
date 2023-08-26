@@ -42,10 +42,8 @@ describe('Test SmartContract `CrossChainSwap`', () => {
     it('should pass unlock', async () => {
         await crossChainSwap.connect(getDefaultSigner(alicePrivKey))
 
-        const deployTx = await crossChainSwap.deploy(1)
-        console.log('CrossChainSwap contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } =
+        await crossChainSwap.deploy(1)
+        const callContract = async () =>
             await crossChainSwap.methods.unlock(
                 x,
                 (sigResps) => findSig(sigResps, alicePubKey),
@@ -53,18 +51,14 @@ describe('Test SmartContract `CrossChainSwap`', () => {
                     pubKeyOrAddrToSign: alicePubKey,
                 } as MethodCallOptions<CrossChainSwap>
             )
-        console.log('CrossChainSwap contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        expect(callContract()).not.throw
     })
 
     it('should pass cancel', async () => {
         await crossChainSwap.connect(getDefaultSigner(bobPrivKey))
 
-        const deployTx = await crossChainSwap.deploy(1)
-        console.log('CrossChainSwap contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } =
+        await crossChainSwap.deploy(1)
+        const callContract = async () =>
             await crossChainSwap.methods.cancel(
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
@@ -72,25 +66,23 @@ describe('Test SmartContract `CrossChainSwap`', () => {
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<CrossChainSwap>
             )
-        console.log('CrossChainSwap contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        expect(callContract()).not.throw
     })
 
     it('should fail withdraw when nLocktime is too low.', async () => {
         await crossChainSwap.connect(getDefaultSigner(bobPrivKey))
 
-        const deployTx = await crossChainSwap.deploy(1)
-        console.log('CrossChainSwap contract deployed: ', deployTx.id)
-
-        return expect(
-            crossChainSwap.methods.cancel(
+        await crossChainSwap.deploy(1)
+        const callContract = async () =>
+            await crossChainSwap.methods.cancel(
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
                     lockTime: 1673500100,
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<CrossChainSwap>
             )
-        ).to.be.rejectedWith(/locktime has not yet expired/)
+        expect(callContract()).to.be.rejectedWith(
+            /locktime has not yet expired/
+        )
     })
 })

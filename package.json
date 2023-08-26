@@ -7,9 +7,9 @@
     "precompile": "rimraf scrypt.index.json && rimraf artifacts",
     "compile": "npx scrypt-cli@latest compile",
     "pretest": "npm run compile",
-    "test": "mocha -i -f 'Heavy'",
-    "test-all": "mocha --no-timeouts",
-    "testnet": "cross-env NETWORK=testnet mocha --no-timeouts",
+    "test": "cross-env NETWORK=local mocha -i -f 'Heavy'",
+    "test:all": "cross-env NETWORK=local mocha --no-timeouts",
+    "test:testnet": "cross-env NETWORK=testnet mocha -i -f 'Heavy' --no-timeouts",
     "lint": "eslint . --ext .js,.ts --fix && prettier --write --ignore-unknown \"**/*\"",
     "lint-check": "eslint . --ext .js,.ts && prettier --check --ignore-unknown \"**/*\"",
     "prepare": "husky install",
@@ -26,7 +26,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "scrypt-ts": "^1.3.2",
+    "scrypt-ts": "^1.3.4",
     "scrypt-ts-lib": "^0.1.20"
   },
   "devDependencies": {

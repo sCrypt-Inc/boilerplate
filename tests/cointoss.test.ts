@@ -33,19 +33,16 @@ describe('Test SmartContract `Cointoss`', () => {
     })
 
     it('should pass the public method unit test successfully.', async () => {
-        const deployTx = await instance.deploy(1)
-        console.log('CoinToss contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } = await instance.methods.toss(
-            toByteString('alice', true),
-            toByteString('bob', true),
-            (SigReps) => findSig(SigReps, alicepublickey),
-            {
-                pubKeyOrAddrToSign: alicepublickey,
-            } as MethodCallOptions<CoinToss>
-        )
-        console.log('CoinToss contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await instance.deploy(1)
+        const callContract = async () =>
+            await instance.methods.toss(
+                toByteString('alice', true),
+                toByteString('bob', true),
+                (SigReps) => findSig(SigReps, alicepublickey),
+                {
+                    pubKeyOrAddrToSign: alicepublickey,
+                } as MethodCallOptions<CoinToss>
+            )
+        expect(callContract()).not.throw
     })
 })

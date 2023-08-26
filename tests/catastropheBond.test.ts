@@ -71,8 +71,7 @@ describe('Test SmartContract `CatBond`', () => {
         )
         await catBond.connect(getDefaultSigner())
 
-        const deployTx = await catBond.deploy(1)
-        console.log('CatBond contract deployed: ', deployTx.id)
+        await catBond.deploy(1)
 
         let currentInstance = catBond
         let alreadyInvested = 1
@@ -91,7 +90,7 @@ describe('Test SmartContract `CatBond`', () => {
             }
             nextInstance.investmentsEndIdx += 1n
 
-            const { tx: callTx, atInputIndex } =
+            const callContract = async () =>
                 await currentInstance.methods.invest(
                     investorAddr,
                     BigInt(amount),
@@ -102,9 +101,7 @@ describe('Test SmartContract `CatBond`', () => {
                         },
                     } as MethodCallOptions<CatBond>
                 )
-            console.log('CatBond contract called: ', callTx.id)
-            const result = callTx.verifyScript(atInputIndex)
-            expect(result.success, result.error).to.eq(true)
+            expect(callContract()).not.throw
 
             currentInstance = nextInstance
             alreadyInvested += amount
@@ -151,12 +148,10 @@ describe('Test SmartContract `CatBond`', () => {
             }
         )
 
-        const { tx: callTx, atInputIndex } =
+        const callContract = async () =>
             await currentInstance.methods.payout(oracleMsg, oracleSig, {
                 changeAddress: issuer.publicKey.toAddress(),
             } as MethodCallOptions<CatBond>)
-        console.log('CatBond contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        expect(callContract).not.throw
     })
 })

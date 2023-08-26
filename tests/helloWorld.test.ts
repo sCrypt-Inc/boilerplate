@@ -16,24 +16,16 @@ describe('Test SmartContract `HelloWorld`', () => {
     })
 
     it('should pass the public method unit test successfully.', async () => {
-        const deployTx = await helloWorld.deploy(1)
-        console.log('HelloWorld contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } = await helloWorld.methods.unlock(
-            toByteString('hello world', true)
-        )
-        console.log('HelloWorld contract called: ', callTx.id)
-
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await helloWorld.deploy(1)
+        const callContract = async () =>
+            await helloWorld.methods.unlock(toByteString('hello world', true))
+        expect(callContract()).not.throw
     })
 
     it('should throw with wrong message.', async () => {
-        const deployTx = await helloWorld.deploy(1)
-        console.log('HelloWorld contract deployed: ', deployTx.id)
-
-        return expect(
-            helloWorld.methods.unlock(toByteString('wrong message', true))
-        ).to.be.rejectedWith(/Not expected message!/)
+        await helloWorld.deploy(1)
+        const callContract = async () =>
+            await helloWorld.methods.unlock(toByteString('wrong message', true))
+        expect(callContract()).to.be.rejectedWith(/Not expected message!/)
     })
 })

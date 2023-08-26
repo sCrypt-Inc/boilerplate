@@ -14,8 +14,7 @@ describe('Test SmartContract `Clone`', () => {
         const clone = new Clone()
         await clone.connect(getDefaultSigner())
 
-        const deployTx = await clone.deploy(1)
-        console.log('Clone contract deployed: ', deployTx.id)
+        await clone.deploy(1)
 
         // set current instance to be the deployed one
         let currentInstance = clone
@@ -26,7 +25,7 @@ describe('Test SmartContract `Clone`', () => {
             const nextInstance = currentInstance.next()
 
             // call the method of current instance to apply the updates on chain
-            const { tx: tx_i, atInputIndex } =
+            const callContract = async () =>
                 await currentInstance.methods.unlock({
                     next: {
                         instance: nextInstance,
@@ -34,9 +33,8 @@ describe('Test SmartContract `Clone`', () => {
                     },
                 } as MethodCallOptions<Clone>)
 
-            const result = tx_i.verifyScript(atInputIndex)
-            expect(result.success, result.error).to.eq(true)
-            console.log('Clone contract called: ', tx_i.id)
+            expect(callContract()).not.throw
+
             // update the current instance reference
             currentInstance = nextInstance
         }

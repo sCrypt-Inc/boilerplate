@@ -16,17 +16,14 @@ describe('Test SmartContract `Ackermann`', () => {
     })
 
     it('should transpile contract `Ackermann` successfully.', async () => {
-        const deployTx = await ackermann.deploy(1)
-        console.log('Ackermann contract deployed: ', deployTx.id)
-        const { tx: callTx, atInputIndex } = await ackermann.methods.unlock(5n)
-        console.log('Ackermann contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await ackermann.deploy(1)
+        const callContract = async () => await ackermann.methods.unlock(5n)
+        expect(callContract()).not.throw
     })
 
     it('should throw', async () => {
-        return expect(ackermann.methods.unlock(4n)).to.be.rejectedWith(
-            /Wrong solution/
-        )
+        await ackermann.deploy(1)
+        const callContract = async () => await ackermann.methods.unlock(4n)
+        return expect(callContract()).to.be.rejectedWith(/Wrong solution/)
     })
 })

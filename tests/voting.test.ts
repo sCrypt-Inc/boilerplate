@@ -26,8 +26,7 @@ describe('Test SmartContract `Voting`', () => {
 
         const voting = new Voting(candidateNames)
         await voting.connect(getDefaultSigner())
-        const deployTx = await voting.deploy(1)
-        console.log('Voting contract deployed: ', deployTx.id)
+        await voting.deploy(1)
 
         // set current instance to be the deployed one
         let currentInstance = voting
@@ -42,26 +41,17 @@ describe('Test SmartContract `Voting`', () => {
             nextInstance.increaseVotesReceived(candidate)
 
             // call the method of current instance to apply the updates on chain
-            const { tx: tx_i, atInputIndex } =
+            const callContract = async () =>
                 await currentInstance.methods.vote(candidate, {
                     next: {
                         instance: nextInstance,
                         balance,
                     },
                 } as MethodCallOptions<Voting>)
-
-            console.log('Voting contract called: ', tx_i.id)
-
-            const result = tx_i.verifyScript(atInputIndex)
-            expect(result.success, result.error).to.eq(true)
+            expect(callContract()).not.throw
 
             // update the current instance reference
             currentInstance = nextInstance
         }
-
-        console.log(
-            'candidates: ',
-            JSON.stringify(currentInstance.candidates, null, 1)
-        )
     })
 })

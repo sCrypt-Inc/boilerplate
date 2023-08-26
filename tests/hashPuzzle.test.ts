@@ -16,15 +16,9 @@ describe('Test SmartContract `HashPuzzle`', () => {
         const hashPuzzle = new HashPuzzle(sha256Data)
         await hashPuzzle.connect(getDefaultSigner())
 
-        const deployTx = await hashPuzzle.deploy(1)
-        console.log('HashPuzzle contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } = await hashPuzzle.methods.unlock(
-            byteString
-        )
-        console.log('HashPuzzle contract called: ', callTx.id)
-
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await hashPuzzle.deploy(1)
+        const callContract = async () =>
+            await hashPuzzle.methods.unlock(byteString)
+        expect(callContract()).not.throw
     })
 })

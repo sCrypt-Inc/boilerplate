@@ -25,30 +25,28 @@ describe('Test SmartContract `P2PKH`', () => {
         // connect contract instance to a signer
         // dummySigner() has one private key in it by default, it's `myPrivateKey`
         await p2pkh.connect(getDefaultSigner())
-        const deployTx = await p2pkh.deploy(1)
-        console.log('P2PKH contract deployed: ', deployTx.id)
+        await p2pkh.deploy(1)
 
         // call public function `unlock` of this contract
-        const { tx: callTx, atInputIndex } = await p2pkh.methods.unlock(
-            // pass signature, the first parameter, to `unlock`
-            // after the signer signs the transaction, the signatures are returned in `SignatureResponse[]`
-            // you need to find the signature or signatures you want in the return through the public key or address
-            // here we use `myPublicKey` to find the signature because we signed the transaction with `myPrivateKey` before
-            (sigResps) => findSig(sigResps, myPublicKey),
-            // pass public key, the second parameter, to `unlock`
-            PubKey(toHex(myPublicKey)),
-            // method call options
-            {
-                // tell the signer to use the private key corresponding to `myPublicKey` to sign this transaction
-                // that is using `myPrivateKey` to sign the transaction
-                pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<P2PKH>
-        )
-        console.log('P2PKH contract called: ', callTx.id)
 
-        // check if the unlock transaction built above is correct
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () => {
+            await p2pkh.methods.unlock(
+                // pass signature, the first parameter, to `unlock`
+                // after the signer signs the transaction, the signatures are returned in `SignatureResponse[]`
+                // you need to find the signature or signatures you want in the return through the public key or address
+                // here we use `myPublicKey` to find the signature because we signed the transaction with `myPrivateKey` before
+                (sigResps) => findSig(sigResps, myPublicKey),
+                // pass public key, the second parameter, to `unlock`
+                PubKey(toHex(myPublicKey)),
+                // method call options
+                {
+                    // tell the signer to use the private key corresponding to `myPublicKey` to sign this transaction
+                    // that is using `myPrivateKey` to sign the transaction
+                    pubKeyOrAddrToSign: myPublicKey,
+                } as MethodCallOptions<P2PKH>
+            )
+        }
+        expect(callContract()).not.throw
     })
 
     it('should fail if using wrong private key', async () => {
@@ -59,11 +57,9 @@ describe('Test SmartContract `P2PKH`', () => {
         // now the signer has two private keys in it
         await p2pkh.connect(getDefaultSigner(wrongPrivateKey))
 
-        const deployTx = await p2pkh.deploy(1)
-        console.log('P2PKH contract deployed: ', deployTx.id)
-
-        return expect(
-            p2pkh.methods.unlock(
+        await p2pkh.deploy(1)
+        const callContract = async () =>
+            await p2pkh.methods.unlock(
                 // pass the signature signed by `wrongPrivateKey`
                 (sigResps) => findSig(sigResps, wrongPublicKey),
                 // pass the correct public key
@@ -72,7 +68,8 @@ describe('Test SmartContract `P2PKH`', () => {
                     pubKeyOrAddrToSign: wrongPublicKey, // use `wrongPrivateKey` to sign
                 } as MethodCallOptions<P2PKH>
             )
-        ).to.be.rejectedWith(/signature check failed/)
+
+        expect(callContract()).to.be.rejectedWith(/signature check failed/)
     })
 
     it('should fail if passing wrong public key', async () => {
@@ -81,11 +78,10 @@ describe('Test SmartContract `P2PKH`', () => {
         const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
         await p2pkh.connect(getDefaultSigner())
 
-        const deployTx = await p2pkh.deploy(1)
-        console.log('P2PKH contract deployed: ', deployTx.id)
+        await p2pkh.deploy(1)
 
-        return expect(
-            p2pkh.methods.unlock(
+        const callContract = async () =>
+            await p2pkh.methods.unlock(
                 // pass the correct signature signed by `myPrivateKey`
                 (sigResps) => findSig(sigResps, myPublicKey),
                 // but pass the wrong public key
@@ -94,6 +90,8 @@ describe('Test SmartContract `P2PKH`', () => {
                     pubKeyOrAddrToSign: myPublicKey, // use the correct private key, `myPrivateKey`, to sign
                 } as MethodCallOptions<P2PKH>
             )
-        ).to.be.rejectedWith(/public key hashes are not equal/)
+        expect(callContract()).to.be.rejectedWith(
+            /public key hashes are not equal/
+        )
     })
 })

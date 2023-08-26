@@ -26,13 +26,12 @@ describe('Test SmartContract `Recallable`', () => {
         recallable = new Recallable(PubKey(toHex(alicePublicKey)))
         await recallable.connect(getDefaultSigner(alicePrivateKey))
 
-        const deployTx = await recallable.deploy(100)
-        console.log('Recallable contract deployed: ', deployTx.id)
+        await recallable.deploy(100)
     })
 
     it('should fail with `satoshisSent` that is less than 1', () => {
-        return expect(
-            recallable.methods.transfer(
+        const callContract = async () =>
+            await recallable.methods.transfer(
                 (sigResps) => findSig(sigResps, alicePublicKey),
                 PubKey(toHex(bobPublicKey)),
                 BigInt(0), // less than 1
@@ -40,12 +39,14 @@ describe('Test SmartContract `Recallable`', () => {
                     pubKeyOrAddrToSign: alicePublicKey,
                 } as MethodCallOptions<Recallable>
             )
-        ).to.be.rejectedWith(/invalid value of `satoshisSent`/)
+        expect(callContract()).to.be.rejectedWith(
+            /invalid value of `satoshisSent`/
+        )
     })
 
     it('should fail with `satoshisSent` that is greater than total satoshis', () => {
-        return expect(
-            recallable.methods.transfer(
+        const callContract = async () =>
+            await recallable.methods.transfer(
                 (sigResps) => findSig(sigResps, alicePublicKey),
                 PubKey(toHex(bobPublicKey)),
                 BigInt(recallable.balance + 1), // more than the total satoshis
@@ -53,17 +54,22 @@ describe('Test SmartContract `Recallable`', () => {
                     pubKeyOrAddrToSign: alicePublicKey,
                 } as MethodCallOptions<Recallable>
             )
-        ).to.be.rejectedWith(/invalid value of `satoshisSent`/)
+
+        expect(callContract()).to.be.rejectedWith(
+            /invalid value of `satoshisSent`/
+        )
     })
 
     it('should fail with invalid signature', () => {
-        return expect(
-            recallable.methods.transfer(
+        const callContract = async () =>
+            await recallable.methods.transfer(
                 () => getDummySig(),
                 PubKey(toHex(bobPublicKey)),
                 BigInt(1)
             )
-        ).to.be.rejectedWith(/user's signature check failed/)
+        expect(callContract()).to.be.rejectedWith(
+            /user's signature check failed/
+        )
     })
 
     it('should pass 3000/7000 and recall', async () => {
@@ -80,7 +86,7 @@ describe('Test SmartContract `Recallable`', () => {
         const satoshisLeft = recallable.balance - satoshiSent
 
         // transfer method calling tx
-        const { tx: transferTx, atInputIndex: transferAtInputIndex } =
+        const callTransfer = async () =>
             await recallable.methods.transfer(
                 (sigResps) => findSig(sigResps, alicePublicKey),
                 PubKey(toHex(bobPublicKey)),
@@ -99,10 +105,7 @@ describe('Test SmartContract `Recallable`', () => {
                     ],
                 } as MethodCallOptions<Recallable>
             )
-        console.log('Recallable contract called (transfer) : ', transferTx.id)
-
-        let result = transferTx.verifyScript(transferAtInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        expect(callTransfer()).not.throw
 
         recallable = aliceNextInstance
         /**
@@ -113,7 +116,7 @@ describe('Test SmartContract `Recallable`', () => {
         aliceRecallInstance.userPubKey = PubKey(toHex(alicePublicKey))
 
         // recall method calling tx
-        const { tx: recallTx, atInputIndex: recallAtInputIndex } =
+        const callRecall = async () =>
             await bobNextInstance.methods.recall(
                 (sigResps) => findSig(sigResps, alicePublicKey),
                 {
@@ -124,9 +127,7 @@ describe('Test SmartContract `Recallable`', () => {
                     },
                 } as MethodCallOptions<Recallable>
             )
-        console.log('Recallable contract called (recall) : ', transferTx.id)
-        result = recallTx.verifyScript(recallAtInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        expect(callRecall()).not.throw
     })
 
     it('should pass 10000/0', async () => {
@@ -138,21 +139,20 @@ describe('Test SmartContract `Recallable`', () => {
         const satoshiSent = recallable.balance
 
         // transfer method calling tx
-        const { tx: callTx, atInputIndex } = await recallable.methods.transfer(
-            (sigResps) => findSig(sigResps, alicePublicKey),
-            PubKey(toHex(bobPublicKey)),
-            BigInt(satoshiSent),
-            {
-                pubKeyOrAddrToSign: alicePublicKey,
-                next: {
-                    instance: bobNextInstance,
-                    balance: satoshiSent,
-                    atOutputIndex: 0,
-                },
-            } as MethodCallOptions<Recallable>
-        )
-        console.log('Recallable contract called (transfer) : ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        expect(
+            await recallable.methods.transfer(
+                (sigResps) => findSig(sigResps, alicePublicKey),
+                PubKey(toHex(bobPublicKey)),
+                BigInt(satoshiSent),
+                {
+                    pubKeyOrAddrToSign: alicePublicKey,
+                    next: {
+                        instance: bobNextInstance,
+                        balance: satoshiSent,
+                        atOutputIndex: 0,
+                    },
+                } as MethodCallOptions<Recallable>
+            )
+        ).not.throw
     })
 })

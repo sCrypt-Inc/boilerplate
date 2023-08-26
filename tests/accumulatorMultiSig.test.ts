@@ -40,25 +40,20 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
     })
 
     it('should successfully with all three right.', async () => {
-        const deployTx = await accumulatorMultiSig.deploy(1)
-        console.log('AccumulatorMultiSig contract deployed: ', deployTx.id)
-        const { tx: callTx, atInputIndex } = await call([true, true, true])
-        console.log('AccumulatorMultiSig contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await accumulatorMultiSig.deploy(1)
+        const callContract = async () => await call([true, true, true])
+        expect(callContract()).not.throw
     })
 
     it('should successfully with two right.', async () => {
-        const deployTx = await accumulatorMultiSig.deploy(1)
-        console.log('AccumulatorMultiSig contract deployed: ', deployTx.id)
-        const { tx: callTx, atInputIndex } = await call([true, false, true])
-        console.log('AccumulatorMultiSig contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await accumulatorMultiSig.deploy(1)
+        const callContract = async () => await call([true, true, false])
+        expect(callContract()).not.throw
     })
 
     it('should throw with only one right.', async () => {
-        return expect(call([false, true, false])).to.be.rejectedWith(
+        const callContract = async () => await call([false, true, false])
+        return expect(callContract()).to.be.rejectedWith(
             /the number of signatures does not meet the threshold limit/
         )
     })

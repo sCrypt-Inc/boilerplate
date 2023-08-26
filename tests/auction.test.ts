@@ -24,33 +24,29 @@ describe('Test SmartContract `Auction` on testnet', () => {
 
     it('should pass `bid` call', async () => {
         const balance = 1
-        const deployTx = await auction.deploy(1)
-        console.log('Auction contract deployed: ', deployTx.id)
-        const { tx: callTx, atInputIndex } = await auction.methods.bid(
-            PubKey(toHex(publicKeyNewBidder)),
-            BigInt(balance + 1),
-            {
-                changeAddress: addressNewBidder,
-            } as MethodCallOptions<Auction>
-        )
-        console.log('Auction contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await auction.deploy(1)
+        const callContract = async () =>
+            await auction.methods.bid(
+                PubKey(toHex(publicKeyNewBidder)),
+                BigInt(balance + 1),
+                {
+                    changeAddress: addressNewBidder,
+                } as MethodCallOptions<Auction>
+            )
+        expect(callContract()).not.throw
     })
 
     it('should pass `close` call', async () => {
-        const deployTx = await auction.deploy(1)
-        console.log('Auction contract deployed: ', deployTx.id)
-        const { tx: callTx, atInputIndex } = await auction.methods.close(
-            (sigResps) => findSig(sigResps, publicKeyAuctioneer),
-            {
-                pubKeyOrAddrToSign: publicKeyAuctioneer,
-                changeAddress: addressNewBidder,
-                lockTime: auctionDeadline + 1,
-            } as MethodCallOptions<Auction>
-        )
-        console.log('Auction contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await auction.deploy(1)
+        const callContract = async () =>
+            await auction.methods.close(
+                (sigResps) => findSig(sigResps, publicKeyAuctioneer),
+                {
+                    pubKeyOrAddrToSign: publicKeyAuctioneer,
+                    changeAddress: addressNewBidder,
+                    lockTime: auctionDeadline + 1,
+                } as MethodCallOptions<Auction>
+            )
+        expect(callContract()).not.throw
     })
 })

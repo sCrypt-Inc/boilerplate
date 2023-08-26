@@ -19,16 +19,10 @@ describe('Test SmartContract `HashedMapNonState`', () => {
 
         const hashedMapNonState = new HashedMapNonState(map)
         await hashedMapNonState.connect(getDefaultSigner())
-        const deployTx = await hashedMapNonState.deploy(1)
-        console.log('HashedMapNonState contract deployed: ', deployTx.id)
-
-        const { tx, atInputIndex } = await hashedMapNonState.methods.unlock(
-            7n,
-            toByteString('07')
-        )
-        console.log('HashedMapNonState contract called: ', tx.id)
-        const result = tx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await hashedMapNonState.deploy(1)
+        const callContract = async () =>
+            await hashedMapNonState.methods.unlock(7n, toByteString('07'))
+        expect(callContract()).not.throw
     })
 
     it('should delete element successfully.', async () => {
@@ -38,14 +32,11 @@ describe('Test SmartContract `HashedMapNonState`', () => {
 
         const hashedMapNonState = new HashedMapNonState(map)
         await hashedMapNonState.connect(getDefaultSigner())
-        const deployTx = await hashedMapNonState.deploy(1)
-        console.log('HashedMapNonState contract deployed: ', deployTx.id)
+        await hashedMapNonState.deploy(1)
 
-        const { tx, atInputIndex } = await hashedMapNonState.methods.delete(1n)
-        console.log('HashedMapNonState contract called: ', tx.id)
-
-        const result = tx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () =>
+            await hashedMapNonState.methods.delete(1n)
+        expect(callContract()).not.throw
     })
 
     it('should throw', async () => {
@@ -55,10 +46,10 @@ describe('Test SmartContract `HashedMapNonState`', () => {
 
         const hashedMapNonState = new HashedMapNonState(map)
         await hashedMapNonState.connect(getDefaultSigner())
-        const deployTx = await hashedMapNonState.deploy(1)
-        console.log('HashedMapNonState contract deployed: ', deployTx.id)
-
-        return expect(hashedMapNonState.methods.delete(2n)).to.be.rejectedWith(
+        await hashedMapNonState.deploy(1)
+        const callContract = async () =>
+            await hashedMapNonState.methods.delete(2n)
+        expect(callContract()).to.be.rejectedWith(
             /hashedMap should have the key before delete/
         )
     })

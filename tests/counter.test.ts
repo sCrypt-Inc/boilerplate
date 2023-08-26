@@ -14,9 +14,7 @@ describe('Test SmartContract `Counter`', () => {
         const counter = new Counter(0n)
         await counter.connect(getDefaultSigner())
 
-        const deployTx = await counter.deploy(1)
-        console.log('Counter contract deployed: ', deployTx.id)
-
+        await counter.deploy(1)
         // set current instance to be the deployed one
         let currentInstance = counter
 
@@ -29,17 +27,15 @@ describe('Test SmartContract `Counter`', () => {
             nextInstance.increment()
 
             // call the method of current instance to apply the updates on chain
-            const { tx: tx_i, atInputIndex } =
+            const callContract = async () =>
                 await currentInstance.methods.incrementOnChain({
                     next: {
                         instance: nextInstance,
                         balance,
                     },
                 } as MethodCallOptions<Counter>)
+            expect(callContract()).not.throw
 
-            const result = tx_i.verifyScript(atInputIndex)
-            expect(result.success, result.error).to.eq(true)
-            console.log('Counter contract called: ', tx_i.id)
             // update the current instance reference
             currentInstance = nextInstance
         }

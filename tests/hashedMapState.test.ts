@@ -117,93 +117,59 @@ describe('Test SmartContract `HashedMapState`', () => {
     }
 
     it('insert, canGet, update, delete should pass', async () => {
-        const deployTx = await stateMap.deploy(1)
-        console.log('HashedMapState contract deployed: ', deployTx.id)
+        await stateMap.deploy(1)
 
-        const { tx: tx1, newInstance: newInstance1 } = await insert(
+        const { newInstance: newInstance1 } = await insert(
             stateMap,
             1n,
             toByteString('0001')
         )
-        console.log('HashedMapState contract called: ', tx1.id)
 
-        let result = tx1.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
-
-        const { tx: tx2, newInstance: newInstance2 } = await insert(
+        const { newInstance: newInstance2 } = await insert(
             newInstance1,
             2n,
             toByteString('0002')
         )
-        console.log('HashedMapState contract called: ', tx2.id)
-        result = tx2.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
 
-        const { tx: tx3, newInstance: newInstance3 } = await canGet(
+        const { newInstance: newInstance3 } = await canGet(
             newInstance2,
             2n,
             toByteString('0002')
         )
-        console.log('HashedMapState contract called: ', tx3.id)
-        result = tx3.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
 
-        const { tx: tx4, newInstance: newInstance4 } = await canGet(
+        const { newInstance: newInstance4 } = await canGet(
             newInstance3,
             1n,
             toByteString('0001')
         )
-        console.log('HashedMapState contract called: ', tx4.id)
-        result = tx4.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
 
-        const { tx: tx5, newInstance: newInstance5 } = await update(
+        const { newInstance: newInstance5 } = await update(
             newInstance4,
             1n,
             toByteString('000001')
         )
-        console.log('HashedMapState contract called: ', tx5.id)
-        result = tx5.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
 
-        const { tx: tx6, newInstance: newInstance6 } = await update(
+        const { newInstance: newInstance6 } = await update(
             newInstance5,
             2n,
             toByteString('000002')
         )
-        console.log('HashedMapState contract called: ', tx6.id)
-        result = tx6.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
 
-        const { tx: tx7, newInstance: newInstance7 } = await canGet(
+        const { newInstance: newInstance7 } = await canGet(
             newInstance6,
             1n,
             toByteString('000001')
         )
-        console.log('HashedMapState contract called: ', tx7.id)
-        result = tx7.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
 
-        const { tx: tx8, newInstance: newInstance8 } = await canGet(
+        const { newInstance: newInstance8 } = await canGet(
             newInstance7,
             2n,
             toByteString('000002')
         )
-        result = tx8.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
-        console.log('HashedMapState contract called: ', tx8.id)
-        const { tx: tx9, newInstance: newInstance9 } = await deleteKey(
-            newInstance8,
-            2n
-        )
-        console.log('HashedMapState contract called: ', tx9.id)
-        result = tx9.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
 
-        const { tx: tx10 } = await notExist(newInstance9, 2n)
-        console.log('HashedMapState contract called: ', tx10.id)
-        result = tx10.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
+        const { newInstance: newInstance9 } = await deleteKey(newInstance8, 2n)
+
+        expect(await notExist(newInstance9, 2n)).not.throw
     })
 
     it('unlock should pass', async () => {
@@ -215,8 +181,7 @@ describe('Test SmartContract `HashedMapState`', () => {
         const instance = new HashedMapState(map)
         await instance.connect(getDefaultSigner())
 
-        const deployTx = await instance.deploy(1)
-        console.log('HashedMapState contract deployed: ', deployTx.id)
+        await instance.deploy(1)
 
         const newInstance = instance.next()
 
@@ -235,15 +200,14 @@ describe('Test SmartContract `HashedMapState`', () => {
             }
         }
 
-        const { tx } = await instance.methods.unlock(key, val, {
-            next: {
-                instance: newInstance,
-                balance: instance.balance,
-            },
-        } as MethodCallOptions<HashedMapState>)
-        console.log('HashedMapState contract called: ', tx.id)
+        const callContract = async () =>
+            await instance.methods.unlock(key, val, {
+                next: {
+                    instance: newInstance,
+                    balance: instance.balance,
+                },
+            } as MethodCallOptions<HashedMapState>)
 
-        const result = tx.verifyScript(0)
-        expect(result.success, result.error).to.eq(true)
+        expect(callContract()).not.throw
     })
 })

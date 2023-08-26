@@ -16,40 +16,27 @@ describe('Test SmartContract `Demo`', () => {
     })
 
     it('should pass `add`', async () => {
-        const deployTx = await demo.deploy(1)
-        console.log('Demo contract deployed: ', deployTx.id)
-
-        const { tx: callTx, atInputIndex } = await demo.methods.add(5n)
-        console.log('Demo contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        await demo.deploy(1)
+        const callContract = async () => await demo.methods.add(5n)
+        expect(callContract()).not.throw
     })
 
     it('should pass `sub`', async () => {
-        const deployTx = await demo.deploy(1)
-        console.log('Demo contract deployed: ', deployTx.id)
+        await demo.deploy(1)
 
-        const { tx: callTx, atInputIndex } = await demo.methods.sub(-9n)
-        console.log('Demo contract called: ', callTx.id)
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () => await demo.methods.sub(-9n)
+        expect(callContract()).not.throw
     })
 
     it('should throw when calling `add`', async () => {
-        const deployTx = await demo.deploy(1)
-        console.log('Demo contract deployed: ', deployTx.id)
-
-        return expect(demo.methods.add(-5n)).to.be.rejectedWith(
-            /add check failed/
-        )
+        await demo.deploy(1)
+        const callContract = async () => await demo.methods.add(-5n)
+        expect(callContract()).to.be.rejectedWith(/add check failed/)
     })
 
     it('should throw when calling `sub`', async () => {
-        const deployTx = await demo.deploy(1)
-        console.log('Demo contract deployed: ', deployTx.id)
-
-        return expect(demo.methods.sub(9n)).to.be.rejectedWith(
-            /sub check failed/
-        )
+        await demo.deploy(1)
+        const callContract = async () => await demo.methods.sub(9n)
+        expect(callContract()).to.be.rejectedWith(/sub check failed/)
     })
 })

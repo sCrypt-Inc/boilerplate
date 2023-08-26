@@ -1,4 +1,4 @@
-import { getDefaultSigner, randomPrivateKey, sleep } from './utils/helper'
+import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import {
     bsv,
     ByteString,
@@ -18,6 +18,7 @@ import {
 import { myPrivateKey, myPublicKey } from './utils/privateKey'
 import { OrdinalAuction } from '../src/contracts/ordinalAuction'
 import { signTx } from 'scryptlib'
+import { expect } from 'chai'
 
 async function deployOrdinal(dest: PubKeyHash, msg: string): Promise<UTXO> {
     const signer = getDefaultSigner()
@@ -57,9 +58,7 @@ async function deployOrdinal(dest: PubKeyHash, msg: string): Promise<UTXO> {
     }
 }
 
-async function main() {
-    await OrdinalAuction.compile()
-
+describe('Test SmartContract `OrdinalAuction`', () => {
     const privateKeyAuctioneer = myPrivateKey
     const publicKeyAuctioneer = myPublicKey
     const addressAuctioneer = publicKeyAuctioneer.toAddress()
@@ -67,200 +66,192 @@ async function main() {
     const bidderPrivateKeys: bsv.PrivateKey[] = []
     const bidderPublicKeys: bsv.PublicKey[] = []
     const bidderAddresses: bsv.Address[] = []
-    for (let i = 0; i < 3; i++) {
-        const [privateKeyBidder, publicKeyBidder, , addressBidder] =
-            randomPrivateKey()
-        bidderPrivateKeys.push(privateKeyBidder)
-        bidderPublicKeys.push(publicKeyBidder)
-        bidderAddresses.push(addressBidder)
-    }
 
+    let auction: OrdinalAuction
+
+    let ordinalUTXO: UTXO
     const auctionDeadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
 
-    const ordinalUTXO = await deployOrdinal(
-        hash160(publicKeyAuctioneer.toHex()),
-        'Hello, sCrypt!'
-    )
-    console.log('Ordinal deployed:', ordinalUTXO.txId)
+    before(async () => {
+        await OrdinalAuction.compile()
+        for (let i = 0; i < 3; i++) {
+            const [privateKeyBidder, publicKeyBidder, , addressBidder] =
+                randomPrivateKey()
+            bidderPrivateKeys.push(privateKeyBidder)
+            bidderPublicKeys.push(publicKeyBidder)
+            bidderAddresses.push(addressBidder)
+        }
 
-    await sleep(3)
+        ordinalUTXO = await deployOrdinal(
+            hash160(publicKeyAuctioneer.toHex()),
+            'Hello, sCrypt!'
+        )
+        console.log('Ordinal deployed:', ordinalUTXO.txId)
 
-    const ordinalPrevout: ByteString =
-        reverseByteString(toByteString(ordinalUTXO.txId), 32n) +
-        int2ByteString(BigInt(ordinalUTXO.outputIndex), 4n)
+        const ordinalPrevout: ByteString =
+            reverseByteString(toByteString(ordinalUTXO.txId), 32n) +
+            int2ByteString(BigInt(ordinalUTXO.outputIndex), 4n)
 
-    const auction = new OrdinalAuction(
-        ordinalPrevout,
-        PubKey(toHex(publicKeyAuctioneer)),
-        BigInt(auctionDeadline)
-    )
+        auction = new OrdinalAuction(
+            ordinalPrevout,
+            PubKey(toHex(publicKeyAuctioneer)),
+            BigInt(auctionDeadline)
+        )
 
-    await auction.connect(getDefaultSigner(privateKeyAuctioneer))
+        await auction.connect(getDefaultSigner(privateKeyAuctioneer))
+    })
 
-    // contract deployment
-    const minBid = 1
-    const deployTx = await auction.deploy(minBid)
-    console.log('Auction contract deployed: ', deployTx.id)
+    it('should succeed', async () => {
+        // contract deployment
+        const minBid = 1
+        await auction.deploy(minBid)
 
-    let balance = minBid
-    let currentInstance = auction
+        let balance = minBid
+        let currentInstance = auction
 
-    // Perform bidding.
-    for (let i = 0; i < 3; i++) {
-        const newHighestBidder = PubKey(toHex(bidderPublicKeys[i]))
-        const bid = BigInt(balance + 1)
+        // Perform bidding.
+        for (let i = 0; i < 3; i++) {
+            const newHighestBidder = PubKey(toHex(bidderPublicKeys[i]))
+            const bid = BigInt(balance + 1)
 
-        const nextInstance = currentInstance.next()
-        nextInstance.bidder = newHighestBidder
+            const nextInstance = currentInstance.next()
+            nextInstance.bidder = newHighestBidder
 
-        const contractTx = await currentInstance.methods.bid(
-            newHighestBidder,
-            bid,
+            expect(
+                await currentInstance.methods.bid(newHighestBidder, bid, {
+                    changeAddress: bidderAddresses[i],
+                    next: {
+                        instance: nextInstance,
+                        balance: Number(bid),
+                    },
+                } as MethodCallOptions<OrdinalAuction>)
+            ).not.throw
+
+            balance += Number(bid)
+            currentInstance = nextInstance
+        }
+
+        // Close the auction
+        currentInstance.bindTxBuilder(
+            'close',
+            async (
+                current: OrdinalAuction,
+                options: MethodCallOptions<OrdinalAuction>,
+                sigAuctioneer: Sig,
+                prevouts: ByteString
+            ) => {
+                const unsignedTx: bsv.Transaction = new bsv.Transaction()
+
+                // add input that unlocks ordinal UTXO
+                unsignedTx
+                    .addInput(
+                        new bsv.Transaction.Input({
+                            prevTxId: ordinalUTXO.txId,
+                            outputIndex: ordinalUTXO.outputIndex,
+                            script: new bsv.Script(''),
+                        }),
+                        bsv.Script.fromHex(ordinalUTXO.script),
+                        ordinalUTXO.satoshis
+                    )
+                    .addInput(current.buildContractInput())
+
+                // build ordinal destination output
+                unsignedTx
+                    .addOutput(
+                        new bsv.Transaction.Output({
+                            script: bsv.Script.fromHex(
+                                Utils.buildPublicKeyHashScript(
+                                    hash160(current.bidder)
+                                )
+                            ),
+                            satoshis: 1,
+                        })
+                    )
+                    // build auctioneer payment output
+                    .addOutput(
+                        new bsv.Transaction.Output({
+                            script: bsv.Script.fromHex(
+                                Utils.buildPublicKeyHashScript(
+                                    hash160(current.auctioneer)
+                                )
+                            ),
+                            satoshis: current.utxo.satoshis,
+                        })
+                    )
+
+                if (options.changeAddress) {
+                    unsignedTx.change(options.changeAddress)
+                }
+
+                if (options.sequence !== undefined) {
+                    unsignedTx.inputs[1].sequenceNumber = options.sequence
+                }
+
+                if (options.lockTime !== undefined) {
+                    unsignedTx.nLockTime = options.lockTime
+                }
+
+                return Promise.resolve({
+                    tx: unsignedTx,
+                    atInputIndex: 1,
+                    nexts: [],
+                })
+            }
+        )
+
+        const contractTx = await currentInstance.methods.close(
+            (sigResps) => findSig(sigResps, publicKeyAuctioneer),
             {
-                changeAddress: bidderAddresses[i],
-                next: {
-                    instance: nextInstance,
-                    balance: Number(bid),
-                },
+                pubKeyOrAddrToSign: publicKeyAuctioneer,
+                changeAddress: addressAuctioneer,
+                lockTime: auctionDeadline + 1,
+                sequence: 0,
+                partiallySigned: true,
+                exec: false, // Do not execute the contract yet, only get the created calling transaction.
             } as MethodCallOptions<OrdinalAuction>
         )
 
-        console.log('Bid Tx:', contractTx.tx.id)
+        // If we would like to broadcast, here we need to sign ordinal UTXO input.
 
-        balance += Number(bid)
-        currentInstance = nextInstance
-    }
+        const ordinalSig = signTx(
+            contractTx.tx,
+            privateKeyAuctioneer,
+            bsv.Script.fromHex(ordinalUTXO.script),
+            ordinalUTXO.satoshis,
+            0,
+            bsv.crypto.Signature.ANYONECANPAY_SINGLE
+        )
 
-    // Close the auction
-    currentInstance.bindTxBuilder(
-        'close',
-        async (
-            current: OrdinalAuction,
-            options: MethodCallOptions<OrdinalAuction>,
-            sigAuctioneer: Sig,
-            prevouts: ByteString
-        ) => {
-            const unsignedTx: bsv.Transaction = new bsv.Transaction()
+        // set ordinal unlocking script
+        contractTx.tx.inputs[0].setScript(
+            bsv.Script.fromASM(`${ordinalSig} ${publicKeyAuctioneer.toHex()}`)
+        )
 
-            // add input that unlocks ordinal UTXO
-            unsignedTx
-                .addInput(
-                    new bsv.Transaction.Input({
-                        prevTxId: ordinalUTXO.txId,
-                        outputIndex: ordinalUTXO.outputIndex,
-                        script: bsv.Script.fromHex('00'.repeat(34)),
-                    }),
-                    bsv.Script.fromHex(ordinalUTXO.script),
-                    ordinalUTXO.satoshis
-                )
-                .addInput(current.buildContractInput())
-
-            // build ordinal destination output
-            unsignedTx
-                .addOutput(
-                    new bsv.Transaction.Output({
-                        script: bsv.Script.fromHex(
-                            Utils.buildPublicKeyHashScript(
-                                hash160(current.bidder)
-                            )
-                        ),
-                        satoshis: 1,
-                    })
-                )
-                // build auctioneer payment output
-                .addOutput(
-                    new bsv.Transaction.Output({
-                        script: bsv.Script.fromHex(
-                            Utils.buildPublicKeyHashScript(
-                                hash160(current.auctioneer)
-                            )
-                        ),
-                        satoshis: current.utxo.satoshis,
-                    })
-                )
-
-            if (options.changeAddress) {
-                unsignedTx.change(options.changeAddress)
+        // Bind tx builder, that just simply re-uses the tx we created above.
+        currentInstance.bindTxBuilder(
+            'close',
+            async (
+                current: OrdinalAuction,
+                options: MethodCallOptions<OrdinalAuction>
+            ) => {
+                return Promise.resolve({
+                    tx: contractTx.tx,
+                    atInputIndex: 1,
+                    nexts: [],
+                })
             }
+        )
 
-            if (options.sequence !== undefined) {
-                unsignedTx.inputs[1].sequenceNumber = options.sequence
-            }
-
-            if (options.lockTime !== undefined) {
-                unsignedTx.nLockTime = options.lockTime
-            }
-
-            return Promise.resolve({
-                tx: unsignedTx,
-                atInputIndex: 1,
-                nexts: [],
-            })
-        }
-    )
-
-    let contractTx = await currentInstance.methods.close(
-        (sigResps) => findSig(sigResps, publicKeyAuctioneer),
-        {
-            pubKeyOrAddrToSign: publicKeyAuctioneer,
-            changeAddress: addressAuctioneer,
-            lockTime: auctionDeadline + 1,
-            sequence: 0,
-            partiallySigned: true,
-            exec: false, // Do not execute the contract yet, only get the created calling transaction.
-        } as MethodCallOptions<OrdinalAuction>
-    )
-
-    // If we would like to broadcast, here we need to sign ordinal UTXO input.
-    const ordinalSig = signTx(
-        contractTx.tx,
-        privateKeyAuctioneer,
-        bsv.Script.fromHex(ordinalUTXO.script),
-        ordinalUTXO.satoshis,
-        0
-    )
-    contractTx.tx.inputs[0] = new bsv.Transaction.Input({
-        prevTxId: ordinalUTXO.txId,
-        outputIndex: ordinalUTXO.outputIndex,
-        script: bsv.Script.fromASM(
-            `${ordinalSig} ${publicKeyAuctioneer.toHex()}`
-        ),
-    })
-    contractTx.tx.inputs[0].output = new bsv.Transaction.Output({
-        script: bsv.Script.fromHex(ordinalUTXO.script),
-        satoshis: ordinalUTXO.satoshis,
-    })
-
-    // Bind tx builder, that just simply re-uses the tx we created above.
-    currentInstance.bindTxBuilder(
-        'close',
-        async (
-            current: OrdinalAuction,
-            options: MethodCallOptions<OrdinalAuction>
-        ) => {
-            return Promise.resolve({
-                tx: contractTx.tx,
-                atInputIndex: 1,
-                nexts: [],
-            })
-        }
-    )
-
-    contractTx = await currentInstance.methods.close(
-        (sigResps) => findSig(sigResps, publicKeyAuctioneer),
-        {
-            pubKeyOrAddrToSign: publicKeyAuctioneer,
-            changeAddress: addressAuctioneer,
-            lockTime: auctionDeadline + 1,
-            sequence: 0,
-        } as MethodCallOptions<OrdinalAuction>
-    )
-
-    console.log('Close Tx: ', contractTx.tx.id)
-}
-
-describe('Test SmartContract `OrdinalAuction`', () => {
-    it('should succeed', async () => {
-        await main()
+        expect(
+            await currentInstance.methods.close(
+                (sigResps) => findSig(sigResps, publicKeyAuctioneer),
+                {
+                    pubKeyOrAddrToSign: publicKeyAuctioneer,
+                    changeAddress: addressAuctioneer,
+                    lockTime: auctionDeadline + 1,
+                    sequence: 0,
+                } as MethodCallOptions<OrdinalAuction>
+            )
+        ).not.throw
     })
 })

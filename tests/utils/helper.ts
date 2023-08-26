@@ -14,12 +14,6 @@ const wallets: Record<string, TestWallet> = {
         })
     ),
     local: new TestWallet(myPrivateKey, new DummyProvider()),
-    mainnet: new TestWallet(
-        myPrivateKey,
-        new DefaultProvider({
-            network: bsv.Networks.mainnet,
-        })
-    ),
 }
 export function getDefaultSigner(
     privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
@@ -35,12 +29,22 @@ export function getDefaultSigner(
     return wallet
 }
 
-export function resetDefaultSigner() {
+export function getNewSigner(privateKey: bsv.PrivateKey): TestWallet {
     const network = process.env.NETWORK || 'local'
-    const wallet = wallets[network]
-    if (wallet['_utxoManagers']) {
-        wallet['_utxoManagers'].clear()
+
+    const wallets: Record<string, TestWallet> = {
+        testnet: new TestWallet(
+            privateKey,
+            new DefaultProvider({
+                network: bsv.Networks.testnet,
+            })
+        ),
+        local: new TestWallet(privateKey, new DummyProvider()),
     }
+
+    const wallet = wallets[network]
+
+    return wallet
 }
 
 export const sleep = async (seconds: number) => {
@@ -52,7 +56,7 @@ export const sleep = async (seconds: number) => {
 }
 
 export function randomPrivateKey() {
-    const privateKey = bsv.PrivateKey.fromRandom('testnet')
+    const privateKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
     const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
     const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
     const address = publicKey.toAddress()
