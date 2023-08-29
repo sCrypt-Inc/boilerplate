@@ -68,6 +68,6 @@ describe('Test SmartContract `Crowdfund`', () => {
                 } as MethodCallOptions<Crowdfund>
             )
 
-        expect(callContract()).to.be.rejectedWith(/fundraising expired/)
+        return expect(callContract()).to.be.rejectedWith(/fundraising expired/)
     })
 })

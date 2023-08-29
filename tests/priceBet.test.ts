@@ -138,6 +138,8 @@ describe('Test SmartContract `PriceBet`', () => {
                 } as MethodCallOptions<PriceBet>
             )
 
-        expect(callContract()).to.be.rejectedWith(/signature check failed/)
+        return expect(callContract()).to.be.rejectedWith(
+            /signature check failed/
+        )
     })
 })

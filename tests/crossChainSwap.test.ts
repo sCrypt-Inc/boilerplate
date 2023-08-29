@@ -81,7 +81,7 @@ describe('Test SmartContract `CrossChainSwap`', () => {
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<CrossChainSwap>
             )
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /locktime has not yet expired/
         )
     })

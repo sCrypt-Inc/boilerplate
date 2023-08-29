@@ -53,6 +53,6 @@ describe('Test SmartContract `MultiPartyHashPuzzleOpt`', () => {
         preimagesWrong[0] = sha256('aabbcc')
         const callContract = async () =>
             await instance.methods.unlock(preimagesWrong)
-        expect(callContract()).to.be.rejectedWith(/hash mismatch/)
+        return expect(callContract()).to.be.rejectedWith(/hash mismatch/)
     })
 })

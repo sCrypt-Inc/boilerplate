@@ -81,6 +81,6 @@ describe('Test SmartContract `P2MS`', () => {
                 } as MethodCallOptions<MultiSigPayment>
             )
 
-        expect(callContract()).to.be.rejectedWith(/Execution failed/)
+        return expect(callContract()).to.be.rejectedWith(/Execution failed/)
     })
 })

@@ -139,7 +139,9 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
                     },
                 } as MethodCallOptions<StatefulMultiSig>
             )
-        expect(callContract()).to.be.rejectedWith(/signature check failed/)
+        return expect(callContract()).to.be.rejectedWith(
+            /signature check failed/
+        )
     })
 
     it('should fail pay if threshold not reached', async () => {
@@ -157,7 +159,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
                         await statefulMultiSig.signer.getDefaultAddress(),
                 } as MethodCallOptions<StatefulMultiSig>
             )
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /Not enough valid signatures./
         )
     })

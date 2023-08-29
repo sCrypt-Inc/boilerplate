@@ -69,7 +69,9 @@ describe('Test SmartContract `P2PKH`', () => {
                 } as MethodCallOptions<P2PKH>
             )
 
-        expect(callContract()).to.be.rejectedWith(/signature check failed/)
+        return expect(callContract()).to.be.rejectedWith(
+            /signature check failed/
+        )
     })
 
     it('should fail if passing wrong public key', async () => {
@@ -90,7 +92,7 @@ describe('Test SmartContract `P2PKH`', () => {
                     pubKeyOrAddrToSign: myPublicKey, // use the correct private key, `myPrivateKey`, to sign
                 } as MethodCallOptions<P2PKH>
             )
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /public key hashes are not equal/
         )
     })

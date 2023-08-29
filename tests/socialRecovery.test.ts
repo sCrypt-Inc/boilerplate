@@ -70,7 +70,9 @@ describe('Test SmartContract `SocialRecovery`', () => {
                     pubKeyOrAddrToSign: wrongKey.toPublicKey(),
                 } as MethodCallOptions<SocialRecovery>
             )
-        expect(callContract()).to.be.rejectedWith(/signature check failed/)
+        return expect(callContract()).to.be.rejectedWith(
+            /signature check failed/
+        )
     })
 
     it('should pass updating signing key when threshold reached.', async () => {
@@ -142,7 +144,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
                 } as MethodCallOptions<SocialRecovery>
             )
 
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /Guardian threshold not reached/
         )
     })

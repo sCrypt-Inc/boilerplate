@@ -51,7 +51,7 @@ describe('Test SmartContract `HashedSetNonState`', () => {
         await hashedSetNonState.deploy(1)
         const callContract = async () =>
             await hashedSetNonState.methods.delete(2n)
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /hashedSet should have the key before delete/
         )
     })

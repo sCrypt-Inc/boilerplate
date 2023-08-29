@@ -31,7 +31,7 @@ describe('Test SmartContract `TimeLock`', () => {
             await timeLock.methods.unlock({
                 lockTime: 1673500100,
             } as MethodCallOptions<TimeLock>)
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /locktime has not yet expired/
         )
     })

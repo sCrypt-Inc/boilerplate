@@ -26,6 +26,8 @@ describe('Test SmartContract `HelloWorld`', () => {
         await helloWorld.deploy(1)
         const callContract = async () =>
             await helloWorld.methods.unlock(toByteString('wrong message', true))
-        expect(callContract()).to.be.rejectedWith(/Not expected message!/)
+        return expect(callContract()).to.be.rejectedWith(
+            /Not expected message!/
+        )
     })
 })

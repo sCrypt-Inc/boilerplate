@@ -8,6 +8,7 @@ import {
     PubKey,
     hash160,
     ByteString,
+    ContractTransaction,
 } from 'scrypt-ts'
 import { OrdinalLock, purchaseTxBuilder } from '../src/contracts/ordinalLock'
 import chaiAsPromised from 'chai-as-promised'
@@ -108,7 +109,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
                 current: OrdinalLock,
                 options: MethodCallOptions<OrdinalLock>,
                 destOutput: ByteString
-            ): Promise<any> => {
+            ): Promise<ContractTransaction> => {
                 const destOutputBR = new bsv.encoding.BufferReader(
                     Buffer.from(destOutput, 'hex')
                 )
@@ -132,6 +133,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
                 const result = {
                     tx: unsignedTx,
                     atInputIndex: 0, // the contract input's index
+                    nexts: [],
                 }
 
                 return Promise.resolve(result)
@@ -143,7 +145,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
             await instance.methods.purchase(destOutputStr, {
                 changeAddress: await buyerSigner.getDefaultAddress(),
             } as MethodCallOptions<OrdinalLock>)
-        expect(callContract()).to.be.rejectedWith(/Execution failed/)
+        return expect(callContract()).to.be.rejectedWith(/Execution failed/)
     })
 
     it('should fail cancel method w bad sig.', async () => {
@@ -161,6 +163,6 @@ describe('Test SmartContract `OrdinalLock`', () => {
                     changeAddress: wrongKey.toAddress(),
                 } as MethodCallOptions<OrdinalLock>
             )
-        expect(callContract()).to.be.rejectedWith(/bad seller/)
+        return expect(callContract()).to.be.rejectedWith(/bad seller/)
     })
 })

@@ -35,7 +35,7 @@ describe('Test SmartContract `Erc721`', () => {
                 () => getDummySig() // mint without correct minter sig
             )
 
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /minter signature check failed/
         )
     })
@@ -60,7 +60,7 @@ describe('Test SmartContract `Erc721`', () => {
                 (sigResps) => findSig(sigResps, myPublicKey) // minterSig
             )
 
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /token was already minted before/
         )
     })
@@ -91,7 +91,7 @@ describe('Test SmartContract `Erc721`', () => {
                 } as MethodCallOptions<Erc721>
             )
 
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /sender doesn't have the token/
         )
     })

@@ -49,7 +49,7 @@ describe('Test SmartContract `HashedMapNonState`', () => {
         await hashedMapNonState.deploy(1)
         const callContract = async () =>
             await hashedMapNonState.methods.delete(2n)
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /hashedMap should have the key before delete/
         )
     })

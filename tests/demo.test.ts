@@ -31,12 +31,12 @@ describe('Test SmartContract `Demo`', () => {
     it('should throw when calling `add`', async () => {
         await demo.deploy(1)
         const callContract = async () => await demo.methods.add(-5n)
-        expect(callContract()).to.be.rejectedWith(/add check failed/)
+        return expect(callContract()).to.be.rejectedWith(/add check failed/)
     })
 
     it('should throw when calling `sub`', async () => {
         await demo.deploy(1)
         const callContract = async () => await demo.methods.sub(9n)
-        expect(callContract()).to.be.rejectedWith(/sub check failed/)
+        return expect(callContract()).to.be.rejectedWith(/sub check failed/)
     })
 })

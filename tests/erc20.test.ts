@@ -338,7 +338,7 @@ describe('Test SmartContract `ERC20`', () => {
                 150n
             )
 
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /Execution failed, ERC20: insufficient allowance/
         )
     })

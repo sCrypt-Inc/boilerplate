@@ -39,7 +39,7 @@ describe('Test SmartContract `Recallable`', () => {
                     pubKeyOrAddrToSign: alicePublicKey,
                 } as MethodCallOptions<Recallable>
             )
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /invalid value of `satoshisSent`/
         )
     })
@@ -55,7 +55,7 @@ describe('Test SmartContract `Recallable`', () => {
                 } as MethodCallOptions<Recallable>
             )
 
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /invalid value of `satoshisSent`/
         )
     })
@@ -67,7 +67,7 @@ describe('Test SmartContract `Recallable`', () => {
                 PubKey(toHex(bobPublicKey)),
                 BigInt(1)
             )
-        expect(callContract()).to.be.rejectedWith(
+        return expect(callContract()).to.be.rejectedWith(
             /user's signature check failed/
         )
     })
