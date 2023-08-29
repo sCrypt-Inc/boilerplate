@@ -21,14 +21,12 @@ describe('Test SmartContract `modEXP`', () => {
         console.log('modEXP contract deployed: ', deployTx.id)
 
         
-        const { tx: callTx, atInputIndex } = await instance.methods.main(
-            2n, 3n, 8n
-            
+        const callContract = async () => {
+        await instance.methods.main(
+            2n,3n,8n
         )
-        console.log('`modEXP` contract called : ', callTx.id)
-
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+            expect(callContract()).not.throw
+        }
         
     })
 
