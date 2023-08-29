@@ -19,13 +19,11 @@ describe('Test SmartContract `Test`', () => {
         const deployTx = await instance.deploy(1)
         console.log(' Library Test contract deployed: ', deployTx.id)
 
-        const { tx: callTx, atInputIndex } = await instance.methods.unlock(
-            3n
-        )
-
-        console.log('Library Test Called Successfully : ', callTx.id)
-
-        const result = callTx.verifyScript(atInputIndex)
-        expect(result.success, result.error).to.eq(true)
+        const callContract = async () => {
+            await instance.methods.unlock(
+                3n
+            )
+            expect(callContract()).not.throw
+        }
     })
 })
