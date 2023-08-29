@@ -17,7 +17,7 @@ import {
  * the next output will be a P2PKH paying the address in the "pubKeyHash"
  * property.
  */
-export class AnyoneCanSpend extends SmartContract {
+export class EnforceRecipient extends SmartContract {
     // Address of the recipient.
     @prop()
     readonly pubKeyHash: PubKeyHash
