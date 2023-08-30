@@ -12,6 +12,12 @@ export class CheckSequenceVerify extends SmartContract{
     // maximal target for any block to be considered valid
     blockchainTarget : bigint;
 
+				constructor(relativeTime : bigint, blockchainTarget : bigint){
+			super(...arguments)
+			this.relativeTime = relativeTime
+			this.blockchainTarget = blockchainTarget
+
+		}
     // unlock based on unix timestamp
     @method()
     public unlockWithTime(utxoBh : BlockHeader, latestBh : BlockHeader, merkleproof : MerkleProof) {
