@@ -12,6 +12,8 @@ export class SVD extends SmartContract{
     A : Matrix;
 
     static readonly  N : bigint = 4n;
+
+    @prop()
     static readonly Identity : Matrix = [[1n,0n, 0n, 0n], [0n, 1n, 0n, 0n], [0n, 0n, 1n, 0n], [0n, 0n, 0n, 1n]];
   
     constructor(A : Matrix){
