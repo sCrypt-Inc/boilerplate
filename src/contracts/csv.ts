@@ -26,14 +26,14 @@ export class CheckSequenceVerify extends SmartContract{
         // enough time has elapsed since the UTXO is mined
         assert(latestBh.time - utxoBh.time >= this.relativeTime);
     }
-
+let prevTxId : Sha256;
     // unlock based on block height
     @method()
     public unlockWithBlockHeight(utxoBh : BlockHeader, latestBh : BlockHeader, 
                                  utxoMerkleproof : MerkleProof,latestMerkleproof : MerkleProof,
                                  utxoCoinbaseTx : ByteString, latestCoinbaseTx : ByteString, merkleproof : MerkleProof) {
         this.validateHelper(utxoBh, latestBh, merkleproof);
-
+	prevTxId = Sha256(this.ctx.utxo.outpoint.txid)
         // get block height from header
         let utxoBlockHeight : bigint = Blockchain.blockHeight(utxoBh, utxoCoinbaseTx, utxoMerkleproof);
         let latestBlockHeight : bigint= Blockchain.blockHeight(latestBh, latestCoinbaseTx, latestMerkleproof);
@@ -45,10 +45,9 @@ export class CheckSequenceVerify extends SmartContract{
     // @utxoBh: block header containing the UTXO containing the contract
     // @latestBh: latest block header
     @method()
-    public validateHelper(utxoBh : BlockHeader, latestBh : BlockHeader, merkleproof : MerkleProof) {
+     validateHelper(utxoBh : BlockHeader, latestBh : BlockHeader, merkleproof : MerkleProof) : boolean {
         
-        // get id of previous tx
-        let prevTxid : Sha256= Sha256(this.ctx.utxo.outpoint.txid);
+        
         // verify previous tx is in the block
         assert(Blockchain.txInBlock(prevTxid, utxoBh, merkleproof));
 
@@ -56,6 +55,6 @@ export class CheckSequenceVerify extends SmartContract{
         assert(Blockchain.isValidBlockHeader(utxoBh, this.blockchainTarget));
         assert(Blockchain.isValidBlockHeader(latestBh, this.blockchainTarget));
 
-        assert(true)
+       return true;
     }
 }
