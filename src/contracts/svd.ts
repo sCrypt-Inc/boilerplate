@@ -13,6 +13,11 @@ export class SVD extends SmartContract{
 
     static readonly  N : bigint = 4n;
     static readonly Identity : Matrix = [[1n,0n, 0n, 0n], [0n, 1n, 0n, 0n], [0n, 0n, 1n, 0n], [0n, 0n, 0n, 1n]];
+  
+    constructor(A : Matrix){
+        super(...arguments)
+        this.A = A
+    }
 
     @method()
     public main(U : Matrix, Sigma : Matrix, V : Matrix, k : bigint) {
