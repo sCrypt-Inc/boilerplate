@@ -18,7 +18,7 @@ export class ModExp extends SmartContract {
         x = x % this.M;
 
         if (x != 0n) {
-            for (let i = 0; i < this.M; i ++) {
+            for (let i = 0; i < 3; i ++) {
                 if (y >= 0n) {
                     // If y is odd, multiply x with result
                     if (y % 2n) res = (res * x) % this.M;
