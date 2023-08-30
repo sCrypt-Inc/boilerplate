@@ -21,8 +21,8 @@ describe('Test SmartContract `HashedMapNonState`', () => {
         await hashedMapNonState.connect(getDefaultSigner())
         await hashedMapNonState.deploy(1)
         const callContract = async () =>
-            await hashedMapNonState.methods.unlock(7n, toByteString('07'))
-        expect(callContract()).not.throw
+            hashedMapNonState.methods.unlock(7n, toByteString('07'))
+        return expect(callContract()).not.rejected
     })
 
     it('should delete element successfully.', async () => {
@@ -34,9 +34,8 @@ describe('Test SmartContract `HashedMapNonState`', () => {
         await hashedMapNonState.connect(getDefaultSigner())
         await hashedMapNonState.deploy(1)
 
-        const callContract = async () =>
-            await hashedMapNonState.methods.delete(1n)
-        expect(callContract()).not.throw
+        const callContract = async () => hashedMapNonState.methods.delete(1n)
+        return expect(callContract()).not.rejected
     })
 
     it('should throw', async () => {
@@ -47,8 +46,7 @@ describe('Test SmartContract `HashedMapNonState`', () => {
         const hashedMapNonState = new HashedMapNonState(map)
         await hashedMapNonState.connect(getDefaultSigner())
         await hashedMapNonState.deploy(1)
-        const callContract = async () =>
-            await hashedMapNonState.methods.delete(2n)
+        const callContract = async () => hashedMapNonState.methods.delete(2n)
         return expect(callContract()).to.be.rejectedWith(
             /hashedMap should have the key before delete/
         )

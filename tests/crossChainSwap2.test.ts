@@ -144,7 +144,7 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
 
         await crossChainSwap.deploy(1)
         const callContract = async () =>
-            await crossChainSwap.methods.swap(
+            crossChainSwap.methods.swap(
                 btcTx,
                 merkleProof,
                 headers,
@@ -154,7 +154,7 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
                     pubKeyOrAddrToSign: alicePubKey,
                 } as MethodCallOptions<CrossChainSwap2>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should pass cancel', async () => {
@@ -162,7 +162,7 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
 
         await crossChainSwap.deploy(1)
         const callContract = async () =>
-            await crossChainSwap.methods.cancel(
+            crossChainSwap.methods.cancel(
                 PubKey(toHex(bobPubKey)),
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
@@ -170,7 +170,7 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<CrossChainSwap2>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 })
 

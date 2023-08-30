@@ -30,7 +30,7 @@ describe('Test SmartContract `P2PKH`', () => {
         // call public function `unlock` of this contract
 
         const callContract = async () => {
-            await p2pkh.methods.unlock(
+            p2pkh.methods.unlock(
                 // pass signature, the first parameter, to `unlock`
                 // after the signer signs the transaction, the signatures are returned in `SignatureResponse[]`
                 // you need to find the signature or signatures you want in the return through the public key or address
@@ -46,7 +46,7 @@ describe('Test SmartContract `P2PKH`', () => {
                 } as MethodCallOptions<P2PKH>
             )
         }
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should fail if using wrong private key', async () => {
@@ -59,7 +59,7 @@ describe('Test SmartContract `P2PKH`', () => {
 
         await p2pkh.deploy(1)
         const callContract = async () =>
-            await p2pkh.methods.unlock(
+            p2pkh.methods.unlock(
                 // pass the signature signed by `wrongPrivateKey`
                 (sigResps) => findSig(sigResps, wrongPublicKey),
                 // pass the correct public key
@@ -83,7 +83,7 @@ describe('Test SmartContract `P2PKH`', () => {
         await p2pkh.deploy(1)
 
         const callContract = async () =>
-            await p2pkh.methods.unlock(
+            p2pkh.methods.unlock(
                 // pass the correct signature signed by `myPrivateKey`
                 (sigResps) => findSig(sigResps, myPublicKey),
                 // but pass the wrong public key

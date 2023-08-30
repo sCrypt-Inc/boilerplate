@@ -31,7 +31,7 @@ describe('Test SmartContract `Crowdfund`', () => {
     it('should collect fund success', async () => {
         await crowdfund.deploy(2)
         const callContract = async () =>
-            await crowdfund.methods.collect(
+            crowdfund.methods.collect(
                 (sigResps) => findSig(sigResps, publicKeyRecipient),
                 {
                     pubKeyOrAddrToSign: publicKeyRecipient,
@@ -40,27 +40,27 @@ describe('Test SmartContract `Crowdfund`', () => {
                     ),
                 } as MethodCallOptions<Crowdfund>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should success when refund', async () => {
         await crowdfund.deploy(1)
         const today = Math.round(new Date().valueOf() / 1000)
         const callContract = async () =>
-            await crowdfund.methods.refund(
+            crowdfund.methods.refund(
                 (sigResps) => findSig(sigResps, publicKeyContributor),
                 {
                     pubKeyOrAddrToSign: publicKeyContributor,
                     lockTime: today,
                 } as MethodCallOptions<Crowdfund>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should fail when refund before deadline', async () => {
         await crowdfund.deploy(1)
         const callContract = async () =>
-            await crowdfund.methods.refund(
+            crowdfund.methods.refund(
                 (sigResps) => findSig(sigResps, publicKeyContributor),
                 {
                     pubKeyOrAddrToSign: publicKeyContributor,

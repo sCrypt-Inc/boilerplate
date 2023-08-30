@@ -44,14 +44,14 @@ describe('Test SmartContract `CrossChainSwap`', () => {
 
         await crossChainSwap.deploy(1)
         const callContract = async () =>
-            await crossChainSwap.methods.unlock(
+            crossChainSwap.methods.unlock(
                 x,
                 (sigResps) => findSig(sigResps, alicePubKey),
                 {
                     pubKeyOrAddrToSign: alicePubKey,
                 } as MethodCallOptions<CrossChainSwap>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should pass cancel', async () => {
@@ -59,14 +59,14 @@ describe('Test SmartContract `CrossChainSwap`', () => {
 
         await crossChainSwap.deploy(1)
         const callContract = async () =>
-            await crossChainSwap.methods.cancel(
+            crossChainSwap.methods.cancel(
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
                     lockTime: 1673523720,
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<CrossChainSwap>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should fail withdraw when nLocktime is too low.', async () => {
@@ -74,7 +74,7 @@ describe('Test SmartContract `CrossChainSwap`', () => {
 
         await crossChainSwap.deploy(1)
         const callContract = async () =>
-            await crossChainSwap.methods.cancel(
+            crossChainSwap.methods.cancel(
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
                     lockTime: 1673500100,

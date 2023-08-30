@@ -21,13 +21,13 @@ describe('Test SmartContract `HashedSetNonState`', () => {
         await hashedSetNonState.connect(getDefaultSigner())
         await hashedSetNonState.deploy(1)
 
-        let callContract = async () => await hashedSetNonState.methods.add(1n)
-        expect(callContract()).not.throw
+        let callContract = async () => hashedSetNonState.methods.add(1n)
+        await expect(callContract()).not.rejected
 
         await hashedSetNonState.deploy(1)
 
-        callContract = async () => await hashedSetNonState.methods.add(7n)
-        expect(callContract()).not.throw
+        callContract = async () => hashedSetNonState.methods.add(7n)
+        await expect(callContract()).not.rejected
     })
 
     it('should delete element successfully.', async () => {
@@ -37,9 +37,8 @@ describe('Test SmartContract `HashedSetNonState`', () => {
         const hashedSetNonState = new HashedSetNonState(set)
         await hashedSetNonState.connect(getDefaultSigner())
         await hashedSetNonState.deploy(1)
-        const callContract = async () =>
-            await hashedSetNonState.methods.delete(1n)
-        expect(callContract()).not.throw
+        const callContract = async () => hashedSetNonState.methods.delete(1n)
+        return expect(callContract()).not.rejected
     })
 
     it('should throw', async () => {
@@ -49,8 +48,7 @@ describe('Test SmartContract `HashedSetNonState`', () => {
         const hashedSetNonState = new HashedSetNonState(set)
         await hashedSetNonState.connect(getDefaultSigner())
         await hashedSetNonState.deploy(1)
-        const callContract = async () =>
-            await hashedSetNonState.methods.delete(2n)
+        const callContract = async () => hashedSetNonState.methods.delete(2n)
         return expect(callContract()).to.be.rejectedWith(
             /hashedSet should have the key before delete/
         )

@@ -131,7 +131,7 @@ describe('Heavy: Test SmartContract `OrderedSig`', () => {
             }
         )
         const callContract = async () =>
-            await orderedSig.methods.unlock(
+            orderedSig.methods.unlock(
                 (_) => sig0,
                 sig1,
                 sig2,
@@ -140,6 +140,6 @@ describe('Heavy: Test SmartContract `OrderedSig`', () => {
                     changeAddress: await orderedSig.signer.getDefaultAddress(),
                 } as MethodCallOptions<OrderedSig>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 })

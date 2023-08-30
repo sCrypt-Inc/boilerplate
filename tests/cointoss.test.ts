@@ -35,7 +35,7 @@ describe('Test SmartContract `Cointoss`', () => {
     it('should pass the public method unit test successfully.', async () => {
         await instance.deploy(1)
         const callContract = async () =>
-            await instance.methods.toss(
+            instance.methods.toss(
                 toByteString('alice', true),
                 toByteString('bob', true),
                 (SigReps) => findSig(SigReps, alicepublickey),
@@ -43,6 +43,6 @@ describe('Test SmartContract `Cointoss`', () => {
                     pubKeyOrAddrToSign: alicepublickey,
                 } as MethodCallOptions<CoinToss>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 })

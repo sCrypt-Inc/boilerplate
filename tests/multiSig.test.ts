@@ -44,7 +44,7 @@ describe('Test SmartContract `P2MS`', () => {
         await multiSigPayment.deploy(1)
 
         const callContract = async () =>
-            await multiSigPayment.methods.unlock(
+            multiSigPayment.methods.unlock(
                 // Filter out relevant signatures.
                 // Be vary of the order (https://scrypt.io/docs/how-to-write-a-contract/built-ins#checkmultisig).
                 (sigResps) => findSigs(sigResps, publicKeys),
@@ -55,7 +55,7 @@ describe('Test SmartContract `P2MS`', () => {
                 } as MethodCallOptions<MultiSigPayment>
             )
 
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should not pass if using wrong sig', async () => {
@@ -69,7 +69,7 @@ describe('Test SmartContract `P2MS`', () => {
 
         await multiSigPayment.deploy(1)
         const callContract = async () =>
-            await multiSigPayment.methods.unlock(
+            multiSigPayment.methods.unlock(
                 (sigResps) => {
                     const res = findSigs(sigResps, publicKeys)
                     res[0] = getDummySig()

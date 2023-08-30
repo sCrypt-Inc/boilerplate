@@ -31,13 +31,13 @@ describe('Test SmartContract `Netflix`', () => {
     it('should succeed', async () => {
         await netflix.deploy(1)
         const callContract = async () =>
-            await netflix.methods.unlock(
+            netflix.methods.unlock(
                 toByteString('hello', true),
                 (sigResps) => findSig(sigResps, publicKeyalice),
                 {
                     pubKeyOrAddrToSign: publicKeyalice,
                 } as MethodCallOptions<Netflix>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 })

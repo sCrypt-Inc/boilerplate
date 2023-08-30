@@ -15,7 +15,7 @@ describe('Test SmartContract `EnforceRecipient`', () => {
         )
         await enforceRecipient.connect(getDefaultSigner())
         await enforceRecipient.deploy(1)
-        const callContract = async () => await enforceRecipient.methods.unlock()
-        expect(callContract()).not.throw
+        const callContract = async () => enforceRecipient.methods.unlock()
+        return expect(callContract()).not.rejected
     })
 })

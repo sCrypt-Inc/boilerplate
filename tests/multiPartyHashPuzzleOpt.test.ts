@@ -43,16 +43,14 @@ describe('Test SmartContract `MultiPartyHashPuzzleOpt`', () => {
 
     it('should pass using correct preimages.', async () => {
         await instance.deploy(1)
-        const callContract = async () =>
-            await instance.methods.unlock(preimages)
-        expect(callContract()).not.throw
+        const callContract = async () => instance.methods.unlock(preimages)
+        return expect(callContract()).not.rejected
     })
 
     it('should throw with a wrong preimage.', async () => {
         const preimagesWrong = Array.from(preimages)
         preimagesWrong[0] = sha256('aabbcc')
-        const callContract = async () =>
-            await instance.methods.unlock(preimagesWrong)
+        const callContract = async () => instance.methods.unlock(preimagesWrong)
         return expect(callContract()).to.be.rejectedWith(/hash mismatch/)
     })
 })

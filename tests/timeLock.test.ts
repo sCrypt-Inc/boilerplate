@@ -19,16 +19,16 @@ describe('Test SmartContract `TimeLock`', () => {
     it('should pass the public method unit test successfully.', async () => {
         await timeLock.deploy(1)
         const callContract = async () =>
-            await timeLock.methods.unlock({
+            timeLock.methods.unlock({
                 lockTime: 1673523720,
             } as MethodCallOptions<TimeLock>)
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should fail when nLocktime is too low.', async () => {
         await timeLock.deploy(1)
         const callContract = async () =>
-            await timeLock.methods.unlock({
+            timeLock.methods.unlock({
                 lockTime: 1673500100,
             } as MethodCallOptions<TimeLock>)
         return expect(callContract()).to.be.rejectedWith(

@@ -60,17 +60,17 @@ describe('Test SmartContract `OrdinalLock`', () => {
             .toString('hex')
 
         const callContract = async () =>
-            await instance.methods.purchase(destOutputStr, {
+            instance.methods.purchase(destOutputStr, {
                 changeAddress: await buyerSigner.getDefaultAddress(),
             } as MethodCallOptions<OrdinalLock>)
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should pass cancel method call successfully.', async () => {
         await instance.deploy(1)
 
         const callContract = async () =>
-            await instance.methods.cancel(
+            instance.methods.cancel(
                 (sigResp) => findSig(sigResp, seller.publicKey),
                 PubKey(seller.publicKey.toHex()),
                 {
@@ -78,7 +78,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
                     changeAddress: seller.toAddress(),
                 } as MethodCallOptions<OrdinalLock>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should fail purchase method w wrong payment out.', async () => {
@@ -142,7 +142,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
         const buyerSigner = getDefaultSigner()
 
         const callContract = async () =>
-            await instance.methods.purchase(destOutputStr, {
+            instance.methods.purchase(destOutputStr, {
                 changeAddress: await buyerSigner.getDefaultAddress(),
             } as MethodCallOptions<OrdinalLock>)
         return expect(callContract()).to.be.rejectedWith(/Execution failed/)
@@ -155,7 +155,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
         await instance.deploy(1)
 
         const callContract = async () =>
-            await instance.methods.cancel(
+            instance.methods.cancel(
                 (sigResp) => findSig(sigResp, wrongKey.publicKey),
                 PubKey(wrongKey.publicKey.toHex()),
                 {

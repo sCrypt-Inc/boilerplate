@@ -24,27 +24,25 @@ describe('Test SmartContract `PrivateKeyPuzzle`', () => {
 
         // call public function `unlockCodeSep` of this contract
         const callContract = async () =>
-            await p2pkh.methods.unlockCodeSep(
-                (sigResponses: SignatureResponse[]) => {
-                    const sig0 = signTxCustomK(
-                        k,
-                        p2pkh.to?.tx as bsv.Transaction,
-                        myPrivateKey,
-                        p2pkh.lockingScript,
-                        p2pkh.balance
-                    )
-                    const sig1 = signTxCustomK(
-                        k,
-                        p2pkh.to?.tx as bsv.Transaction,
-                        myPrivateKey,
-                        p2pkh.lockingScript.subScript(0),
-                        p2pkh.balance
-                    )
+            p2pkh.methods.unlockCodeSep((sigResponses: SignatureResponse[]) => {
+                const sig0 = signTxCustomK(
+                    k,
+                    p2pkh.to?.tx as bsv.Transaction,
+                    myPrivateKey,
+                    p2pkh.lockingScript,
+                    p2pkh.balance
+                )
+                const sig1 = signTxCustomK(
+                    k,
+                    p2pkh.to?.tx as bsv.Transaction,
+                    myPrivateKey,
+                    p2pkh.lockingScript.subScript(0),
+                    p2pkh.balance
+                )
 
-                    return [sig0, sig1] as FixedArray<Sig, 2>
-                }
-            )
-        expect(callContract()).not.throw
+                return [sig0, sig1] as FixedArray<Sig, 2>
+            })
+        return expect(callContract()).not.rejected
     })
 
     it('should pass using different sighash flag', async () => {
@@ -58,29 +56,27 @@ describe('Test SmartContract `PrivateKeyPuzzle`', () => {
 
         // call public function `unlockCodeSep` of this contract
         const callContract = async () =>
-            await p2pkh.methods.unlockSigHash(
-                (sigResponses: SignatureResponse[]) => {
-                    const sig0 = signTxCustomK(
-                        k,
-                        p2pkh.to?.tx as bsv.Transaction,
-                        myPrivateKey,
-                        p2pkh.lockingScript,
-                        p2pkh.balance,
-                        bsv.crypto.Signature.ANYONECANPAY_SINGLE
-                    )
-                    const sig1 = signTxCustomK(
-                        k,
-                        p2pkh.to?.tx as bsv.Transaction,
-                        myPrivateKey,
-                        p2pkh.lockingScript,
-                        p2pkh.balance,
-                        bsv.crypto.Signature.NONE
-                    )
+            p2pkh.methods.unlockSigHash((sigResponses: SignatureResponse[]) => {
+                const sig0 = signTxCustomK(
+                    k,
+                    p2pkh.to?.tx as bsv.Transaction,
+                    myPrivateKey,
+                    p2pkh.lockingScript,
+                    p2pkh.balance,
+                    bsv.crypto.Signature.ANYONECANPAY_SINGLE
+                )
+                const sig1 = signTxCustomK(
+                    k,
+                    p2pkh.to?.tx as bsv.Transaction,
+                    myPrivateKey,
+                    p2pkh.lockingScript,
+                    p2pkh.balance,
+                    bsv.crypto.Signature.NONE
+                )
 
-                    return [sig0, sig1] as FixedArray<Sig, 2>
-                }
-            )
-        expect(callContract()).not.throw
+                return [sig0, sig1] as FixedArray<Sig, 2>
+            })
+        return expect(callContract()).not.rejected
     })
 })
 
