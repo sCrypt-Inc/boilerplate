@@ -45,7 +45,7 @@ export class CheckSequenceVerify extends SmartContract{
     // @utxoBh: block header containing the UTXO containing the contract
     // @latestBh: latest block header
     @method()
-    validateHelper(utxoBh : BlockHeader, latestBh : BlockHeader, merkleproof : MerkleProof) : boolean {
+    public validateHelper(utxoBh : BlockHeader, latestBh : BlockHeader, merkleproof : MerkleProof) : boolean {
         
         // get id of previous tx
         let prevTxid : Sha256= Sha256(this.ctx.utxo.outpoint.txid);
