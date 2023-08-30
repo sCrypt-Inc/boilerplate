@@ -1,5 +1,4 @@
 import { expect, use } from 'chai'
-import { MethodCallOptions} from 'scrypt-ts'
 import { ModExp } from '../src/contracts/modEXP'
 import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
@@ -11,7 +10,7 @@ describe('Test SmartContract `modEXP`', () => {
     let instance: ModExp
     before(async () => {
         await ModExp.compile()
-        
+
         instance = new ModExp(13n)
         await instance.connect(getDefaultSigner())
     })
@@ -20,14 +19,17 @@ describe('Test SmartContract `modEXP`', () => {
         const deployTx = await instance.deploy(1)
         console.log('modEXP contract deployed: ', deployTx.id)
 
-        
-        const callContract = async () => {
-        await instance.methods.main(
-            2n,3n,8n
-        )
-            expect(callContract()).not.throw
-        }
-        
+        const callContract = async () => instance.methods.main(2n, 3n, 8n)
+
+        return expect(callContract()).not.rejected
     })
 
+    it('should fail with wrong x.', async () => {
+        const deployTx = await instance.deploy(1)
+        console.log('modEXP contract deployed: ', deployTx.id)
+
+        const callContract = async () => instance.methods.main(12n, 3n, 8n)
+
+        return expect(callContract()).to.be.rejectedWith(/Execution failed/)
+    })
 })
