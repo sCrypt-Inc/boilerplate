@@ -3,6 +3,8 @@ import { Demo } from '../src/contracts/demo'
 import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 
+// https://www.chaijs.com/plugins/chai-as-promised/
+// https://stackoverflow.com/a/40842060
 use(chaiAsPromised)
 
 describe('Test SmartContract `Demo`', () => {
