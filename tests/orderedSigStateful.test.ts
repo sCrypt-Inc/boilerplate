@@ -109,7 +109,7 @@ describe('Test SmartContract `OrderedSigStateful`', () => {
                         changeAddress: myAddress,
                     } as MethodCallOptions<OrderedSigStateful>
                 )
-            expect(callContract()).not.throw
+            await expect(callContract()).not.rejected
 
             // Update the current instance reference.
             currentInstance = nextInstance

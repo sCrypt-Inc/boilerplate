@@ -53,7 +53,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
         next.owners[pubKeyIdx].validated = true
 
         const callContract = async () =>
-            await statefulMultiSig.methods.add(
+            statefulMultiSig.methods.add(
                 (sigResps) => findSig(sigResps, pubKeys[pubKeyIdx]),
                 BigInt(pubKeyIdx),
                 // Method call options:
@@ -65,7 +65,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
                     },
                 } as MethodCallOptions<StatefulMultiSig>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should pass paying out if threshold reached.', async () => {
@@ -84,7 +84,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
             next.owners[pubKeyIdx].validated = true
 
             const callContract = async () =>
-                await statefulMultiSig.methods.add(
+                statefulMultiSig.methods.add(
                     (sigResps) => findSig(sigResps, pubKeys[pubKeyIdx]),
                     BigInt(pubKeyIdx),
                     // Method call options:
@@ -96,20 +96,20 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
                         },
                     } as MethodCallOptions<StatefulMultiSig>
                 )
-            expect(callContract()).not.throw
+            await expect(callContract()).not.rejected
 
             statefulMultiSig = next
         }
 
         const callContract = async () =>
-            await statefulMultiSig.methods.pay(
+            statefulMultiSig.methods.pay(
                 // Method call options:
                 {
                     changeAddress:
                         await statefulMultiSig.signer.getDefaultAddress(),
                 } as MethodCallOptions<StatefulMultiSig>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should fail adding invalid sig.', async () => {
@@ -127,7 +127,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
         next.owners[pubKeyIdx].validated = true
 
         const callContract = async () =>
-            await statefulMultiSig.methods.add(
+            statefulMultiSig.methods.add(
                 (sigResps) => findSig(sigResps, randKey.publicKey),
                 BigInt(pubKeyIdx),
                 // Method call options:
@@ -152,7 +152,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
         await statefulMultiSig.deploy(1)
 
         const callContract = async () =>
-            await statefulMultiSig.methods.pay(
+            statefulMultiSig.methods.pay(
                 // Method call options:
                 {
                     changeAddress:

@@ -149,7 +149,7 @@ describe('Test SmartContract `TuringMachine`', () => {
                     } as MethodCallOptions<TuringMachine>
                 )
 
-            expect(callContract()).not.throw
+            await expect(callContract()).not.rejected
 
             turingMachine = nextInstance
         }

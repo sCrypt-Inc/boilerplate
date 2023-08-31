@@ -17,8 +17,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
         await hashPuzzle.connect(getDefaultSigner())
 
         await hashPuzzle.deploy(1)
-        const callContract = async () =>
-            await hashPuzzle.methods.unlock(byteString)
-        expect(callContract()).not.throw
+        const callContract = async () => hashPuzzle.methods.unlock(byteString)
+        return expect(callContract()).not.rejected
     })
 })

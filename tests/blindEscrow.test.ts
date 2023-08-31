@@ -84,7 +84,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
 
         await blindEscrow.deploy(1)
         const callContract = async () =>
-            await blindEscrow.methods.spend(
+            blindEscrow.methods.spend(
                 (sigResps) => findSig(sigResps, buyer.publicKey),
                 PubKey(buyerPubKey.toHex()),
                 oracleSig,
@@ -114,7 +114,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
         await blindEscrow.deploy(1)
 
         const callContract = async () =>
-            await blindEscrow.methods.spend(
+            blindEscrow.methods.spend(
                 (sigResps) => findSig(sigResps, buyer.publicKey),
                 PubKey(buyerPubKey.toHex()),
                 oracleSig,
@@ -143,7 +143,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
         await blindEscrow.connect(getDefaultSigner(seller))
         await blindEscrow.deploy(1)
         const callContract = async () =>
-            await blindEscrow.methods.spend(
+            blindEscrow.methods.spend(
                 (sigResps) => findSig(sigResps, seller.publicKey),
                 PubKey(sellerPubKey.toHex()),
                 oracleSig,
@@ -172,7 +172,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
         await blindEscrow.deploy(1)
 
         const callContract = async () =>
-            await blindEscrow.methods.spend(
+            blindEscrow.methods.spend(
                 (sigResps) => findSig(sigResps, seller.publicKey),
                 PubKey(sellerPubKey.toHex()),
                 oracleSig,
@@ -183,6 +183,6 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
                 } as MethodCallOptions<BlindEscrow>
             )
 
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 })

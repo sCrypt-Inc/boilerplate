@@ -112,10 +112,10 @@ describe('Heavy: Test SmartContract `SigHashAnyprevout`', () => {
         )
 
         const callContract = async () =>
-            await sighashAnyprevout.methods.unlock(sig, {
+            sighashAnyprevout.methods.unlock(sig, {
                 changeAddress: myAddress,
             } as MethodCallOptions<SigHashAnyprevout>)
 
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 })

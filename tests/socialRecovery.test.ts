@@ -48,14 +48,14 @@ describe('Test SmartContract `SocialRecovery`', () => {
         await socialRecovery.connect(getDefaultSigner(signerKey))
         await socialRecovery.deploy(1)
         const callContract = async () =>
-            await socialRecovery.methods.unlock(
+            socialRecovery.methods.unlock(
                 (sigResps) => findSig(sigResps, signerKey.toPublicKey()),
                 // Method call options:
                 {
                     pubKeyOrAddrToSign: signerKey.toPublicKey(),
                 } as MethodCallOptions<SocialRecovery>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should fail signing public key unlock with wrong key.', async () => {
@@ -63,7 +63,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
         await socialRecovery.connect(getDefaultSigner(wrongKey))
         await socialRecovery.deploy(1)
         const callContract = async () =>
-            await socialRecovery.methods.unlock(
+            socialRecovery.methods.unlock(
                 (sigResps) => findSig(sigResps, wrongKey.toPublicKey()),
                 // Method call options:
                 {
@@ -84,7 +84,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
         next.signingPubKey = PubKey(newSigner.toPublicKey().toHex())
 
         const callContract = async () =>
-            await socialRecovery.methods.updateSigningPubKey(
+            socialRecovery.methods.updateSigningPubKey(
                 next.signingPubKey,
                 (sigResps) => {
                     const sigs: Sig[] = []
@@ -109,7 +109,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
                     },
                 } as MethodCallOptions<SocialRecovery>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should fail updating signing key when threshold not reached.', async () => {
@@ -120,7 +120,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
         next.signingPubKey = PubKey(newSigner.toPublicKey().toHex())
 
         const callContract = async () =>
-            await socialRecovery.methods.updateSigningPubKey(
+            socialRecovery.methods.updateSigningPubKey(
                 next.signingPubKey,
                 (sigResps) => {
                     const guardianSigs: Sig[] = []

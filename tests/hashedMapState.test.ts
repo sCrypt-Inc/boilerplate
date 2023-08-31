@@ -201,13 +201,13 @@ describe('Test SmartContract `HashedMapState`', () => {
         }
 
         const callContract = async () =>
-            await instance.methods.unlock(key, val, {
+            instance.methods.unlock(key, val, {
                 next: {
                     instance: newInstance,
                     balance: instance.balance,
                 },
             } as MethodCallOptions<HashedMapState>)
 
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 })

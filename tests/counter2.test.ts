@@ -28,14 +28,16 @@ describe('Test SmartContract `Counter`', () => {
             nextInstance.increment()
 
             // call the method of current instance to apply the updates on chain
-            expect(
-                await currentInstance.methods.incrementOnChain({
+
+            const callContract = async () =>
+                currentInstance.methods.incrementOnChain({
                     next: {
                         instance: nextInstance,
                         balance,
                     },
                 } as MethodCallOptions<Counter2>)
-            ).not.throw
+
+            await expect(callContract()).not.rejected
 
             // update the current instance reference
             currentInstance = nextInstance
@@ -62,14 +64,14 @@ describe('Test SmartContract `Counter`', () => {
             nextInstance.reset()
 
             // call the method of current instance to apply the updates on chain
-            expect(
-                await currentInstance.methods.resetOnChain({
+            const callContract = async () =>
+                currentInstance.methods.resetOnChain({
                     next: {
                         instance: nextInstance,
                         balance,
                     },
                 } as MethodCallOptions<Counter2>)
-            ).not.throw
+            await expect(callContract()).not.rejected
 
             // update the current instance reference
             currentInstance = nextInstance
@@ -97,14 +99,14 @@ describe('Test SmartContract `Counter`', () => {
 
             // call the method of current instance to apply the updates on chain
             const callContract = async () =>
-                await currentInstance.methods.decreamentOnChain({
+                currentInstance.methods.decreamentOnChain({
                     next: {
                         instance: nextInstance,
                         balance,
                     },
                 } as MethodCallOptions<Counter2>)
 
-            expect(callContract()).not.throw
+            await expect(callContract()).not.rejected
 
             // update the current instance reference
             currentInstance = nextInstance

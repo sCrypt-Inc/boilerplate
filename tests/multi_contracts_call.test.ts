@@ -102,8 +102,8 @@ describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local',
         } as MethodCallOptions<HashPuzzle>)
 
         const callContract = async () =>
-            await SmartContract.multiContractCall(finalTx, signer)
+            SmartContract.multiContractCall(finalTx, signer)
 
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 })

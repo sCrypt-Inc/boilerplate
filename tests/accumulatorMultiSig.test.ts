@@ -41,18 +41,18 @@ describe('Test SmartContract `AccumulatorMultiSig`', () => {
 
     it('should successfully with all three right.', async () => {
         await accumulatorMultiSig.deploy(1)
-        const callContract = async () => await call([true, true, true])
-        expect(callContract()).not.throw
+        const callContract = async () => call([true, true, true])
+        return expect(callContract()).not.rejected
     })
 
     it('should successfully with two right.', async () => {
         await accumulatorMultiSig.deploy(1)
-        const callContract = async () => await call([true, true, false])
-        expect(callContract()).not.throw
+        const callContract = async () => call([true, true, false])
+        return expect(callContract()).not.rejected
     })
 
     it('should throw with only one right.', async () => {
-        const callContract = async () => await call([false, true, false])
+        const callContract = async () => call([false, true, false])
         return expect(callContract()).to.be.rejectedWith(
             /the number of signatures does not meet the threshold limit/
         )

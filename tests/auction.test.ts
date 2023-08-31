@@ -33,7 +33,7 @@ describe('Test SmartContract `Auction` on testnet', () => {
                     changeAddress: addressNewBidder,
                 } as MethodCallOptions<Auction>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should pass `close` call', async () => {
@@ -47,6 +47,6 @@ describe('Test SmartContract `Auction` on testnet', () => {
                     lockTime: auctionDeadline + 1,
                 } as MethodCallOptions<Auction>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 })

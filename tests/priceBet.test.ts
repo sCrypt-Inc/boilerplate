@@ -92,7 +92,7 @@ describe('Test SmartContract `PriceBet`', () => {
         }
 
         const callContract = async () =>
-            await priceBet.methods.unlock(
+            priceBet.methods.unlock(
                 RESP_0.digest as ByteString,
                 oracleSig,
                 (sigResps) => findSig(sigResps, winnerPubKey),
@@ -101,7 +101,7 @@ describe('Test SmartContract `PriceBet`', () => {
                     pubKeyOrAddrToSign: winnerPubKey,
                 } as MethodCallOptions<PriceBet>
             )
-        expect(callContract()).not.throw
+        return expect(callContract()).not.rejected
     })
 
     it('should fail paying wrong player.', async () => {
@@ -128,7 +128,7 @@ describe('Test SmartContract `PriceBet`', () => {
         }
 
         const callContract = async () =>
-            await priceBet.methods.unlock(
+            priceBet.methods.unlock(
                 RESP_0.digest as ByteString,
                 oracleSig,
                 (sigResps) => findSig(sigResps, looserPubKey),
