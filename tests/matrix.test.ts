@@ -1,5 +1,5 @@
 import { Matrix } from '../src/contracts/matrix'
-import { getDefaultSigner} from './utils/txHelper'
+import { getDefaultSigner} from './utils/helper'
 
 import { expect } from 'chai'
 
