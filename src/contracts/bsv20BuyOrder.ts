@@ -63,12 +63,6 @@ export class BSV20BuyOrder extends SmartContract {
             'oracle sig verify failed'
         )
 
-        // Check the passed prevouts byte string is correct.
-        assert(
-            hash256(this.prevouts) == this.ctx.hashPrevouts,
-            'hashPrevouts mismatch'
-        )
-
         // Check that we're unlocking the UTXO specified in the oracles message.
         assert(
             slice(this.prevouts, 0n, 36n) == slice(oracleMsg, 0n, 36n),

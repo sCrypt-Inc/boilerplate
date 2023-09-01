@@ -111,12 +111,6 @@ export class OrdinalAuction extends SmartContract {
             'signature check failed'
         )
 
-        // Check the passed prevouts byte string is correct.
-        assert(
-            hash256(this.prevouts) == this.ctx.hashPrevouts,
-            'hashPrevouts mismatch'
-        )
-
         // Ensure the first input in spending the auctioned ordinal UTXO.
         assert(
             slice(this.prevouts, 0n, 36n) == this.ordnialPrevout,
