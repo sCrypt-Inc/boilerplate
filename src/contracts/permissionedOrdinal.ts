@@ -16,6 +16,7 @@ import {
     slice,
 } from 'scrypt-ts'
 
+// https://xiaohuiliu.medium.com/integrate-ordinals-with-smart-contracts-on-bitcoin-part-1-33e421314ac0
 export class PermissionedOrdinal extends SmartContract {
     @prop()
     issuer: PubKey
