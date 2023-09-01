@@ -21,7 +21,7 @@ export class PermissionedOrdinal extends SmartContract {
     issuer: PubKey
 
     @prop(true)
-    currentOwner: PubKeyHash
+    currentOwner: PubKey
 
     @prop(true)
     isMint: boolean
@@ -29,7 +29,7 @@ export class PermissionedOrdinal extends SmartContract {
     @prop()
     inscriptLen: bigint
 
-    constructor(issuer: PubKey, currentOwner: PubKeyHash, inscriptLen: bigint) {
+    constructor(issuer: PubKey, currentOwner: PubKey, inscriptLen: bigint) {
         super(...arguments)
         this.issuer = issuer
         this.currentOwner = currentOwner
@@ -38,18 +38,9 @@ export class PermissionedOrdinal extends SmartContract {
     }
 
     @method()
-    public transfer(
-        sigCurrentOwner: Sig,
-        pubKeyCurrentOwner: PubKey,
-        sigIssuer: Sig,
-        newOwner: PubKeyHash
-    ) {
+    public transfer(sigCurrentOwner: Sig, sigIssuer: Sig, newOwner: PubKey) {
         // Check current owner signature.
-        assert(
-            hash160(pubKeyCurrentOwner) == this.currentOwner,
-            "pubKeyCurrentOwner doesn't correspond to address"
-        )
-        assert(this.checkSig(sigCurrentOwner, pubKeyCurrentOwner))
+        assert(this.checkSig(sigCurrentOwner, this.currentOwner))
 
         // Check issuer signature.
         assert(this.checkSig(sigIssuer, this.issuer))

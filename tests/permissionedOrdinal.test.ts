@@ -37,7 +37,7 @@ describe('Test SmartContract `PermissionedOrdinal`', () => {
 
         permissionedOrdinal = new PermissionedOrdinal(
             PubKey(toHex(publicKeyIssuer)),
-            PubKeyHash(hash160(ownerPublicKeys[0].toHex())),
+            PubKey(ownerPublicKeys[0].toHex()),
             33n
         )
 
@@ -61,18 +61,17 @@ describe('Test SmartContract `PermissionedOrdinal`', () => {
                 getDefaultSigner([privateKeyIssuer, ownerPrivateKeys[i]])
             )
 
-            const newOwnerAddr = hash160(ownerPublicKeys[i + 1].toHex())
+            const newOwner = PubKey(ownerPublicKeys[i + 1].toHex())
 
             const nextInstance = currentInstance.next()
-            nextInstance.currentOwner = newOwnerAddr
+            nextInstance.currentOwner = newOwner
             nextInstance.isMint = false
 
             const callContract = async () => {
                 const res = await currentInstance.methods.transfer(
                     (sigResps) => findSig(sigResps, ownerPublicKeys[i]),
-                    PubKey(ownerPublicKeys[i].toHex()),
                     (sigResps) => findSig(sigResps, publicKeyIssuer),
-                    newOwnerAddr,
+                    newOwner,
                     {
                         changeAddress: addressIssuer,
                         pubKeyOrAddrToSign: [
