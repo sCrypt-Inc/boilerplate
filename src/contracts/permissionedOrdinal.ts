@@ -1,4 +1,5 @@
 import {
+    ByteString,
     PubKey,
     PubKeyHash,
     Sig,
@@ -9,6 +10,7 @@ import {
     bsv,
     hash160,
     hash256,
+    int2ByteString,
     method,
     prop,
     slice,
@@ -60,6 +62,15 @@ export class PermissionedOrdinal extends SmartContract {
 
         // Disable isMint flag after first transfer
         this.isMint = false
+
+        // Ensure the public method is called from the first input.
+        const outpoint =
+            this.ctx.utxo.outpoint.txid +
+            int2ByteString(this.ctx.utxo.outpoint.outputIndex, 4n)
+        assert(
+            slice(this.prevouts, 0n, 36n) == outpoint,
+            'contract must be spent via first input'
+        )
 
         let stateScript = this.getStateScript()
         if (isMint) {
