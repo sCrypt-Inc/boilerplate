@@ -27,7 +27,7 @@ export class BSV20Auction extends SmartContract {
 
     // Output of auctioned ordinal (txid + vout).
     @prop()
-    ordnialPrevout: ByteString
+    readonly ordnialPrevout: ByteString
 
     // Inscription for the BSV-20 transfer.
     // Example:
@@ -40,7 +40,7 @@ export class BSV20Auction extends SmartContract {
     // }
     // OP_ENDIF
     @prop()
-    transferInscription: ByteString
+    readonly transferInscription: ByteString
 
     // The bidder's public key.
     @prop(true)

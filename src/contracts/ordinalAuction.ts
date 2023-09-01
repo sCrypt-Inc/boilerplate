@@ -26,7 +26,7 @@ export class OrdinalAuction extends SmartContract {
 
     // Output of auctioned ordinal (txid + vout).
     @prop()
-    ordnialPrevout: ByteString
+    readonly ordnialPrevout: ByteString
 
     // The bidder's public key.
     @prop(true)
