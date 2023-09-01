@@ -6,6 +6,7 @@ import {
     MethodCallOptions,
     PubKey,
     PubKeyHash,
+    toByteString,
     toHex,
 } from 'scrypt-ts'
 import { myPrivateKey, myPublicKey } from './utils/privateKey'
@@ -45,6 +46,10 @@ describe('Test SmartContract `PermissionedOrdinal`', () => {
 
     it('should succeed', async () => {
         // contract deployment
+        permissionedOrdinal.setOrdinal({
+            content: toByteString('hello sCrypt', true),
+            contentType: 'text/plain',
+        })
         const deployRes = await permissionedOrdinal.deploy(1)
         console.log(`PermissionedOrdinal deployed: ${deployRes.id}`)
 
@@ -60,6 +65,7 @@ describe('Test SmartContract `PermissionedOrdinal`', () => {
 
             const nextInstance = currentInstance.next()
             nextInstance.currentOwner = newOwnerAddr
+            nextInstance.isMint = false
 
             const callContract = async () => {
                 const res = await currentInstance.methods.transfer(
@@ -69,7 +75,6 @@ describe('Test SmartContract `PermissionedOrdinal`', () => {
                     newOwnerAddr,
                     {
                         changeAddress: addressIssuer,
-                        fromUTXO: currentInstance.utxo,
                         pubKeyOrAddrToSign: [
                             publicKeyIssuer,
                             ownerPublicKeys[i],

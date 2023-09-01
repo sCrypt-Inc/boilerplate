@@ -72,37 +72,4 @@ export class PermissionedOrdinal extends SmartContract {
         outputs += this.buildChangeOutput()
         assert(this.ctx.hashOutputs == hash256(outputs), 'hashOutputs mismatch')
     }
-
-    override async buildDeployTransaction(
-        utxos: UTXO[],
-        amount: number,
-        changeAddress?: bsv.Address | string
-    ): Promise<bsv.Transaction> {
-        // Add msg as text/plain inscription.
-        const msgBuff = Buffer.from('hello sCrypt', 'utf8')
-        const msgHex = msgBuff.toString('hex')
-        const inscription = bsv.Script.fromASM(
-            `OP_FALSE OP_IF 6f7264 OP_TRUE 746578742f706c61696e OP_FALSE ${msgHex} OP_ENDIF`
-        )
-
-        const deployTx = new bsv.Transaction()
-            // add p2pkh inputs for paying tx fees
-            .from(utxos)
-            // add contract output w/ inscription
-            .addOutput(
-                new bsv.Transaction.Output({
-                    script: inscription.add(this.lockingScript),
-                    satoshis: amount,
-                })
-            )
-
-        if (changeAddress) {
-            deployTx.change(changeAddress)
-            if (this._provider) {
-                deployTx.feePerKb(await this.provider.getFeePerKb())
-            }
-        }
-
-        return deployTx
-    }
 }
