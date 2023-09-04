@@ -1,10 +1,10 @@
 import { Matrix } from '../src/contracts/matrix'
-import { getDefaultSigner} from './utils/helper'
+import { getDefaultSigner } from './utils/helper'
 
 import { expect } from 'chai'
 
 async function main() {
-    await Matrix.compile()
+    Matrix.loadArtifact()
 
     // const [privateKeyalice, publicKeyalice] = randomPrivateKey()
     // const [privateKeybob, publicKeybob] = randomPrivateKey()
@@ -17,10 +17,10 @@ async function main() {
 
     const callContract = async () => {
         await instance.methods.main([
-            [1n, 1n, 1n, 1n], 
-            [2n, 2n, 2n, 2n], 
-            [3n, 3n, 3n, 3n], 
-            [4n, 4n, 4n, 4n]
+            [1n, 1n, 1n, 1n],
+            [2n, 2n, 2n, 2n],
+            [3n, 3n, 3n, 3n],
+            [4n, 4n, 4n, 4n],
         ])
         expect(callContract()).not.Throw
     }

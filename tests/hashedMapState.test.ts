@@ -13,7 +13,7 @@ import { getDefaultSigner } from './utils/helper'
 describe('Test SmartContract `HashedMapState`', () => {
     let map: HashedMap<bigint, ByteString>, stateMap: HashedMapState
     before(async () => {
-        await HashedMapState.compile()
+        HashedMapState.loadArtifact()
 
         map = new HashedMap<bigint, ByteString>()
 

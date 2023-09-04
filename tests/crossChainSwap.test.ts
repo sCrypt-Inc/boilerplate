@@ -28,8 +28,8 @@ describe('Test SmartContract `CrossChainSwap`', () => {
     )
     const xHash = sha256(x)
 
-    before(async () => {
-        await CrossChainSwap.compile()
+    before(() => {
+        CrossChainSwap.loadArtifact()
 
         crossChainSwap = new CrossChainSwap(
             PubKey(alicePubKey.toHex()),

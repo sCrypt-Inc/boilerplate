@@ -8,8 +8,8 @@ const byteString = toByteString(plainText, true)
 const sha256Data = sha256(byteString)
 
 describe('Test SmartContract `HashPuzzle`', () => {
-    before(async () => {
-        await HashPuzzle.compile()
+    before(() => {
+        HashPuzzle.loadArtifact()
     })
 
     it('should pass the public method unit test successfully.', async () => {

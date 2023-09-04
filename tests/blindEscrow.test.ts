@@ -36,7 +36,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
 
     let blindEscrow: BlindEscrow
 
-    before(async () => {
+    before(() => {
         seller = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         buyer = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         arbiter = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
@@ -57,7 +57,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
 
         escrowNonce = toByteString('001122334455aabbcc') // TODO
 
-        await BlindEscrow.compile()
+        BlindEscrow.loadArtifact()
 
         blindEscrow = new BlindEscrow(
             sellerPKH,

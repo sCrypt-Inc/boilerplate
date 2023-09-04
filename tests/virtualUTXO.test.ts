@@ -9,7 +9,7 @@ describe('Test SmartContract `VirtualUTXO`', () => {
     let instance2: VirtualUTXO
 
     before(async () => {
-        await VirtualUTXO.compile()
+        VirtualUTXO.loadArtifact()
 
         instance0 = new VirtualUTXO()
 

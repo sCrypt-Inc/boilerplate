@@ -123,7 +123,7 @@ describe('Test SmartContract `TuringMachine`', () => {
     let turingMachine: TuringMachine
 
     before(async () => {
-        await TuringMachine.compile()
+        TuringMachine.loadArtifact()
         turingMachine = new TuringMachine(allStates[0])
         await turingMachine.connect(getDefaultSigner())
     })

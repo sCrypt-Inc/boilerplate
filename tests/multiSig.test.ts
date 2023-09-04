@@ -27,8 +27,8 @@ for (let i = 0; i < 3; i++) {
 }
 
 describe('Test SmartContract `P2MS`', () => {
-    before(async () => {
-        await MultiSigPayment.compile()
+    before(() => {
+        MultiSigPayment.loadArtifact()
     })
 
     it('should pass if using right private keys', async () => {

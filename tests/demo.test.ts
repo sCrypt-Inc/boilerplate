@@ -11,7 +11,7 @@ describe('Test SmartContract `Demo`', () => {
     let demo: Demo
 
     before(async () => {
-        await Demo.compile()
+        Demo.loadArtifact()
 
         demo = new Demo(-2n, 7n)
         await demo.connect(getDefaultSigner())

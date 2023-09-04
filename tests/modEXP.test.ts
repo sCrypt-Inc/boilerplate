@@ -9,7 +9,7 @@ use(chaiAsPromised)
 describe('Test SmartContract `modEXP`', () => {
     let instance: ModExp
     before(async () => {
-        await ModExp.compile()
+        ModExp.loadArtifact()
 
         instance = new ModExp(13n)
         await instance.connect(getDefaultSigner())

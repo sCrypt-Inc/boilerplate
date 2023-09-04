@@ -22,7 +22,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
 
     let socialRecovery: SocialRecovery
 
-    before(async () => {
+    before(() => {
         const _guardianPubKeys: Array<PubKey> = []
         for (let i = 0; i < SocialRecovery.N_GUARDIANS; i++) {
             const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
@@ -37,7 +37,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
             typeof SocialRecovery.N_GUARDIANS
         >
 
-        await SocialRecovery.compile()
+        SocialRecovery.loadArtifact()
         socialRecovery = new SocialRecovery(
             PubKey(signerKey.toPublicKey().toHex()),
             guardianPubKeys

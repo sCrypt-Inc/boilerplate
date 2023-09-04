@@ -4,8 +4,8 @@ import { getDefaultSigner } from './utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `Counter`', () => {
-    before(async () => {
-        await Counter2.compile()
+    before(() => {
+        Counter2.loadArtifact()
     })
 
     it('should pass the public method increment test successfully.', async () => {

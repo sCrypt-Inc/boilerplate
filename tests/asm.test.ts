@@ -17,7 +17,7 @@ describe('Test SmartContract `P2PKH_ASM`', () => {
     let demo: P2PKH_ASM
 
     before(async () => {
-        await P2PKH_ASM.compile()
+        P2PKH_ASM.loadArtifact()
 
         demo = new P2PKH_ASM(PubKeyHash(toHex(myPublicKeyHash)))
         await demo.connect(getDefaultSigner())

@@ -31,7 +31,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
     let instance: OrdinalLock
 
     before(async () => {
-        await OrdinalLock.compile()
+        OrdinalLock.loadArtifact()
         instance = new OrdinalLock(
             PubKeyHash(hash160(seller.publicKey.toHex())),
             payOutput

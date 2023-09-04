@@ -9,8 +9,8 @@ import { DEFAULT_SIGHASH_TYPE, DEFAULT_FLAGS } from 'scryptlib'
 use(chaiAsPromised)
 
 describe('Test SmartContract `PrivateKeyPuzzle`', () => {
-    before(async () => {
-        await PrivateKeyPuzzle.compile()
+    before(() => {
+        PrivateKeyPuzzle.loadArtifact()
     })
 
     it('should pass using codeseparator', async () => {

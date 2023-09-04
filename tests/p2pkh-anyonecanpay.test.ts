@@ -19,8 +19,8 @@ describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE', () => {
         ownerPrivkey.publicKey.toBuffer()
     )
 
-    before(async () => {
-        await P2PKH.compile()
+    before(() => {
+        P2PKH.loadArtifact()
     })
 
     it('should succeed at first Input', async () => {

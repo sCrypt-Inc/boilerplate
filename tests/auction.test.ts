@@ -12,7 +12,7 @@ describe('Test SmartContract `Auction` on testnet', () => {
     let auction: Auction
 
     before(async () => {
-        await Auction.compile()
+        Auction.loadArtifact()
 
         auction = new Auction(
             PubKey(toHex(publicKeyAuctioneer)),

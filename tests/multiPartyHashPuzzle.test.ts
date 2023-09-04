@@ -37,7 +37,7 @@ describe('Test SmartContract `MultiPartyHashPuzzle`', () => {
         >
         hashes = _hashes as FixedArray<Sha256, typeof MultiPartyHashPuzzle.N>
 
-        await MultiPartyHashPuzzle.compile()
+        MultiPartyHashPuzzle.loadArtifact()
         instance = new MultiPartyHashPuzzle(hashes)
 
         await instance.connect(getDefaultSigner())

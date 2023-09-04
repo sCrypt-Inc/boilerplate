@@ -79,7 +79,7 @@ describe('Heavy: Test SmartContract `SigHashAnyprevout`', () => {
         })
         pubKeyP = SECP256K1.pubKey2Point(PubKey(pubKey.toHex()))
 
-        await SigHashAnyprevout.compile()
+        SigHashAnyprevout.loadArtifact()
 
         sighashAnyprevout = new SigHashAnyprevout(pubKeyP)
         await sighashAnyprevout.connect(getDefaultSigner())

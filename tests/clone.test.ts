@@ -4,8 +4,8 @@ import { getDefaultSigner } from './utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
 describe('Test SmartContract `Clone`', () => {
-    before(async () => {
-        await Clone.compile()
+    before(() => {
+        Clone.loadArtifact()
     })
 
     it('should pass the public method unit test successfully.', async () => {

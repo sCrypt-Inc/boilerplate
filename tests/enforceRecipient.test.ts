@@ -5,8 +5,8 @@ import { myPublicKeyHash } from './utils/privateKey'
 import { getDefaultSigner } from './utils/helper'
 
 describe('Test SmartContract `EnforceRecipient`', () => {
-    before(async () => {
-        await EnforceRecipient.compile()
+    before(() => {
+        EnforceRecipient.loadArtifact()
     })
 
     it('should transpile contract `EnforceRecipient` successfully.', async () => {

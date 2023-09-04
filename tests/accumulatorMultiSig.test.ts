@@ -32,7 +32,7 @@ let accumulatorMultiSig: AccumulatorMultiSig
 
 describe('Test SmartContract `AccumulatorMultiSig`', () => {
     before(async () => {
-        await AccumulatorMultiSig.compile()
+        AccumulatorMultiSig.loadArtifact()
         accumulatorMultiSig = new AccumulatorMultiSig(2n, pubKeyHashes)
 
         const signer = getDefaultSigner([privateKey1, privateKey2, privateKey3])

@@ -52,9 +52,8 @@ describe('Test SmartContract `CatBond`', () => {
         typeof CatBond.MAX_INVESTORS
     >
 
-    before(async () => {
-        // Compile contract.
-        await CatBond.compile()
+    before(() => {
+        CatBond.loadArtifact()
     })
 
     it('should pass invest and payout', async () => {

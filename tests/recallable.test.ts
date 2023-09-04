@@ -21,7 +21,7 @@ describe('Test SmartContract `Recallable`', () => {
     let recallable: Recallable
 
     before(async () => {
-        await Recallable.compile()
+        Recallable.loadArtifact()
 
         recallable = new Recallable(PubKey(toHex(alicePublicKey)))
         await recallable.connect(getDefaultSigner(alicePrivateKey))

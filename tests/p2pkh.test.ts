@@ -14,8 +14,8 @@ import { myPublicKey, myPublicKeyHash } from './utils/privateKey'
 use(chaiAsPromised)
 
 describe('Test SmartContract `P2PKH`', () => {
-    before(async () => {
-        await P2PKH.compile()
+    before(() => {
+        P2PKH.loadArtifact()
     })
 
     it('should pass if using right private key', async () => {

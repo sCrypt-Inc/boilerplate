@@ -17,7 +17,7 @@ describe('Test SmartContract `Netflix`', () => {
 
     let netflix: Netflix
     before(async () => {
-        await Netflix.compile()
+        Netflix.loadArtifact()
 
         netflix = new Netflix(
             PubKey(toHex(publicKeyalice)),

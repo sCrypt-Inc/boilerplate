@@ -14,8 +14,8 @@ import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 
 use(chaiAsPromised)
 describe('Test SmartContract `Erc721`', () => {
-    before(async () => {
-        await Erc721.compile()
+    before(() => {
+        Erc721.loadArtifact()
     })
 
     it('should fail `mint` without correct minter sig', async () => {

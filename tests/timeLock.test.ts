@@ -10,7 +10,7 @@ describe('Test SmartContract `TimeLock`', () => {
     const lockTimeMin = 1673510000n
 
     before(async () => {
-        await TimeLock.compile()
+        TimeLock.loadArtifact()
 
         timeLock = new TimeLock(lockTimeMin)
         await timeLock.connect(getDefaultSigner())

@@ -12,9 +12,9 @@ import { expect } from 'chai'
 import { HashPuzzle } from '../src/contracts/hashPuzzle'
 
 describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local', () => {
-    before(async () => {
-        await AdvancedCounter.compile()
-        await HashPuzzle.compile()
+    before(() => {
+        AdvancedCounter.loadArtifact()
+        HashPuzzle.loadArtifact()
     })
 
     it('should succeed', async () => {

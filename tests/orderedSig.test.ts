@@ -28,7 +28,7 @@ describe('Heavy: Test SmartContract `OrderedSig`', () => {
 
     const msg = toByteString('Hello, sCrypt!', true)
 
-    before(async () => {
+    before(() => {
         for (let i = 0; i < N_SIGNERS; i++) {
             const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
             const pubKey = new bsv.PublicKey(privKey.publicKey.point, {
@@ -38,7 +38,7 @@ describe('Heavy: Test SmartContract `OrderedSig`', () => {
             pubKeys.push(pubKey)
         }
 
-        await OrderedSig.compile()
+        OrderedSig.loadArtifact()
     })
 
     it('should pass w correct sigs', async () => {

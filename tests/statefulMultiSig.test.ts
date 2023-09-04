@@ -21,7 +21,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
     const pubKeys: bsv.PublicKey[] = []
     let owners: FixedArray<Owner, typeof StatefulMultiSig.M>
 
-    before(async () => {
+    before(() => {
         const _owners: Array<Owner> = []
         for (let i = 0; i < StatefulMultiSig.M; i++) {
             const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
@@ -35,7 +35,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
         }
 
         owners = _owners as FixedArray<Owner, typeof StatefulMultiSig.M>
-        await StatefulMultiSig.compile()
+        StatefulMultiSig.loadArtifact()
     })
 
     it('should pass adding valid sig.', async () => {

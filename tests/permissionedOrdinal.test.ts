@@ -25,7 +25,7 @@ describe('Test SmartContract `PermissionedOrdinal`', () => {
     let permissionedOrdinal: PermissionedOrdinal
 
     before(async () => {
-        await PermissionedOrdinal.compile()
+        PermissionedOrdinal.loadArtifact()
 
         for (let i = 0; i < 4; i++) {
             const [privateKeyBidder, publicKeyBidder, , addressBidder] =

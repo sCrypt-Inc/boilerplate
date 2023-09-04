@@ -7,8 +7,8 @@ import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashedSetNonState`', () => {
-    before(async () => {
-        await HashedSetNonState.compile()
+    before(() => {
+        HashedSetNonState.loadArtifact()
     })
 
     it('should unlock contract `HashedSetNonState` successfully.', async () => {

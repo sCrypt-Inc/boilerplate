@@ -125,8 +125,8 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
         },
     ]
 
-    before(async () => {
-        await CrossChainSwap2.compile()
+    before(() => {
+        CrossChainSwap2.loadArtifact()
 
         crossChainSwap = new CrossChainSwap2(
             Ripemd160(aliceAddr),

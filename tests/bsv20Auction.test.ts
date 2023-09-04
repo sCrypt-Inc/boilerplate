@@ -87,7 +87,7 @@ async function deployInscription(
 }
 
 async function main() {
-    await BSV20Auction.compile()
+    BSV20Auction.loadArtifact()
 
     const privateKeyAuctioneer = myPrivateKey
     const publicKeyAuctioneer = myPublicKey

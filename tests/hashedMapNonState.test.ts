@@ -7,8 +7,8 @@ import { getDefaultSigner } from './utils/helper'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashedMapNonState`', () => {
-    before(async () => {
-        await HashedMapNonState.compile()
+    before(() => {
+        HashedMapNonState.loadArtifact()
     })
 
     it('should unlock `HashedMapNonState` successfully.', async () => {

@@ -3,8 +3,8 @@ import { Mimc7Test } from '../src/contracts/mimc7'
 import { getDefaultSigner } from './utils/helper'
 
 describe('Test SmartContract `Mimc7Test`', () => {
-    before(async () => {
-        await Mimc7Test.compile()
+    before(() => {
+        Mimc7Test.loadArtifact()
     })
 
     it('should pass the public method unit test successfully.', async () => {

@@ -73,7 +73,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
     const auctionDeadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
 
     before(async () => {
-        await OrdinalAuction.compile()
+        OrdinalAuction.loadArtifact()
         for (let i = 0; i < 3; i++) {
             const [privateKeyBidder, publicKeyBidder, , addressBidder] =
                 randomPrivateKey()

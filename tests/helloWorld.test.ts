@@ -10,7 +10,7 @@ describe('Test SmartContract `HelloWorld`', () => {
     let helloWorld: HelloWorld
 
     before(async () => {
-        await HelloWorld.compile()
+        HelloWorld.loadArtifact()
         helloWorld = new HelloWorld(sha256(toByteString('hello world', true)))
         await helloWorld.connect(getDefaultSigner())
     })

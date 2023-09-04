@@ -7,10 +7,10 @@ use(chaiAsPromised)
 
 describe('Test SmartContract `Test`', () => {
     let instance: Test
-    let l = new L(2n, 3n)
+    const l = new L(2n, 3n)
 
     before(async () => {
-        await Test.compile()
+        Test.loadArtifact()
         instance = new Test(2n, l)
         await instance.connect(getDefaultSigner())
     })
@@ -20,9 +20,7 @@ describe('Test SmartContract `Test`', () => {
         console.log(' Library Test contract deployed: ', deployTx.id)
 
         const callContract = async () => {
-            await instance.methods.unlock(
-                3n
-            )
+            await instance.methods.unlock(3n)
             expect(callContract()).not.throw
         }
     })

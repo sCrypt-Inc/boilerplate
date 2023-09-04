@@ -16,7 +16,7 @@ describe('Test SmartContract `Crowdfund`', () => {
     let crowdfund: Crowdfund
 
     before(async () => {
-        await Crowdfund.compile()
+        Crowdfund.loadArtifact()
         crowdfund = new Crowdfund(
             PubKey(toHex(publicKeyRecipient)),
             PubKey(toHex(publicKeyContributor)),

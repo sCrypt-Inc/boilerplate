@@ -5,7 +5,7 @@ import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import { expect } from 'chai'
 
 async function main() {
-    await NumberGuess.compile()
+    NumberGuess.loadArtifact()
 
     const [privateKeyalice, publicKeyalice] = randomPrivateKey()
     const [privateKeybob, publicKeybob] = randomPrivateKey()

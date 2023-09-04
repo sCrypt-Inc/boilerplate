@@ -35,7 +35,7 @@ describe('Test SmartContract `MultiPartyHashPuzzleOpt`', () => {
             typeof MultiPartyHashPuzzleOpt.N
         >
 
-        await MultiPartyHashPuzzleOpt.compile()
+        MultiPartyHashPuzzleOpt.loadArtifact()
         instance = new MultiPartyHashPuzzleOpt(combinedHash)
 
         await instance.connect(getDefaultSigner())

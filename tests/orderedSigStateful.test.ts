@@ -25,7 +25,7 @@ describe('Test SmartContract `OrderedSigStateful`', () => {
 
     const msg = toByteString('Hello, sCrypt!', true)
 
-    before(async () => {
+    before(() => {
         const _signers: Array<PubKey> = []
         for (let i = 0; i < N_SIGNERS; i++) {
             const privKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
@@ -36,7 +36,7 @@ describe('Test SmartContract `OrderedSigStateful`', () => {
         }
         signers = _signers as FixedArray<PubKey, typeof N_SIGNERS>
 
-        await OrderedSigStateful.compile()
+        OrderedSigStateful.loadArtifact()
     })
 
     it('should pass w correct sigs', async () => {

@@ -30,7 +30,7 @@ const initialSupply = 1000000n
 describe('Test SmartContract `ERC20`', () => {
     let map: BalanceMap, allowances: AllowanceMap, erc20: ERC20
     before(async () => {
-        await ERC20.compile()
+        ERC20.loadArtifact()
 
         map = new HashedMap<PubKeyHash, bigint>()
         allowances = new HashedMap<Allowance, bigint>()

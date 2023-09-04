@@ -4,8 +4,8 @@ import { getDefaultSigner, getRandomInt } from './utils/helper'
 import { FixedArray, MethodCallOptions, toByteString } from 'scrypt-ts'
 
 describe('Test SmartContract `Voting`', () => {
-    before(async () => {
-        await Voting.compile()
+    before(() => {
+        Voting.loadArtifact()
     })
 
     const candidateNames: FixedArray<CandidateName, typeof N> = [

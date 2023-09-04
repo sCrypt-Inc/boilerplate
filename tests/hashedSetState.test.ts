@@ -7,7 +7,7 @@ import { getDefaultSigner } from './utils/helper'
 describe('Test SmartContract `HashedSetState`', () => {
     let set: HashedSet<bigint>, stateSet: HashedSetState
     before(async () => {
-        await HashedSetState.compile()
+        HashedSetState.loadArtifact()
 
         set = new HashedSet<bigint>()
 

@@ -19,7 +19,7 @@ describe('Test SmartContract `Cointoss`', () => {
     const [aliceprivatekey, alicepublickey] = randomPrivateKey()
     const [bobprivatekey, bobpublickey] = randomPrivateKey()
     before(async () => {
-        await CoinToss.compile()
+        CoinToss.loadArtifact()
         instance = new CoinToss(
             PubKey(toHex(alicepublickey)),
             PubKey(toHex(bobpublickey)),

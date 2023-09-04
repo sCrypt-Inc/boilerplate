@@ -9,7 +9,7 @@ describe('Test SmartContract `Ackermann`', () => {
     let ackermann: Ackermann
 
     before(async () => {
-        await Ackermann.compile()
+        Ackermann.loadArtifact()
         ackermann = new Ackermann(2n, 1n)
 
         await ackermann.connect(getDefaultSigner())
