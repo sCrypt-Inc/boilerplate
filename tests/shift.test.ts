@@ -1,6 +1,6 @@
 import { FixedArray } from 'scrypt-ts'
 import { ShiftTest } from '../src/contracts/shift'
-import { getDefaultSigner} from './utils/txHelper'    
+import { getDefaultSigner} from './utils/helper'    
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
