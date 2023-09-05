@@ -1,4 +1,4 @@
-import { SmartContractLib, byteString2Int, int2ByteString, method} from "scrypt-ts";
+import { SmartContractLib, byteString2Int, int2ByteString, method, assert, SmartContract} from "scrypt-ts";
 
 //
 export class Shift extends SmartContractLib{
@@ -26,4 +26,22 @@ export class Shift extends SmartContractLib{
         return x / Shift.pow2(n);
     }
 
+}
+
+export class ShiftTest extends SmartContract{
+
+    @method()
+    public pow2(n : bigint, x : bigint){
+        assert(Shift.pow2(n) == x)
+    }
+
+    @method()
+    public left(x : bigint, y : bigint, z : bigint){
+        assert(Shift.left(x,y) == z)
+    }
+
+    @method()
+    public right(x : bigint, y : bigint, z : bigint){
+        assert(Shift.right(x, y) == z)
+    }
 }

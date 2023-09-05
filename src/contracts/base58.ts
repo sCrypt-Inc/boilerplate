@@ -1,4 +1,15 @@
-import { ByteString, SmartContractLib, Utils, hash256, int2ByteString, len, method, prop, reverseByteString, toByteString } from "scrypt-ts";
+import { ByteString, 
+         SmartContractLib, 
+         Utils, 
+         hash256, 
+         int2ByteString,
+         assert, 
+         SmartContract,
+         method, 
+         prop, 
+         reverseByteString, 
+         toByteString 
+} from "scrypt-ts";
 
 export class Base58 extends SmartContractLib{
     @prop()
@@ -37,4 +48,15 @@ export class Base58 extends SmartContractLib{
         return res
     }
 
+}
+
+export class Base58Test extends SmartContract {
+    @method()
+    public main(addr: ByteString) {
+        const verbyte: ByteString = Base58.P2PKH_verbyte_mainnet
+
+        const result: ByteString = Base58.base58EncodeCheckAddr(addr, verbyte)
+
+        assert(result == addr)
+    }
 }
