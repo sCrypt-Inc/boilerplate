@@ -4,7 +4,7 @@ import { ByteString, assert, SigHash, SmartContract, Utils, hash256, int2ByteStr
 //Read Medium article about this contract
 //https://xiaohuiliu.medium.com/inter-contract-call-on-bitcoin-f51869c08be
 
-type Coeff = {
+export type Coeff = {
   a : bigint
   b : bigint
   c : bigint
