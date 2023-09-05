@@ -1,4 +1,4 @@
-import { SmartContractLib, byteString2Int, int2ByteString, method} from "scrypt-ts";
+import { SmartContractLib, byteString2Int, int2ByteString, method, assert, SmartContract} from "scrypt-ts";
 
 //
 export class Shift extends SmartContractLib{
