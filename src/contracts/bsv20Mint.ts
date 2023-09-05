@@ -100,7 +100,7 @@ export class BSV20Mint extends SmartContract {
 
     // OP_FALSE OP_IF OP_DATA3 "ord" OP_1 OP_DATA18 "application/bsv-20" OP_FALSE <transfer-json> OP_ENDIF
     // Transfer JSON example:
-    //{
+    //{ 
     //  "p": "bsv-20",
     //  "op": "transfer",
     //  "id": "3b313338fa0555aebeaf91d8db1ffebd74773c67c8ad5181ff3d3f51e21e0000_1"
@@ -109,13 +109,13 @@ export class BSV20Mint extends SmartContract {
     @method()
     static getTransferInsciption(tokenId: ByteString, amt: bigint): ByteString {
         const transferJson =
-            toByteString('{"p":"bsv-20","op":"transfer","id":"', true) +
-            toByteString('","amt":"', true) +
+            toByteString("{\"p\":\"bsv-20\",\"op\":\"transfer\",\"id\":\"", true) +
+            toByteString("\",\"amt\":\"", true) +
             BSV20Mint.int2Ascii(amt) +
-            toByteString('"}', true)
+            toByteString("\"}", true)
 
         return (
-            toByteString(
+           toByteString(
                 '0063036f726451126170706c69636174696f6e2f6273762d323000'
             ) +
             int2ByteString(len(transferJson)) +
