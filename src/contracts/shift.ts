@@ -27,3 +27,21 @@ export class Shift extends SmartContractLib{
     }
 
 }
+
+export class ShiftTest extends SmartContract{
+
+    @method()
+    public pow2(n : bigint, x : bigint){
+        assert(Shift.pow2(n) == x)
+    }
+
+    @method()
+    public left(x : bigint, y : bigint, z : bigint){
+        assert(Shift.left(x,y) == z)
+    }
+
+    @method()
+    public right(x : bigint, y : bigint, z : bigint){
+        assert(Shift.right(x, y) == z)
+    }
+}
