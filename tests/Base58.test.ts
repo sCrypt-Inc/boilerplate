@@ -1,6 +1,6 @@
 import { toByteString } from 'scrypt-ts'
-import { Base58Test } from '../src/contracts/Base58'
-import { getDefaultSigner } from './utils/txHelper'
+import { Base58Test } from '../src/contracts/base58'
+import { getDefaultSigner } from './utils/helper'
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
