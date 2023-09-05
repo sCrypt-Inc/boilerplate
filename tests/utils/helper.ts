@@ -14,6 +14,7 @@ const wallets: Record<string, TestWallet> = {
         })
     ),
     local: new TestWallet(myPrivateKey, new DummyProvider()),
+    mainnet: new TestWallet(myPrivateKey, new DefaultProvider()),
 }
 export function getDefaultSigner(
     privateKey?: bsv.PrivateKey | bsv.PrivateKey[]
