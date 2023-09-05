@@ -1,4 +1,4 @@
-import { Callee, Coeff } from '../src/contracts/callee'
+import { Callee, Coeff } from '../src/contracts/Callee'
 import { getDefaultSigner} from './utils/helper'    
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
