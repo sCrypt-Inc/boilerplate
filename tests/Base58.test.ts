@@ -13,8 +13,7 @@ async function main() {
     await instance.connect(getDefaultSigner())
 
     it('should encode address correctly', async () => {
-       const deployTx =  await instance.deploy(1)
-        console.log('deployed ', deployTx.id)
+           await instance.deploy(1)
 
         const callContract = async () => {
             await instance.methods.main(toByteString('1234567890abcdef', true))
