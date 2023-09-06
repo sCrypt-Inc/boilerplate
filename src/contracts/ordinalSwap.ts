@@ -13,6 +13,9 @@ import {
     slice,
 } from 'scrypt-ts'
 
+/*
+ * This contract enables an atomic swap of an ordinal for satoshis.
+ */
 export class OrdinalSwap extends SmartContract {
     @prop()
     readonly alice: PubKey
@@ -20,14 +23,25 @@ export class OrdinalSwap extends SmartContract {
     @prop()
     readonly bob: PubKey
 
+    // Reference to UTXO, which holds Bob's satoshis (or ordinal) (TXID + output idx).
     @prop()
     readonly prevoutBob: ByteString
 
-    constructor(alice: PubKey, bob: PubKey, prevoutBob: ByteString) {
+    // Amount in Bob's UTXO. Needs to be checked by Bob before signing his input.
+    @prop()
+    readonly prevoutBobAmount: bigint
+
+    constructor(
+        alice: PubKey,
+        bob: PubKey,
+        prevoutBob: ByteString,
+        prevoutBobAmount: bigint
+    ) {
         super(...arguments)
         this.alice = alice
         this.bob = bob
         this.prevoutBob = prevoutBob
+        this.prevoutBobAmount = prevoutBobAmount
     }
 
     @method()
@@ -41,17 +55,20 @@ export class OrdinalSwap extends SmartContract {
             'contract must be spent via first input'
         )
 
-        // Ensure the second input spends Bobs ordinal output.
+        // Ensure the second input spends Bobs output.
         assert(
             slice(this.prevouts, 36n, 72n) == this.prevoutBob,
-            'second input must spend Bobs ordinal output'
+            'second input must spend Bobs output'
         )
 
         // Transfer Alice's ordinal which is locked in this contract to Bob.
         let outputs = Utils.buildPublicKeyHashOutput(hash160(this.bob), 1n)
 
-        // Transfer Bob's ordinal, unlocked by the second input to Alice.
-        outputs += Utils.buildPublicKeyHashOutput(hash160(this.alice), 1n)
+        // Transfer Bob's funds (or ordinal), unlocked by the second input to Alice.
+        outputs += Utils.buildPublicKeyHashOutput(
+            hash160(this.alice),
+            this.prevoutBobAmount
+        )
 
         // Add change output.
         outputs += this.buildChangeOutput()
