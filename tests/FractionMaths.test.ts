@@ -4,7 +4,6 @@ import { getDefaultSigner} from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-
 describe('Test SmartContract `FractionMaths`', () => {
     let instance: FRMathTest
 
