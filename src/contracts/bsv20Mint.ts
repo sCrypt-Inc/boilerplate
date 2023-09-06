@@ -19,8 +19,14 @@ import {
 import { Shift10 } from 'scrypt-ts-lib'
 
 export class BSV20Mint extends SmartContract {
+    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
+    static readonly UINT_MAX = 0xffffffffn
+
     @prop()
     totalSupply: bigint
+
+    @prop()
+    maxMintAmount: bigint
 
     @prop(true)
     alreadyMinted: bigint
@@ -30,6 +36,12 @@ export class BSV20Mint extends SmartContract {
 
     @prop(true)
     tokenId: ByteString
+
+    @prop(true)
+    lastUpdate: bigint
+
+    @prop()
+    timeDelta: bigint
 
     @prop()
     static readonly hexAsciiTable: FixedArray<ByteString, 16> = [
@@ -51,16 +63,53 @@ export class BSV20Mint extends SmartContract {
         toByteString('f', true),
     ]
 
-    constructor(totalSupply: bigint) {
+    constructor(
+        totalSupply: bigint,
+        maxMintAmount: bigint,
+        lastUpdate: bigint,
+        timeDelta: bigint
+    ) {
         super(...arguments)
         this.totalSupply = totalSupply
+        this.maxMintAmount = maxMintAmount
         this.alreadyMinted = 0n
         this.isFirstMint = false
         this.tokenId = toByteString('')
+        this.lastUpdate = lastUpdate
+        this.timeDelta = timeDelta
     }
 
     @method()
     public mint(dest: PubKeyHash, amount: bigint) {
+        // Check time passed since last mint.
+        // Ensure nSequence is less than UINT_MAX.
+        assert(
+            this.ctx.sequence < BSV20Mint.UINT_MAX,
+            'input sequence should less than UINT_MAX'
+        )
+
+        // Check if using block height.
+        if (
+            this.lastUpdate + this.timeDelta <
+            BSV20Mint.LOCKTIME_BLOCK_HEIGHT_MARKER
+        ) {
+            // Enforce nLocktime field to also use block height.
+            assert(
+                this.ctx.locktime < BSV20Mint.LOCKTIME_BLOCK_HEIGHT_MARKER,
+                'locktime should be less than 500000000'
+            )
+        }
+        assert(
+            this.ctx.locktime >= this.lastUpdate + this.timeDelta,
+            'locktime has not yet expired'
+        )
+
+        // Update last mint timestamp.
+        this.lastUpdate = this.ctx.locktime
+
+        // Check mint amount doesn't exceed maximum.
+        assert(amount <= this.maxMintAmount, 'mint amount exceeds maximum')
+
         // If first mint, parse token id and store it in a state var
         if (this.isFirstMint) {
             this.tokenId =
