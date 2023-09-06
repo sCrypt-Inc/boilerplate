@@ -79,16 +79,21 @@ export class BSV20Mint extends SmartContract {
         // Update already minted amount.
         this.alreadyMinted += amount
 
-        // Build state output inscribed with leftover tokens.
-        const leftover = this.totalSupply - this.alreadyMinted
-        const script0 =
-            BSV20Mint.getTransferInsciption(this.tokenId, leftover) +
-            this.getStateScript()
-        let outputs = Utils.buildOutput(script0, 1n)
+        let outputs = toByteString('')
+
+        if (this.alreadyMinted != this.totalSupply) {
+            // If there are still tokens left, then
+            // build state output inscribed with leftover tokens.
+            const leftover = this.totalSupply - this.alreadyMinted
+            const script0 =
+                BSV20Mint.getTransferInsciption(this.tokenId, leftover) +
+                this.getStateScript()
+            outputs += Utils.buildOutput(script0, 1n)
+        }
 
         // Build P2PKH output to dest paying specified amount of tokens.
         const script1 =
-            BSV20Mint.getTransferInsciption(this.tokenId, leftover) +
+            BSV20Mint.getTransferInsciption(this.tokenId, amount) +
             Utils.buildPublicKeyHashScript(dest)
         outputs += Utils.buildOutput(script1, 1n)
 
@@ -100,7 +105,7 @@ export class BSV20Mint extends SmartContract {
 
     // OP_FALSE OP_IF OP_DATA3 "ord" OP_1 OP_DATA18 "application/bsv-20" OP_FALSE <transfer-json> OP_ENDIF
     // Transfer JSON example:
-    //{ 
+    //{
     //  "p": "bsv-20",
     //  "op": "transfer",
     //  "id": "3b313338fa0555aebeaf91d8db1ffebd74773c67c8ad5181ff3d3f51e21e0000_1"
@@ -109,13 +114,13 @@ export class BSV20Mint extends SmartContract {
     @method()
     static getTransferInsciption(tokenId: ByteString, amt: bigint): ByteString {
         const transferJson =
-            toByteString("{\"p\":\"bsv-20\",\"op\":\"transfer\",\"id\":\"", true) +
-            toByteString("\",\"amt\":\"", true) +
+            toByteString('{"p":"bsv-20","op":"transfer","id":"', true) +
+            toByteString('","amt":"', true) +
             BSV20Mint.int2Ascii(amt) +
-            toByteString("\"}", true)
+            toByteString('"}', true)
 
         return (
-           toByteString(
+            toByteString(
                 '0063036f726451126170706c69636174696f6e2f6273762d323000'
             ) +
             int2ByteString(len(transferJson)) +
