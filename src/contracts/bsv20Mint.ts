@@ -163,10 +163,10 @@ export class BSV20Mint extends SmartContract {
     @method()
     static getTransferInsciption(tokenId: ByteString, amt: bigint): ByteString {
         const transferJson =
-            toByteString('{"p":"bsv-20","op":"transfer","id":"', true) +
-            toByteString('","amt":"', true) +
+            toByteString('{\"p\":\"bsv-20\",\"op\":\"transfer\",\"id\":\"', true) +
+            toByteString('\",\"amt\":\"', true) +
             BSV20Mint.int2Ascii(amt) +
-            toByteString('"}', true)
+            toByteString('\"}', true)
 
         return (
             toByteString(
