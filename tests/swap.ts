@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { CrossChainSwap } from '../src/contracts/crossChainSwap'
+import { Swap } from '../src/contracts/swap'
 import { getDefaultSigner } from './utils/helper'
 import {
     MethodCallOptions,
@@ -13,8 +13,8 @@ import chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)
 
-describe('Test SmartContract `CrossChainSwap`', () => {
-    let crossChainSwap: CrossChainSwap
+describe('Test SmartContract `Swap`', () => {
+    let crossChainSwap: Swap
     const lockTimeMin = 1673510000n
 
     const alicePrivKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
@@ -29,9 +29,9 @@ describe('Test SmartContract `CrossChainSwap`', () => {
     const xHash = sha256(x)
 
     before(() => {
-        CrossChainSwap.loadArtifact()
+        Swap.loadArtifact()
 
-        crossChainSwap = new CrossChainSwap(
+        crossChainSwap = new Swap(
             PubKey(alicePubKey.toHex()),
             PubKey(bobPubKey.toHex()),
             xHash,
@@ -49,7 +49,7 @@ describe('Test SmartContract `CrossChainSwap`', () => {
                 (sigResps) => findSig(sigResps, alicePubKey),
                 {
                     pubKeyOrAddrToSign: alicePubKey,
-                } as MethodCallOptions<CrossChainSwap>
+                } as MethodCallOptions<Swap>
             )
         return expect(callContract()).not.rejected
     })
@@ -64,7 +64,7 @@ describe('Test SmartContract `CrossChainSwap`', () => {
                 {
                     lockTime: 1673523720,
                     pubKeyOrAddrToSign: bobPubKey,
-                } as MethodCallOptions<CrossChainSwap>
+                } as MethodCallOptions<Swap>
             )
         return expect(callContract()).not.rejected
     })
@@ -79,7 +79,7 @@ describe('Test SmartContract `CrossChainSwap`', () => {
                 {
                     lockTime: 1673500100,
                     pubKeyOrAddrToSign: bobPubKey,
-                } as MethodCallOptions<CrossChainSwap>
+                } as MethodCallOptions<Swap>
             )
         return expect(callContract()).to.be.rejectedWith(
             /locktime has not yet expired/
