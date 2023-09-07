@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { Swap } from '../src/contracts/swap'
+import { AtomicSwap } from '../src/contracts/swap'
 import { getDefaultSigner } from './utils/helper'
 import {
     MethodCallOptions,
@@ -13,8 +13,8 @@ import chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)
 
-describe('Test SmartContract `Swap`', () => {
-    let crossChainSwap: Swap
+describe('Test SmartContract `AtomicSwap`', () => {
+    let atomicSwap: AtomicSwap
     const lockTimeMin = 1673510000n
 
     const alicePrivKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
@@ -29,9 +29,9 @@ describe('Test SmartContract `Swap`', () => {
     const xHash = sha256(x)
 
     before(() => {
-        Swap.loadArtifact()
+        AtomicSwap.loadArtifact()
 
-        crossChainSwap = new Swap(
+        atomicSwap = new AtomicSwap(
             PubKey(alicePubKey.toHex()),
             PubKey(bobPubKey.toHex()),
             xHash,
@@ -40,46 +40,46 @@ describe('Test SmartContract `Swap`', () => {
     })
 
     it('should pass unlock', async () => {
-        await crossChainSwap.connect(getDefaultSigner(alicePrivKey))
+        await atomicSwap.connect(getDefaultSigner(alicePrivKey))
 
-        await crossChainSwap.deploy(1)
+        await atomicSwap.deploy(1)
         const callContract = async () =>
-            crossChainSwap.methods.unlock(
+            atomicSwap.methods.unlock(
                 x,
                 (sigResps) => findSig(sigResps, alicePubKey),
                 {
                     pubKeyOrAddrToSign: alicePubKey,
-                } as MethodCallOptions<Swap>
+                } as MethodCallOptions<AtomicSwap>
             )
         return expect(callContract()).not.rejected
     })
 
     it('should pass cancel', async () => {
-        await crossChainSwap.connect(getDefaultSigner(bobPrivKey))
+        await atomicSwap.connect(getDefaultSigner(bobPrivKey))
 
-        await crossChainSwap.deploy(1)
+        await atomicSwap.deploy(1)
         const callContract = async () =>
-            crossChainSwap.methods.cancel(
+            atomicSwap.methods.cancel(
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
                     lockTime: 1673523720,
                     pubKeyOrAddrToSign: bobPubKey,
-                } as MethodCallOptions<Swap>
+                } as MethodCallOptions<AtomicSwap>
             )
         return expect(callContract()).not.rejected
     })
 
     it('should fail withdraw when nLocktime is too low.', async () => {
-        await crossChainSwap.connect(getDefaultSigner(bobPrivKey))
+        await atomicSwap.connect(getDefaultSigner(bobPrivKey))
 
-        await crossChainSwap.deploy(1)
+        await atomicSwap.deploy(1)
         const callContract = async () =>
-            crossChainSwap.methods.cancel(
+            atomicSwap.methods.cancel(
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
                     lockTime: 1673500100,
                     pubKeyOrAddrToSign: bobPubKey,
-                } as MethodCallOptions<Swap>
+                } as MethodCallOptions<AtomicSwap>
             )
         return expect(callContract()).to.be.rejectedWith(
             /locktime has not yet expired/

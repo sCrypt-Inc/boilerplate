@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { CrossChainSwap2 } from '../src/contracts/crossChainSwap2'
+import { BTCSwap } from '../src/contracts/btcSwap'
 import {
     FixedArray,
     MethodCallOptions,
@@ -16,8 +16,8 @@ import {
 import { getDefaultSigner } from './utils/helper'
 import { BlockHeader, MerklePath, MerkleProof, Node } from 'scrypt-ts-lib'
 
-describe('Test SmartContract `CrossChainSwap2`', () => {
-    let crossChainSwap: CrossChainSwap2
+describe('Test SmartContract `BTCSwap`', () => {
+    let btcSwap: BTCSwap
 
     // TODO: Make this actual btc testnet key and adjust values
     const alicePrivKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
@@ -126,9 +126,9 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
     ]
 
     before(() => {
-        CrossChainSwap2.loadArtifact()
+        BTCSwap.loadArtifact()
 
-        crossChainSwap = new CrossChainSwap2(
+        btcSwap = new BTCSwap(
             Ripemd160(aliceAddr),
             Ripemd160(bobAddr),
             Ripemd160(bobP2WPKHAddr),
@@ -140,11 +140,11 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
     })
 
     it('should pass swap', async () => {
-        await crossChainSwap.connect(getDefaultSigner(alicePrivKey))
+        await btcSwap.connect(getDefaultSigner(alicePrivKey))
 
-        await crossChainSwap.deploy(1)
+        await btcSwap.deploy(1)
         const callContract = async () =>
-            crossChainSwap.methods.swap(
+            btcSwap.methods.swap(
                 btcTx,
                 merkleProof,
                 headers,
@@ -152,23 +152,23 @@ describe('Test SmartContract `CrossChainSwap2`', () => {
                 (sigResps) => findSig(sigResps, alicePubKey),
                 {
                     pubKeyOrAddrToSign: alicePubKey,
-                } as MethodCallOptions<CrossChainSwap2>
+                } as MethodCallOptions<BTCSwap>
             )
         return expect(callContract()).not.rejected
     })
 
     it('should pass cancel', async () => {
-        await crossChainSwap.connect(getDefaultSigner(bobPrivKey))
+        await btcSwap.connect(getDefaultSigner(bobPrivKey))
 
-        await crossChainSwap.deploy(1)
+        await btcSwap.deploy(1)
         const callContract = async () =>
-            crossChainSwap.methods.cancel(
+            btcSwap.methods.cancel(
                 PubKey(toHex(bobPubKey)),
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
                     lockTime: Number(timeout) + 1000,
                     pubKeyOrAddrToSign: bobPubKey,
-                } as MethodCallOptions<CrossChainSwap2>
+                } as MethodCallOptions<BTCSwap>
             )
         return expect(callContract()).not.rejected
     })
