@@ -43,6 +43,9 @@ export class BSV20Mint extends SmartContract {
     @prop()
     timeDelta: bigint
 
+    @prop(true)
+    prevInscriptionLen: bigint
+
     @prop()
     static readonly hexAsciiTable: FixedArray<ByteString, 16> = [
         toByteString('0', true),
@@ -67,7 +70,8 @@ export class BSV20Mint extends SmartContract {
         totalSupply: bigint,
         maxMintAmount: bigint,
         lastUpdate: bigint,
-        timeDelta: bigint
+        timeDelta: bigint,
+        prevInscriptionLen: bigint
     ) {
         super(...arguments)
         this.totalSupply = totalSupply
@@ -77,6 +81,7 @@ export class BSV20Mint extends SmartContract {
         this.tokenId = toByteString('')
         this.lastUpdate = lastUpdate
         this.timeDelta = timeDelta
+        this.prevInscriptionLen = prevInscriptionLen
     }
 
     @method()
@@ -134,10 +139,12 @@ export class BSV20Mint extends SmartContract {
             // If there are still tokens left, then
             // build state output inscribed with leftover tokens.
             const leftover = this.totalSupply - this.alreadyMinted
-            const script0 =
-                BSV20Mint.getTransferInsciption(this.tokenId, leftover) +
-                this.getStateScript()
-            outputs += Utils.buildOutput(script0, 1n)
+            const transferInscription = BSV20Mint.getTransferInsciption(this.tokenId, leftover)
+            const stateScript = slice(this.getStateScript(), this.prevInscriptionLen) // Slice of prev inscription
+            outputs += Utils.buildOutput(transferInscription + stateScript, 1n)
+            
+            // Store next inscription length, so we know how much to slice in the next iteration.
+            this.prevInscriptionLen = len(transferInscription)
         }
 
         // Build P2PKH output to dest paying specified amount of tokens.
