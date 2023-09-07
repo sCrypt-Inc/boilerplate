@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { AtomicSwap } from '../src/contracts/swap'
+import { AtomicSwap } from '../src/contracts/atomicSwap'
 import { getDefaultSigner } from './utils/helper'
 import {
     MethodCallOptions,
