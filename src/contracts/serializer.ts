@@ -145,7 +145,7 @@ export class Writer extends SmartContractLib {
 }
 
 // test serializer
-export class Test extends SmartContract {
+export class STest extends SmartContract {
     @method()
     public testBool(f: boolean) {
         let buf: ByteString = Writer.writeBool(f)
