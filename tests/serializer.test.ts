@@ -6,18 +6,18 @@ import {
     toByteString,
     toHex,
 } from 'scrypt-ts'
-import { Test } from '../src/contracts/serializer'
+import { STest } from '../src/contracts/serializer'
 import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 import { myPublicKey } from './utils/privateKey'
 use(chaiAsPromised)
 
 describe('Test SmartContract `Serializer`', () => {
-    let instance: Test
+    let instance: STest
 
     before(async () => {
-        await Test.compile()
-        instance = new Test()
+        await STest.compile()
+        instance = new STest()
         await instance.connect(getDefaultSigner())
     })
 
