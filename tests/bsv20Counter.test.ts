@@ -1,29 +1,19 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import {
-    findSig,
-    MethodCallOptions,
-    PubKey,
-    PubKeyHash,
-    toHex,
-    bsv,
-    Utils,
-    hash160,
-    sizeOfOrdinal,
-} from 'scrypt-ts'
-import { CounterOrd } from '../src/contracts/counterOrd'
+import { MethodCallOptions, toHex, bsv, hash160, Ordinal } from 'scrypt-ts'
+import { Bsv20Counter } from '../src/contracts/bsv20Counter'
 import { getDefaultSigner } from './utils/helper'
 import { fetchBSV20Utxo, sendBSV20ToContract } from './utils/ord'
 
 use(chaiAsPromised)
 
-describe('Test SmartContract `CounterOrd`', () => {
-    const ordPk = bsv.PrivateKey.fromWIF('')
+describe('Test SmartContract `Bsv20Counter`', () => {
+    const ordPk = bsv.PrivateKey.fromWIF(process.env.ORD_KEY || '')
     const ordAddr = ordPk.toAddress().toString()
     const ordPKH = hash160(toHex(ordPk.publicKey))
     console.log('ordAddr', ordAddr)
     before(async () => {
-        await CounterOrd.compile()
+        await Bsv20Counter.compile()
     })
 
     it('should pass if using right private key', async () => {
@@ -31,12 +21,12 @@ describe('Test SmartContract `CounterOrd`', () => {
 
         console.log('ordinalUtxos', ordinalUtxos)
 
-        const ordinal = bsv.Script.fromHex(ordinalUtxos[0].script.slice(50))
-
-        const inscriptLen = BigInt(ordinal.toHex().length / 2)
+        const ordinal = Ordinal.fromScript(
+            bsv.Script.fromHex(ordinalUtxos[0].script)
+        ) as Ordinal
 
         // create a new CounterOrd contract instance
-        const counter = new CounterOrd(0n, inscriptLen)
+        const counter = new Bsv20Counter(0n, ordinal.size())
 
         await counter.connect(getDefaultSigner())
 
@@ -53,6 +43,8 @@ describe('Test SmartContract `CounterOrd`', () => {
             // create the next instance from the current
             const nextInstance = currentInstance.next()
 
+            const ordinal = currentInstance.getOrdinal()
+
             nextInstance.setOrdinal(ordinal)
             // apply updates on the next instance off chain
             nextInstance.increment()
@@ -64,7 +56,7 @@ describe('Test SmartContract `CounterOrd`', () => {
                         instance: nextInstance,
                         balance: 1,
                     },
-                } as MethodCallOptions<CounterOrd>)
+                } as MethodCallOptions<Bsv20Counter>)
                 console.log('callTx:', tx.id)
             }
 
@@ -77,22 +69,17 @@ describe('Test SmartContract `CounterOrd`', () => {
         currentInstance.bindTxBuilder(
             'withdraw',
             (
-                current: CounterOrd,
-                options: MethodCallOptions<CounterOrd>,
+                current: Bsv20Counter,
+                options: MethodCallOptions<Bsv20Counter>,
                 ...args: any
             ) => {
-                const p = Utils.buildPublicKeyHashScript(ordPKH)
-
-                const ord = ordinal.toHex()
-
-                const ordP2PKH = p + ord
                 const unsignedTx: bsv.Transaction = new bsv.Transaction()
                     // add contract input
                     .addInput(current.buildContractInput())
                     // add a p2pkh output
                     .addOutput(
                         new bsv.Transaction.Output({
-                            script: bsv.Script.fromHex(ordP2PKH),
+                            script: ordinal.toP2PKH(ordPk.publicKey),
                             satoshis: 1,
                         })
                     )
@@ -118,7 +105,7 @@ describe('Test SmartContract `CounterOrd`', () => {
                 {
                     verify: true,
                     changeAddress,
-                } as MethodCallOptions<CounterOrd>
+                } as MethodCallOptions<Bsv20Counter>
             )
 
             console.log('callTx:', tx.id)

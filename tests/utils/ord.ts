@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { SmartContract, UTXO, bsv } from 'scrypt-ts'
+import { SmartContract, UTXO, bsv, Ordinal, ByteString } from 'scrypt-ts'
 import { signTx } from 'scryptlib'
 
 export function fetchInscriptionByOutpoint(outpoint: string): any {
@@ -57,6 +57,11 @@ export function fetchBSV20Utxo(
         })
 }
 
+export function byteString2Str(str: ByteString): string {
+    const decoder = new TextDecoder()
+    return decoder.decode(Buffer.from(str, 'hex'))
+}
+
 export async function sendBSV20ToContract(
     bsv20: UTXO,
     ordPk: bsv.PrivateKey,
@@ -69,9 +74,15 @@ export async function sendBSV20ToContract(
     ): Promise<bsv.Transaction> => {
         const deployTx = new bsv.Transaction()
 
-        const ordinal = bsv.Script.fromHex(bsv20.script.slice(50))
+        const ordinal = Ordinal.fromScript(bsv.Script.fromHex(bsv20.script))
 
-        instance.setOrdinal(ordinal)
+        const inscription = ordinal?.getInscription()
+
+        const bsv20JSON = JSON.parse(inscription?.content as string)
+
+        instance.setOrdinal(
+            Ordinal.createTransferBsv20(bsv20JSON.tick, bsv20JSON.amt)
+        )
         deployTx.from(bsv20).addOutput(
             new bsv.Transaction.Output({
                 script: instance.lockingScript,

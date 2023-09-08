@@ -10,7 +10,7 @@ import {
     Utils,
 } from 'scrypt-ts'
 
-export class CounterOrd extends SmartContract {
+export class Bsv20Counter extends SmartContract {
     @prop(true)
     count: bigint
 
