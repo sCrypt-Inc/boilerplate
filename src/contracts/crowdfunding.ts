@@ -20,7 +20,9 @@ import {
 export type DonorMap = HashedMap<PubKey, bigint>
 
 export class Crowdfund2 extends SmartContract {
+    @prop()
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
+    @prop()
     static readonly UINT_MAX = 0xffffffffn
 
     @prop()
@@ -82,14 +84,14 @@ export class Crowdfund2 extends SmartContract {
         // confirmed as denoted
         this.is_donated = true
         assert(
-            this.ctx.sequence < Crowdfund.UINT_MAX,
+            this.ctx.sequence < Crowdfund2.UINT_MAX,
             'require nLocktime enabled'
         )
 
         // Check if using block height.
-        if (this.deadline < Crowdfund.LOCKTIME_BLOCK_HEIGHT_MARKER) {
+        if (this.deadline < Crowdfund2.LOCKTIME_BLOCK_HEIGHT_MARKER) {
             // Enforce nLocktime field to also use block height.
-            assert(this.ctx.locktime < Crowdfund.LOCKTIME_BLOCK_HEIGHT_MARKER)
+            assert(this.ctx.locktime < Crowdfund2.LOCKTIME_BLOCK_HEIGHT_MARKER)
         }
         assert(
             this.ctx.locktime >= this.deadline,
