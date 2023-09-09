@@ -19,7 +19,7 @@ import {
 
 export type DonorMap = HashedMap<PubKey, bigint>
 
-export class Crowdfund extends SmartContract {
+export class Crowdfund2 extends SmartContract {
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
     static readonly UINT_MAX = 0xffffffffn
 
