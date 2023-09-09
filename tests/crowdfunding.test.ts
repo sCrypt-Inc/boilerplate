@@ -7,7 +7,7 @@ import {
     bsv,
     HashedMap,
 } from 'scrypt-ts'
-import { Crowdfund } from '../src/contracts/crowdfunding'
+import { Crowdfund2 } from '../src/contracts/crowdfunding'
 import { DonorMap } from '../src/contracts/crowdfunding'
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
@@ -21,14 +21,14 @@ describe('Test SmartContract `Crowdfund`', () => {
     const deadline = Math.round(new Date('2023-11-01').valueOf() / 1000)
     const target = 2n
 
-    let instance: Crowdfund
+    let instance: Crowdfund2
     let map: DonorMap
 
     before(async () => {
-        await Crowdfund.compile()
+        await Crowdfund2.compile()
 
         map = new HashedMap<PubKey, bigint>()
-        instance = new Crowdfund(
+        instance = new Crowdfund2(
             PubKey(toHex(publicKeyRecipient)),
             map,
             0n,
