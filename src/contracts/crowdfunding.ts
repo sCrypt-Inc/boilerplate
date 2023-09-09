@@ -21,9 +21,9 @@ export type DonorMap = HashedMap<PubKey, bigint>
 
 export class Crowdfund2 extends SmartContract {
     @prop()
-    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
+    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER : bigint = 500000000n
     @prop()
-    static readonly UINT_MAX = 0xffffffffn
+    static readonly UINT_MAX : bigint = 0xffffffffn
 
     @prop()
     readonly beneficiary: PubKey
