@@ -56,7 +56,7 @@ describe('Test SmartContract `Crowdfund`', () => {
                         instance: nextInstance,
                         balance: instance.balance,
                     },
-                } as MethodCallOptions<Crowdfund>
+                } as MethodCallOptions<Crowdfund2>
             )
 
             return expect(call()).not.be.rejected
@@ -79,7 +79,7 @@ describe('Test SmartContract `Crowdfund`', () => {
                         instance: nextInstance,
                         balance: instance.balance,
                     },
-                } as MethodCallOptions<Crowdfund>
+                } as MethodCallOptions<Crowdfund2>
             )
             return expect(call()).not.be.rejected
         }
@@ -104,7 +104,7 @@ describe('Test SmartContract `Crowdfund`', () => {
                         instance: nextInstance,
                         balance: instance.balance,
                     },
-                } as MethodCallOptions<Crowdfund>
+                } as MethodCallOptions<Crowdfund2>
             )
             return expect(call()).not.be.rejected
         }
