@@ -1,6 +1,7 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import {
+    Addr,
     findSig,
     MethodCallOptions,
     PubKey,
@@ -9,7 +10,7 @@ import {
 } from 'scrypt-ts'
 import { P2PKH } from '../src/contracts/p2pkh'
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
-import { myPublicKey, myPublicKeyHash } from './utils/privateKey'
+import { myAddress, myPublicKey, myPublicKeyHash } from './utils/privateKey'
 
 use(chaiAsPromised)
 
@@ -20,8 +21,8 @@ describe('Test SmartContract `P2PKH`', () => {
 
     it('should pass if using right private key', async () => {
         // create a new P2PKH contract instance
-        // this instance was paid to `myPublicKeyHash`
-        const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
+        // this instance was paid to `myAddress`
+        const p2pkh = new P2PKH(Addr(myAddress.toByteString()))
         // connect contract instance to a signer
         // dummySigner() has one private key in it by default, it's `myPrivateKey`
         await p2pkh.connect(getDefaultSigner())
@@ -37,7 +38,7 @@ describe('Test SmartContract `P2PKH`', () => {
                 // here we use `myPublicKey` to find the signature because we signed the transaction with `myPrivateKey` before
                 (sigResps) => findSig(sigResps, myPublicKey),
                 // pass public key, the second parameter, to `unlock`
-                PubKey(toHex(myPublicKey)),
+                PubKey(myPublicKey.toByteString()),
                 // method call options
                 {
                     // tell the signer to use the private key corresponding to `myPublicKey` to sign this transaction
@@ -51,8 +52,8 @@ describe('Test SmartContract `P2PKH`', () => {
 
     it('should fail if using wrong private key', async () => {
         const [wrongPrivateKey, wrongPublicKey] = randomPrivateKey()
-        // contract instance was paid to `myPublicKeyHash`
-        const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
+        // contract instance was paid to `myAddress`
+        const p2pkh = new P2PKH(Addr(myAddress.toByteString()))
         // add a new private key, `wrongPrivateKey`, into the signer
         // now the signer has two private keys in it
         await p2pkh.connect(getDefaultSigner(wrongPrivateKey))
@@ -63,7 +64,7 @@ describe('Test SmartContract `P2PKH`', () => {
                 // pass the signature signed by `wrongPrivateKey`
                 (sigResps) => findSig(sigResps, wrongPublicKey),
                 // pass the correct public key
-                PubKey(toHex(myPublicKey)),
+                PubKey(myPublicKey.toByteString()),
                 {
                     pubKeyOrAddrToSign: wrongPublicKey, // use `wrongPrivateKey` to sign
                 } as MethodCallOptions<P2PKH>
@@ -76,8 +77,8 @@ describe('Test SmartContract `P2PKH`', () => {
 
     it('should fail if passing wrong public key', async () => {
         const [, wrongPublicKey, ,] = randomPrivateKey()
-        // contract instance was paid to `myPublicKeyHash`
-        const p2pkh = new P2PKH(PubKeyHash(toHex(myPublicKeyHash)))
+        // contract instance was paid to `myAddress`
+        const p2pkh = new P2PKH(Addr(myAddress.toByteString()))
         await p2pkh.connect(getDefaultSigner())
 
         await p2pkh.deploy(1)
@@ -87,13 +88,13 @@ describe('Test SmartContract `P2PKH`', () => {
                 // pass the correct signature signed by `myPrivateKey`
                 (sigResps) => findSig(sigResps, myPublicKey),
                 // but pass the wrong public key
-                PubKey(toHex(wrongPublicKey)),
+                PubKey(wrongPublicKey.toByteString()),
                 {
                     pubKeyOrAddrToSign: myPublicKey, // use the correct private key, `myPrivateKey`, to sign
                 } as MethodCallOptions<P2PKH>
             )
         return expect(callContract()).to.be.rejectedWith(
-            /public key hashes are not equal/
+            /pubKey does not belong to address/
         )
     })
 })

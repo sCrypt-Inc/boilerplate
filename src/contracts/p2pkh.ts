@@ -1,10 +1,11 @@
 import {
+    Addr,
     assert,
     hash160,
     method,
     prop,
     PubKey,
-    PubKeyHash,
+    pubKey2Addr,
     Sig,
     SmartContract,
 } from 'scrypt-ts'
@@ -15,21 +16,21 @@ import {
 export class P2PKH extends SmartContract {
     // Address of the recipient.
     @prop()
-    readonly pubKeyHash: PubKeyHash
+    readonly address: Addr
 
-    constructor(pubKeyHash: PubKeyHash) {
+    constructor(address: Addr) {
         super(...arguments)
-        this.pubKeyHash = pubKeyHash
+        this.address = address
     }
 
     @method()
-    public unlock(sig: Sig, pubkey: PubKey) {
+    public unlock(sig: Sig, pubKey: PubKey) {
         // Check if the passed public key belongs to the specified address.
         assert(
-            hash160(pubkey) == this.pubKeyHash,
-            'public key hashes are not equal'
+            pubKey2Addr(pubKey) == this.address,
+            'pubKey does not belong to address'
         )
         // Check signature validity.
-        assert(this.checkSig(sig, pubkey), 'signature check failed')
+        assert(this.checkSig(sig, pubKey), 'signature check failed')
     }
 }
