@@ -132,8 +132,9 @@ export class BSV20Auction extends SmartContract {
         )
 
         // Ensure the ordinal is being payed out to the winning bidder.
-        let outScript = Utils.buildPublicKeyHashScript(hash160(this.bidder))
-        outScript += this.transferInscription
+        const outScript =
+            this.transferInscription +
+            Utils.buildPublicKeyHashScript(hash160(this.bidder))
         let outputs = Utils.buildOutput(outScript, 1n)
 
         // Ensure the second output is paying the bid to the auctioneer.

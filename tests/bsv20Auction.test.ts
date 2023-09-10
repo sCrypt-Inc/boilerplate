@@ -189,11 +189,13 @@ async function main() {
             unsignedTx
                 .addOutput(
                     new bsv.Transaction.Output({
-                        script: bsv.Script.fromHex(
-                            Utils.buildPublicKeyHashScript(
-                                hash160(current.bidder)
+                        script: transferInscription.add(
+                            bsv.Script.fromHex(
+                                Utils.buildPublicKeyHashScript(
+                                    hash160(current.bidder)
+                                )
                             )
-                        ).add(transferInscription),
+                        ),
                         satoshis: 1,
                     })
                 )
