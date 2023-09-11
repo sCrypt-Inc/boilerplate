@@ -8,13 +8,12 @@ import {
     bsv,
     ContractTransaction,
     SmartContract,
-    Ordinal,
     PubKeyHash,
 } from 'scrypt-ts'
 import { P2PKH } from '../src/contracts/p2pkh'
 import { getDefaultSigner } from './utils/helper'
 import { myPublicKey, myPublicKeyHash } from './utils/privateKey'
-import { fetchBSV20Utxo, sendBSV20ToContract } from './utils/ord'
+import { Ordinal } from './utils/ordinal'
 
 use(chaiAsPromised)
 
@@ -29,9 +28,13 @@ describe('Test SmartContract `P2PKH`', () => {
     function merge(p2pkh1: P2PKH, p2pkh2: P2PKH) {
         // call public function `unlock` of this contract
 
-        const ord1 = p2pkh1.getOrdinal() as Ordinal
+        const ord1 = Ordinal.fromScript(
+            p2pkh1.getNOPScript() as bsv.Script
+        ) as Ordinal
 
-        const ord2 = p2pkh2.getOrdinal() as Ordinal
+        const ord2 = Ordinal.fromScript(
+            p2pkh2.getNOPScript() as bsv.Script
+        ) as Ordinal
 
         const ordJson1 = JSON.parse(ord1.getInscription().content)
 
@@ -132,7 +135,7 @@ describe('Test SmartContract `P2PKH`', () => {
     }
 
     it('should pass if using right private key', async () => {
-        const ordinalUtxos = await fetchBSV20Utxo(ordAddr, 'LUNC')
+        const ordinalUtxos = await Ordinal.fetchBSV20Utxo(ordAddr, 'LUNC')
 
         console.log('ordinalUtxos', ordinalUtxos)
 
@@ -145,7 +148,7 @@ describe('Test SmartContract `P2PKH`', () => {
 
         await p2pkh1.connect(getDefaultSigner())
 
-        const tx1 = await sendBSV20ToContract(ordinalUtxos[0], ordPk, p2pkh1)
+        const tx1 = await Ordinal.send2Contract(ordinalUtxos[0], ordPk, p2pkh1)
 
         console.log('sendBSV20ToContract', tx1.id)
 
@@ -153,7 +156,7 @@ describe('Test SmartContract `P2PKH`', () => {
 
         await p2pkh2.connect(getDefaultSigner())
 
-        const tx2 = await sendBSV20ToContract(ordinalUtxos[1], ordPk, p2pkh1)
+        const tx2 = await Ordinal.send2Contract(ordinalUtxos[1], ordPk, p2pkh1)
 
         console.log('sendBSV20ToContract', tx2.id)
 

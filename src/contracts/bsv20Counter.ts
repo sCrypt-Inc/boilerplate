@@ -5,22 +5,18 @@ import {
     method,
     prop,
     PubKeyHash,
-    slice,
     SmartContract,
     Utils,
 } from 'scrypt-ts'
+import { OrdinalLib } from './ordinalLib'
 
 export class Bsv20Counter extends SmartContract {
     @prop(true)
     count: bigint
 
-    @prop()
-    inscriptLen: bigint
-
-    constructor(count: bigint, inscriptLen: bigint) {
+    constructor(count: bigint) {
         super(...arguments)
         this.count = count
-        this.inscriptLen = inscriptLen
     }
 
     @method()
@@ -41,8 +37,10 @@ export class Bsv20Counter extends SmartContract {
 
         assert(this.count >= 3, 'count should >= 3')
 
-        const stateScript = this.getStateScript()
-        const inscriptionScript = slice(stateScript, 0n, this.inscriptLen)
+        const inscriptionScript = OrdinalLib.getInsciptionScript(
+            this.getStateScript()
+        )
+
         // outputs containing the latest state and an optional change output
 
         let outScript = Utils.buildPublicKeyHashScript(address)

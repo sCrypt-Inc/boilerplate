@@ -1,15 +1,10 @@
 import { expect, use } from 'chai'
 import { Bsv20V1Mint } from '../src/contracts/bsv20V1Mint'
 import { getDefaultSigner } from './utils/helper'
-import {
-    MethodCallOptions,
-    Ordinal,
-    bsv,
-    hash160,
-    toByteString,
-    toHex,
-} from 'scrypt-ts'
+import { MethodCallOptions, bsv, hash160, toByteString, toHex } from 'scrypt-ts'
 import chaiAsPromised from 'chai-as-promised'
+import { Ordinal } from './utils/ordinal'
+
 use(chaiAsPromised)
 describe('Test SmartContract `Bsv20V1Mint`', () => {
     const ordPk = bsv.PrivateKey.fromWIF(process.env.ORD_KEY || '')
@@ -35,12 +30,12 @@ describe('Test SmartContract `Bsv20V1Mint`', () => {
 
         await bsv20V1Mint.connect(getDefaultSigner())
 
-        const mintOrdianl = Ordinal.createMintBsv20(
+        const mintOrdinal = Ordinal.createMintBsv20(
             TICK,
             totalSupply.toString()
         )
-        bsv20V1Mint.setOrdinal(mintOrdianl)
 
+        bsv20V1Mint.setNOPScript(mintOrdinal.toScript())
         latestTx = await bsv20V1Mint.deploy(1)
         console.log('deploytx', latestTx.id)
     })
@@ -62,7 +57,7 @@ describe('Test SmartContract `Bsv20V1Mint`', () => {
             nextInstance.remainingAmt().toString()
         )
 
-        nextInstance.setOrdinal(transferOrdianl)
+        nextInstance.setNOPScript(transferOrdianl.toScript())
 
         // call the method of current instance to apply the updates on chain
         const callContract = async () => {
@@ -113,12 +108,9 @@ describe('Test SmartContract `Bsv20V1Mint`', () => {
                 }
             )
 
-            const ordinal = bsv20V1Mint.getOrdinal() as Ordinal
-
             const { tx } = await bsv20V1Mint.methods.mint(
                 ordPKH,
-                toByteString(transferAmt.toString(), true),
-                ordinal.size()
+                toByteString(transferAmt.toString(), true)
             )
 
             console.log('call tx: ', tx.id)

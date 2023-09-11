@@ -8,12 +8,11 @@ import {
     toHex,
     bsv,
     hash160,
-    Ordinal,
 } from 'scrypt-ts'
 import { P2PKH } from '../src/contracts/p2pkh'
 import { getDefaultSigner } from './utils/helper'
 import { myPublicKey, myPublicKeyHash } from './utils/privateKey'
-
+import { Ordinal } from './utils/ordinal'
 use(chaiAsPromised)
 
 describe('Test SmartContract `P2PKH`', () => {
@@ -32,7 +31,9 @@ describe('Test SmartContract `P2PKH`', () => {
 
         await p2pkh.connect(getDefaultSigner())
 
-        p2pkh.setOrdinal(Ordinal.createDeployBsv20(TICK, '10000', '10000'))
+        p2pkh.setNOPScript(
+            Ordinal.createDeployBsv20(TICK, '10000', '10000').toScript()
+        )
 
         const deployTx = await p2pkh.deploy(1)
         console.log('deployTx:', deployTx.id)
@@ -44,7 +45,7 @@ describe('Test SmartContract `P2PKH`', () => {
 
         await p2pkh.connect(getDefaultSigner())
 
-        p2pkh.setOrdinal(Ordinal.createMintBsv20(TICK, '10000'))
+        p2pkh.setNOPScript(Ordinal.createMintBsv20(TICK, '10000').toScript())
 
         const deployTx = await p2pkh.deploy(1)
         console.log('deployTx:', deployTx.id)
@@ -83,22 +84,18 @@ describe('Test SmartContract `P2PKH`', () => {
 
         const callContract = async () => {
             const changeAddress = await p2pkh.signer.getDefaultAddress()
-            try {
-                const { tx } = await p2pkh.methods.unlock(
-                    (sigResps) => findSig(sigResps, myPublicKey),
-                    // pass public key, the second parameter, to `unlock`
-                    PubKey(toHex(myPublicKey)),
-                    // method call options
-                    {
-                        verify: true,
-                        pubKeyOrAddrToSign: myPublicKey,
-                        changeAddress,
-                    } as MethodCallOptions<P2PKH>
-                )
-                console.log('callTx:', tx.id)
-            } catch (error) {
-                console.log('aa', error)
-            }
+            const { tx } = await p2pkh.methods.unlock(
+                (sigResps) => findSig(sigResps, myPublicKey),
+                // pass public key, the second parameter, to `unlock`
+                PubKey(toHex(myPublicKey)),
+                // method call options
+                {
+                    verify: true,
+                    pubKeyOrAddrToSign: myPublicKey,
+                    changeAddress,
+                } as MethodCallOptions<P2PKH>
+            )
+            console.log('callTx:', tx.id)
         }
         return expect(callContract()).not.rejected
     })

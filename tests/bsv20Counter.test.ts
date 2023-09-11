@@ -1,9 +1,9 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { MethodCallOptions, toHex, bsv, hash160, Ordinal } from 'scrypt-ts'
+import { MethodCallOptions, toHex, bsv, hash160 } from 'scrypt-ts'
 import { Bsv20Counter } from '../src/contracts/bsv20Counter'
 import { getDefaultSigner } from './utils/helper'
-import { fetchBSV20Utxo, sendBSV20ToContract } from './utils/ord'
+import { Ordinal } from './utils/ordinal'
 
 use(chaiAsPromised)
 
@@ -17,20 +17,29 @@ describe('Test SmartContract `Bsv20Counter`', () => {
     })
 
     it('should pass if using right private key', async () => {
-        const ordinalUtxos = await fetchBSV20Utxo(ordAddr, 'LUNC')
+        const ordinalUtxos = await Ordinal.fetchBSV20Utxo(ordAddr, 'LUNC')
 
         console.log('ordinalUtxos', ordinalUtxos)
+
+        if (ordinalUtxos.length === 0) {
+            return
+        }
 
         const ordinal = Ordinal.fromScript(
             bsv.Script.fromHex(ordinalUtxos[0].script)
         ) as Ordinal
 
         // create a new CounterOrd contract instance
-        const counter = new Bsv20Counter(0n, ordinal.size())
+        const counter = new Bsv20Counter(0n)
 
         await counter.connect(getDefaultSigner())
 
-        const tx = await sendBSV20ToContract(ordinalUtxos[0], ordPk, counter)
+        const tx = await Ordinal.send2Contract(
+            ordinalUtxos[0],
+            ordPk,
+            counter,
+            true
+        )
 
         console.log('sendBSV20ToContract', tx.id)
 
@@ -43,9 +52,7 @@ describe('Test SmartContract `Bsv20Counter`', () => {
             // create the next instance from the current
             const nextInstance = currentInstance.next()
 
-            const ordinal = currentInstance.getOrdinal()
-
-            nextInstance.setOrdinal(ordinal)
+            nextInstance.setNOPScript(ordinal.toScript())
             // apply updates on the next instance off chain
             nextInstance.increment()
 

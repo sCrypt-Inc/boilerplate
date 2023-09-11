@@ -7,14 +7,11 @@ import {
     PubKeyHash,
     toHex,
     bsv,
-    Utils,
-    hash160,
-    Ordinal,
 } from 'scrypt-ts'
 import { P2PKH } from '../src/contracts/p2pkh'
 import { getDefaultSigner } from './utils/helper'
 import { myPublicKey, myPublicKeyHash } from './utils/privateKey'
-import { fetchBSV20Utxo, sendBSV20ToContract } from './utils/ord'
+import { Ordinal } from './utils/ordinal'
 
 use(chaiAsPromised)
 
@@ -27,7 +24,7 @@ describe('Test SmartContract `P2PKH`', () => {
     })
 
     it('should pass if using right private key', async () => {
-        const ordinalUtxos = await fetchBSV20Utxo(ordAddr, 'LUNC')
+        const ordinalUtxos = await Ordinal.fetchBSV20Utxo(ordAddr, 'MLGB')
 
         console.log('ordinalUtxos', ordinalUtxos)
 
@@ -40,24 +37,28 @@ describe('Test SmartContract `P2PKH`', () => {
 
         await p2pkh.connect(getDefaultSigner())
 
-        const tx = await sendBSV20ToContract(ordinalUtxos[0], ordPk, p2pkh)
+        const tx = await Ordinal.send2Contract(
+            ordinalUtxos[0],
+            ordPk,
+            p2pkh,
+            true
+        )
 
-        console.log('sendBSV20ToContract', tx.id)
+        console.log('send2Contract', tx.id)
 
         // call public function `unlock` of this contract
 
         p2pkh.bindTxBuilder(
             'unlock',
-            (
+            async (
                 current: P2PKH,
                 options: MethodCallOptions<P2PKH>,
                 ...args: any
             ) => {
-                const p = Utils.buildPublicKeyHashScript(
-                    hash160(toHex(ordPk.publicKey))
-                )
-
-                const ord = current.getOrdinal() as Ordinal
+                const changeAddress = await current.signer.getDefaultAddress()
+                const ord = Ordinal.fromScript(
+                    current.getNOPScript() as bsv.Script
+                ) as Ordinal
 
                 const unsignedTx: bsv.Transaction = new bsv.Transaction()
                     // add contract input
@@ -70,8 +71,8 @@ describe('Test SmartContract `P2PKH`', () => {
                         })
                     )
                 // add change output
-                if (options.changeAddress) {
-                    unsignedTx.change(options.changeAddress)
+                if (changeAddress) {
+                    unsignedTx.change(changeAddress)
                 }
 
                 return Promise.resolve({
@@ -83,24 +84,18 @@ describe('Test SmartContract `P2PKH`', () => {
         )
 
         const callContract = async () => {
-            const changeAddress = await p2pkh.signer.getDefaultAddress()
-            try {
-                const { tx } = await p2pkh.methods.unlock(
-                    (sigResps) => findSig(sigResps, myPublicKey),
-                    // pass public key, the second parameter, to `unlock`
-                    PubKey(toHex(myPublicKey)),
-                    // method call options
-                    {
-                        verify: true,
-                        pubKeyOrAddrToSign: myPublicKey,
-                        changeAddress,
-                    } as MethodCallOptions<P2PKH>
-                )
+            const { tx } = await p2pkh.methods.unlock(
+                (sigResps) => findSig(sigResps, myPublicKey),
+                // pass public key, the second parameter, to `unlock`
+                PubKey(toHex(myPublicKey)),
+                // method call options
+                {
+                    verify: true,
+                    pubKeyOrAddrToSign: myPublicKey,
+                } as MethodCallOptions<P2PKH>
+            )
 
-                console.log('callTx:', tx.id)
-            } catch (error) {
-                console.log('aa', error)
-            }
+            console.log('callTx:', tx.id)
         }
         return expect(callContract()).not.rejected
     })

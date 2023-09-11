@@ -1,8 +1,9 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { MethodCallOptions, toHex, bsv, hash160, Ordinal } from 'scrypt-ts'
+import { MethodCallOptions, toHex, bsv, hash160 } from 'scrypt-ts'
 import { OrdCounter } from '../src/contracts/ordCounter'
 import { getDefaultSigner } from './utils/helper'
+import { Ordinal } from '../src/contracts/ordinalLib'
 
 use(chaiAsPromised)
 
@@ -22,11 +23,12 @@ describe('Test SmartContract `OrdCounter`', () => {
 
     it('mint ordinal nft', async () => {
         // create a new CounterOrd contract instance
-        counter = new OrdCounter(0n, ordinal.size())
+        counter = new OrdCounter(0n)
 
         await counter.connect(getDefaultSigner())
 
-        counter.setOrdinal(ordinal)
+        const aa = ordinal.toScript()
+        counter.setNOPScript(ordinal.toScript())
 
         const deploy = async () => {
             const deployTx = await counter.deploy(1)
@@ -45,21 +47,18 @@ describe('Test SmartContract `OrdCounter`', () => {
             // create the next instance from the current
             const nextInstance = currentInstance.next()
 
-            nextInstance.setOrdinal(null)
             // apply updates on the next instance off chain
             nextInstance.increment()
 
             // call the method of current instance to apply the updates on chain
             const callContract = async () => {
-                const { tx } = await currentInstance.methods.incrementOnChain(
-                    i === 0,
-                    {
-                        next: {
-                            instance: nextInstance,
-                            balance: 1,
-                        },
-                    } as MethodCallOptions<OrdCounter>
-                )
+                const { tx } = await currentInstance.methods.incrementOnChain({
+                    verify: true,
+                    next: {
+                        instance: nextInstance,
+                        balance: 1,
+                    },
+                } as MethodCallOptions<OrdCounter>)
                 console.log('callTx:', tx.id)
             }
 
