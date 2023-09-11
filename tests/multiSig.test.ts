@@ -3,13 +3,11 @@ import chaiAsPromised from 'chai-as-promised'
 import {
     MethodCallOptions,
     PubKey,
-    PubKeyHash,
-    toHex,
     bsv,
     FixedArray,
     getDummySig,
-    slice,
     findSigs,
+    Addr,
 } from 'scrypt-ts'
 import { MultiSigPayment } from '../src/contracts/multiSig'
 import { getDefaultSigner } from './utils/helper'
@@ -34,8 +32,8 @@ describe('Test SmartContract `P2MS`', () => {
     it('should pass if using right private keys', async () => {
         const multiSigPayment = new MultiSigPayment(
             addresses.map((addr) => {
-                return PubKeyHash(slice(addr.toHex(), 1n)) // Ignore address prefix.
-            }) as FixedArray<PubKeyHash, 3>
+                return Addr(addr.toByteString())
+            }) as FixedArray<Addr, 3>
         )
 
         // Dummy signer can take an array of signing private keys.
@@ -48,7 +46,7 @@ describe('Test SmartContract `P2MS`', () => {
                 // Filter out relevant signatures.
                 // Be vary of the order (https://scrypt.io/docs/how-to-write-a-contract/built-ins#checkmultisig).
                 (sigResps) => findSigs(sigResps, publicKeys),
-                publicKeys.map((publicKey) => PubKey(toHex(publicKey))),
+                publicKeys.map((publicKey) => PubKey(publicKey.toByteString())),
                 // Method call options:
                 {
                     pubKeyOrAddrToSign: publicKeys,
@@ -61,8 +59,8 @@ describe('Test SmartContract `P2MS`', () => {
     it('should not pass if using wrong sig', async () => {
         const multiSigPayment = new MultiSigPayment(
             addresses.map((addr) => {
-                return PubKeyHash(toHex(addr.toHex()))
-            }) as FixedArray<PubKeyHash, 3>
+                return Addr(addr.toByteString())
+            }) as FixedArray<Addr, 3>
         )
 
         await multiSigPayment.connect(getDefaultSigner(privateKeys))
@@ -75,7 +73,7 @@ describe('Test SmartContract `P2MS`', () => {
                     res[0] = getDummySig()
                     return res
                 },
-                publicKeys.map((publicKey) => PubKey(toHex(publicKey))),
+                publicKeys.map((publicKey) => PubKey(publicKey.toByteString())),
                 {
                     pubKeyOrAddrToSign: publicKeys,
                 } as MethodCallOptions<MultiSigPayment>

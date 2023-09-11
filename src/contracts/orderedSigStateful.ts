@@ -6,7 +6,7 @@ import {
     method,
     prop,
     PubKey,
-    PubKeyHash,
+    Addr,
     Sig,
     SigHash,
     SmartContract,
@@ -29,7 +29,7 @@ export class OrderedSigStateful extends SmartContract {
     signers: FixedArray<PubKey, typeof OrderedSigStateful.N_SIGNERS>
 
     @prop()
-    dest: PubKeyHash
+    dest: Addr
 
     @prop(true)
     currentSignerIdx: bigint
@@ -37,7 +37,7 @@ export class OrderedSigStateful extends SmartContract {
     constructor(
         msg: ByteString,
         signers: FixedArray<PubKey, typeof OrderedSigStateful.N_SIGNERS>,
-        dest: PubKeyHash
+        dest: Addr
     ) {
         super(...arguments)
         this.msg = msg

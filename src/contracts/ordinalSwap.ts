@@ -5,11 +5,11 @@ import {
     SmartContract,
     Utils,
     assert,
-    hash160,
     hash256,
     int2ByteString,
     method,
     prop,
+    pubKey2Addr,
     slice,
 } from 'scrypt-ts'
 
@@ -62,11 +62,11 @@ export class OrdinalSwap extends SmartContract {
         )
 
         // Transfer Alice's ordinal which is locked in this contract to Bob.
-        let outputs = Utils.buildPublicKeyHashOutput(hash160(this.bob), 1n)
+        let outputs = Utils.buildPublicKeyHashOutput(pubKey2Addr(this.bob), 1n)
 
         // Transfer Bob's funds (or ordinal), unlocked by the second input to Alice.
         outputs += Utils.buildPublicKeyHashOutput(
-            hash160(this.alice),
+            pubKey2Addr(this.alice),
             this.prevoutBobAmount
         )
 

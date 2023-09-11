@@ -2,16 +2,15 @@ import { assert } from 'console'
 import {
     ByteString,
     PubKey,
-    PubKeyHash,
+    Addr,
     Sig,
     SmartContract,
     Utils,
-    hash160,
     hash256,
     method,
     prop,
     slice,
-    toByteString,
+    pubKey2Addr,
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 
@@ -55,7 +54,7 @@ export class BSV20BuyOrder extends SmartContract {
     public unlock(
         oracleMsg: ByteString,
         oracleSig: RabinSig,
-        sellerAddr: PubKeyHash
+        sellerAddr: Addr
     ) {
         // Check oracle signature.
         assert(
@@ -76,7 +75,7 @@ export class BSV20BuyOrder extends SmartContract {
         )
 
         // Ensure the tokens ared being payed out to the buyer.
-        let outScript = Utils.buildPublicKeyHashScript(hash160(this.buyer))
+        let outScript = Utils.buildPublicKeyHashScript(pubKey2Addr(this.buyer))
         outScript += this.transferInscription
         let outputs = Utils.buildOutput(outScript, 1n)
 

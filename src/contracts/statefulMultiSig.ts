@@ -3,7 +3,7 @@ import {
     method,
     prop,
     PubKey,
-    PubKeyHash,
+    Addr,
     Sig,
     SmartContract,
     FixedArray,
@@ -35,7 +35,7 @@ export class StatefulMultiSig extends SmartContract {
 
     // Payment destination once signature threshold is reached.
     @prop()
-    dest: PubKeyHash
+    dest: Addr
 
     // Public keys of the owners along with boolean flags, that
     // indicate if their sig was already validated.
@@ -43,7 +43,7 @@ export class StatefulMultiSig extends SmartContract {
     owners: FixedArray<Owner, typeof StatefulMultiSig.M>
 
     constructor(
-        dest: PubKeyHash,
+        dest: Addr,
         owners: FixedArray<Owner, typeof StatefulMultiSig.M>
     ) {
         super(...arguments)

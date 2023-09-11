@@ -1,11 +1,10 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import {
+    Addr,
     bsv,
     FixedArray,
-    hash160,
     MethodCallOptions,
-    PubKeyHash,
     toByteString,
     Utils,
 } from 'scrypt-ts'
@@ -35,7 +34,7 @@ describe('Test SmartContract `CatBond`', () => {
         254793531524149913629837733216543054009502074704208702860372877047624767567944352075626148397577323473568971634456552122953360389441248591928129817948873n
 
     // Address of the issuer.
-    const issuerAddr = hash160(issuer.publicKey.toHex())
+    const issuerAddr = Addr(issuer.publicKey.toAddress().toByteString())
 
     // Init array with placeholder investments
     const _investments: Investment[] = []
@@ -43,7 +42,7 @@ describe('Test SmartContract `CatBond`', () => {
         _investments.push({
             investor: toByteString(
                 '0000000000000000000000000000000000000000'
-            ) as PubKeyHash,
+            ) as Addr,
             amount: 0n,
         })
     }
@@ -78,7 +77,9 @@ describe('Test SmartContract `CatBond`', () => {
         // Add investments:
         for (let i = 0; i < CatBond.MAX_INVESTORS; i++) {
             const investor = investors[i]
-            const investorAddr = hash160(investor.publicKey.toHex())
+            const investorAddr = Addr(
+                investor.publicKey.toAddress().toByteString()
+            )
             const amount = 1500
 
             // Construct next contract instance, with update investments array.

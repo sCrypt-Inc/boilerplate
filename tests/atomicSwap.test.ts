@@ -32,8 +32,8 @@ describe('Test SmartContract `AtomicSwap`', () => {
         AtomicSwap.loadArtifact()
 
         atomicSwap = new AtomicSwap(
-            PubKey(alicePubKey.toHex()),
-            PubKey(bobPubKey.toHex()),
+            PubKey(alicePubKey.toByteString()),
+            PubKey(bobPubKey.toByteString()),
             xHash,
             lockTimeMin
         )

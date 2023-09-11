@@ -1,16 +1,9 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import {
-    Addr,
-    findSig,
-    MethodCallOptions,
-    PubKey,
-    PubKeyHash,
-    toHex,
-} from 'scrypt-ts'
+import { Addr, findSig, MethodCallOptions, PubKey } from 'scrypt-ts'
 import { P2PKH } from '../src/contracts/p2pkh'
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
-import { myAddress, myPublicKey, myPublicKeyHash } from './utils/privateKey'
+import { myAddress, myPublicKey } from './utils/privateKey'
 
 use(chaiAsPromised)
 
@@ -76,7 +69,7 @@ describe('Test SmartContract `P2PKH`', () => {
     })
 
     it('should fail if passing wrong public key', async () => {
-        const [, wrongPublicKey, ,] = randomPrivateKey()
+        const [, wrongPublicKey] = randomPrivateKey()
         // contract instance was paid to `myAddress`
         const p2pkh = new P2PKH(Addr(myAddress.toByteString()))
         await p2pkh.connect(getDefaultSigner())

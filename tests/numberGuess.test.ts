@@ -11,8 +11,8 @@ async function main() {
     const [privateKeybob, publicKeybob] = randomPrivateKey()
 
     const numbergs = new NumberGuess(
-        PubKey(toHex(publicKeyalice)),
-        PubKey(toHex(publicKeybob)),
+        PubKey(publicKeyalice.toByteString()),
+        PubKey(publicKeybob.toByteString()),
         3n,
         3n
     )

@@ -1,17 +1,15 @@
 import { getDefaultSigner, randomPrivateKey, sleep } from './utils/helper'
 import {
+    Addr,
     bsv,
     ByteString,
     findSig,
-    hash160,
     int2ByteString,
     MethodCallOptions,
     PubKey,
-    PubKeyHash,
+    pubKey2Addr,
     reverseByteString,
-    Sig,
     toByteString,
-    toHex,
     Utils,
     UTXO,
 } from 'scrypt-ts'
@@ -53,7 +51,7 @@ function getMockBSV20TransferInscription(
 }
 
 async function deployInscription(
-    dest: PubKeyHash,
+    dest: Addr,
     inscription: bsv.Script
 ): Promise<UTXO> {
     const signer = getDefaultSigner()
@@ -97,7 +95,7 @@ async function main() {
     const bidderPublicKeys: bsv.PublicKey[] = []
     const bidderAddresses: bsv.Address[] = []
     for (let i = 0; i < 3; i++) {
-        const [privateKeyBidder, publicKeyBidder, , addressBidder] =
+        const [privateKeyBidder, publicKeyBidder, addressBidder] =
             randomPrivateKey()
         bidderPrivateKeys.push(privateKeyBidder)
         bidderPublicKeys.push(publicKeyBidder)
@@ -108,7 +106,7 @@ async function main() {
 
     const transferInscription = getMockBSV20TransferInscription('ordi', 1000)
     const ordinalUTXO = await deployInscription(
-        hash160(publicKeyAuctioneer.toHex()),
+        Addr(publicKeyAuctioneer.toAddress().toByteString()),
         transferInscription
     )
     console.log('Mock BSV-20 ordinal deployed:', ordinalUTXO.txId)
@@ -122,7 +120,7 @@ async function main() {
     const auction = new BSV20Auction(
         ordinalPrevout,
         toByteString(transferInscription.toHex()),
-        PubKey(toHex(publicKeyAuctioneer)),
+        PubKey(publicKeyAuctioneer.toByteString()),
         BigInt(auctionDeadline)
     )
 
@@ -138,7 +136,7 @@ async function main() {
 
     // Perform bidding.
     for (let i = 0; i < 3; i++) {
-        const newHighestBidder = PubKey(toHex(bidderPublicKeys[i]))
+        const newHighestBidder = PubKey(bidderPublicKeys[i].toByteString())
         const bid = BigInt(balance + 1)
 
         const nextInstance = currentInstance.next()
@@ -192,7 +190,7 @@ async function main() {
                         script: transferInscription.add(
                             bsv.Script.fromHex(
                                 Utils.buildPublicKeyHashScript(
-                                    hash160(current.bidder)
+                                    pubKey2Addr(current.bidder)
                                 )
                             )
                         ),
@@ -204,7 +202,7 @@ async function main() {
                     new bsv.Transaction.Output({
                         script: bsv.Script.fromHex(
                             Utils.buildPublicKeyHashScript(
-                                hash160(current.auctioneer)
+                                pubKey2Addr(current.auctioneer)
                             )
                         ),
                         satoshis: current.utxo.satoshis,
@@ -254,7 +252,9 @@ async function main() {
     )
 
     contractTx.tx.inputs[0].setScript(
-        bsv.Script.fromASM(`${ordinalSig} ${publicKeyAuctioneer.toHex()}`)
+        bsv.Script.fromASM(
+            `${ordinalSig} ${publicKeyAuctioneer.toByteString()}`
+        )
     )
 
     // Bind tx builder, that just simply re-uses the tx we created above.

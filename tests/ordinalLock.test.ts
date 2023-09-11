@@ -2,13 +2,12 @@ import { expect, use } from 'chai'
 import {
     MethodCallOptions,
     bsv,
-    PubKeyHash,
     Utils,
     findSig,
     PubKey,
-    hash160,
     ByteString,
     ContractTransaction,
+    Addr,
 } from 'scrypt-ts'
 import { OrdinalLock, purchaseTxBuilder } from '../src/contracts/ordinalLock'
 import chaiAsPromised from 'chai-as-promised'
@@ -23,7 +22,7 @@ const seller = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
 
 // Output that will pay the seller.
 const payOutput = Utils.buildPublicKeyHashOutput(
-    hash160(seller.publicKey.toHex()),
+    Addr(seller.toAddress().toByteString()),
     price
 )
 
@@ -33,7 +32,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
     before(async () => {
         OrdinalLock.loadArtifact()
         instance = new OrdinalLock(
-            PubKeyHash(hash160(seller.publicKey.toHex())),
+            Addr(seller.toAddress().toByteString()),
             payOutput
         )
         await instance.connect(getDefaultSigner(seller))
@@ -72,7 +71,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
         const callContract = async () =>
             instance.methods.cancel(
                 (sigResp) => findSig(sigResp, seller.publicKey),
-                PubKey(seller.publicKey.toHex()),
+                PubKey(seller.publicKey.toByteString()),
                 {
                     pubKeyOrAddrToSign: seller.publicKey,
                     changeAddress: seller.toAddress(),
@@ -83,10 +82,10 @@ describe('Test SmartContract `OrdinalLock`', () => {
 
     it('should fail purchase method w wrong payment out.', async () => {
         const wrongPayOutput = Utils.buildPublicKeyHashOutput(
-            hash160(
-                bsv.PrivateKey.fromRandom(
-                    bsv.Networks.testnet
-                ).publicKey.toHex()
+            Addr(
+                bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
+                    .toAddress()
+                    .toByteString()
             ),
             price
         )
@@ -157,7 +156,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
         const callContract = async () =>
             instance.methods.cancel(
                 (sigResp) => findSig(sigResp, wrongKey.publicKey),
-                PubKey(wrongKey.publicKey.toHex()),
+                PubKey(wrongKey.publicKey.toByteString()),
                 {
                     pubKeyOrAddrToSign: wrongKey.publicKey,
                     changeAddress: wrongKey.toAddress(),

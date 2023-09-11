@@ -4,14 +4,12 @@ import {
     FixedArray,
     MethodCallOptions,
     PubKey,
-    Ripemd160,
+    Addr,
     Sha256,
     bsv,
     findSig,
-    hash160,
     reverseByteString,
     toByteString,
-    toHex,
 } from 'scrypt-ts'
 import { getDefaultSigner } from './utils/helper'
 import { BlockHeader, MerklePath, MerkleProof, Node } from 'scrypt-ts-lib'
@@ -22,13 +20,13 @@ describe('Test SmartContract `BTCSwap`', () => {
     // TODO: Make this actual btc testnet key and adjust values
     const alicePrivKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
     const alicePubKey = alicePrivKey.publicKey
-    const aliceAddr = hash160(alicePubKey.toHex())
+    const aliceAddr = alicePubKey.toAddress().toByteString()
 
     const bobPrivKey = bsv.PrivateKey.fromWIF(
         'cNgrjdLrsKLpArLadM1gzg4kzFdejma3riLcpeDgTEPaJbPcWip3'
     )
     const bobPubKey = bobPrivKey.publicKey
-    const bobAddr = hash160(bobPubKey.toHex())
+    const bobAddr = bobPubKey.toAddress().toByteString()
     const bobP2WPKHAddr = toByteString(
         'dfa6b3ba7c262e3c68cfe9ee5dd47dbf25aac528'
     ) // TODO: Derive P2WPKH addr dynamically
@@ -129,9 +127,9 @@ describe('Test SmartContract `BTCSwap`', () => {
         BTCSwap.loadArtifact()
 
         btcSwap = new BTCSwap(
-            Ripemd160(aliceAddr),
-            Ripemd160(bobAddr),
-            Ripemd160(bobP2WPKHAddr),
+            Addr(aliceAddr),
+            Addr(bobAddr),
+            Addr(bobP2WPKHAddr),
             timeout,
             pdiff2Target(targetDifficulty),
             amountBTC,
@@ -148,7 +146,7 @@ describe('Test SmartContract `BTCSwap`', () => {
                 btcTx,
                 merkleProof,
                 headers,
-                PubKey(toHex(alicePubKey)),
+                PubKey(alicePubKey.toByteString()),
                 (sigResps) => findSig(sigResps, alicePubKey),
                 {
                     pubKeyOrAddrToSign: alicePubKey,
@@ -163,7 +161,7 @@ describe('Test SmartContract `BTCSwap`', () => {
         await btcSwap.deploy(1)
         const callContract = async () =>
             btcSwap.methods.cancel(
-                PubKey(toHex(bobPubKey)),
+                PubKey(bobPubKey.toByteString()),
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
                     lockTime: Number(timeout) + 1000,

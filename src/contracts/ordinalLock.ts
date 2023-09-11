@@ -1,12 +1,11 @@
 import {
     assert,
     ByteString,
-    hash160,
     hash256,
     method,
     prop,
     PubKey,
-    PubKeyHash,
+    Addr,
     SmartContract,
     Sig,
     SigHash,
@@ -14,6 +13,7 @@ import {
     Provider,
     MethodCallOptions,
     UTXO,
+    pubKey2Addr,
 } from 'scrypt-ts'
 
 /*
@@ -22,12 +22,12 @@ import {
  */
 export class OrdinalLock extends SmartContract {
     @prop()
-    seller: PubKeyHash
+    seller: Addr
 
     @prop()
     payOutput: ByteString
 
-    constructor(seller: PubKeyHash, payOutput: ByteString) {
+    constructor(seller: Addr, payOutput: ByteString) {
         super(...arguments)
 
         this.seller = seller
@@ -44,7 +44,7 @@ export class OrdinalLock extends SmartContract {
 
     @method()
     public cancel(sig: Sig, pubkey: PubKey) {
-        assert(this.seller == hash160(pubkey), 'bad seller')
+        assert(this.seller == pubKey2Addr(pubkey), 'bad seller')
         assert(this.checkSig(sig, pubkey), 'signature check failed')
     }
 }

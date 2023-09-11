@@ -6,25 +6,25 @@ import {
     assert,
     HashedMap,
     ByteString,
-    PubKeyHash,
+    Addr,
     toByteString,
     hash256,
     PubKey,
     Sig,
-    hash160,
+    pubKey2Addr,
 } from 'scrypt-ts'
 
-export type BalanceMap = HashedMap<PubKeyHash, bigint>
+export type BalanceMap = HashedMap<Addr, bigint>
 
 export type Allowance = {
-    owner: PubKeyHash
-    spender: PubKeyHash
+    owner: Addr
+    spender: Addr
 }
 
 export type AllowanceMap = HashedMap<Allowance, bigint>
 
 export type ERC20Pair = {
-    address: PubKeyHash
+    address: Addr
     balance: bigint
 }
 
@@ -57,7 +57,7 @@ export class ERC20 extends SmartContract {
     issuer: PubKey
 
     @prop()
-    static readonly EMPTY_ADDR: PubKeyHash = PubKeyHash(
+    static readonly EMPTY_ADDR: Addr = Addr(
         toByteString('0000000000000000000000000000000000000000')
     )
 
@@ -87,7 +87,7 @@ export class ERC20 extends SmartContract {
      */
     @method(SigHash.SINGLE)
     public mint(sig: Sig, issuerBalance: bigint, amount: bigint) {
-        const address = hash160(this.issuer)
+        const address = pubKey2Addr(this.issuer)
         assert(
             this.checkSig(sig, this.issuer),
             'ERC20: check issuer signature failed'
@@ -115,7 +115,7 @@ export class ERC20 extends SmartContract {
      * @param balance
      */
     @method(SigHash.SINGLE)
-    public balanceOf(owner: PubKeyHash, balance: bigint) {
+    public balanceOf(owner: Addr, balance: bigint) {
         assert(
             this.balances.canGet(owner, balance),
             'ERC20: can not get balance from owner address'
@@ -156,7 +156,10 @@ export class ERC20 extends SmartContract {
         )
         assert(from.balance >= amount, 'ERC20: transfer amount exceeds balance')
 
-        assert(hash160(pubkey) == from.address, 'ERC20: check signature failed')
+        assert(
+            pubKey2Addr(pubkey) == from.address,
+            'ERC20: check signature failed'
+        )
 
         assert(this.checkSig(sig, pubkey), 'ERC20: check signature failed')
 
@@ -202,7 +205,7 @@ export class ERC20 extends SmartContract {
             this.allowances.canGet(
                 {
                     owner: from.address,
-                    spender: hash160(spender),
+                    spender: pubKey2Addr(spender),
                 },
                 currentAllowance
             )
@@ -217,7 +220,7 @@ export class ERC20 extends SmartContract {
         this.allowances.set(
             {
                 owner: from.address,
-                spender: hash160(spender),
+                spender: pubKey2Addr(spender),
             },
             currentAllowance - amount
         )
@@ -260,12 +263,7 @@ export class ERC20 extends SmartContract {
      * @param amount amount of token
      */
     @method(SigHash.SINGLE)
-    public approve(
-        owner: PubKey,
-        sig: Sig,
-        spender: PubKeyHash,
-        amount: bigint
-    ) {
+    public approve(owner: PubKey, sig: Sig, spender: Addr, amount: bigint) {
         assert(
             spender != ERC20.EMPTY_ADDR,
             'ERC20: approve to the zero address'
@@ -275,7 +273,7 @@ export class ERC20 extends SmartContract {
 
         this.allowances.set(
             {
-                owner: hash160(owner),
+                owner: pubKey2Addr(owner),
                 spender: spender,
             },
             amount
@@ -295,7 +293,7 @@ export class ERC20 extends SmartContract {
      * @param amount amount of token allowed to withdraw
      */
     @method(SigHash.SINGLE)
-    public allowance(owner: PubKeyHash, spender: PubKeyHash, amount: bigint) {
+    public allowance(owner: Addr, spender: Addr, amount: bigint) {
         assert(
             this.allowances.canGet(
                 {

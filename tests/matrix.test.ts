@@ -6,9 +6,6 @@ import { expect } from 'chai'
 async function main() {
     Matrix.loadArtifact()
 
-    // const [privateKeyalice, publicKeyalice] = randomPrivateKey()
-    // const [privateKeybob, publicKeybob] = randomPrivateKey()
-
     const instance = new Matrix()
 
     await instance.connect(getDefaultSigner())

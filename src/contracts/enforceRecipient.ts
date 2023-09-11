@@ -4,7 +4,7 @@ import {
     hash256,
     method,
     prop,
-    PubKeyHash,
+    Addr,
     SigHash,
     SmartContract,
     Utils,
@@ -14,23 +14,23 @@ import {
  * This contract demonstrates how we can enforce a payment to a
  * specific address after the contract gets called. Anyone can spend
  * the UTXO containing this contract, but the contract code makes sure
- * the next output will be a P2PKH paying the address in the "pubKeyHash"
+ * the next output will be a P2PKH paying the specified address.
  * property.
  */
 export class EnforceRecipient extends SmartContract {
     // Address of the recipient.
     @prop()
-    readonly pubKeyHash: PubKeyHash
+    readonly address: Addr
 
-    constructor(pubKeyHash: PubKeyHash) {
+    constructor(address: Addr) {
         super(...arguments)
-        this.pubKeyHash = pubKeyHash
+        this.address = address
     }
 
     @method(SigHash.ANYONECANPAY_SINGLE)
     public unlock() {
         const output: ByteString = Utils.buildPublicKeyHashOutput(
-            this.pubKeyHash,
+            this.address,
             this.changeAmount
         )
         assert(

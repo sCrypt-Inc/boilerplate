@@ -3,14 +3,14 @@ import {
     FixedArray,
     method,
     prop,
-    PubKeyHash,
+    Addr,
     PubKey,
     SmartContract,
     Sig,
-    hash160,
     SigHash,
     Utils,
     hash256,
+    pubKey2Addr,
 } from 'scrypt-ts'
 
 const LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
@@ -23,10 +23,10 @@ export class MultiSigEscrow extends SmartContract {
     static readonly N_ARBITERS = 3
 
     @prop()
-    readonly buyerAddr: PubKeyHash
+    readonly buyerAddr: Addr
 
     @prop()
-    readonly sellerAddr: PubKeyHash
+    readonly sellerAddr: Addr
 
     @prop()
     readonly arbiters: FixedArray<PubKey, typeof MultiSigEscrow.N_ARBITERS>
@@ -35,8 +35,8 @@ export class MultiSigEscrow extends SmartContract {
     readonly deadline: bigint
 
     constructor(
-        buyerAddr: PubKeyHash,
-        sellerAddr: PubKeyHash,
+        buyerAddr: Addr,
+        sellerAddr: Addr,
         arbiters: FixedArray<PubKey, typeof MultiSigEscrow.N_ARBITERS>,
         deadline: bigint
     ) {
@@ -57,7 +57,7 @@ export class MultiSigEscrow extends SmartContract {
     ) {
         // Validate buyer sig.
         assert(
-            hash160(buyerPubKey) == this.buyerAddr,
+            pubKey2Addr(buyerPubKey) == this.buyerAddr,
             'invalid public key for buyer'
         )
         assert(
@@ -86,7 +86,7 @@ export class MultiSigEscrow extends SmartContract {
     ) {
         // Validate buyer sig.
         assert(
-            hash160(buyerPubKey) == this.buyerAddr,
+            pubKey2Addr(buyerPubKey) == this.buyerAddr,
             'invalid public key for buyer'
         )
         assert(
@@ -110,7 +110,7 @@ export class MultiSigEscrow extends SmartContract {
     @method()
     public refundDeadline(buyerSig: Sig, buyerPubKey: PubKey) {
         assert(
-            hash160(buyerPubKey) == this.buyerAddr,
+            pubKey2Addr(buyerPubKey) == this.buyerAddr,
             'invalid public key for buyer'
         )
         assert(

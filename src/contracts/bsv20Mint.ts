@@ -3,7 +3,7 @@ import {
     ByteString,
     FixedArray,
     OpCode,
-    PubKeyHash,
+    Addr,
     SmartContract,
     Utils,
     byteString2Int,
@@ -85,7 +85,7 @@ export class BSV20Mint extends SmartContract {
     }
 
     @method()
-    public mint(dest: PubKeyHash, amount: bigint) {
+    public mint(dest: Addr, amount: bigint) {
         // Check time passed since last mint.
         // Ensure nSequence is less than UINT_MAX.
         assert(

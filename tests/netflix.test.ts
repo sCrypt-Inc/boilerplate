@@ -20,8 +20,8 @@ describe('Test SmartContract `Netflix`', () => {
         Netflix.loadArtifact()
 
         netflix = new Netflix(
-            PubKey(toHex(publicKeyalice)),
-            PubKey(toHex(publicKeybob)),
+            PubKey(publicKeyalice.toByteString()),
+            PubKey(publicKeybob.toByteString()),
             Sha256(toByteString('hello', true))
         )
 

@@ -2,16 +2,16 @@ import {
     assert,
     ByteString,
     byteString2Int,
-    hash160,
     hash256,
     method,
     prop,
     PubKey,
-    PubKeyHash,
+    Addr,
     reverseByteString,
     Sig,
     SmartContract,
     toByteString,
+    pubKey2Addr,
 } from 'scrypt-ts'
 import { SECP256K1, Signature } from 'scrypt-ts-lib'
 
@@ -28,25 +28,25 @@ import { SECP256K1, Signature } from 'scrypt-ts-lib'
  * the values of the pub key hashes i.e. addresses.
  */
 export class ZeroConfForfeit extends SmartContract {
-    // PKH this tx is spending from.
+    // Address this tx is spending from.
     @prop()
-    inputPKH: PubKeyHash
+    inputAddr: Addr
 
     // Recipient address.
     @prop()
-    destPKH: PubKeyHash
+    destAddr: Addr
 
-    constructor(inputPKH: PubKeyHash, destPKH: PubKeyHash) {
+    constructor(inputAddr: Addr, destAddr: Addr) {
         super(...arguments)
-        this.inputPKH = inputPKH
-        this.destPKH = destPKH
+        this.inputAddr = inputAddr
+        this.destAddr = destAddr
     }
 
     @method()
     public regularSpend(sig: Sig, pubKey: PubKey) {
         // Check if the passed public key belongs to the specified address.
         assert(
-            hash160(pubKey) == this.destPKH,
+            pubKey2Addr(pubKey) == this.destAddr,
             'public key hashes are not equal'
         )
         // Check signature validity.
@@ -63,7 +63,10 @@ export class ZeroConfForfeit extends SmartContract {
         pubKey: PubKey
     ) {
         // The provided PK needs to match the PK from the payment input.
-        assert(hash160(pubKey) == this.inputPKH, 'PubKey not input PKH.')
+        assert(
+            pubKey2Addr(pubKey) == this.inputAddr,
+            'PubKey does not belong to input addr.'
+        )
 
         // Check signature of the original payment.
         const msg1HashInt = byteString2Int(

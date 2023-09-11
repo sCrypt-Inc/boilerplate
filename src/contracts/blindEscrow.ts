@@ -3,17 +3,17 @@ import {
     ByteString,
     byteString2Int,
     exit,
-    hash160,
     hash256,
     int2ByteString,
     method,
     prop,
     PubKey,
-    PubKeyHash,
+    Addr,
     reverseByteString,
     Sig,
     SmartContract,
     toByteString,
+    pubKey2Addr,
 } from 'scrypt-ts'
 import { SECP256K1, Signature } from 'scrypt-ts-lib'
 
@@ -33,21 +33,21 @@ export class BlindEscrow extends SmartContract {
     static readonly RETURN_BY_ARBITER = 3n
 
     @prop()
-    seller: PubKeyHash
+    seller: Addr
 
     @prop()
-    buyer: PubKeyHash
+    buyer: Addr
 
     @prop()
-    arbiter: PubKeyHash
+    arbiter: Addr
 
     @prop()
     escrowNonce: ByteString
 
     constructor(
-        seller: PubKeyHash,
-        buyer: PubKeyHash,
-        arbiter: PubKeyHash,
+        seller: Addr,
+        buyer: Addr,
+        arbiter: Addr,
         escrowNonce: ByteString
     ) {
         super(...arguments)
@@ -65,10 +65,10 @@ export class BlindEscrow extends SmartContract {
         oraclePubKey: PubKey,
         action: bigint
     ) {
-        let spender = PubKeyHash(
+        let spender = Addr(
             toByteString('0000000000000000000000000000000000000000')
         )
-        let oracle = PubKeyHash(
+        let oracle = Addr(
             toByteString('0000000000000000000000000000000000000000')
         )
 
@@ -91,8 +91,8 @@ export class BlindEscrow extends SmartContract {
         }
 
         // Check public keys belong to the specified addresses
-        assert(hash160(spenderPubKey) == spender, 'Wrong spender pub key')
-        assert(hash160(oraclePubKey) == oracle, 'Wrong oracle pub key')
+        assert(pubKey2Addr(spenderPubKey) == spender, 'Wrong spender pub key')
+        assert(pubKey2Addr(oraclePubKey) == oracle, 'Wrong oracle pub key')
 
         // Check oracle signature, i.e. "stamp".
         const oracleMsg: ByteString = this.escrowNonce + int2ByteString(action)

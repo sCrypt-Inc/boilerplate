@@ -58,9 +58,8 @@ export const sleep = async (seconds: number) => {
 export function randomPrivateKey() {
     const privateKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
     const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
-    const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
     const address = publicKey.toAddress()
-    return [privateKey, publicKey, publicKeyHash, address] as const
+    return [privateKey, publicKey, address] as const
 }
 
 export function getRandomInt(min: number, max: number) {

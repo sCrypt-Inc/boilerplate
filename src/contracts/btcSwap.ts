@@ -2,19 +2,18 @@ import {
     assert,
     ByteString,
     FixedArray,
-    hash160,
     hash256,
     len,
     method,
     prop,
     PubKey,
-    PubKeyHash,
-    Sha256,
+    Addr,
     Sig,
     slice,
     SmartContract,
     toByteString,
     Utils,
+    pubKey2Addr,
 } from 'scrypt-ts'
 import { Blockchain, MerklePath, MerkleProof, BlockHeader } from 'scrypt-ts-lib'
 
@@ -31,13 +30,13 @@ export class BTCSwap extends SmartContract {
     static readonly BTC_MAX_INPUTS = 3
 
     @prop()
-    readonly aliceAddr: PubKeyHash
+    readonly aliceAddr: Addr
 
     @prop()
-    readonly bobAddr: PubKeyHash
+    readonly bobAddr: Addr
 
     @prop()
-    readonly bobP2WPKHAddr: PubKeyHash
+    readonly bobP2WPKHAddr: Addr
 
     @prop()
     readonly timeout: bigint // Can be a timestamp or block height.
@@ -52,9 +51,9 @@ export class BTCSwap extends SmartContract {
     readonly amountBSV: bigint
 
     constructor(
-        aliceAddr: PubKeyHash,
-        bobAddr: PubKeyHash,
-        bobP2WPKHAddr: PubKeyHash,
+        aliceAddr: Addr,
+        bobAddr: Addr,
+        bobP2WPKHAddr: Addr,
         timeout: bigint,
         targetDifficulty: bigint,
         amountBTC: bigint,
@@ -204,7 +203,10 @@ export class BTCSwap extends SmartContract {
         }
 
         // Verify Alices signature.
-        assert(hash160(alicePubKey) == this.aliceAddr, 'Alice wrong pub key.')
+        assert(
+            pubKey2Addr(alicePubKey) == this.aliceAddr,
+            'Alice wrong pub key.'
+        )
         assert(this.checkSig(aliceSig, alicePubKey))
     }
 
@@ -230,7 +232,7 @@ export class BTCSwap extends SmartContract {
         )
 
         // Verify Bobs signature.
-        assert(hash160(bobPubKey) == this.bobAddr, 'Bob wrong pub key.')
+        assert(pubKey2Addr(bobPubKey) == this.bobAddr, 'Bob wrong pub key.')
         assert(this.checkSig(bobSig, bobPubKey))
     }
 }

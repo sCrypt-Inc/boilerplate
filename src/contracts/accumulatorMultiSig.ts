@@ -1,13 +1,13 @@
 import {
     assert,
     FixedArray,
-    hash160,
     method,
     prop,
     PubKey,
-    PubKeyHash,
+    Addr,
     Sig,
     SmartContract,
+    pubKey2Addr,
 } from 'scrypt-ts'
 
 // Read Medium article about this contract:
@@ -22,15 +22,15 @@ export class AccumulatorMultiSig extends SmartContract {
 
     // Addresses.
     @prop()
-    readonly pubKeyHashes: FixedArray<PubKeyHash, typeof AccumulatorMultiSig.N>
+    readonly addresses: FixedArray<Addr, typeof AccumulatorMultiSig.N>
 
     constructor(
         threshold: bigint,
-        pubKeyHashes: FixedArray<PubKeyHash, typeof AccumulatorMultiSig.N>
+        addresses: FixedArray<Addr, typeof AccumulatorMultiSig.N>
     ) {
         super(...arguments)
         this.threshold = threshold
-        this.pubKeyHashes = pubKeyHashes
+        this.addresses = addresses
     }
 
     @method()
@@ -44,7 +44,7 @@ export class AccumulatorMultiSig extends SmartContract {
             if (masks[i]) {
                 if (
                     // Ensure the public key belongs to the specified address.
-                    hash160(pubKeys[i]) == this.pubKeyHashes[i] &&
+                    pubKey2Addr(pubKeys[i]) == this.addresses[i] &&
                     // Check the signature
                     this.checkSig(sigs[i], pubKeys[i])
                 ) {

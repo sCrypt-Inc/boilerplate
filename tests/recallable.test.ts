@@ -14,16 +14,16 @@ use(chaiAsPromised)
 
 describe('Test SmartContract `Recallable`', () => {
     // alice is the issuer
-    const [alicePrivateKey, alicePublicKey, ,] = randomPrivateKey()
+    const [alicePrivateKey, alicePublicKey] = randomPrivateKey()
     // bob is a user
-    const [, bobPublicKey, ,] = randomPrivateKey()
+    const [, bobPublicKey] = randomPrivateKey()
 
     let recallable: Recallable
 
     before(async () => {
         Recallable.loadArtifact()
 
-        recallable = new Recallable(PubKey(toHex(alicePublicKey)))
+        recallable = new Recallable(PubKey(alicePublicKey.toByteString()))
         await recallable.connect(getDefaultSigner(alicePrivateKey))
 
         await recallable.deploy(100)
@@ -33,7 +33,7 @@ describe('Test SmartContract `Recallable`', () => {
         const callContract = async () =>
             await recallable.methods.transfer(
                 (sigResps) => findSig(sigResps, alicePublicKey),
-                PubKey(toHex(bobPublicKey)),
+                PubKey(bobPublicKey.toByteString()),
                 BigInt(0), // less than 1
                 {
                     pubKeyOrAddrToSign: alicePublicKey,
@@ -48,7 +48,7 @@ describe('Test SmartContract `Recallable`', () => {
         const callContract = async () =>
             await recallable.methods.transfer(
                 (sigResps) => findSig(sigResps, alicePublicKey),
-                PubKey(toHex(bobPublicKey)),
+                PubKey(bobPublicKey.toByteString()),
                 BigInt(recallable.balance + 1), // more than the total satoshis
                 {
                     pubKeyOrAddrToSign: alicePublicKey,
@@ -64,7 +64,7 @@ describe('Test SmartContract `Recallable`', () => {
         const callContract = async () =>
             await recallable.methods.transfer(
                 () => getDummySig(),
-                PubKey(toHex(bobPublicKey)),
+                PubKey(bobPublicKey.toByteString()),
                 BigInt(1)
             )
         return expect(callContract()).to.be.rejectedWith(
@@ -80,7 +80,7 @@ describe('Test SmartContract `Recallable`', () => {
         const aliceNextInstance = recallable.next()
 
         const bobNextInstance = recallable.next()
-        bobNextInstance.userPubKey = PubKey(toHex(bobPublicKey))
+        bobNextInstance.userPubKey = PubKey(bobPublicKey.toByteString())
 
         const satoshiSent = 50
         const satoshisLeft = recallable.balance - satoshiSent
@@ -89,7 +89,7 @@ describe('Test SmartContract `Recallable`', () => {
         const callTransfer = async () =>
             await recallable.methods.transfer(
                 (sigResps) => findSig(sigResps, alicePublicKey),
-                PubKey(toHex(bobPublicKey)),
+                PubKey(bobPublicKey.toByteString()),
                 BigInt(satoshiSent),
                 {
                     pubKeyOrAddrToSign: alicePublicKey,
@@ -113,7 +113,7 @@ describe('Test SmartContract `Recallable`', () => {
          */
 
         const aliceRecallInstance = bobNextInstance.next()
-        aliceRecallInstance.userPubKey = PubKey(toHex(alicePublicKey))
+        aliceRecallInstance.userPubKey = PubKey(alicePublicKey.toByteString())
 
         // recall method calling tx
         const callRecall = async () =>
@@ -134,7 +134,7 @@ describe('Test SmartContract `Recallable`', () => {
         // alice transfers 10000 to bob, keeps nothing left
 
         const bobNextInstance = recallable.next()
-        bobNextInstance.userPubKey = PubKey(toHex(bobPublicKey))
+        bobNextInstance.userPubKey = PubKey(bobPublicKey.toByteString())
 
         const satoshiSent = recallable.balance
 
@@ -142,7 +142,7 @@ describe('Test SmartContract `Recallable`', () => {
         expect(
             await recallable.methods.transfer(
                 (sigResps) => findSig(sigResps, alicePublicKey),
-                PubKey(toHex(bobPublicKey)),
+                PubKey(bobPublicKey.toByteString()),
                 BigInt(satoshiSent),
                 {
                     pubKeyOrAddrToSign: alicePublicKey,

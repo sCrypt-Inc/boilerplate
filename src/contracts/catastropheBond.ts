@@ -2,7 +2,7 @@ import { assert } from 'console'
 import {
     ByteString,
     FixedArray,
-    PubKeyHash,
+    Addr,
     SigHash,
     SmartContract,
     Utils,
@@ -18,7 +18,7 @@ const LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
 const UINT_MAX = 0xffffffffn
 
 export type Investment = {
-    investor: PubKeyHash
+    investor: Addr
     amount: bigint
 }
 export class CatBond extends SmartContract {
@@ -37,7 +37,7 @@ export class CatBond extends SmartContract {
     matureTime: bigint
 
     @prop()
-    issuer: PubKeyHash
+    issuer: Addr
 
     @prop()
     oracle: RabinPubKey
@@ -56,7 +56,7 @@ export class CatBond extends SmartContract {
         premium: bigint,
         startTime: bigint,
         matureTime: bigint,
-        issuer: PubKeyHash,
+        issuer: Addr,
         oracle: RabinPubKey,
         minMagnitude: bigint,
         investments: FixedArray<Investment, typeof CatBond.MAX_INVESTORS>
@@ -74,7 +74,7 @@ export class CatBond extends SmartContract {
     }
 
     @method(SigHash.ANYONECANPAY_SINGLE)
-    public invest(investorAddr: PubKeyHash, investAmount: bigint) {
+    public invest(investorAddr: Addr, investAmount: bigint) {
         // Make sure investment is big enough.
         assert(investAmount >= this.minInvestment, 'investment too low')
 

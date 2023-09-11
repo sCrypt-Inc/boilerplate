@@ -10,12 +10,12 @@ import {
     MethodCallOptions,
     PubKey,
     findSig,
-    hash160,
+    Addr,
 } from 'scrypt-ts'
-import { myPublicKey } from './utils/privateKey'
+import { myAddress } from './utils/privateKey'
 
 describe('Test SmartContract `StatefulMultiSig`', () => {
-    const destAddr = hash160(myPublicKey.toHex())
+    const destAddr = Addr(myAddress.toByteString())
 
     const privKeys: bsv.PrivateKey[] = []
     const pubKeys: bsv.PublicKey[] = []
@@ -29,7 +29,7 @@ describe('Test SmartContract `StatefulMultiSig`', () => {
             privKeys.push(privKey)
             pubKeys.push(pubKey)
             _owners.push({
-                pubKey: PubKey(pubKey.toHex()),
+                pubKey: PubKey(pubKey.toByteString()),
                 validated: false,
             })
         }

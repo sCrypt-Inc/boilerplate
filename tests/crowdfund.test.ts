@@ -5,8 +5,8 @@ import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-const [privateKeyRecipient, publicKeyRecipient, ,] = randomPrivateKey()
-const [privateKeyContributor, publicKeyContributor, ,] = randomPrivateKey()
+const [privateKeyRecipient, publicKeyRecipient] = randomPrivateKey()
+const [privateKeyContributor, publicKeyContributor] = randomPrivateKey()
 
 describe('Test SmartContract `Crowdfund`', () => {
     // JS timestamps are in milliseconds, so we divide by 1000 to get a UNIX timestamp
@@ -18,8 +18,8 @@ describe('Test SmartContract `Crowdfund`', () => {
     before(async () => {
         Crowdfund.loadArtifact()
         crowdfund = new Crowdfund(
-            PubKey(toHex(publicKeyRecipient)),
-            PubKey(toHex(publicKeyContributor)),
+            PubKey(publicKeyRecipient.toByteString()),
+            PubKey(publicKeyContributor.toByteString()),
             BigInt(deadline),
             target
         )

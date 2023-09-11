@@ -12,7 +12,7 @@ import {
     Utils,
     UTXO,
     bsv,
-    hash160,
+    pubKey2Addr,
 } from 'scrypt-ts'
 
 import Transaction = bsv.Transaction
@@ -64,7 +64,7 @@ export class Auction extends SmartContract {
 
         // Refund previous highest bidder.
         const refundOutput: ByteString = Utils.buildPublicKeyHashOutput(
-            hash160(highestBidder),
+            pubKey2Addr(highestBidder),
             highestBid
         )
         let outputs: ByteString = auctionOutput + refundOutput
@@ -152,7 +152,9 @@ export class Auction extends SmartContract {
             .addOutput(
                 new Transaction.Output({
                     script: Script.fromHex(
-                        Utils.buildPublicKeyHashScript(hash160(current.bidder))
+                        Utils.buildPublicKeyHashScript(
+                            pubKey2Addr(current.bidder)
+                        )
                     ),
                     satoshis: current.balance,
                 })

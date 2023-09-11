@@ -62,8 +62,8 @@ describe('Test SmartContract `PriceBet`', () => {
             timestampFrom,
             timestampTo,
             rabinPubKey as RabinPubKey,
-            PubKey(alicePrivKey.publicKey.toHex()),
-            PubKey(bobPrivKey.publicKey.toHex())
+            PubKey(alicePrivKey.publicKey.toByteString()),
+            PubKey(bobPrivKey.publicKey.toByteString())
         )
     })
 

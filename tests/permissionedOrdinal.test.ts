@@ -28,7 +28,7 @@
 //        PermissionedOrdinal.loadArtifact()
 //
 //        for (let i = 0; i < 4; i++) {
-//            const [privateKeyBidder, publicKeyBidder, , addressBidder] =
+//            const [privateKeyBidder, publicKeyBidder, addressBidder] =
 //                randomPrivateKey()
 //            ownerPrivateKeys.push(privateKeyBidder)
 //            ownerPublicKeys.push(publicKeyBidder)
@@ -36,8 +36,8 @@
 //        }
 //
 //        permissionedOrdinal = new PermissionedOrdinal(
-//            PubKey(toHex(publicKeyIssuer)),
-//            PubKey(ownerPublicKeys[0].toHex()),
+//            PubKey(publicKeyIssuer.toByteString()),
+//            PubKey(ownerPublicKeys[0].toByteString()),
 //            33n
 //        )
 //
@@ -61,7 +61,7 @@
 //                getDefaultSigner([privateKeyIssuer, ownerPrivateKeys[i]])
 //            )
 //
-//            const newOwner = PubKey(ownerPublicKeys[i + 1].toHex())
+//            const newOwner = PubKey(ownerPublicKeys[i + 1].toByteString())
 //
 //            const nextInstance = currentInstance.next()
 //            nextInstance.currentOwner = newOwner

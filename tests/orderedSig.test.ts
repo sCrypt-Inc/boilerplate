@@ -1,9 +1,9 @@
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import {
+    Addr,
     bsv,
     ContractTransaction,
-    hash160,
     hash256,
     MethodCallOptions,
     PubKey,
@@ -21,7 +21,7 @@ use(chaiAsPromised)
 const N_SIGNERS = 3
 
 describe('Heavy: Test SmartContract `OrderedSig`', () => {
-    const destAddr = hash160(myPublicKey.toHex())
+    const destAddr = Addr(myPublicKey.toAddress().toByteString())
 
     const privKeys: bsv.PrivateKey[] = []
     const pubKeys: bsv.PublicKey[] = []
@@ -44,9 +44,9 @@ describe('Heavy: Test SmartContract `OrderedSig`', () => {
     it('should pass w correct sigs', async () => {
         const orderedSig = new OrderedSig(
             msg,
-            PubKey(pubKeys[0].toHex()),
-            PubKey(pubKeys[1].toHex()),
-            PubKey(pubKeys[2].toHex()),
+            PubKey(pubKeys[0].toByteString()),
+            PubKey(pubKeys[1].toByteString()),
+            PubKey(pubKeys[2].toByteString()),
             destAddr
         )
         await orderedSig.connect(getDefaultSigner(privKeys[0]))

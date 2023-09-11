@@ -14,7 +14,7 @@ describe('Test SmartContract `PrivateKeyPuzzle`', () => {
     })
 
     it('should pass using codeseparator', async () => {
-        const p2pkh = new PrivateKeyPuzzle(PubKey(myPublicKey.toHex()))
+        const p2pkh = new PrivateKeyPuzzle(PubKey(myPublicKey.toByteString()))
 
         await p2pkh.connect(getDefaultSigner())
 
@@ -46,7 +46,7 @@ describe('Test SmartContract `PrivateKeyPuzzle`', () => {
     })
 
     it('should pass using different sighash flag', async () => {
-        const p2pkh = new PrivateKeyPuzzle(PubKey(myPublicKey.toHex()))
+        const p2pkh = new PrivateKeyPuzzle(PubKey(myPublicKey.toByteString()))
 
         await p2pkh.connect(getDefaultSigner())
 

@@ -1,17 +1,16 @@
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import {
+    Addr,
     bsv,
     ByteString,
     findSig,
-    hash160,
     int2ByteString,
     MethodCallOptions,
     PubKey,
-    PubKeyHash,
+    pubKey2Addr,
     reverseByteString,
     Sig,
     toByteString,
-    toHex,
     Utils,
     UTXO,
 } from 'scrypt-ts'
@@ -20,7 +19,7 @@ import { OrdinalAuction } from '../src/contracts/ordinalAuction'
 import { signTx } from 'scryptlib'
 import { expect } from 'chai'
 
-async function deployOrdinal(dest: PubKeyHash, msg: string): Promise<UTXO> {
+async function deployOrdinal(dest: Addr, msg: string): Promise<UTXO> {
     const signer = getDefaultSigner()
     await signer.provider?.connect()
 
@@ -75,7 +74,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
     before(async () => {
         OrdinalAuction.loadArtifact()
         for (let i = 0; i < 3; i++) {
-            const [privateKeyBidder, publicKeyBidder, , addressBidder] =
+            const [privateKeyBidder, publicKeyBidder, addressBidder] =
                 randomPrivateKey()
             bidderPrivateKeys.push(privateKeyBidder)
             bidderPublicKeys.push(publicKeyBidder)
@@ -83,7 +82,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
         }
 
         ordinalUTXO = await deployOrdinal(
-            hash160(publicKeyAuctioneer.toHex()),
+            Addr(addressAuctioneer.toByteString()),
             'Hello, sCrypt!'
         )
         console.log('Ordinal deployed:', ordinalUTXO.txId)
@@ -94,7 +93,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
 
         auction = new OrdinalAuction(
             ordinalPrevout,
-            PubKey(toHex(publicKeyAuctioneer)),
+            PubKey(publicKeyAuctioneer.toByteString()),
             BigInt(auctionDeadline)
         )
 
@@ -111,7 +110,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
 
         // Perform bidding.
         for (let i = 0; i < 3; i++) {
-            const newHighestBidder = PubKey(toHex(bidderPublicKeys[i]))
+            const newHighestBidder = PubKey(bidderPublicKeys[i].toByteString())
             const bid = BigInt(balance + 1)
 
             const nextInstance = currentInstance.next()
@@ -161,7 +160,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
                         new bsv.Transaction.Output({
                             script: bsv.Script.fromHex(
                                 Utils.buildPublicKeyHashScript(
-                                    hash160(current.bidder)
+                                    pubKey2Addr(current.bidder)
                                 )
                             ),
                             satoshis: 1,
@@ -172,7 +171,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
                         new bsv.Transaction.Output({
                             script: bsv.Script.fromHex(
                                 Utils.buildPublicKeyHashScript(
-                                    hash160(current.auctioneer)
+                                    pubKey2Addr(current.auctioneer)
                                 )
                             ),
                             satoshis: current.utxo.satoshis,

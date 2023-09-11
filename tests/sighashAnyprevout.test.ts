@@ -6,8 +6,8 @@ import {
     PubKey,
     Utils,
     bsv,
-    hash160,
     hash256,
+    pubKey2Addr,
     slice,
     toByteString,
 } from 'scrypt-ts'
@@ -22,7 +22,7 @@ function getUnsignedTx(
     current: SigHashAnyprevout,
     changeAddress: bsv.Address
 ): bsv.Transaction {
-    const destAddr = hash160(SECP256K1.point2PubKey(current.pubKey)) // Note that the provided pub key will need to be in uncompressed form again.
+    const destAddr = pubKey2Addr(SECP256K1.point2PubKey(current.pubKey)) // Note that the provided pub key will need to be in uncompressed form again.
     return new bsv.Transaction()
         .addInput(current.buildContractInput())
         .addOutput(
@@ -77,7 +77,7 @@ describe('Heavy: Test SmartContract `SigHashAnyprevout`', () => {
         pubKey = new bsv.PublicKey(key.publicKey.point, {
             compressed: false, // Make sure the public key is in uncompressed form.
         })
-        pubKeyP = SECP256K1.pubKey2Point(PubKey(pubKey.toHex()))
+        pubKeyP = SECP256K1.pubKey2Point(PubKey(pubKey.toByteString()))
 
         SigHashAnyprevout.loadArtifact()
 

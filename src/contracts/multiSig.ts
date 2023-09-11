@@ -1,13 +1,13 @@
 import {
     assert,
-    hash160,
     method,
     prop,
     PubKey,
-    PubKeyHash,
+    Addr,
     Sig,
     SmartContract,
     FixedArray,
+    pubKey2Addr,
 } from 'scrypt-ts'
 
 /*
@@ -17,11 +17,11 @@ import {
 export class MultiSigPayment extends SmartContract {
     // Public key hashes of the 3 recipients
     @prop()
-    readonly pubKeyHashes: FixedArray<PubKeyHash, 3>
+    readonly addresses: FixedArray<Addr, 3>
 
-    constructor(pubKeyHashes: FixedArray<PubKeyHash, 3>) {
+    constructor(addresses: FixedArray<Addr, 3>) {
         super(...arguments)
-        this.pubKeyHashes = pubKeyHashes
+        this.addresses = addresses
     }
 
     @method()
@@ -32,7 +32,7 @@ export class MultiSigPayment extends SmartContract {
         // Check if the passed public keys belong to the specified public key hashes.
         for (let i = 0; i < 3; i++) {
             assert(
-                hash160(publicKeys[i]) == this.pubKeyHashes[i],
+                pubKey2Addr(publicKeys[i]) == this.addresses[i],
                 'public key hash mismatch'
             )
         }

@@ -5,26 +5,22 @@ import {
     findSig,
     MethodCallOptions,
     PubKey,
-    PubKeyHash,
-    toHex,
     bsv,
     ContractTransaction,
+    Addr,
 } from 'scrypt-ts'
 
 import { expect } from 'chai'
 
 describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE', () => {
     const ownerPrivkey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
-    const ownerPublicKeyHash = bsv.crypto.Hash.sha256ripemd160(
-        ownerPrivkey.publicKey.toBuffer()
-    )
-
+    const ownerAddress = ownerPrivkey.toAddress()
     before(() => {
         P2PKH.loadArtifact()
     })
 
     it('should succeed at first Input', async () => {
-        const p2pkh = new P2PKH(PubKeyHash(toHex(ownerPublicKeyHash)))
+        const p2pkh = new P2PKH(Addr(ownerAddress.toByteString()))
 
         // Signer who unlocks / signs P2PKH UTXO.
         const ownerSigner = getNewSigner(ownerPrivkey)
@@ -88,7 +84,7 @@ describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE', () => {
             (sigResps) =>
                 findSig(sigResps, ownerPrivkey.publicKey, sigHashType),
             // pass public key, the second parameter, to `unlock`
-            PubKey(toHex(ownerPrivkey.publicKey)),
+            PubKey(ownerPrivkey.publicKey.toByteString()),
             // method call options
             {
                 // tell the signer to use the private key corresponding to `myPublicKey` to sign this transaction
@@ -114,7 +110,7 @@ describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE', () => {
     })
 
     it('should succeed at second Input', async () => {
-        const p2pkh = new P2PKH(PubKeyHash(toHex(ownerPublicKeyHash)))
+        const p2pkh = new P2PKH(Addr(ownerAddress.toByteString()))
 
         // Signer who unlocks / signs P2PKH UTXO.
         const ownerSigner = getNewSigner(ownerPrivkey)
@@ -180,7 +176,7 @@ describe('Test SmartContract `P2PKH` with ANYONECANPAY_SINGLE', () => {
             (sigResps) =>
                 findSig(sigResps, ownerPrivkey.publicKey, sigHashType),
             // pass public key, the second parameter, to `unlock`
-            PubKey(toHex(ownerPrivkey.publicKey)),
+            PubKey(ownerPrivkey.publicKey.toByteString()),
             // method call options
             {
                 // tell the signer to use the private key corresponding to `myPublicKey` to sign this transaction

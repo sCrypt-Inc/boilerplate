@@ -21,8 +21,8 @@ describe('Test SmartContract `Cointoss`', () => {
     before(async () => {
         CoinToss.loadArtifact()
         instance = new CoinToss(
-            PubKey(toHex(alicepublickey)),
-            PubKey(toHex(bobpublickey)),
+            PubKey(alicepublickey.toByteString()),
+            PubKey(bobpublickey.toByteString()),
             hash256(toByteString('alice', true)),
             hash256(toByteString('bob', true)),
             toByteString('n', true)

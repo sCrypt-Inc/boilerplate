@@ -29,7 +29,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
             const pubKey = privKey.toPublicKey()
             guardians.push(privKey)
             guardianPublicKeys.push(pubKey)
-            _guardianPubKeys.push(PubKey(pubKey.toHex()))
+            _guardianPubKeys.push(PubKey(pubKey.toByteString()))
         }
 
         guardianPubKeys = _guardianPubKeys as FixedArray<
@@ -39,7 +39,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
 
         SocialRecovery.loadArtifact()
         socialRecovery = new SocialRecovery(
-            PubKey(signerKey.toPublicKey().toHex()),
+            PubKey(signerKey.publicKey.toByteString()),
             guardianPubKeys
         )
     })
@@ -81,7 +81,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
         await socialRecovery.deploy(1)
         // Get next iteration of the contract with updated signer pubkey value.
         const next = socialRecovery.next()
-        next.signingPubKey = PubKey(newSigner.toPublicKey().toHex())
+        next.signingPubKey = PubKey(newSigner.publicKey.toByteString())
 
         const callContract = async () =>
             socialRecovery.methods.updateSigningPubKey(
@@ -117,7 +117,7 @@ describe('Test SmartContract `SocialRecovery`', () => {
 
         // Get next iteration of the contract with updated signer pubkey value.
         const next = socialRecovery.next()
-        next.signingPubKey = PubKey(newSigner.toPublicKey().toHex())
+        next.signingPubKey = PubKey(newSigner.publicKey.toByteString())
 
         const callContract = async () =>
             socialRecovery.methods.updateSigningPubKey(

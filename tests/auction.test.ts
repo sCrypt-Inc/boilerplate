@@ -4,8 +4,8 @@ import { expect } from 'chai'
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 
 describe('Test SmartContract `Auction` on testnet', () => {
-    const [privateKeyAuctioneer, publicKeyAuctioneer, ,] = randomPrivateKey()
-    const [, publicKeyNewBidder, , addressNewBidder] = randomPrivateKey()
+    const [privateKeyAuctioneer, publicKeyAuctioneer] = randomPrivateKey()
+    const [, publicKeyNewBidder, addressNewBidder] = randomPrivateKey()
 
     const auctionDeadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
 
@@ -15,7 +15,7 @@ describe('Test SmartContract `Auction` on testnet', () => {
         Auction.loadArtifact()
 
         auction = new Auction(
-            PubKey(toHex(publicKeyAuctioneer)),
+            PubKey(publicKeyAuctioneer.toByteString()),
             BigInt(auctionDeadline)
         )
 
@@ -27,7 +27,7 @@ describe('Test SmartContract `Auction` on testnet', () => {
         await auction.deploy(1)
         const callContract = async () =>
             await auction.methods.bid(
-                PubKey(toHex(publicKeyNewBidder)),
+                PubKey(publicKeyNewBidder.toByteString()),
                 BigInt(balance + 1),
                 {
                     changeAddress: addressNewBidder,

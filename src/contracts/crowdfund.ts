@@ -1,10 +1,10 @@
 import {
     assert,
-    hash160,
     hash256,
     method,
     prop,
     PubKey,
+    pubKey2Addr,
     Sig,
     SmartContract,
     Utils,
@@ -50,7 +50,7 @@ export class Crowdfund extends SmartContract {
         assert(this.ctx.utxo.value >= this.target)
         // Funds go to the recipient.
         const output = Utils.buildPublicKeyHashOutput(
-            hash160(this.recipient),
+            pubKey2Addr(this.recipient),
             this.changeAmount
         )
         // Ensure the payment output to the recipient is actually in the unlocking TX.

@@ -8,15 +8,14 @@ import {
     ERC20Pair,
 } from '../src/contracts/erc20'
 import {
+    Addr,
     bsv,
     findSig,
-    hash160,
     HashedMap,
     MethodCallOptions,
     PubKey,
-    PubKeyHash,
+    pubKey2Addr,
     toByteString,
-    toHex,
 } from 'scrypt-ts'
 import { getDefaultSigner } from './utils/helper'
 
@@ -32,9 +31,9 @@ describe('Test SmartContract `ERC20`', () => {
     before(async () => {
         ERC20.loadArtifact()
 
-        map = new HashedMap<PubKeyHash, bigint>()
+        map = new HashedMap<Addr, bigint>()
         allowances = new HashedMap<Allowance, bigint>()
-        const issuer = PubKey(toHex(await signer.getDefaultPubKey()))
+        const issuer = PubKey((await signer.getDefaultPubKey()).toByteString())
 
         erc20 = new ERC20(
             toByteString('Gold', true),
@@ -57,7 +56,7 @@ describe('Test SmartContract `ERC20`', () => {
     }> {
         const newInstance = instance.next()
 
-        newInstance.balances.set(hash160(issuer), issuerBalance + amount)
+        newInstance.balances.set(pubKey2Addr(issuer), issuerBalance + amount)
         newInstance.totalSupply += amount
         const publicKey = bsv.PublicKey.fromString(issuer)
         const { nexts, tx } = await instance.methods.mint(
@@ -119,7 +118,7 @@ describe('Test SmartContract `ERC20`', () => {
     async function approve(
         instance: ERC20,
         owner: PubKey,
-        spender: PubKeyHash,
+        spender: Addr,
         amount: bigint
     ): Promise<{
         tx: Transaction
@@ -129,7 +128,7 @@ describe('Test SmartContract `ERC20`', () => {
 
         newInstance.allowances.set(
             {
-                owner: hash160(owner),
+                owner: pubKey2Addr(owner),
                 spender: spender,
             },
             amount
@@ -175,7 +174,7 @@ describe('Test SmartContract `ERC20`', () => {
         newInstance.allowances.set(
             {
                 owner: from.address,
-                spender: hash160(spender),
+                spender: pubKey2Addr(spender),
             },
             currentAllowance - amount
         )
@@ -205,16 +204,16 @@ describe('Test SmartContract `ERC20`', () => {
     it('mint,transfer,approve,transferFrom', async () => {
         await erc20.deploy(1)
 
-        const issuer = PubKey(toHex(await signer.getDefaultPubKey()))
+        const issuer = PubKey((await signer.getDefaultPubKey()).toByteString())
         const address = await signer.getDefaultAddress()
-        const issuerAddress = PubKeyHash(address.toObject().hash)
+        const issuerAddress = Addr(address.toObject().hash)
 
         const aliceKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         signer.addPrivateKey(aliceKey)
 
-        const alicePubkey = PubKey(toHex(aliceKey.publicKey))
+        const alicePubkey = PubKey(aliceKey.publicKey.toByteString())
 
-        const aliceAddress = PubKeyHash(aliceKey.toAddress().toObject().hash)
+        const aliceAddress = Addr(aliceKey.toAddress().toByteString())
 
         const issuerBalance = initialSupply
 
@@ -247,9 +246,9 @@ describe('Test SmartContract `ERC20`', () => {
 
         const bobKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         signer.addPrivateKey(bobKey)
-        const bobPubkey = PubKey(toHex(bobKey.publicKey))
+        const bobPubkey = PubKey(bobKey.publicKey.toByteString())
 
-        const bobAddress = PubKeyHash(bobKey.toAddress().toObject().hash)
+        const bobAddress = Addr(bobKey.toAddress().toByteString())
 
         const aliceBalance = 1000n
 
@@ -301,7 +300,7 @@ describe('Test SmartContract `ERC20`', () => {
 
         const lilyKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         signer.addPrivateKey(lilyKey)
-        const lilyAddress = PubKeyHash(lilyKey.toAddress().toObject().hash)
+        const lilyAddress = Addr(lilyKey.toAddress().toByteString())
 
         const callTransferFrom = async () =>
             await transferFrom(

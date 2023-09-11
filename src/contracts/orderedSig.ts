@@ -7,7 +7,7 @@ import {
     method,
     prop,
     PubKey,
-    PubKeyHash,
+    Addr,
     reverseByteString,
     Sha256,
     Sig,
@@ -35,14 +35,14 @@ export class OrderedSig extends SmartContract {
     signer2: PubKey
 
     @prop()
-    dest: PubKeyHash
+    dest: Addr
 
     constructor(
         msg: ByteString,
         signer0: PubKey,
         signer1: PubKey,
         signer2: PubKey,
-        dest: PubKeyHash
+        dest: Addr
     ) {
         super(...arguments)
         this.msg = msg

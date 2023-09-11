@@ -5,10 +5,9 @@ import {
     FixedArray,
     hash256,
     assert,
-    PubKeyHash,
+    Addr,
     Sha256,
     SigHash,
-    Ripemd160,
     ByteString,
     Utils,
     int2ByteString,
@@ -22,7 +21,7 @@ export type Submission = {
     bias: bigint
 
     // Payout address:
-    addr: PubKeyHash
+    addr: Addr
 }
 
 export type Gender = bigint
@@ -112,7 +111,7 @@ export class Kaggle extends SmartContract {
         )
 
         // Find the winner with the minimal predicted error.
-        let winner = Ripemd160(toByteString(''))
+        let winner = Addr(toByteString(''))
         let minError = 99999999999999n
         for (let i = 0; i < Kaggle.S; i++) {
             if (BigInt(i) < this.states.count) {

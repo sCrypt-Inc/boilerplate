@@ -1,29 +1,29 @@
 import { assert } from 'console'
 import {
     PubKey,
-    PubKeyHash,
+    Addr,
     SmartContract,
     Utils,
     hash256,
     method,
     prop,
-    hash160,
     MethodCallOptions,
     ContractTransaction,
     bsv,
     ByteString,
+    pubKey2Addr,
 } from 'scrypt-ts'
 
 export class Pyramid extends SmartContract {
     static readonly DUST: bigint = 1n
 
     @prop(true)
-    schemer: PubKeyHash
+    schemer: Addr
 
     @prop()
     entryFee: bigint
 
-    constructor(schemer: PubKeyHash, entryFee: bigint) {
+    constructor(schemer: Addr, entryFee: bigint) {
         super(...arguments)
         this.schemer = schemer
         this.entryFee = entryFee
@@ -36,10 +36,10 @@ export class Pyramid extends SmartContract {
             2n * this.entryFee
         )
 
-        this.schemer = hash160(recruit0)
+        this.schemer = pubKey2Addr(recruit0)
         const recruit0Output = this.buildStateOutput(Pyramid.DUST)
 
-        this.schemer = hash160(recruit1)
+        this.schemer = pubKey2Addr(recruit1)
         const recruit1Output = this.buildStateOutput(Pyramid.DUST)
 
         let outputs: ByteString =
@@ -70,10 +70,10 @@ export class Pyramid extends SmartContract {
             )
 
         const recruit0Instance = current.next()
-        recruit0Instance.schemer = hash160(recruit0PubKey)
+        recruit0Instance.schemer = pubKey2Addr(recruit0PubKey)
 
         const recruit1Instance = current.next()
-        recruit1Instance.schemer = hash160(recruit1PubKey)
+        recruit1Instance.schemer = pubKey2Addr(recruit1PubKey)
 
         unsignedTx
             .addOutput(

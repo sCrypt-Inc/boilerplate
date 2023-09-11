@@ -23,15 +23,15 @@ describe('Test SmartContract `Erc721`', () => {
             bigint,
             PubKey
         >()
-        const erc721 = new Erc721(PubKey(toHex(myPublicKey)), owners)
+        const erc721 = new Erc721(PubKey(myPublicKey.toByteString()), owners)
         await erc721.connect(getDefaultSigner())
         await erc721.deploy(1)
 
-        const [, alicePubKey, ,] = randomPrivateKey()
+        const [, alicePubKey] = randomPrivateKey()
         const callContract = async () =>
             await erc721.methods.mint(
                 1n, // tokenId
-                PubKey(toHex(alicePubKey)), // mintTo
+                PubKey(alicePubKey.toByteString()), // mintTo
                 () => getDummySig() // mint without correct minter sig
             )
 
@@ -41,22 +41,22 @@ describe('Test SmartContract `Erc721`', () => {
     })
 
     it('should fail `mint` when token was already minted before', async () => {
-        const [, alicePubKey, ,] = randomPrivateKey()
+        const [, alicePubKey] = randomPrivateKey()
         const tokenId = 1n
 
         const owners: HashedMap<bigint, PubKey> = new HashedMap<
             bigint,
             PubKey
         >()
-        owners.set(tokenId, PubKey(toHex(alicePubKey))) // token has already in the owners map
+        owners.set(tokenId, PubKey(alicePubKey.toByteString())) // token has already in the owners map
 
-        const erc721 = new Erc721(PubKey(toHex(myPublicKey)), owners)
+        const erc721 = new Erc721(PubKey(myPublicKey.toByteString()), owners)
         await erc721.connect(getDefaultSigner())
         await erc721.deploy(1)
         const callContract = async () =>
             await erc721.methods.mint(
                 tokenId, // token already minted before
-                PubKey(toHex(alicePubKey)), // mintTo
+                PubKey(alicePubKey.toByteString()), // mintTo
                 (sigResps) => findSig(sigResps, myPublicKey) // minterSig
             )
 
@@ -66,17 +66,17 @@ describe('Test SmartContract `Erc721`', () => {
     })
 
     it("should fail `burn` when the sender doesn't have the token", async () => {
-        const [, alicePubKey, ,] = randomPrivateKey()
-        const [bobPrivateKey, bobPublicKey, ,] = randomPrivateKey()
+        const [, alicePubKey] = randomPrivateKey()
+        const [bobPrivateKey, bobPublicKey] = randomPrivateKey()
         const tokenId = 1n
 
         const owners: HashedMap<bigint, PubKey> = new HashedMap<
             bigint,
             PubKey
         >()
-        owners.set(tokenId, PubKey(toHex(alicePubKey))) // alice has the token
+        owners.set(tokenId, PubKey(alicePubKey.toByteString())) // alice has the token
 
-        const erc721 = new Erc721(PubKey(toHex(myPublicKey)), owners)
+        const erc721 = new Erc721(PubKey(myPublicKey.toByteString()), owners)
         await erc721.connect(getDefaultSigner(bobPrivateKey))
         await erc721.deploy(1)
         // bob burn the token will fail
@@ -84,7 +84,7 @@ describe('Test SmartContract `Erc721`', () => {
         const callContract = async () =>
             await erc721.methods.burn(
                 tokenId,
-                PubKey(toHex(bobPublicKey)),
+                PubKey(bobPublicKey.toByteString()),
                 (sigResps) => findSig(sigResps, bobPublicKey),
                 {
                     pubKeyOrAddrToSign: bobPublicKey,
@@ -97,8 +97,8 @@ describe('Test SmartContract `Erc721`', () => {
     })
 
     it('should pass `mint`, `transferFrom` then `burn`', async () => {
-        const [alicePrivateKey, alicePubKey, ,] = randomPrivateKey()
-        const [bobPrivateKey, bobPubKey, ,] = randomPrivateKey()
+        const [alicePrivateKey, alicePubKey] = randomPrivateKey()
+        const [bobPrivateKey, bobPubKey] = randomPrivateKey()
         const tokenId = 1n
 
         const owners: HashedMap<bigint, PubKey> = new HashedMap<
@@ -106,7 +106,7 @@ describe('Test SmartContract `Erc721`', () => {
             PubKey
         >()
 
-        const erc721 = new Erc721(PubKey(toHex(myPublicKey)), owners)
+        const erc721 = new Erc721(PubKey(myPublicKey.toByteString()), owners)
         await erc721.connect(getDefaultSigner([alicePrivateKey, bobPrivateKey]))
 
         await erc721.deploy(1)
@@ -114,11 +114,11 @@ describe('Test SmartContract `Erc721`', () => {
         // mint to alice
 
         const aliceInstance = erc721.next()
-        aliceInstance.owners.set(tokenId, PubKey(toHex(alicePubKey)))
+        aliceInstance.owners.set(tokenId, PubKey(alicePubKey.toByteString()))
         const callMint = async () =>
             await erc721.methods.mint(
                 tokenId, // tokenId
-                PubKey(toHex(alicePubKey)), // mintTo
+                PubKey(alicePubKey.toByteString()), // mintTo
                 (sigResps) => findSig(sigResps, myPublicKey), // minterSig
                 {
                     pubKeyOrAddrToSign: myPublicKey,
@@ -135,14 +135,14 @@ describe('Test SmartContract `Erc721`', () => {
         // transfer from alice to bob
 
         const bobInstance = aliceInstance.next()
-        bobInstance.owners.set(tokenId, PubKey(toHex(bobPubKey)))
+        bobInstance.owners.set(tokenId, PubKey(bobPubKey.toByteString()))
 
         const callTransferFrom = async () =>
             await aliceInstance.methods.transferFrom(
                 1n, // tokenId
-                PubKey(toHex(alicePubKey)), // sender
+                PubKey(alicePubKey.toByteString()), // sender
                 (sigResps) => findSig(sigResps, alicePubKey), // sig
-                PubKey(toHex(bobPubKey)), // receiver
+                PubKey(bobPubKey.toByteString()), // receiver
                 {
                     pubKeyOrAddrToSign: alicePubKey,
                     next: {
@@ -162,7 +162,7 @@ describe('Test SmartContract `Erc721`', () => {
         const callBurn = async () =>
             await bobInstance.methods.burn(
                 tokenId, // tokenId
-                PubKey(toHex(bobPubKey)), // sender
+                PubKey(bobPubKey.toByteString()), // sender
                 (sigResps) => findSig(sigResps, bobPubKey), // sig
                 {
                     pubKeyOrAddrToSign: bobPubKey,

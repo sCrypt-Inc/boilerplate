@@ -1,10 +1,4 @@
-import {
-    SmartContract,
-    SmartContractLib,
-    method,
-    prop,
-    assert,
-} from 'scrypt-ts'
+import { SmartContract, SmartContractLib, method, assert } from 'scrypt-ts'
 
 type Fraction = {
     n: bigint // numerator

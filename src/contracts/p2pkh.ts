@@ -1,7 +1,6 @@
 import {
     Addr,
     assert,
-    hash160,
     method,
     prop,
     PubKey,
