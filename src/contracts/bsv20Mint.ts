@@ -139,10 +139,16 @@ export class BSV20Mint extends SmartContract {
             // If there are still tokens left, then
             // build state output inscribed with leftover tokens.
             const leftover = this.totalSupply - this.alreadyMinted
-            const transferInscription = BSV20Mint.getTransferInsciption(this.tokenId, leftover)
-            const stateScript = slice(this.getStateScript(), this.prevInscriptionLen) // Slice prev inscription
+            const transferInscription = BSV20Mint.getTransferInsciption(
+                this.tokenId,
+                leftover
+            )
+            const stateScript = slice(
+                this.getStateScript(),
+                this.prevInscriptionLen
+            ) // Slice prev inscription
             outputs += Utils.buildOutput(transferInscription + stateScript, 1n)
-            
+
             // Store next inscription length, so we know how much to slice in the next iteration.
             this.prevInscriptionLen = len(transferInscription)
         }
@@ -170,10 +176,10 @@ export class BSV20Mint extends SmartContract {
     @method()
     static getTransferInsciption(tokenId: ByteString, amt: bigint): ByteString {
         const transferJson =
-            toByteString('{\"p\":\"bsv-20\",\"op\":\"transfer\",\"id\":\"', true) +
-            toByteString('\",\"amt\":\"', true) +
+            toByteString('{"p":"bsv-20","op":"transfer","id":"', true) +
+            toByteString('","amt":"', true) +
             BSV20Mint.int2Ascii(amt) +
-            toByteString('\"}', true)
+            toByteString('"}', true)
 
         return (
             toByteString(

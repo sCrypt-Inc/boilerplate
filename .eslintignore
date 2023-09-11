@@ -10,4 +10,3 @@ test/artifacts
 .vscode/*
 !.vscode/launch.json
 !.vscode/tasks.json
-src/contracts/bsv20Mint.ts
