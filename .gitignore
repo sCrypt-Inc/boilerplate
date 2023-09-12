@@ -8,4 +8,5 @@ out/
 artifacts/
 .env
 scrypt.index.json
+tsconfig-scryptTS.json
 .eslintcache
