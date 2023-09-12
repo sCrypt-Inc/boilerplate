@@ -13,32 +13,19 @@ describe('Test SmartContract `Demo`', () => {
     before(async () => {
         Demo.loadArtifact()
 
-        demo = new Demo(-2n, 7n)
+        demo = new Demo(10n, -4n)
         await demo.connect(getDefaultSigner())
     })
 
-    it('should pass `add`', async () => {
+    it('should pass `unlock` with correct solution', async () => {
         await demo.deploy(1)
-        const callContract = async () => demo.methods.add(5n)
+        const callContract = async () => demo.methods.unlock(3n, 7n)
         return expect(callContract()).not.rejected
     })
 
-    it('should pass `sub`', async () => {
+    it('should throw when calling `unlock` with wrong solution', async () => {
         await demo.deploy(1)
-
-        const callContract = async () => demo.methods.sub(-9n)
-        return expect(callContract()).not.rejected
-    })
-
-    it('should throw when calling `add`', async () => {
-        await demo.deploy(1)
-        const callContract = async () => demo.methods.add(-5n)
-        return expect(callContract()).to.be.rejectedWith(/add check failed/)
-    })
-
-    it('should throw when calling `sub`', async () => {
-        await demo.deploy(1)
-        const callContract = async () => demo.methods.sub(9n)
-        return expect(callContract()).to.be.rejectedWith(/sub check failed/)
+        const callContract = async () => demo.methods.unlock(4n, 6n)
+        return expect(callContract()).to.be.rejectedWith(/incorrect diff/)
     })
 })

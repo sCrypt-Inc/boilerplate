@@ -1,41 +1,25 @@
-import { assert, method, prop, SmartContract } from 'scrypt-ts'
+import { SmartContract, method, prop, assert } from 'scrypt-ts'
 
-/*
- * A demo contract that can be unlocked by either providing the sum or difference
- * of two values, specified upon the contracts deployment.
- * See the documentation for more details:
- * https://docs.scrypt.io/how-to-write-a-contract/
- */
 export class Demo extends SmartContract {
     @prop()
-    readonly x: bigint
+    sum: bigint
 
     @prop()
-    readonly y: bigint
+    diff: bigint
 
-    // The values of the x and y properties get passed via the
+    // The values of the `sum` and `diff` properties get passed via the
     // smart contract's constructor.
-    constructor(x: bigint, y: bigint) {
+    constructor(sum: bigint, diff: bigint) {
         super(...arguments)
-        this.x = x
-        this.y = y
+        this.sum = sum
+        this.diff = diff
     }
 
-    // Contract internal method to compute x + y
+    //  Public method which can be unlocked by providing the solution `x` and `y`
+    //  for the two equations `x + y = summ` and `x - y = diff`.
     @method()
-    sum(a: bigint, b: bigint): bigint {
-        return a + b
-    }
-
-    // Public method which can be unlocked by providing the solution to x + y
-    @method()
-    public add(z: bigint) {
-        assert(z == this.sum(this.x, this.y), 'add check failed')
-    }
-
-    // Public method which can be unlocked by providing the solution to x - y
-    @method()
-    public sub(z: bigint) {
-        assert(z == this.x - this.y, 'sub check failed')
+    public unlock(x: bigint, y: bigint) {
+        assert(x + y == this.sum, 'incorrect sum')
+        assert(x - y == this.diff, 'incorrect diff')
     }
 }
