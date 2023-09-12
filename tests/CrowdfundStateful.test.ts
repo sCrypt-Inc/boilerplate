@@ -7,7 +7,7 @@ import {
     bsv,
     HashedMap,
 } from 'scrypt-ts'
-import { Crowdfund2 } from '../src/contracts/crowdfunding'
+import { Crowdfund2 } from '../src/contracts/crowdfundin'
 import { DonorMap } from '../src/contracts/crowdfunding'
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
