@@ -20,7 +20,6 @@ import {
 export type DonorMap = HashedMap<PubKey, bigint>
 export type RefundMap = HashedMap<PubKey, boolean>
 
-
 export class CrowdfundStateful extends SmartContract {
     @prop()
     static readonly LOCKTIME_BLOCK_HEIGHT_MARKER: bigint = 500000000n
@@ -34,17 +33,7 @@ export class CrowdfundStateful extends SmartContract {
     donor: DonorMap
 
     @prop(true)
-    donation: bigint
-
-    @prop(true)
-    donationCount: bigint
-
-    @prop(true)
-    is_Donated: boolean
-
-    @prop(true)
     donorRefunded: RefundMap
-    
 
     @prop()
     readonly deadline: bigint
@@ -55,18 +44,13 @@ export class CrowdfundStateful extends SmartContract {
     constructor(
         beneficiary: PubKey,
         donor: DonorMap,
-        donorRefunded : RefundMap,
-        donation: bigint,
-        donationCount: bigint,
+        donorRefunded: RefundMap,
         deadline: bigint,
         target: bigint
     ) {
         super(...arguments)
         this.beneficiary = beneficiary
         this.donor = donor
-        this.donation = 0n
-        this.donationCount = 0n
-        this.is_Donated = false
         this.donorRefunded = donorRefunded
         this.deadline = deadline
         this.target = target
@@ -77,19 +61,18 @@ export class CrowdfundStateful extends SmartContract {
     public donate(contributor: PubKey, amount: bigint) {
         // donation not equal to zero
         assert(amount > 0n, 'Donation should be greater than 0')
+
+        // can only donate once
+        assert(
+            !this.donor.has(contributor),
+            'donation from this pub key already present'
+        )
+
         this.donor.set(contributor, amount)
 
         //setting refunded to false
         this.donorRefunded.set(contributor, false)
 
-        // updating the donation amount
-        this.donation += amount
-
-        // updating the total number of donation
-        this.donationCount += 1n
-
-        // confirmed as denoted
-        this.is_Donated = true
         assert(
             this.ctx.sequence < CrowdfundStateful.UINT_MAX,
             'require nLocktime enabled'
@@ -109,7 +92,9 @@ export class CrowdfundStateful extends SmartContract {
         )
 
         //updating the contract state
-        let output: ByteString = this.buildStateOutput(this.ctx.utxo.value)
+        let output: ByteString = this.buildStateOutput(
+            this.ctx.utxo.value + amount
+        )
 
         // handling change output
         if (this.changeAmount > 0n) {
@@ -123,17 +108,15 @@ export class CrowdfundStateful extends SmartContract {
     @method()
     public collect(sig: Sig) {
         // Ensure the collected amount actually reaches the target.
-        assert(this.donation >= this.target)
+        assert(this.ctx.utxo.value >= this.target)
+
         // Funds go to the beneficiary.
-        const output0 = Utils.buildPublicKeyHashOutput(
+        let outputs = Utils.buildPublicKeyHashOutput(
             hash160(this.beneficiary),
-            this.changeAmount
+            this.ctx.utxo.value
         )
-        let output1: ByteString = this.buildStateOutput(this.donation)
 
-        let outputs = output0 + output1
-
-        // handling change output
+        // Handling change output.
         if (this.changeAmount > 0n) {
             outputs += this.buildChangeOutput()
         }
@@ -151,15 +134,16 @@ export class CrowdfundStateful extends SmartContract {
     public refund(contributor: PubKey, amount: bigint, sig: Sig) {
         assert(this.donor.canGet(contributor, amount))
 
-         // make sure it has not refunded before
-        assert(this.donorRefunded.canGet(contributor, false), 'already refunded')
-
-        //make sure that address requesting for refund has already denoted
-        assert(this.is_Donated == true, 'only denotors can request refund')
-
+        // make sure it has not refunded before
+        assert(
+            this.donorRefunded.canGet(contributor, false),
+            'already refunded'
+        )
 
         // update state
-        let output: ByteString = this.buildStateOutput(this.ctx.utxo.value)
+        const output: ByteString = this.buildStateOutput(
+            this.ctx.utxo.value - amount
+        )
 
         // setting it as refunded
         this.donorRefunded.set(contributor, true)
@@ -173,7 +157,7 @@ export class CrowdfundStateful extends SmartContract {
             amount
         )
 
-        let outputs = refund + output
+        let outputs = output + refund
 
         if (this.changeAmount > 0n) {
             outputs += this.buildChangeOutput()
