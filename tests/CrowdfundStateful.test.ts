@@ -7,8 +7,7 @@ import {
     bsv,
     HashedMap,
 } from 'scrypt-ts'
-import { Crowdfund2 } from '../src/contracts/crowdfundin'
-import { DonorMap } from '../src/contracts/crowdfunding'
+import { CrowdfundStateful, DonorMap, RefundMap } from '../src/contracts/CrowdfundStateful'
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
@@ -21,16 +20,19 @@ describe('Test SmartContract `Crowdfund`', () => {
     const deadline = Math.round(new Date('2023-11-01').valueOf() / 1000)
     const target = 2n
 
-    let instance: Crowdfund2
-    let map: DonorMap
+    let instance: CrowdfundStateful
+    let donorMap: DonorMap
+    let refunMap : RefundMap
 
     before(async () => {
-        await Crowdfund2.compile()
+        await CrowdfundStateful.compile()
 
-        map = new HashedMap<PubKey, bigint>()
-        instance = new Crowdfund2(
+        donorMap = new HashedMap<PubKey, bigint>()
+        refunMap = new HashedMap<PubKey, boolean>()
+        instance = new CrowdfundStateful(
             PubKey(toHex(publicKeyRecipient)),
-            map,
+            donorMap,
+            refunMap,
             0n,
             0n,
             BigInt(deadline),
@@ -56,7 +58,7 @@ describe('Test SmartContract `Crowdfund`', () => {
                         instance: nextInstance,
                         balance: instance.balance,
                     },
-                } as MethodCallOptions<Crowdfund2>
+                } as MethodCallOptions<CrowdfundStateful>
             )
 
             return expect(call()).not.be.rejected
@@ -79,7 +81,7 @@ describe('Test SmartContract `Crowdfund`', () => {
                         instance: nextInstance,
                         balance: instance.balance,
                     },
-                } as MethodCallOptions<Crowdfund2>
+                } as MethodCallOptions<CrowdfundStateful>
             )
             return expect(call()).not.be.rejected
         }
@@ -104,7 +106,7 @@ describe('Test SmartContract `Crowdfund`', () => {
                         instance: nextInstance,
                         balance: instance.balance,
                     },
-                } as MethodCallOptions<Crowdfund2>
+                } as MethodCallOptions<CrowdfundStateful>
             )
             return expect(call()).not.be.rejected
         }
