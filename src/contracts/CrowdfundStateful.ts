@@ -18,12 +18,14 @@ import {
  */
 
 export type DonorMap = HashedMap<PubKey, bigint>
+export type RefundMap = HashedMap<PubKey, boolean>
 
-export class Crowdfund2 extends SmartContract {
+
+export class CrowdfundStateful extends SmartContract {
     @prop()
-    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER : bigint = 500000000n
+    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER: bigint = 500000000n
     @prop()
-    static readonly UINT_MAX : bigint = 0xffffffffn
+    static readonly UINT_MAX: bigint = 0xffffffffn
 
     @prop()
     readonly beneficiary: PubKey
@@ -38,10 +40,11 @@ export class Crowdfund2 extends SmartContract {
     donationCount: bigint
 
     @prop(true)
-    is_donated: boolean
+    is_Donated: boolean
 
     @prop(true)
-    is_refunded: boolean
+    donorRefunded: RefundMap
+    
 
     @prop()
     readonly deadline: bigint
@@ -52,6 +55,7 @@ export class Crowdfund2 extends SmartContract {
     constructor(
         beneficiary: PubKey,
         donor: DonorMap,
+        donorRefunded : RefundMap,
         donation: bigint,
         donationCount: bigint,
         deadline: bigint,
@@ -62,8 +66,8 @@ export class Crowdfund2 extends SmartContract {
         this.donor = donor
         this.donation = 0n
         this.donationCount = 0n
-        this.is_donated = false
-        this.is_refunded = false
+        this.is_Donated = false
+        this.donorRefunded = donorRefunded
         this.deadline = deadline
         this.target = target
     }
@@ -75,6 +79,9 @@ export class Crowdfund2 extends SmartContract {
         assert(amount > 0n, 'Donation should be greater than 0')
         this.donor.set(contributor, amount)
 
+        //setting refunded to false
+        this.donorRefunded.set(contributor, false)
+
         // updating the donation amount
         this.donation += amount
 
@@ -82,16 +89,19 @@ export class Crowdfund2 extends SmartContract {
         this.donationCount += 1n
 
         // confirmed as denoted
-        this.is_donated = true
+        this.is_Donated = true
         assert(
-            this.ctx.sequence < Crowdfund2.UINT_MAX,
+            this.ctx.sequence < CrowdfundStateful.UINT_MAX,
             'require nLocktime enabled'
         )
 
         // Check if using block height.
-        if (this.deadline < Crowdfund2.LOCKTIME_BLOCK_HEIGHT_MARKER) {
+        if (this.deadline < CrowdfundStateful.LOCKTIME_BLOCK_HEIGHT_MARKER) {
             // Enforce nLocktime field to also use block height.
-            assert(this.ctx.locktime < Crowdfund2.LOCKTIME_BLOCK_HEIGHT_MARKER)
+            assert(
+                this.ctx.locktime <
+                    CrowdfundStateful.LOCKTIME_BLOCK_HEIGHT_MARKER
+            )
         }
         assert(
             this.ctx.locktime >= this.deadline,
@@ -113,17 +123,22 @@ export class Crowdfund2 extends SmartContract {
     @method()
     public collect(sig: Sig) {
         // Ensure the collected amount actually reaches the target.
-        assert(this.ctx.utxo.value >= this.target)
+        assert(this.donation >= this.target)
         // Funds go to the beneficiary.
-        const output = Utils.buildPublicKeyHashOutput(
+        const output0 = Utils.buildPublicKeyHashOutput(
             hash160(this.beneficiary),
             this.changeAmount
         )
-        // Ensure the payment output to the beneficiary is actually in the unlocking TX.
-        assert(
-            hash256(output) == this.ctx.hashOutputs,
-            'hashOutputs check failed'
-        )
+        let output1: ByteString = this.buildStateOutput(this.donation)
+
+        let outputs = output0 + output1
+
+        // handling change output
+        if (this.changeAmount > 0n) {
+            outputs += this.buildChangeOutput()
+        }
+
+        assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
         // Validate signature of beneficiary
         assert(
             this.checkSig(sig, this.beneficiary),
@@ -133,28 +148,30 @@ export class Crowdfund2 extends SmartContract {
 
     // donors can be refunded after the deadline.
     @method()
-    public refund(contributor: PubKey, amount : bigint, sig: Sig) {
-        
+    public refund(contributor: PubKey, amount: bigint, sig: Sig) {
         assert(this.donor.canGet(contributor, amount))
 
-        //make sure that address requesting for refund has already denoted
-        assert(this.is_donated == true, 'only denotors can request refund')
+         // make sure it has not refunded before
+        assert(this.donorRefunded.canGet(contributor, false), 'already refunded')
 
-        // make sure it has not refunded before
-        assert((!this.is_refunded), 'already refunded')
+        //make sure that address requesting for refund has already denoted
+        assert(this.is_Donated == true, 'only denotors can request refund')
+
+
+        // update state
+        let output: ByteString = this.buildStateOutput(this.ctx.utxo.value)
+
+        // setting it as refunded
+        this.donorRefunded.set(contributor, true)
+
+        // checking the validity of the signature
+        assert(this.checkSig(sig, contributor), 'donor signature check failed')
 
         // refund output
         const refund = Utils.buildPublicKeyHashOutput(
             hash160(contributor),
             amount
         )
-
-        // setting it as refunded
-        this.is_refunded = true
-        assert(this.checkSig(sig, contributor), 'donor signature check failed')
-
-        // update state
-        let output : ByteString = this.buildStateOutput(this.ctx.utxo.value)
 
         let outputs = refund + output
 
