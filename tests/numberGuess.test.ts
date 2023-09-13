@@ -1,4 +1,4 @@
-import { MethodCallOptions, PubKey, findSig, toHex } from 'scrypt-ts'
+import { MethodCallOptions, PubKey, findSig } from 'scrypt-ts'
 import { NumberGuess } from '../src/contracts/numberGuess'
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 
@@ -22,16 +22,17 @@ async function main() {
     const deployTx = await numbergs.deploy(1)
     console.log('NumberGuess contract deployed: ', deployTx.id)
 
-    const { tx: callTx, atInputIndex } = await numbergs.methods.guess(
-        (sigResps) => findSig(sigResps, publicKeybob),
-        {
-            pubKeyOrAddrToSign: publicKeybob,
-        } as MethodCallOptions<NumberGuess>
-    )
-    console.log('NumberGuess contract called: ', callTx.id)
+    const call = async () => {
+        const { tx: callTx, atInputIndex } = await numbergs.methods.guess(
+            (sigResps) => findSig(sigResps, publicKeybob),
+            {
+                pubKeyOrAddrToSign: publicKeybob,
+            } as MethodCallOptions<NumberGuess>
+        )
+        console.log('NumberGuess contract called: ', callTx.id)
+    }
 
-    const result = callTx.verifyScript(atInputIndex)
-    expect(result.success, result.error).to.eq(true)
+    await expect(call()).to.be.not.rejected
 }
 
 describe('Test SmartContract `NumberGS` unit test', () => {

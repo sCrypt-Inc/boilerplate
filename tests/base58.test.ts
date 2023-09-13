@@ -8,12 +8,12 @@ use(chaiAsPromised)
 async function main() {
     await Base58Test.compile()
 
-    let instance = new Base58Test()
+    const instance = new Base58Test()
 
     await instance.connect(getDefaultSigner())
 
     it('should encode address correctly', async () => {
-           await instance.deploy(1)
+        await instance.deploy(1)
 
         const callContract = async () => {
             await instance.methods.main(toByteString('1234567890abcdef', true))

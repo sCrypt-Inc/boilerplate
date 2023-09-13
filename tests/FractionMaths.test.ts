@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
-import { FRMathTest } from '../src/contracts/FractionMaths'
-import { getDefaultSigner} from './utils/helper'
+import { FRMathTest } from '../src/contracts/fractionMaths'
+import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
@@ -30,8 +30,9 @@ describe('Test SmartContract `FractionMaths`', () => {
         const y = { n: 1n, d: 3n }
         const s = 2n
         const sr = 10n
-        const call = async () => instance.methods.unlockScaled(s, x, y, 0n, false, sr)
-        
+        const call = async () =>
+            instance.methods.unlockScaled(s, x, y, 0n, false, sr)
+
         await expect(call()).not.to.be.rejected
     })
 })
