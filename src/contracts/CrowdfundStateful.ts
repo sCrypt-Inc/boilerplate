@@ -140,13 +140,14 @@ export class CrowdfundStateful extends SmartContract {
             'already refunded'
         )
 
+        
+        // setting it as refunded
+        this.donorRefunded.set(contributor, true)
+        
         // update state
         const output: ByteString = this.buildStateOutput(
             this.ctx.utxo.value - amount
         )
-
-        // setting it as refunded
-        this.donorRefunded.set(contributor, true)
 
         // checking the validity of the signature
         assert(this.checkSig(sig, contributor), 'donor signature check failed')
