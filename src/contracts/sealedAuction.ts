@@ -31,6 +31,9 @@ export class SealedAuction extends SmartContract {
     @prop()
     biddingDeadline: bigint
 
+    @prop()
+    revealDeadline: bigint
+
     @prop(true)
     biddingFinished: boolean
 
@@ -49,6 +52,7 @@ export class SealedAuction extends SmartContract {
     constructor(
         auctioneer: PubKey,
         biddingDeadline: bigint,
+        revealDeadline: bigint,
         bidCommitments: HashedMap<PubKey, Sha256>,
         hasWithdrawnCollateral: HashedSet<PubKey>,
         collateralAmount: bigint
@@ -56,6 +60,7 @@ export class SealedAuction extends SmartContract {
         super(...arguments)
         this.auctioneer = auctioneer
         this.biddingDeadline = biddingDeadline
+        this.revealDeadline = revealDeadline
         this.biddingFinished = true
         this.bidCommitments = bidCommitments
         this.hasWithdrawnCollateral = hasWithdrawnCollateral
@@ -150,6 +155,26 @@ export class SealedAuction extends SmartContract {
     public finish() {
         // Check that auction has not yet been finished.
         assert(!this.auctionFinished, 'auction was already finished')
+
+        // Check if reveal deadline is reached.
+        // Ensure nSequence is less than UINT_MAX.
+        assert(
+            this.ctx.sequence < SealedAuction.UINT_MAX,
+            'input sequence should less than UINT_MAX'
+        )
+
+        // Check if using block height.
+        if (this.revealDeadline < SealedAuction.LOCKTIME_BLOCK_HEIGHT_MARKER) {
+            // Enforce nLocktime field to also use block height.
+            assert(
+                this.ctx.locktime < SealedAuction.LOCKTIME_BLOCK_HEIGHT_MARKER,
+                'locktime should be less than 500000000'
+            )
+        }
+        assert(
+            this.ctx.locktime >= this.revealDeadline,
+            'locktime has not yet expired'
+        )
 
         // Set auctionFinished to true.
         this.auctionFinished = true
