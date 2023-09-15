@@ -138,6 +138,9 @@ export class SealedAuction extends SmartContract {
             'data does not match commitment'
         )
 
+        // Ensure bid isn't larger than the collateral.
+        assert(bid <= this.collateralAmount, 'bid too high')
+
         // Check if bid is higher than current highest and update if so.
         if (bid > this.highestBidderAmount) {
             // Update highest bid.
