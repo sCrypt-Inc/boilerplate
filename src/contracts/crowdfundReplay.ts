@@ -137,7 +137,7 @@ export class CrowdfundReplay extends SmartContract {
         const balance = current.balance - Number(amount)
 
         const nextInstance = current.next()
-        nextInstance.donators.delete(donator)
+        nextInstance.applyOffchainUpdatesForRefund(donator)
 
         const unsignedTx = new bsv.Transaction()
             .addInput(current.buildContractInput(options.fromUTXO))
@@ -199,17 +199,17 @@ export class CrowdfundReplay extends SmartContract {
         }
     }
 
-    // methods for replay contract instance to the latest states
-    // method name MUST follow the pattern `xxxForReplay`
-    //   where `xxx` is the name of the corresponding public method
-    // all the @prop(true) processing in those replay methods
-    //   MUST be exactly the same as in the corresponding public method
+    // methods for updating @prop(true) offchain
+    //
+    // when replay contract instance to the latest states
+    // those method names MUST follow the pattern `applyOffchainUpdatesForXxx`
+    // where `Xxx` is the name of the corresponding public method with first letter capitalized
 
-    donateForReplay(donator: PubKey, amount: bigint) {
+    applyOffchainUpdatesForDonate(donator: PubKey, amount: bigint) {
         this.donators.set(donator, amount)
     }
 
-    refundForReplay(donator: PubKey) {
+    applyOffchainUpdatesForRefund(donator: PubKey) {
         this.donators.delete(donator)
     }
 }

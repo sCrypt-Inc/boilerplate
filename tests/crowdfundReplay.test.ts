@@ -19,7 +19,7 @@ if (process.env.NETWORK === 'testnet') {
     // only applicable when running testnet test
     // since we need to retrieve raw transactions and construct the spent chain from the network
 
-    describe('Test SmartContract `Crowdfund`', () => {
+    describe('Test SmartContract `CrowdfundReplay`', () => {
         const deadline = 1000
         let contractId: ContractId
 
@@ -63,7 +63,7 @@ if (process.env.NETWORK === 'testnet') {
         ) {
             const pubKey = PubKey(toHex(donator))
             const nextInstance = instance.next()
-            nextInstance.donators.set(pubKey, amount)
+            nextInstance.applyOffchainUpdatesForDonate(pubKey, amount)
             const { next } = await instance.methods.donate(pubKey, amount, {
                 next: {
                     instance: nextInstance,
@@ -80,7 +80,7 @@ if (process.env.NETWORK === 'testnet') {
         ) {
             const pubKey = PubKey(toHex(donator))
             const nextInstance = instance.next()
-            nextInstance.donators.delete(pubKey)
+            nextInstance.applyOffchainUpdatesForRefund(pubKey)
             const { next } = await instance.methods.refund(
                 pubKey,
                 amount,

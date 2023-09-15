@@ -105,7 +105,13 @@ export async function replay<T extends SmartContract>(
     const clazz = next.constructor as unknown as typeof SmartContract
     const callData = clazz.parseCallData(tx, atInputIndex)
     const { methodName, args } = callData
-    next[`${methodName}ForReplay`]?.call(next, ...args.map((arg) => arg.value))
+    const fn =
+        next[
+            `applyOffchainUpdatesFor${methodName.replace(/^\S/, (s) =>
+                s.toUpperCase()
+            )}`
+        ]
+    fn?.call(next, ...args.map((arg) => arg.value))
     next.from = {
         tx,
         outputIndex: item.nextOutputIndex,
