@@ -16,6 +16,9 @@ import { getTransaction, replayToLatest } from './utils/replayHelper'
 use(chaiAsPromised)
 
 if (process.env.NETWORK === 'testnet') {
+    // only applicable when running testnet test
+    // since we need to retrieve raw transactions and construct the spent chain from the network
+
     describe('Test SmartContract `Crowdfund`', () => {
         const deadline = 1000
         let contractId: ContractId
