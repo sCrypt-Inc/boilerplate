@@ -96,6 +96,16 @@ if (process.env.NETWORK === 'testnet') {
             return next!.instance
         }
 
+        async function collect(instance: CrowdfundReplay) {
+            await instance.methods.collect(
+                (sigResps) => findSig(sigResps, myPublicKey),
+                {
+                    lockTime: deadline,
+                    pubKeyOrAddrToSign: myPublicKey,
+                } as MethodCallOptions<CrowdfundReplay>
+            )
+        }
+
         it('should pass', async () => {
             // recover instance from deploy transaction
             const tx = await getTransaction(contractId.txId)
@@ -114,14 +124,14 @@ if (process.env.NETWORK === 'testnet') {
                 // the latest instance is ready to use here
                 await latestInstance.connect(getDefaultSigner())
 
-                const call = async () =>
-                    latestInstance.methods.collect(
-                        (sigResps) => findSig(sigResps, myPublicKey),
-                        {
-                            lockTime: deadline,
-                            pubKeyOrAddrToSign: myPublicKey,
-                        } as MethodCallOptions<CrowdfundReplay>
-                    )
+                const [, publicKey4, ,] = randomPrivateKey()
+                const nextInstance = await donate(
+                    latestInstance,
+                    publicKey4,
+                    9n
+                )
+
+                const call = async () => await collect(nextInstance)
                 await expect(call()).not.to.be.rejected
             }
         })
