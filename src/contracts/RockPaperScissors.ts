@@ -9,7 +9,7 @@ import {
     prop,
 } from 'scrypt-ts'
 
-export class RockPaperScissors extends SmartContract {
+export class RockPaperScissors2 extends SmartContract {
     @prop()
     PlayerA: PubKey
     @prop()
@@ -49,38 +49,38 @@ export class RockPaperScissors extends SmartContract {
             Utils.buildPublicKeyHashOutput(hash160(this.PlayerB), amount / 2n)
             // possibilities of playerA and PlayerB winning
         } else if (
-            PlayerAMove == RockPaperScissors.ROCK &&
-            PlayerBMove == RockPaperScissors.SCIRSSORS
+            PlayerAMove == RockPaperScissors2.ROCK &&
+            PlayerBMove == RockPaperScissors2.SCIRSSORS
         ) {
             Utils.buildPublicKeyHashOutput(hash160(this.PlayerA), amount)
             assert(this.checkSig(sig, this.PlayerA))
         } else if (
-            PlayerAMove == RockPaperScissors.SCIRSSORS &&
-            PlayerBMove == RockPaperScissors.PAPER
+            PlayerAMove == RockPaperScissors2.SCIRSSORS &&
+            PlayerBMove == RockPaperScissors2.PAPER
         ) {
             Utils.buildPublicKeyHashOutput(hash160(this.PlayerA), amount)
             assert(this.checkSig(sig, this.PlayerA))
         } else if (
-            PlayerAMove == RockPaperScissors.PAPER &&
-            PlayerBMove == RockPaperScissors.ROCK
+            PlayerAMove == RockPaperScissors2.PAPER &&
+            PlayerBMove == RockPaperScissors2.ROCK
         ) {
             Utils.buildPublicKeyHashOutput(hash160(this.PlayerA), amount)
             assert(this.checkSig(sig, this.PlayerA))
         } else if (
-            PlayerBMove == RockPaperScissors.ROCK &&
-            PlayerAMove == RockPaperScissors.SCIRSSORS
+            PlayerBMove == RockPaperScissors2.ROCK &&
+            PlayerAMove == RockPaperScissors2.SCIRSSORS
         ) {
             Utils.buildPublicKeyHashOutput(hash160(this.PlayerB), amount)
             assert(this.checkSig(sig, this.PlayerB))
         } else if (
-            PlayerBMove == RockPaperScissors.SCIRSSORS &&
-            PlayerAMove == RockPaperScissors.PAPER
+            PlayerBMove == RockPaperScissors2.SCIRSSORS &&
+            PlayerAMove == RockPaperScissors2.PAPER
         ) {
             Utils.buildPublicKeyHashOutput(hash160(this.PlayerB), amount)
             assert(this.checkSig(sig, this.PlayerB))
         } else if (
-            PlayerBMove == RockPaperScissors.PAPER &&
-            PlayerAMove == RockPaperScissors.ROCK
+            PlayerBMove == RockPaperScissors2.PAPER &&
+            PlayerAMove == RockPaperScissors2.ROCK
         ) {
             Utils.buildPublicKeyHashOutput(hash160(this.PlayerB), amount)
             assert(this.checkSig(sig, this.PlayerB))
