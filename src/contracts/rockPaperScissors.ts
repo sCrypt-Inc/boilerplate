@@ -2,7 +2,6 @@ import {
     ByteString,
     PubKey,
     Sha256,
-    Sig,
     SmartContract,
     Utils,
     assert,
@@ -12,6 +11,9 @@ import {
     prop,
     pubKey2Addr,
     toByteString,
+    MethodCallOptions,
+    ContractTransaction,
+    bsv,
 } from 'scrypt-ts'
 
 export class RockPaperScissors2 extends SmartContract {
@@ -54,12 +56,12 @@ export class RockPaperScissors2 extends SmartContract {
         // Check players move commitments.
         // Salt is used to prevent hash collisions.
         assert(
-            hash256(int2ByteString(playerAMove, 1n) + playerASalt) ==
+            Sha256(int2ByteString(playerAMove, 1n) + playerASalt) ==
                 this.playerAHash,
             'Invalid move'
         )
         assert(
-            hash256(int2ByteString(playerBMove, 1n) + playerBSalt) ==
+            Sha256(int2ByteString(playerBMove, 1n) + playerBSalt) ==
                 this.playerBHash,
             'Invalid move'
         )
@@ -104,5 +106,41 @@ export class RockPaperScissors2 extends SmartContract {
 
         // Enforce built outputs.
         assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
+    }
+
+    static async buildTxForPlay(
+        current: RockPaperScissors2,
+        options: MethodCallOptions<RockPaperScissors2>,
+        playerAMove: bigint,
+        playerBMove: bigint,
+        playerASalt: ByteString,
+        playerBSalt: ByteString
+    ): Promise<ContractTransaction> {
+        const defaultChangeAddress = await current.signer.getDefaultAddress()
+        const balance = current.balance
+
+        const unsignedTx: bsv.Transaction = new bsv.Transaction()
+            // add contract input
+            .addInput(current.buildContractInput(options.fromUTXO))
+
+            // build output
+            .addOutput(
+                new bsv.Transaction.Output({
+                    script: bsv.Script.fromHex(
+                        Utils.buildPublicKeyHashScript(
+                            pubKey2Addr(current.playerB)
+                        )
+                    ),
+                    satoshis: Number(current.balance),
+                })
+            )
+            // build change output
+            .change(options.changeAddress || defaultChangeAddress)
+
+        return {
+            tx: unsignedTx,
+            atInputIndex: 0,
+            nexts: [],
+        }
     }
 }
