@@ -25,7 +25,7 @@ import Script = bsv.Script
 export class OrdinalAuction extends SmartContract {
     // Output of auctioned ordinal (txid + vout).
     @prop()
-    readonly ordnialPrevout: ByteString
+    readonly ordinalPrevout: ByteString
 
     // The bidder's public key.
     @prop(true)
@@ -45,7 +45,7 @@ export class OrdinalAuction extends SmartContract {
         auctionDeadline: bigint
     ) {
         super(...arguments)
-        this.ordnialPrevout = ordinalPrevout
+        this.ordinalPrevout = ordinalPrevout
         this.bidder = auctioneer
         this.auctioneer = auctioneer
         this.auctionDeadline = auctionDeadline
@@ -97,7 +97,7 @@ export class OrdinalAuction extends SmartContract {
 
         // Ensure the first input in spending the auctioned ordinal UTXO.
         assert(
-            slice(this.prevouts, 0n, 36n) == this.ordnialPrevout,
+            slice(this.prevouts, 0n, 36n) == this.ordinalPrevout,
             'first input is not spending specified ordinal UTXO'
         )
 

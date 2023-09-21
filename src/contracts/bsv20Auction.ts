@@ -23,7 +23,7 @@ import Script = bsv.Script
 export class BSV20Auction extends SmartContract {
     // Output of auctioned ordinal (txid + vout).
     @prop()
-    readonly ordnialPrevout: ByteString
+    readonly ordinalPrevout: ByteString
 
     // Inscription for the BSV-20 transfer.
     // Example:
@@ -57,7 +57,7 @@ export class BSV20Auction extends SmartContract {
         auctionDeadline: bigint
     ) {
         super(...arguments)
-        this.ordnialPrevout = ordinalPrevout
+        this.ordinalPrevout = ordinalPrevout
         this.transferInscription = transferInscription
         this.bidder = auctioneer
         this.auctioneer = auctioneer
@@ -110,7 +110,7 @@ export class BSV20Auction extends SmartContract {
 
         // Ensure the first input is spending the auctioned ordinal UTXO.
         assert(
-            slice(this.prevouts, 0n, 36n) == this.ordnialPrevout,
+            slice(this.prevouts, 0n, 36n) == this.ordinalPrevout,
             'first input is not spending specified ordinal UTXO'
         )
 
