@@ -41,6 +41,8 @@ describe('Test SmartContract `RockPaperScirssors`', async () => {
     it('should pass the play method successfully ', async () => {
         await instance.deploy(10)
 
+        instance.bindTxBuilder('play', RockPaperScissors2.buildTxForPlay)
+
         const callContract = async () => {
             await instance.methods.play(
                 RockPaperScissors2.ROCK,
