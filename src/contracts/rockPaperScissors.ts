@@ -53,6 +53,7 @@ export class RockPaperScissors2 extends SmartContract {
         playerASalt: ByteString,
         playerBSalt: ByteString
     ) {
+
         // Check players move commitments.
         // Salt is used to prevent hash collisions.
         assert(
