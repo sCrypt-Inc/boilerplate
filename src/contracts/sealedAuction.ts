@@ -16,9 +16,6 @@ import {
 } from 'scrypt-ts'
 
 export class SealedAuction extends SmartContract {
-    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
-    static readonly UINT_MAX = 0xffffffffn
-
     @prop()
     auctioneer: PubKey
 
@@ -104,22 +101,8 @@ export class SealedAuction extends SmartContract {
         salt: ByteString
     ) {
         // Check if bidding deadline is reached.
-        // Ensure nSequence is less than UINT_MAX.
         assert(
-            this.ctx.sequence < SealedAuction.UINT_MAX,
-            'input sequence should less than UINT_MAX'
-        )
-
-        // Check if using block height.
-        if (this.biddingDeadline < SealedAuction.LOCKTIME_BLOCK_HEIGHT_MARKER) {
-            // Enforce nLocktime field to also use block height.
-            assert(
-                this.ctx.locktime < SealedAuction.LOCKTIME_BLOCK_HEIGHT_MARKER,
-                'locktime should be less than 500000000'
-            )
-        }
-        assert(
-            this.ctx.locktime >= this.biddingDeadline,
+            this.timeLock(this.biddingDeadline),
             'locktime has not yet expired'
         )
 
@@ -160,22 +143,8 @@ export class SealedAuction extends SmartContract {
         assert(!this.auctionFinished, 'auction was already finished')
 
         // Check if reveal deadline is reached.
-        // Ensure nSequence is less than UINT_MAX.
         assert(
-            this.ctx.sequence < SealedAuction.UINT_MAX,
-            'input sequence should less than UINT_MAX'
-        )
-
-        // Check if using block height.
-        if (this.revealDeadline < SealedAuction.LOCKTIME_BLOCK_HEIGHT_MARKER) {
-            // Enforce nLocktime field to also use block height.
-            assert(
-                this.ctx.locktime < SealedAuction.LOCKTIME_BLOCK_HEIGHT_MARKER,
-                'locktime should be less than 500000000'
-            )
-        }
-        assert(
-            this.ctx.locktime >= this.revealDeadline,
+            this.timeLock(this.revealDeadline),
             'locktime has not yet expired'
         )
 

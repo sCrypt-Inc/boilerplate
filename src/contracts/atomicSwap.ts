@@ -14,9 +14,6 @@ import {
 // or as a cross-chain atomic swap.
 // https://xiaohuiliu.medium.com/cross-chain-atomic-swaps-f13e874fcaa7
 export class AtomicSwap extends SmartContract {
-    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
-    static readonly UINT_MAX = 0xffffffffn
-
     @prop()
     readonly receiver: PubKey
 
@@ -53,24 +50,8 @@ export class AtomicSwap extends SmartContract {
 
     @method()
     public cancel(senderSig: Sig) {
-        // Ensure nSequence is less than UINT_MAX.
-        assert(
-            this.ctx.sequence < AtomicSwap.UINT_MAX,
-            'input sequence should less than UINT_MAX'
-        )
-
-        // Check if using block height.
-        if (this.timeout < AtomicSwap.LOCKTIME_BLOCK_HEIGHT_MARKER) {
-            // Enforce nLocktime field to also use block height.
-            assert(
-                this.ctx.locktime < AtomicSwap.LOCKTIME_BLOCK_HEIGHT_MARKER,
-                'locktime should be less than 500000000'
-            )
-        }
-        assert(
-            this.ctx.locktime >= this.timeout,
-            'locktime has not yet expired'
-        )
+        // Check timeout.
+        assert(this.timeLock(this.timeout), 'time lock not yet expired')
 
         // Verify Bobs signature.
         assert(this.checkSig(senderSig, this.sender))

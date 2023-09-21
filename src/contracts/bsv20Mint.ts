@@ -19,9 +19,6 @@ import {
 import { Shift10 } from 'scrypt-ts-lib'
 
 export class BSV20Mint extends SmartContract {
-    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
-    static readonly UINT_MAX = 0xffffffffn
-
     @prop()
     totalSupply: bigint
 
@@ -87,26 +84,9 @@ export class BSV20Mint extends SmartContract {
     @method()
     public mint(dest: Addr, amount: bigint) {
         // Check time passed since last mint.
-        // Ensure nSequence is less than UINT_MAX.
         assert(
-            this.ctx.sequence < BSV20Mint.UINT_MAX,
-            'input sequence should less than UINT_MAX'
-        )
-
-        // Check if using block height.
-        if (
-            this.lastUpdate + this.timeDelta <
-            BSV20Mint.LOCKTIME_BLOCK_HEIGHT_MARKER
-        ) {
-            // Enforce nLocktime field to also use block height.
-            assert(
-                this.ctx.locktime < BSV20Mint.LOCKTIME_BLOCK_HEIGHT_MARKER,
-                'locktime should be less than 500000000'
-            )
-        }
-        assert(
-            this.ctx.locktime >= this.lastUpdate + this.timeDelta,
-            'locktime has not yet expired'
+            this.timeLock(this.lastUpdate + this.timeDelta),
+            'time lock not yet expired'
         )
 
         // Update last mint timestamp.

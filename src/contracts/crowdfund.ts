@@ -15,9 +15,6 @@ import {
  * https://xiaohuiliu.medium.com/crowdfunding-on-bitcoin-169c1f8b6b63
  */
 export class Crowdfund extends SmartContract {
-    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
-    static readonly UINT_MAX = 0xffffffffn
-
     @prop()
     readonly recipient: PubKey
 
@@ -68,18 +65,9 @@ export class Crowdfund extends SmartContract {
     // Contributors can be refunded after the deadline.
     @method()
     public refund(sig: Sig) {
-        // Require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
-        assert(
-            this.ctx.sequence < Crowdfund.UINT_MAX,
-            'require nLocktime enabled'
-        )
+        // Check deadline.
+        assert(this.timeLock(this.deadline), 'deadline not yet reached')
 
-        // Check if using block height.
-        if (this.deadline < Crowdfund.LOCKTIME_BLOCK_HEIGHT_MARKER) {
-            // Enforce nLocktime field to also use block height.
-            assert(this.ctx.locktime < Crowdfund.LOCKTIME_BLOCK_HEIGHT_MARKER)
-        }
-        assert(this.ctx.locktime >= this.deadline, 'fundraising expired')
         assert(
             this.checkSig(sig, this.contributor),
             'contributor signature check failed'

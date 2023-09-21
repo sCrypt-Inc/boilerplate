@@ -13,9 +13,6 @@ import {
     pubKey2Addr,
 } from 'scrypt-ts'
 
-const LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
-const UINT_MAX = 0xffffffffn
-
 /*
  * An escrow contract where a list of arbitrators can resolve a dispute.
  */
@@ -118,15 +115,8 @@ export class MultiSigEscrow extends SmartContract {
             'buyer signature check failed'
         )
 
-        // Require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
-        assert(this.ctx.sequence < UINT_MAX, 'require nLocktime enabled')
-
-        // Check if using block height.
-        if (this.deadline < LOCKTIME_BLOCK_HEIGHT_MARKER) {
-            // Enforce nLocktime field to also use block height.
-            assert(this.ctx.locktime < LOCKTIME_BLOCK_HEIGHT_MARKER)
-        }
-        assert(this.ctx.locktime >= this.deadline, 'deadline not yet reached')
+        // Check deadline.
+        assert(this.timeLock(this.deadline), 'deadline not yet reached')
 
         // Ensure buyer gets refund.
         const amount = this.ctx.utxo.value

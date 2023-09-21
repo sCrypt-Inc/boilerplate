@@ -82,7 +82,7 @@ describe('Test SmartContract `AtomicSwap`', () => {
                 } as MethodCallOptions<AtomicSwap>
             )
         return expect(callContract()).to.be.rejectedWith(
-            /locktime has not yet expired/
+            /time lock not yet expired/
         )
     })
 })

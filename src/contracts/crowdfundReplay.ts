@@ -22,10 +22,6 @@ import {
 export type Donators = HashedMap<PubKey, bigint>
 
 export class CrowdfundReplay extends SmartContract {
-    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER: bigint = 500000000n
-
-    static readonly UINT_MAX: bigint = 0xffffffffn
-
     @prop()
     readonly beneficiary: PubKey
 
@@ -95,21 +91,9 @@ export class CrowdfundReplay extends SmartContract {
         // ensure the collected amount actually reaches the target.
         assert(amount >= this.target, 'cannot collect without target reached')
 
-        // check timelock enabled
+        // Check deadline.
         assert(
-            this.ctx.sequence < CrowdfundReplay.UINT_MAX,
-            'require nLocktime enabled'
-        )
-        // check if using block height.
-        if (this.deadline < CrowdfundReplay.LOCKTIME_BLOCK_HEIGHT_MARKER) {
-            // enforce nLocktime field to also use block height.
-            assert(
-                this.ctx.locktime < CrowdfundReplay.LOCKTIME_BLOCK_HEIGHT_MARKER
-            )
-        }
-        // make sure the fundraising is expired
-        assert(
-            this.ctx.locktime >= this.deadline,
+            this.timeLock(this.deadline),
             'cannot collet before fundraising expired'
         )
 

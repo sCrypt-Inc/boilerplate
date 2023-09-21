@@ -14,9 +14,6 @@ import {
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 
-const LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
-const UINT_MAX = 0xffffffffn
-
 export type Investment = {
     investor: Addr
     amount: bigint
@@ -121,18 +118,8 @@ export class CatBond extends SmartContract {
 
     @method(SigHash.ANYONECANPAY_ALL)
     public mature() {
-        // Require nLocktime enabled https://wiki.bitcoinsv.io/index.php/NLocktime_and_nSequence
-        assert(this.ctx.sequence < UINT_MAX, 'require nLocktime enabled')
-
-        // Check if using block height.
-        if (this.matureTime < LOCKTIME_BLOCK_HEIGHT_MARKER) {
-            // Enforce nLocktime field to also use block height.
-            assert(this.ctx.locktime < LOCKTIME_BLOCK_HEIGHT_MARKER)
-        }
-        assert(
-            this.ctx.locktime >= this.matureTime,
-            'mature time not yet reached'
-        )
+        // Check mature time.
+        assert(this.timeLock(this.matureTime), 'not yet matured')
 
         // Pay each investor amount + preimium
         let outputs = toByteString('')

@@ -23,9 +23,6 @@ import Address = bsv.Address
 import Script = bsv.Script
 
 export class OrdinalAuction extends SmartContract {
-    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
-    static readonly UINT_MAX = 0xffffffffn
-
     // Output of auctioned ordinal (txid + vout).
     @prop()
     readonly ordnialPrevout: ByteString
@@ -89,23 +86,8 @@ export class OrdinalAuction extends SmartContract {
     // Close the auction if deadline is reached.
     @method()
     public close(sigAuctioneer: Sig) {
-        // Check if using block height.
-        if (
-            this.auctionDeadline < OrdinalAuction.LOCKTIME_BLOCK_HEIGHT_MARKER
-        ) {
-            // Enforce nLocktime field to also use block height.
-            assert(
-                this.ctx.locktime < OrdinalAuction.LOCKTIME_BLOCK_HEIGHT_MARKER
-            )
-        }
-        assert(
-            this.ctx.sequence < OrdinalAuction.UINT_MAX,
-            'input sequence should less than UINT_MAX'
-        )
-        assert(
-            this.ctx.locktime >= this.auctionDeadline,
-            'auction is not over yet'
-        )
+        // Check deadline.
+        assert(this.timeLock(this.auctionDeadline), 'auction is not yet over')
 
         // Check signature of the auctioneer.
         assert(

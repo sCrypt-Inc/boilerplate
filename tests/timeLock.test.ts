@@ -32,7 +32,7 @@ describe('Test SmartContract `TimeLock`', () => {
                 lockTime: 1673500100,
             } as MethodCallOptions<TimeLock>)
         return expect(callContract()).to.be.rejectedWith(
-            /locktime has not yet expired/
+            /time lock not yet expired/
         )
     })
 })

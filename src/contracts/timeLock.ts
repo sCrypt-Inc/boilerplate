@@ -6,9 +6,6 @@ import { assert, method, prop, SmartContract } from 'scrypt-ts'
  * of nLocktime (and nSequence) in the unlocking transaction.
  */
 export class TimeLock extends SmartContract {
-    static readonly LOCKTIME_BLOCK_HEIGHT_MARKER = 500000000
-    static readonly UINT_MAX = 0xffffffffn
-
     @prop()
     readonly matureTime: bigint // Can be a timestamp or block height.
 
@@ -19,23 +16,6 @@ export class TimeLock extends SmartContract {
 
     @method()
     public unlock() {
-        // Ensure nSequence is less than UINT_MAX.
-        assert(
-            this.ctx.sequence < TimeLock.UINT_MAX,
-            'input sequence should less than UINT_MAX'
-        )
-
-        // Check if using block height.
-        if (this.matureTime < TimeLock.LOCKTIME_BLOCK_HEIGHT_MARKER) {
-            // Enforce nLocktime field to also use block height.
-            assert(
-                this.ctx.locktime < TimeLock.LOCKTIME_BLOCK_HEIGHT_MARKER,
-                'locktime should be less than 500000000'
-            )
-        }
-        assert(
-            this.ctx.locktime >= this.matureTime,
-            'locktime has not yet expired'
-        )
+        assert(this.timeLock(this.matureTime), 'time lock not yet expired')
     }
 }
