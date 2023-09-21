@@ -64,13 +64,13 @@ if (process.env.NETWORK === 'testnet') {
             const pubKey = PubKey(toHex(donator))
             const nextInstance = instance.next()
             nextInstance.applyOffchainUpdatesForDonate(pubKey, amount)
-            const { next } = await instance.methods.donate(pubKey, amount, {
+            await instance.methods.donate(pubKey, amount, {
                 next: {
                     instance: nextInstance,
                     balance: instance.balance + Number(amount),
                 },
             } as MethodCallOptions<CrowdfundReplay>)
-            return next!.instance
+            return nextInstance
         }
 
         async function refund(
@@ -79,18 +79,12 @@ if (process.env.NETWORK === 'testnet') {
             amount: bigint
         ) {
             const pubKey = PubKey(toHex(donator))
-            const nextInstance = instance.next()
-            nextInstance.applyOffchainUpdatesForRefund(pubKey)
             const { next } = await instance.methods.refund(
                 pubKey,
                 amount,
                 (sigResps) => findSig(sigResps, donator),
                 {
                     pubKeyOrAddrToSign: donator,
-                    next: {
-                        instance: nextInstance,
-                        balance: instance.balance - Number(amount),
-                    },
                 } as MethodCallOptions<CrowdfundReplay>
             )
             return next!.instance
