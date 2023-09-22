@@ -51,8 +51,9 @@ describe('Test SmartContract `AtomicSwap`', () => {
                     pubKeyOrAddrToSign: alicePubKey,
                 } as MethodCallOptions<AtomicSwap>
             )
-        return expect(callContract()).not.rejected
-    })
+    }
+      return expect(callContract()).not.rejected
+        )
 
     it('should pass cancel', async () => {
         await atomicSwap.connect(getDefaultSigner(bobPrivKey))
@@ -66,8 +67,9 @@ describe('Test SmartContract `AtomicSwap`', () => {
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<AtomicSwap>
             )
-        return expect(callContract()).not.rejected
-    })
+    }
+      return expect(callContract()).not.rejected
+        )
 
     it('should fail withdraw when nLocktime is too low.', async () => {
         await atomicSwap.connect(getDefaultSigner(bobPrivKey))
@@ -81,8 +83,9 @@ describe('Test SmartContract `AtomicSwap`', () => {
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<AtomicSwap>
             )
-        return expect(callContract()).to.be.rejectedWith(
+    }
+       return expect(callContract()).to.be.rejectedWith(
             /time lock not yet expired/
         )
-    })
+        )
 })
