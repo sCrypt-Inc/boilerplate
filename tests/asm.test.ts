@@ -31,6 +31,7 @@ describe('Test SmartContract `P2PKH_ASM`', () => {
                     pubKeyOrAddrToSign: myPublicKey,
                 } as MethodCallOptions<P2PKH_ASM>
             )
-        expect(callContract()).to.be.not.throw
-    })
+    }
+      return   expect(callContract()).not.be.rejected
+        )
 })
