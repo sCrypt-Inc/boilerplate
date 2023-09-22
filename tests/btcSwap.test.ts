@@ -152,8 +152,9 @@ describe('Test SmartContract `BTCSwap`', () => {
                     pubKeyOrAddrToSign: alicePubKey,
                 } as MethodCallOptions<BTCSwap>
             )
-        return expect(callContract()).not.rejected
-    })
+    }
+      return expect(callContract()).not.rejected
+        )
 
     it('should pass cancel', async () => {
         await btcSwap.connect(getDefaultSigner(bobPrivKey))
@@ -168,8 +169,9 @@ describe('Test SmartContract `BTCSwap`', () => {
                     pubKeyOrAddrToSign: bobPubKey,
                 } as MethodCallOptions<BTCSwap>
             )
-        return expect(callContract()).not.rejected
-    })
+    }
+      return expect(callContract()).not.rejected
+        )
 })
 
 /**
