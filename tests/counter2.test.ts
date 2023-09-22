@@ -37,11 +37,9 @@ describe('Test SmartContract `Counter`', () => {
                     },
                 } as MethodCallOptions<Counter2>)
 
-            await expect(callContract()).not.rejected
-
             // update the current instance reference
             currentInstance = nextInstance
-        }
+        } return expect(callContract()).not.rejected
     })
 
     it('should pass the public method reset test successfully.', async () => {
