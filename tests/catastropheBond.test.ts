@@ -148,6 +148,7 @@ describe('Test SmartContract `CatBond`', () => {
             currentInstance.methods.payout(oracleMsg, oracleSig, {
                 changeAddress: issuer.publicKey.toAddress(),
             } as MethodCallOptions<CatBond>)
-        expect(callContract).not.throw
-    })
+    }
+      return  expect(callContract).not.be.rejected
+        )
 })
