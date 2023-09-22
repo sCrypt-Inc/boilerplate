@@ -94,8 +94,9 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
                     pubKeyOrAddrToSign: buyer.publicKey,
                 } as MethodCallOptions<BlindEscrow>
             )
-        expect(callContract()).to.not.throw
-    })
+    }
+      return  expect(callContract()).not.be.rejected
+        )
 
     it('should pass release by arbiter', async () => {
         //// Sig by buyer, stamp by arbiter.
@@ -124,9 +125,9 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
                     pubKeyOrAddrToSign: buyer.publicKey,
                 } as MethodCallOptions<BlindEscrow>
             )
-
-        expect(callContract()).to.not.throw
-    })
+    }
+       return  expect(callContract()).not.be.rejected
+        )
 
     it('should pass return by buyer', async () => {
         //// Sig by seller, stamp by buyer.
@@ -153,8 +154,9 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
                     pubKeyOrAddrToSign: seller.publicKey,
                 } as MethodCallOptions<BlindEscrow>
             )
-        expect(callContract()).to.not.throw
-    })
+    }
+       return  expect(callContract()).not.be.rejected
+        )
 
     it('should pass return by arbiter', async () => {
         //// Sig by seller, stamp by arbiter.
@@ -182,7 +184,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
                     pubKeyOrAddrToSign: seller.publicKey,
                 } as MethodCallOptions<BlindEscrow>
             )
-
-        return expect(callContract()).not.rejected
-    })
+    }
+       return  expect(callContract()).not.be.rejected
+        )
 })
