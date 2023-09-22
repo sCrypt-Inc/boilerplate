@@ -43,6 +43,7 @@ describe('Test SmartContract `Cointoss`', () => {
                     pubKeyOrAddrToSign: alicepublickey,
                 } as MethodCallOptions<CoinToss>
             )
-        return expect(callContract()).not.rejected
-    })
+    }
+      return expect(callContract()).not.rejected
+        )
 })
