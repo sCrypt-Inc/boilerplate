@@ -35,10 +35,11 @@ describe('Test SmartContract `Counter`', () => {
                         balance,
                     },
                 } as MethodCallOptions<Counter>)
-            await expect(callContract()).not.rejected
 
             // update the current instance reference
             currentInstance = nextInstance
         }
-    })
+    }
+      return expect(callContract()).not.rejected
+        )
 })
