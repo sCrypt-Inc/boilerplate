@@ -28,7 +28,7 @@ describe('Test SmartContract `Counter`', () => {
             nextInstance.increment()
 
             // call the method of current instance to apply the updates on chain
-            const callContract = async () =>
+            const callContract = async () =>{
                 currentInstance.methods.incrementOnChain({
                     next: {
                         instance: nextInstance,
@@ -41,5 +41,5 @@ describe('Test SmartContract `Counter`', () => {
         }
     }
       return expect(callContract()).not.rejected
-        )
+        })
 })
