@@ -90,18 +90,19 @@ describe('Test SmartContract `CatBond`', () => {
             }
             nextInstance.investmentsEndIdx += 1n
 
-            const callContract = async () =>
+            const callContract = async () =>{
                 currentInstance.methods.invest(investorAddr, BigInt(amount), {
                     next: {
                         instance: nextInstance,
                         balance: alreadyInvested + amount,
                     },
                 } as MethodCallOptions<CatBond>)
-            await expect(callContract()).not.rejected
+            }
+return expect(callContract()).not.rejected
 
             currentInstance = nextInstance
             alreadyInvested += amount
-        }
+        })
 
         // Payout:
         const oracleMsg = toByteString('32d0908762')
@@ -144,11 +145,11 @@ describe('Test SmartContract `CatBond`', () => {
             }
         )
 
-        const callContract = async () =>
+        const callContract = async () =>{
             currentInstance.methods.payout(oracleMsg, oracleSig, {
                 changeAddress: issuer.publicKey.toAddress(),
             } as MethodCallOptions<CatBond>)
     }
       return  expect(callContract).not.be.rejected
-        )
+        })
 })
