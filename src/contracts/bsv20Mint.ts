@@ -205,7 +205,7 @@ export class BSV20Mint extends SmartContract {
     static txId2Ascii(txId: ByteString): ByteString {
         let res = toByteString('')
 
-        for (let i = 0; i < 64; i++) {
+        for (let i = 0; i < 32; i++) {
             const char = slice(txId, BigInt(i), BigInt(i + 1))
             const charInt = byteString2Int(char)
             res += BSV20Mint.hexAsciiTable[Number(charInt)]
