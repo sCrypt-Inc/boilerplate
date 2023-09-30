@@ -43,7 +43,7 @@ describe('Test SmartContract `AtomicSwap`', () => {
         await atomicSwap.connect(getDefaultSigner(alicePrivKey))
 
         await atomicSwap.deploy(1)
-        const callContract = async () =>
+        const callContract = async () =>{
             atomicSwap.methods.unlock(
                 x,
                 (sigResps) => findSig(sigResps, alicePubKey),
@@ -53,13 +53,13 @@ describe('Test SmartContract `AtomicSwap`', () => {
             )
     }
       return expect(callContract()).not.rejected
-        )
+        })
 
     it('should pass cancel', async () => {
         await atomicSwap.connect(getDefaultSigner(bobPrivKey))
 
         await atomicSwap.deploy(1)
-        const callContract = async () =>
+        const callContract = async () =>{
             atomicSwap.methods.cancel(
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
@@ -69,13 +69,13 @@ describe('Test SmartContract `AtomicSwap`', () => {
             )
     }
       return expect(callContract()).not.rejected
-        )
+        })
 
     it('should fail withdraw when nLocktime is too low.', async () => {
         await atomicSwap.connect(getDefaultSigner(bobPrivKey))
 
         await atomicSwap.deploy(1)
-        const callContract = async () =>
+        const callContract = async () =>{
             atomicSwap.methods.cancel(
                 (sigResps) => findSig(sigResps, bobPubKey),
                 {
@@ -87,5 +87,5 @@ describe('Test SmartContract `AtomicSwap`', () => {
        return expect(callContract()).to.be.rejectedWith(
             /time lock not yet expired/
         )
-        )
+       })
 })
