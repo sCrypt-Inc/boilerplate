@@ -38,5 +38,5 @@ describe('Test SmartContract `Clone`', () => {
         }
     }
         return expect(callContract()).not.be.rejected
-)
+})
 })
