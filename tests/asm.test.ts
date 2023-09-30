@@ -23,7 +23,7 @@ describe('Test SmartContract `P2PKH_ASM`', () => {
         })
 
         await demo.deploy(1)
-        const callContract = async () =>
+        const callContract = async () =>{
             await demo.methods.unlock(
                 (sigResps) => findSig(sigResps, myPublicKey),
                 PubKey(myPublicKey.toByteString()),
@@ -33,5 +33,5 @@ describe('Test SmartContract `P2PKH_ASM`', () => {
             )
     }
       return   expect(callContract()).not.be.rejected
-        )
+        })
 })
