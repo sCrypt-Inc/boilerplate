@@ -83,7 +83,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
         await blindEscrow.connect(getDefaultSigner(buyer))
 
         await blindEscrow.deploy(1)
-        const callContract = async () =>
+        const callContract = async () =>{
             blindEscrow.methods.spend(
                 (sigResps) => findSig(sigResps, buyer.publicKey),
                 PubKey(buyerPubKey.toByteString()),
@@ -96,7 +96,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             )
     }
       return  expect(callContract()).not.be.rejected
-        )
+        })
 
     it('should pass release by arbiter', async () => {
         //// Sig by buyer, stamp by arbiter.
@@ -114,7 +114,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
 
         await blindEscrow.deploy(1)
 
-        const callContract = async () =>
+        const callContract = async () =>{
             blindEscrow.methods.spend(
                 (sigResps) => findSig(sigResps, buyer.publicKey),
                 PubKey(buyerPubKey.toByteString()),
@@ -127,7 +127,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             )
     }
        return  expect(callContract()).not.be.rejected
-        )
+        })
 
     it('should pass return by buyer', async () => {
         //// Sig by seller, stamp by buyer.
@@ -143,7 +143,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
 
         await blindEscrow.connect(getDefaultSigner(seller))
         await blindEscrow.deploy(1)
-        const callContract = async () =>
+        const callContract = async () =>{
             blindEscrow.methods.spend(
                 (sigResps) => findSig(sigResps, seller.publicKey),
                 PubKey(sellerPubKey.toByteString()),
@@ -156,7 +156,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             )
     }
        return  expect(callContract()).not.be.rejected
-        )
+        })
 
     it('should pass return by arbiter', async () => {
         //// Sig by seller, stamp by arbiter.
@@ -173,7 +173,7 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
         await blindEscrow.connect(getDefaultSigner(seller))
         await blindEscrow.deploy(1)
 
-        const callContract = async () =>
+        const callContract = async () =>{
             blindEscrow.methods.spend(
                 (sigResps) => findSig(sigResps, seller.publicKey),
                 PubKey(sellerPubKey.toByteString()),
@@ -186,5 +186,5 @@ describe('Heavy: Test SmartContract `BlindEscrow`', () => {
             )
     }
        return  expect(callContract()).not.be.rejected
-        )
+        })
 })
