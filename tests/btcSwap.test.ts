@@ -141,7 +141,7 @@ describe('Test SmartContract `BTCSwap`', () => {
         await btcSwap.connect(getDefaultSigner(alicePrivKey))
 
         await btcSwap.deploy(1)
-        const callContract = async () =>
+        const callContract = async () =>{
             btcSwap.methods.swap(
                 btcTx,
                 merkleProof,
@@ -154,13 +154,13 @@ describe('Test SmartContract `BTCSwap`', () => {
             )
     }
       return expect(callContract()).not.rejected
-        )
+        })
 
     it('should pass cancel', async () => {
         await btcSwap.connect(getDefaultSigner(bobPrivKey))
 
         await btcSwap.deploy(1)
-        const callContract = async () =>
+        const callContract = async () =>{
             btcSwap.methods.cancel(
                 PubKey(bobPubKey.toByteString()),
                 (sigResps) => findSig(sigResps, bobPubKey),
@@ -171,7 +171,7 @@ describe('Test SmartContract `BTCSwap`', () => {
             )
     }
       return expect(callContract()).not.rejected
-        )
+        })
 })
 
 /**
