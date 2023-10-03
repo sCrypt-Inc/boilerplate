@@ -1,7 +1,6 @@
 import { assert } from 'console'
 import {
     ByteString,
-    FixedArray,
     OpCode,
     Addr,
     SmartContract,
@@ -10,23 +9,18 @@ import {
     hash256,
     int2ByteString,
     len,
-    lshift,
     method,
     prop,
     slice,
     toByteString,
 } from 'scrypt-ts'
-import { Shift10 } from 'scrypt-ts-lib'
 
 export class BSV20Mint extends SmartContract {
-    @prop()
-    totalSupply: bigint
+    @prop(true)
+    supply: bigint
 
     @prop()
     maxMintAmount: bigint
-
-    @prop(true)
-    alreadyMinted: bigint
 
     @prop(true)
     isFirstMint: boolean
@@ -43,38 +37,23 @@ export class BSV20Mint extends SmartContract {
     @prop(true)
     prevInscriptionLen: bigint
 
+    // Hex representation of bytes 0-255
     @prop()
-    static readonly hexAsciiTable: FixedArray<ByteString, 16> = [
-        toByteString('0', true),
-        toByteString('1', true),
-        toByteString('2', true),
-        toByteString('3', true),
-        toByteString('4', true),
-        toByteString('5', true),
-        toByteString('6', true),
-        toByteString('7', true),
-        toByteString('8', true),
-        toByteString('9', true),
-        toByteString('a', true),
-        toByteString('b', true),
-        toByteString('c', true),
-        toByteString('d', true),
-        toByteString('e', true),
-        toByteString('f', true),
-    ]
+    static readonly hexAsciiTable: ByteString = toByteString(
+        '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff',
+        true
+    )
 
     constructor(
-        totalSupply: bigint,
+        supply: bigint,
         maxMintAmount: bigint,
         lastUpdate: bigint,
         timeDelta: bigint,
         prevInscriptionLen: bigint
     ) {
         super(...arguments)
-        this.totalSupply = totalSupply
+        this.supply = supply
         this.maxMintAmount = maxMintAmount
-        this.alreadyMinted = 0n
-        this.isFirstMint = false
         this.tokenId = toByteString('')
         this.lastUpdate = lastUpdate
         this.timeDelta = timeDelta
@@ -96,32 +75,23 @@ export class BSV20Mint extends SmartContract {
         assert(amount <= this.maxMintAmount, 'mint amount exceeds maximum')
 
         // If first mint, parse token id and store it in a state var
-        if (this.isFirstMint) {
+        if (this.tokenId == toByteString('')) {
             this.tokenId =
-                BSV20Mint.txId2Ascii(this.ctx.utxo.outpoint.txid) +
+                BSV20Mint.txidToAscii(this.ctx.utxo.outpoint.txid) +
                 toByteString('_', true) +
-                BSV20Mint.int2Ascii(this.ctx.utxo.outpoint.outputIndex)
-            this.isFirstMint = false
+                BSV20Mint.intToAscii(this.ctx.utxo.outpoint.outputIndex)
         }
 
-        // Check if tokens still available.
-        assert(
-            this.totalSupply - this.alreadyMinted >= amount,
-            'not enough tokens left to mint'
-        )
+        // Update supply.
+        this.supply -= amount
 
-        // Update already minted amount.
-        this.alreadyMinted += amount
-
+        // If there are still tokens left, then
+        // build state output inscribed with leftover tokens.
         let outputs = toByteString('')
-
-        if (this.alreadyMinted != this.totalSupply) {
-            // If there are still tokens left, then
-            // build state output inscribed with leftover tokens.
-            const leftover = this.totalSupply - this.alreadyMinted
-            const transferInscription = BSV20Mint.getTransferInsciption(
+        if (this.supply > 0n) {
+            const transferInscription = BSV20Mint.buildTransferInsciption(
                 this.tokenId,
-                leftover
+                this.supply
             )
             const stateScript = slice(
                 this.getStateScript(),
@@ -134,10 +104,10 @@ export class BSV20Mint extends SmartContract {
         }
 
         // Build P2PKH output to dest paying specified amount of tokens.
-        const script1 =
-            BSV20Mint.getTransferInsciption(this.tokenId, amount) +
+        const destScript =
+            BSV20Mint.buildTransferInsciption(this.tokenId, amount) +
             Utils.buildPublicKeyHashScript(dest)
-        outputs += Utils.buildOutput(script1, 1n)
+        outputs += Utils.buildOutput(destScript, 1n)
 
         // Build change output.
         outputs += this.buildChangeOutput()
@@ -154,19 +124,24 @@ export class BSV20Mint extends SmartContract {
     //  "amt": "10000"
     //}
     @method()
-    static getTransferInsciption(tokenId: ByteString, amt: bigint): ByteString {
-        const transferJson =
+    static buildTransferInsciption(
+        tokenId: ByteString,
+        amt: bigint
+    ): ByteString {
+        const json: ByteString =
             toByteString('{"p":"bsv-20","op":"transfer","id":"', true) +
+            tokenId +
             toByteString('","amt":"', true) +
-            BSV20Mint.int2Ascii(amt) +
+            BSV20Mint.intToAscii(amt) +
             toByteString('"}', true)
-
         return (
+            // OP_FALSE OP_IF OP_DATA3 "ord" OP_1 OP_DATA18 "application/bsv-20" OP_0
             toByteString(
                 '0063036f726451126170706c69636174696f6e2f6273762d323000'
             ) +
-            int2ByteString(len(transferJson)) +
-            transferJson +
+            OpCode.OP_PUSHDATA1 +
+            int2ByteString(len(json)) +
+            json +
             OpCode.OP_ENDIF
         )
     }
@@ -175,40 +150,35 @@ export class BSV20Mint extends SmartContract {
     // 1000 -> '31303030'
     // Input cannot be larger than 2^64-1.
     @method()
-    static int2Ascii(n: bigint): ByteString {
-        // Max 2^64-1
-        assert(n < lshift(1n, 64n), 'n is larger than 2^64-1')
-
-        let res = toByteString('')
+    static intToAscii(num: bigint): ByteString {
+        assert(
+            num >= 0n && num < 18446744073709551616n,
+            'value must be uint64 ' + num
+        )
+        let ascii = toByteString('', true)
         let done = false
-
         for (let i = 0; i < 20; i++) {
             if (!done) {
-                // Get ith digit: n // 10^i % 10
-                const denominator = Shift10.pow(BigInt(i))
-
-                if (n < denominator) {
-                    done = true
+                const char = (num % 10n) + 48n
+                ascii = int2ByteString(char) + ascii
+                if (num > 9n) {
+                    num = num / 10n
                 } else {
-                    const ithDigit = (n / denominator) % 10n
-
-                    // Transform digit to ASCII (hex encoded) and prepend to result.
-                    res = int2ByteString(48n + ithDigit, 1n) + res
+                    done = true
                 }
             }
         }
-
-        return res
+        return ascii
     }
 
     @method()
-    static txId2Ascii(txId: ByteString): ByteString {
+    static txidToAscii(txId: ByteString): ByteString {
         let res = toByteString('')
-
-        for (let i = 0; i < 32; i++) {
-            const char = slice(txId, BigInt(i), BigInt(i + 1))
-            const charInt = byteString2Int(char)
-            res += BSV20Mint.hexAsciiTable[Number(charInt)]
+        for (let i = 0n; i < 32n; i++) {
+            const bytePos = 31n - i
+            const byte = slice(txId, bytePos, bytePos + 1n)
+            const hexPos = byteString2Int(byte + toByteString('00')) * 2n
+            res += slice(BSV20Mint.hexAsciiTable, hexPos, hexPos + 2n)
         }
         return res
     }
