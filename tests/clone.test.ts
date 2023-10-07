@@ -33,10 +33,10 @@ describe('Test SmartContract `Clone`', () => {
                     },
                 } as MethodCallOptions<Clone>)
 
-            await expect(callContract()).not.rejected
-
             // update the current instance reference
             currentInstance = nextInstance
         }
-    })
+    }
+        return expect(callContract()).not.be.rejected
+})
 })

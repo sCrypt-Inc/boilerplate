@@ -22,8 +22,8 @@ async function main() {
 
         const callContract = async () => {
             await instance.methods.solve(coeff, x)
-            return expect(callContract()).not.be.rejected
-        }
+            }
+        return expect(callContract()).not.be.rejected
     })
 
     it('should throw when calling solve ', async () => {
@@ -37,10 +37,10 @@ async function main() {
 
         const callContract = async () => {
             await instance.methods.solve(coeff, 0n)
-            return expect(callContract()).to.be.rejectedWith(
+        }
+        return expect(callContract()).to.be.rejectedWith(
                 / cannot solve the equation correctly /
             )
-        }
     })
 }
 describe('Test SmartContract `Callee`', async () => {

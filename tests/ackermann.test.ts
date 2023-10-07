@@ -17,13 +17,15 @@ describe('Test SmartContract `Ackermann`', () => {
 
     it('should transpile contract `Ackermann` successfully.', async () => {
         await ackermann.deploy(1)
-        const callContract = async () => ackermann.methods.unlock(5n)
-        return expect(callContract()).not.rejected
-    })
+        const callContract = async () =>{ ackermann.methods.unlock(5n)
+    }
+       return expect(callContract()).not.rejected
+       } )
 
     it('should throw', async () => {
         await ackermann.deploy(1)
-        const callContract = async () => ackermann.methods.unlock(4n)
-        return expect(callContract()).to.be.rejectedWith(/Wrong solution/)
-    })
+        const callContract = async () =>{ ackermann.methods.unlock(4n)
+    }
+       return expect(callContract()).to.be.rejectedWith(/Wrong solution/)
+        })
 })

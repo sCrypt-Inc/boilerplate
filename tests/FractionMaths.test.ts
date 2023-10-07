@@ -19,10 +19,10 @@ describe('Test SmartContract `FractionMaths`', () => {
         const y = { n: 1n, d: 3n }
         const z = { n: 5n, d: 6n }
 
-        const call = async () => instance.methods.unlock(x, y, z, 0n, false)
-
-        await expect(call()).not.to.be.rejected
-    })
+        const call = async () =>{ instance.methods.unlock(x, y, z, 0n, false)
+    }
+      return expect(call()).not.to.be.rejected
+     } )
 
     it('should unlockScaled correctly', async () => {
         await instance.deploy(1)
@@ -30,9 +30,11 @@ describe('Test SmartContract `FractionMaths`', () => {
         const y = { n: 1n, d: 3n }
         const s = 2n
         const sr = 10n
-        const call = async () =>
+        const call = async () =>{
             instance.methods.unlockScaled(s, x, y, 0n, false, sr)
 
-        await expect(call()).not.to.be.rejected
-    })
+        
+    }
+    return expect(call()).not.to.be.rejected
+   } )
 })

@@ -17,8 +17,8 @@ async function main() {
 
         const callContract = async () => {
             await instance.methods.main(toByteString('1234567890abcdef', true))
-            return expect(callContract()).not.be.rejected
         }
+         return expect(callContract()).not.be.rejected
     })
 }
 describe('Test SmartContract `Base58`', async () => {
