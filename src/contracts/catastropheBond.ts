@@ -1,4 +1,3 @@
-import { assert } from 'console'
 import {
     ByteString,
     FixedArray,
@@ -11,6 +10,7 @@ import {
     prop,
     toByteString,
     slice,
+    assert,
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 

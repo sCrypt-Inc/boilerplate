@@ -1,4 +1,3 @@
-import { assert } from 'console'
 import {
     ByteString,
     OpCode,
@@ -13,6 +12,7 @@ import {
     prop,
     slice,
     toByteString,
+    assert,
 } from 'scrypt-ts'
 
 export class BSV20Mint extends SmartContract {

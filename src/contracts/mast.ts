@@ -1,4 +1,3 @@
-import { assert } from 'console'
 import {
     ByteString,
     method,
@@ -9,6 +8,7 @@ import {
     Utils,
     hash256,
     SigHash,
+    assert,
 } from 'scrypt-ts'
 import { MerklePath, MerkleProof } from 'scrypt-ts-lib'
 

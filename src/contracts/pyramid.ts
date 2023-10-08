@@ -1,4 +1,3 @@
-import { assert } from 'console'
 import {
     PubKey,
     Addr,
@@ -12,6 +11,7 @@ import {
     bsv,
     ByteString,
     pubKey2Addr,
+    assert,
 } from 'scrypt-ts'
 
 export class Pyramid extends SmartContract {

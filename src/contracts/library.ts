@@ -1,5 +1,10 @@
-import { assert } from 'console'
-import { prop, SmartContractLib, SmartContract, method } from 'scrypt-ts'
+import {
+    prop,
+    SmartContractLib,
+    SmartContract,
+    method,
+    assert,
+} from 'scrypt-ts'
 
 export class L extends SmartContractLib {
     @prop()

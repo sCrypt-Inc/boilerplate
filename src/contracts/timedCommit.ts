@@ -1,4 +1,3 @@
-import { assert } from 'console'
 import {
     ByteString,
     method,
@@ -7,6 +6,7 @@ import {
     sha256,
     PubKey,
     Sig,
+    assert,
 } from 'scrypt-ts'
 
 export class TimedCommit extends SmartContract {
