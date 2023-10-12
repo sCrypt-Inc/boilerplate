@@ -2,10 +2,12 @@ import { Auction } from '../src/contracts/auction'
 import { findSig, MethodCallOptions, PubKey, toHex } from 'scrypt-ts'
 import { expect } from 'chai'
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
+import chaiAsPromised from 'chai-as-promised'
+use(chaiAsPromised)
 
 describe('Test SmartContract `Auction` on testnet', () => {
     const [privateKeyAuctioneer, publicKeyAuctioneer] = randomPrivateKey()
-    const [, publicKeyNewBidder, addressNewBidder] = randomPrivateKey()
+    const [, publicKeyNewBidder, ,addressNewBidder] = randomPrivateKey()
 
     const auctionDeadline = Math.round(new Date('2020-01-03').valueOf() / 1000)
 
