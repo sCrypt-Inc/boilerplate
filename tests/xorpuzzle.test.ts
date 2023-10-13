@@ -7,7 +7,7 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { xorPuzzle } from '../src/contracts/xorpuzzle'
-import { getDefaultSigner } from './utils/txHelper'
+import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 import { myPublicKey } from './utils/privateKey'
 use(chaiAsPromised)
