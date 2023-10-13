@@ -11,7 +11,6 @@ describe('Test SmartContract `HashPuzzle`', () => {
     before(() => {
         HashLock.loadArtifact()
     })
-
     it('should pass the public method unit test successfully.', async () => {
         const hashLock = new HashLock(sha256Data)
         await hashLock.connect(getDefaultSigner())
