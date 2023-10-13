@@ -63,7 +63,7 @@ describe('Test SmartContract `AdvancedCounter, HashLock` multi call on local', (
         const byteString = toByteString(plainText, true)
         const sha256Data = sha256(byteString)
 
-        const hashPuzzle = new HashPuzzle(sha256Data)
+        const hashLock = new HashLock(sha256Data)
 
         // connect to a signer
         await hashLock.connect(signer)
