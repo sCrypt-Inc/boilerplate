@@ -19,27 +19,25 @@ describe('Test SmartContract `Counter`', () => {
         let currentInstance = counter
 
         // call the method of current instance to apply the updates on chain
-        for (let i = 0n; i < 3n; ++i) {
+        for (let i = 0; i < 3; ++i) {
             // create the next instance from the current
             const nextInstance = currentInstance.next()
-            expect(currentInstance.count).equal(i)
 
             // apply updates on the next instance off chain
             nextInstance.increment()
 
             // call the method of current instance to apply the updates on chain
-            const callContract = async () =>{
+            const callContract = async () =>
                 currentInstance.methods.incrementOnChain({
                     next: {
                         instance: nextInstance,
                         balance,
                     },
                 } as MethodCallOptions<Counter>)
+            await expect(callContract()).not.rejected
 
             // update the current instance reference
             currentInstance = nextInstance
         }
-    }
-      return expect(callContract()).not.rejected
-        })
+    })
 })

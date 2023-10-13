@@ -29,7 +29,7 @@ describe('Test SmartContract `Counter`', () => {
 
             // call the method of current instance to apply the updates on chain
 
-            const callContract = async () =>{
+            const callContract = async () => {
                 currentInstance.methods.incrementOnChain({
                     next: {
                         instance: nextInstance,
@@ -37,10 +37,11 @@ describe('Test SmartContract `Counter`', () => {
                     },
                 } as MethodCallOptions<Counter2>)
 
-            // update the current instance reference
-            currentInstance = nextInstance
-        } return expect(callContract()).not.rejected
-      }
+                // update the current instance reference
+                currentInstance = nextInstance
+            }
+            return expect(callContract()).not.rejected
+        }
     })
 
     it('should pass the public method reset test successfully.', async () => {
@@ -63,15 +64,15 @@ describe('Test SmartContract `Counter`', () => {
             nextInstance.reset()
 
             // call the method of current instance to apply the updates on chain
-            const callContract = async () =>{
+            const callContract = async () => {
                 currentInstance.methods.resetOnChain({
                     next: {
                         instance: nextInstance,
                         balance,
                     },
                 } as MethodCallOptions<Counter2>)
-            } 
-return expect(callContract()).not.rejected
+            }
+            return expect(callContract()).not.rejected
 
             // update the current instance reference
             currentInstance = nextInstance
@@ -98,16 +99,15 @@ return expect(callContract()).not.rejected
             nextInstance.decreament()
 
             // call the method of current instance to apply the updates on chain
-            const callContract = async () =>{
+            const callContract = async () => {
                 currentInstance.methods.decreamentOnChain({
                     next: {
                         instance: nextInstance,
                         balance,
                     },
                 } as MethodCallOptions<Counter2>)
-
             }
-return expect(callContract()).not.rejected
+            return expect(callContract()).not.rejected
 
             // update the current instance reference
             currentInstance = nextInstance
