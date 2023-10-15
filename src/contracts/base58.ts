@@ -25,14 +25,14 @@ export class Base58 extends SmartContractLib{
 
         const bebytes : ByteString = payload + hash256(payload)
 
-        let addrInt : bigint = Utils.fromLEUnsigned(reverseByteString(bebytes, 24n))
+        let addrInt : bigint = Utils.fromLEUnsigned(reverseByteString(bebytes, 58n))
 
         let res : ByteString = toByteString('',true)
 
         let done : boolean = false
 
         for(let i = 0; i < 33; i ++){
-            if (addrInt <= 0){
+            if (addrInt <= 0n){
                 done = true
             }
             if (!done){
@@ -53,7 +53,7 @@ export class Base58 extends SmartContractLib{
 export class Base58Test extends SmartContract {
     @method()
     public main(addr: ByteString) {
-        const verbyte: ByteString = Base58.P2PKH_verbyte_mainnet
+        const verbyte: ByteString = Base58.P2PKH_verbyte_testnet
 
         const result: ByteString = Base58.base58EncodeCheckAddr(addr, verbyte)
 
