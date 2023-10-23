@@ -1,23 +1,32 @@
 import { SmartContract, assert, method, prop } from 'scrypt-ts'
 import { Point, SECP256K1 } from 'scrypt-ts-lib'
 
+export type CT = {
+    c1: Point
+    c2: Point
+}
+
 export class PartialHE extends SmartContract {
     @prop(true)
-    c1: Point
+    salarySum: CT
 
-    @prop(true)
-    c2: Point
-
-    constructor(c1: Point, c2: Point) {
+    constructor(salarySum: CT) {
         super(...arguments)
-        this.c1 = c1
-        this.c2 = c2
+        this.salarySum = salarySum
     }
 
     @method()
-    public add(_c1: Point, _c2: Point) {
-        this.c1 = SECP256K1.addPoints(this.c1, _c1)
-        this.c2 = SECP256K1.addPoints(this.c2, _c2)
+    public add(toAdd: CT) {
+        this.salarySum = PartialHE.addCT(this.salarySum, toAdd)
         assert(true)
+    }
+
+    @method()
+    static addCT(ct0: CT, ct1: CT): CT {
+        const res: CT = {
+            c1: SECP256K1.addPoints(ct0.c1, ct1.c1),
+            c2: SECP256K1.addPoints(ct0.c2, ct1.c2),
+        }
+        return res
     }
 }
