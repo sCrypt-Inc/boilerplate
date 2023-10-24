@@ -7,7 +7,7 @@ import { getDefaultSigner } from './utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 use(chaiAsPromised)
 
-describe('Test SmartContract `PaillierHE`', () => {
+describe('Heavy: Test SmartContract `PaillierHE`', () => {
     before(() => {
         PaillierHE.loadArtifact()
     })
