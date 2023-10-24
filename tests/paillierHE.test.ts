@@ -27,7 +27,7 @@ describe('Heavy: Test SmartContract `PaillierHE`', () => {
         let currentInstance = instance
 
         for (let i = 0; i < 5; ++i) {
-            const nextInstance = currentInstance.next()
+            let nextInstance = currentInstance.next()
 
             // Add encrypted amount (100) to the contract commulative value.
             const toAdd = publicKey.encrypt(100n)
@@ -48,6 +48,8 @@ describe('Heavy: Test SmartContract `PaillierHE`', () => {
             await expect(callContractAdd()).not.rejected
 
             currentInstance = nextInstance
+
+            nextInstance = currentInstance.next()
 
             // Multiply encrypted amount.
             const k = 5n

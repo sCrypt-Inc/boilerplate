@@ -1,4 +1,4 @@
-import { SmartContract, assert, method, prop } from 'scrypt-ts'
+import { SmartContract, assert, hash256, method, prop } from 'scrypt-ts'
 
 export class PaillierHE extends SmartContract {
     // max # of bits for e = ceil(log2(n))
@@ -21,13 +21,21 @@ export class PaillierHE extends SmartContract {
     @method()
     public add(toAdd: bigint) {
         this.x = PaillierHE.addCT(this.x, toAdd, this.nSquare)
-        assert(true)
+
+        const outputs =
+            this.buildStateOutput(this.ctx.utxo.value) +
+            this.buildChangeOutput()
+        assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
     }
 
     @method()
     public mul(factor: bigint) {
         this.x = PaillierHE.mulCT(this.x, factor, this.nSquare)
-        assert(true)
+
+        const outputs =
+            this.buildStateOutput(this.ctx.utxo.value) +
+            this.buildChangeOutput()
+        assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
     }
 
     @method()

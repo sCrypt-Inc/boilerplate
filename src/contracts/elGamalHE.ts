@@ -1,4 +1,4 @@
-import { SmartContract, assert, method, prop } from 'scrypt-ts'
+import { SmartContract, assert, hash256, method, prop } from 'scrypt-ts'
 import { Point, SECP256K1 } from 'scrypt-ts-lib'
 
 export type CT = {
@@ -19,7 +19,11 @@ export class ElGamalHE extends SmartContract {
     public add(toAdd: CT) {
         // Add encrypted value to the total sum.
         this.salarySum = ElGamalHE.addCT(this.salarySum, toAdd)
-        assert(true)
+
+        const outputs =
+            this.buildStateOutput(this.ctx.utxo.value) +
+            this.buildChangeOutput()
+        assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
     }
 
     @method()
