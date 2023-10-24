@@ -24,7 +24,7 @@ function decrypt(ct: CT, k: bigint): Point {
     return SECP256K1.addPoints(ct.c2, kNegc1)
 }
 
-describe('Test SmartContract `ElGamalHE`', () => {
+describe('Heavy: Test SmartContract `ElGamalHE`', () => {
     // For mG maps mG.x to m
     let lookupTable: Map<bigint, bigint>
 
