@@ -6,7 +6,7 @@ export type CT = {
     c2: Point
 }
 
-export class PartialHE extends SmartContract {
+export class ElGamalHE extends SmartContract {
     @prop(true)
     salarySum: CT
 
@@ -17,7 +17,8 @@ export class PartialHE extends SmartContract {
 
     @method()
     public add(toAdd: CT) {
-        this.salarySum = PartialHE.addCT(this.salarySum, toAdd)
+        // Add encrypted value to the total sum.
+        this.salarySum = ElGamalHE.addCT(this.salarySum, toAdd)
         assert(true)
     }
 

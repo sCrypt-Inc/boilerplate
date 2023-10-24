@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { CT, PartialHE } from '../src/contracts/partialHE'
+import { CT, ElGamalHE } from '../src/contracts/elGamalHE'
 import { getDefaultSigner } from './utils/helper'
 import { MethodCallOptions, PubKey, bsv } from 'scrypt-ts'
 import { Point, SECP256K1 } from 'scrypt-ts-lib'
@@ -29,7 +29,7 @@ describe('Test SmartContract `PartialHE`', () => {
     let lookupTable: Map<bigint, bigint>
 
     before(() => {
-        PartialHE.loadArtifact()
+        ElGamalHE.loadArtifact()
 
         // Construct lookup table mG for m: [0, 1000]
         lookupTable = new Map<bigint, bigint>()
@@ -45,44 +45,42 @@ describe('Test SmartContract `PartialHE`', () => {
             compressed: false, // Make sure the public key is in uncompressed form.
         })
 
+        // Q = kG
         const k = BigInt(priv.toBigNumber().toString())
         const Q = SECP256K1.pubKey2Point(PubKey(pub.toByteString()))
 
-        const _Q = SECP256K1.mulByScalar(SECP256K1.G, k)
-
+        // Encrypt initial value of 0.
         const [salarySum] = encryptNumber(0n, Q)
 
-        const instance = new PartialHE(salarySum)
+        // Instantiate and deploy contract.
+        const instance = new ElGamalHE(salarySum)
         await instance.connect(getDefaultSigner())
 
         await instance.deploy(1)
 
-        // set current instance to be the deployed one
+        // Set current instance to be the deployed one.
         let currentInstance = instance
 
-        // call the method of current instance to apply the updates on chain
         for (let i = 0; i < 5; ++i) {
-            // create the next instance from the current
             const nextInstance = currentInstance.next()
 
-            // apply updates on the next instance off chain
+            // Add encrypted amount (100) to the total sum of the contract.
             const [toAdd] = encryptNumber(100n, Q)
-            nextInstance.salarySum = PartialHE.addCT(
+            nextInstance.salarySum = ElGamalHE.addCT(
                 currentInstance.salarySum,
                 toAdd
             )
 
-            // call the method of current instance to apply the updates on chain
+            // Call the method of current instance to apply the updates on chain.
             const callContract = async () =>
                 currentInstance.methods.add(toAdd, {
                     next: {
                         instance: nextInstance,
                         balance: 1,
                     },
-                } as MethodCallOptions<PartialHE>)
+                } as MethodCallOptions<ElGamalHE>)
             await expect(callContract()).not.rejected
 
-            // update the current instance reference
             currentInstance = nextInstance
         }
 
