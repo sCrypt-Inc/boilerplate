@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { sha256, toByteString } from 'scrypt-ts'
-import { HashPuzzle } from '../src/contracts/hashPuzzle'
+import { HashLock } from '../src/contracts/hashLock'
 import { getDefaultSigner } from './utils/helper'
 
 const plainText = 'abc'
@@ -9,15 +9,14 @@ const sha256Data = sha256(byteString)
 
 describe('Test SmartContract `HashPuzzle`', () => {
     before(() => {
-        HashPuzzle.loadArtifact()
+        HashLock.loadArtifact()
     })
-
     it('should pass the public method unit test successfully.', async () => {
-        const hashPuzzle = new HashPuzzle(sha256Data)
-        await hashPuzzle.connect(getDefaultSigner())
+        const hashLock = new HashLock(sha256Data)
+        await hashLock.connect(getDefaultSigner())
 
-        await hashPuzzle.deploy(1)
-        const callContract = async () => hashPuzzle.methods.unlock(byteString)
+        await hashLock.deploy(1)
+        const callContract = async () => hashLock.methods.unlock(byteString)
         return expect(callContract()).not.rejected
     })
 })

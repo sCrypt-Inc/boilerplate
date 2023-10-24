@@ -8,7 +8,7 @@ import {
     SmartContract,
 } from 'scrypt-ts'
 
-export class HashPuzzle extends SmartContract {
+export class HashLock extends SmartContract {
     @prop()
     readonly sha256: Sha256
 

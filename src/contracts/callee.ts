@@ -8,6 +8,9 @@ import {
     int2ByteString,
     method,
     prop,
+    MethodCallOptions,
+    ContractTransaction,
+    bsv
 } from 'scrypt-ts'
 
 //Read Medium article about this contract
@@ -38,4 +41,43 @@ export class Callee extends SmartContract {
 
         assert(hash256(output) == this.ctx.hashOutputs)
     }
+    static async buildTxForSolve(
+        current: Callee,
+        options: MethodCallOptions<Callee>,
+        co : Coeff,
+        x : bigint,
+        
+    ): Promise<ContractTransaction> {
+        const defaultChangeAddress = await current.signer.getDefaultAddress()
+        const data: ByteString =
+        int2ByteString(co.a, Callee.N) +
+        int2ByteString(co.b, Callee.N) +
+        int2ByteString(co.c, Callee.N)
+
+        const outputScript: ByteString = Utils.buildOpreturnScript(data)
+
+        const unsignedTx: bsv.Transaction = new bsv.Transaction()
+            // add contract input
+            .addInput(current.buildContractInput(options.fromUTXO))
+
+            // build output
+            .addOutput(
+                new bsv.Transaction.Output({
+                    script: bsv.Script.fromHex(
+                        Utils.buildOpreturnScript(data)
+                    ),
+                    satoshis: current.balance,
+                })
+            )
+        
+            // build change output
+            .change(options.changeAddress || defaultChangeAddress)
+
+        return {
+            tx: unsignedTx,
+            atInputIndex: 0,
+            nexts: [],
+        }
+    }
+
 }

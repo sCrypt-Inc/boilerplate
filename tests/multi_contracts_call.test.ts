@@ -9,12 +9,12 @@ import {
 import { AdvancedCounter } from '../src/contracts/advancedCounter'
 import { getDefaultSigner } from './utils/helper'
 import { expect } from 'chai'
-import { HashPuzzle } from '../src/contracts/hashPuzzle'
+import { HashLock } from '../src/contracts/hashLock'
 
-describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local', () => {
+describe('Test SmartContract `AdvancedCounter, HashLock` multi call on local', () => {
     before(() => {
         AdvancedCounter.loadArtifact()
-        HashPuzzle.loadArtifact()
+        HashLock.loadArtifact()
     })
 
     it('should succeed', async () => {
@@ -63,18 +63,18 @@ describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local',
         const byteString = toByteString(plainText, true)
         const sha256Data = sha256(byteString)
 
-        const hashPuzzle = new HashPuzzle(sha256Data)
+        const hashLock = new HashLock(sha256Data)
 
         // connect to a signer
-        await hashPuzzle.connect(signer)
+        await hashLock.connect(signer)
 
-        await hashPuzzle.deploy(1)
+        await hashLock.deploy(1)
 
-        hashPuzzle.bindTxBuilder(
+        hashLock.bindTxBuilder(
             'unlock',
             (
-                current: HashPuzzle,
-                options: MethodCallOptions<HashPuzzle>,
+                current: HashLock,
+                options: MethodCallOptions<HashLock>,
                 ...args: any
             ): Promise<ContractTransaction> => {
                 if (options.partialContractTx) {
@@ -96,10 +96,10 @@ describe('Test SmartContract `AdvancedCounter, HashPuzzle` multi call on local',
             multiContractCall: true,
         } as MethodCallOptions<AdvancedCounter>)
 
-        const finalTx = await hashPuzzle.methods.unlock(byteString, {
+        const finalTx = await hashLock.methods.unlock(byteString, {
             multiContractCall: true,
             partialContractTx: partialTx,
-        } as MethodCallOptions<HashPuzzle>)
+        } as MethodCallOptions<HashLock>)
 
         const callContract = async () =>
             SmartContract.multiContractCall(finalTx, signer)

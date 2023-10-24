@@ -6,7 +6,7 @@ import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 describe('Test SmartContract `Base58`', async () => {
     let instance: Base58Test
-
+    
     before(async () => {
         await Base58Test.loadArtifact()
         instance = new Base58Test()
