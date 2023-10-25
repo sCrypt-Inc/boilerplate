@@ -18,44 +18,7 @@ import { myPrivateKey, myPublicKey } from './utils/privateKey'
 import { OrdinalAuction } from '../src/contracts/ordinalAuction'
 import { signTx } from 'scryptlib'
 import { expect } from 'chai'
-
-async function deployOrdinal(dest: Addr, msg: string): Promise<UTXO> {
-    const signer = getDefaultSigner()
-    await signer.provider?.connect()
-
-    const address = await signer.getDefaultAddress()
-
-    // TODO: pick only as many utxos as needed
-    const utxos = await signer.listUnspent(address)
-
-    // Add msg as text/plain inscription.
-    const msgBuff = Buffer.from(msg, 'utf8')
-    const msgHex = msgBuff.toString('hex')
-    const inscription = bsv.Script.fromASM(
-        `OP_FALSE OP_IF 6f7264 OP_TRUE 746578742f706c61696e OP_FALSE ${msgHex} OP_ENDIF`
-    )
-
-    const unsignedTx = new bsv.Transaction()
-        .from(utxos)
-        .addOutput(
-            new bsv.Transaction.Output({
-                script: bsv.Script.fromHex(
-                    Utils.buildPublicKeyHashScript(dest)
-                ).add(inscription),
-                satoshis: 1,
-            })
-        )
-        .change(address)
-
-    const resp = await signer.signAndsendTransaction(unsignedTx, { address })
-
-    return {
-        txId: resp.id,
-        outputIndex: 0,
-        script: resp.outputs[0].script.toHex(),
-        satoshis: resp.outputs[0].satoshis,
-    }
-}
+import { OrdiNFTP2PKH } from 'scrypt-ord'
 
 describe('Test SmartContract `OrdinalAuction`', () => {
     const privateKeyAuctioneer = myPrivateKey
@@ -81,10 +44,16 @@ describe('Test SmartContract `OrdinalAuction`', () => {
             bidderAddresses.push(addressBidder)
         }
 
-        ordinalUTXO = await deployOrdinal(
-            Addr(addressAuctioneer.toByteString()),
-            'Hello, sCrypt!'
-        )
+        const ordinal = new OrdiNFTP2PKH(Addr(addressAuctioneer.toByteString()))
+        ordinal.connect(getDefaultSigner())
+        const ordinalTx = await ordinal.inscribeText('Hello, sCrypt!')
+
+        ordinalUTXO = {
+            txId: ordinalTx.id,
+            outputIndex: 0,
+            script: ordinalTx.outputs[0].script.toHex(),
+            satoshis: ordinalTx.outputs[0].satoshis,
+        }
         console.log('Ordinal deployed:', ordinalUTXO.txId)
 
         const ordinalPrevout: ByteString =

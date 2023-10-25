@@ -19,7 +19,6 @@ import {
 // https://xiaohuiliu.medium.com/integrate-ordinals-with-smart-contracts-on-bitcoin-part-2-d638b7ca3742
 
 import Transaction = bsv.Transaction
-import Address = bsv.Address
 import Script = bsv.Script
 
 export class OrdinalAuction extends SmartContract {
