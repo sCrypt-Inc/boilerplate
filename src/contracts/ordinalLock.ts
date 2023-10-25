@@ -1,45 +1,40 @@
+import { OrdinalNFT } from 'scrypt-ord'
 import {
     assert,
-    ByteString,
     hash256,
     method,
     prop,
     PubKey,
     Addr,
-    SmartContract,
     Sig,
     SigHash,
     bsv,
-    Provider,
     MethodCallOptions,
-    UTXO,
     pubKey2Addr,
+    Utils,
 } from 'scrypt-ts'
 
-/*
- * Source code by 1Sat Ordinals:
- * https://docs.1satordinals.com/ordinal-lock
- */
-export class OrdinalLock extends SmartContract {
+export class OrdinalLock extends OrdinalNFT {
     @prop()
     seller: Addr
 
     @prop()
-    payOutput: ByteString
+    price: bigint
 
-    constructor(seller: Addr, payOutput: ByteString) {
-        super(...arguments)
+    constructor(seller: Addr, price: bigint) {
+        super()
+        this.init(...arguments)
 
         this.seller = seller
-        this.payOutput = payOutput
+        this.price = price
     }
 
     @method(SigHash.ANYONECANPAY_ALL)
-    public purchase(destOutput: ByteString) {
-        assert(
-            hash256(destOutput + this.payOutput + this.buildChangeOutput()) ==
-                this.ctx.hashOutputs
-        )
+    public purchase(dest: Addr) {
+        let outputs = Utils.buildPublicKeyHashOutput(dest, 1n)
+        outputs += Utils.buildPublicKeyHashOutput(this.seller, this.price)
+        outputs += this.buildChangeOutput()
+        assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
     }
 
     @method()
@@ -49,59 +44,30 @@ export class OrdinalLock extends SmartContract {
     }
 }
 
-// Override default deployment transaction builder to include inscription.
-// See:
-// https://scrypt.io/docs/how-to-deploy-and-call-a-contract/how-to-customize-a-contract-tx#customize
-export function bindInscription(
-    ordinalLock: OrdinalLock,
-    inscriptionScript: bsv.Script
-) {
-    ordinalLock.buildDeployTransaction = async (
-        utxos: UTXO[],
-        amount: number,
-        changeAddress?: bsv.Address | string
-    ): Promise<bsv.Transaction> => {
-        const lsBuff = (ordinalLock.lockingScript as bsv.Script).toBuffer()
-        const inscrBuff = inscriptionScript.toBuffer()
-
-        const outScript = bsv.Script.fromBuffer(
-            Buffer.concat([lsBuff, Buffer.from('6a', 'hex'), inscrBuff])
-        )
-
-        const deployTx = new bsv.Transaction().from(utxos).addOutput(
-            new bsv.Transaction.Output({
-                script: outScript,
-                satoshis: amount,
-            })
-        )
-
-        if (changeAddress) {
-            deployTx.change(changeAddress)
-            if (ordinalLock._provider) {
-                deployTx.feePerKb(await ordinalLock.provider.getFeePerKb())
-            }
-        }
-
-        return deployTx
-    }
-}
-
 export function purchaseTxBuilder(
     current: OrdinalLock,
     options: MethodCallOptions<OrdinalLock>,
-    destOutput: ByteString
+    dest: Addr
 ): Promise<any> {
-    const destOutputBR = new bsv.encoding.BufferReader(
-        Buffer.from(destOutput, 'hex')
-    )
-    const payOutputBR = new bsv.encoding.BufferReader(
-        Buffer.from(current.payOutput, 'hex')
-    )
-
     const unsignedTx: bsv.Transaction = new bsv.Transaction()
         .addInput(current.buildContractInput())
-        .addOutput(bsv.Transaction.Output.fromBufferReader(destOutputBR))
-        .addOutput(bsv.Transaction.Output.fromBufferReader(payOutputBR))
+        .addOutput(
+            new bsv.Transaction.Output({
+                script: bsv.Script.fromHex(
+                    Utils.buildPublicKeyHashScript(dest)
+                ),
+                satoshis: 1,
+            })
+        )
+        // build auctioneer payment output
+        .addOutput(
+            new bsv.Transaction.Output({
+                script: bsv.Script.fromHex(
+                    Utils.buildPublicKeyHashScript(current.seller)
+                ),
+                satoshis: Number(current.price),
+            })
+        )
 
     if (options.changeAddress) {
         unsignedTx.change(options.changeAddress)
@@ -113,22 +79,4 @@ export function purchaseTxBuilder(
     }
 
     return Promise.resolve(result)
-}
-
-export async function reconstructContractInstance(
-    txid: string,
-    provider: Provider,
-    outIdx = 0
-): Promise<OrdinalLock> {
-    // Fetch tx using a provider.
-    const deployTx = await provider.getTransaction(txid)
-
-    //// Truncate inscription in order to be able to reconstruct contract instance.
-    //const lockingScript = deployTx.outputs[outIdx].script
-    //deployTx.outputs[outIdx].setScript(bsv.Script.fromChunks(lockingScript.chunks.slice(0, lockingScript.chunks.length - 8)))
-
-    // Reconstruct contract instance.
-    const instance = OrdinalLock.fromTx(deployTx, outIdx)
-
-    return instance
 }
