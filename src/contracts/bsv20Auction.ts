@@ -14,29 +14,22 @@ import {
     slice,
     StatefulNext,
     pubKey2Addr,
+    toByteString,
 } from 'scrypt-ts'
+import { BSV20V2, BSV20V2P2PKH } from 'scrypt-ord'
 
 import Transaction = bsv.Transaction
 import Address = bsv.Address
 import Script = bsv.Script
 
-export class BSV20Auction extends SmartContract {
+export class BSV20Auction extends BSV20V2 {
     // Output of auctioned ordinal (txid + vout).
     @prop()
     readonly ordinalPrevout: ByteString
 
-    // Inscription for the BSV-20 transfer.
-    // Example:
-    // OP_FALSE OP_IF 6f7264 OP_TRUE application/bsv-20 OP_FALSE
-    // {
-    //   "p": "bsv-20",
-    //   "op": "transfer",
-    //   "tick": "ordi",
-    //   "amt": "1000"
-    // }
-    // OP_ENDIF
+    // Amount of auctioned tokens.
     @prop()
-    readonly transferInscription: ByteString
+    readonly tokenAmt: bigint
 
     // The bidder's public key.
     @prop(true)
@@ -51,14 +44,19 @@ export class BSV20Auction extends SmartContract {
     readonly auctionDeadline: bigint
 
     constructor(
+        id: ByteString,
+        max: bigint,
+        dec: bigint,
+        tokenAmt: bigint,
         ordinalPrevout: ByteString,
-        transferInscription: ByteString,
         auctioneer: PubKey,
         auctionDeadline: bigint
     ) {
-        super(...arguments)
+        super(id, max, dec)
+        this.init(...arguments)
+
+        this.tokenAmt = tokenAmt
         this.ordinalPrevout = ordinalPrevout
-        this.transferInscription = transferInscription
         this.bidder = auctioneer
         this.auctioneer = auctioneer
         this.auctionDeadline = auctionDeadline
@@ -115,10 +113,11 @@ export class BSV20Auction extends SmartContract {
         )
 
         // Ensure the ordinal is being payed out to the winning bidder.
-        const outScript =
-            this.transferInscription +
-            Utils.buildPublicKeyHashScript(pubKey2Addr(this.bidder))
-        let outputs = Utils.buildOutput(outScript, 1n)
+        let outputs = BSV20V2.buildTransferOutput(
+            pubKey2Addr(this.bidder),
+            this.id,
+            this.tokenAmt
+        )
 
         // Ensure the second output is paying the bid to the auctioneer.
         outputs += Utils.buildPublicKeyHashOutput(
