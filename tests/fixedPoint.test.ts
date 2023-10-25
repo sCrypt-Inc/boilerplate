@@ -1,4 +1,4 @@
-import { FPTest } from '../src/contracts/demo'
+import { FPTest } from '../src/contracts/fixedPoint'
 import { getDefaultSigner } from './utils/helper'
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
