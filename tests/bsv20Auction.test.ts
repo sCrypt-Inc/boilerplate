@@ -11,7 +11,6 @@ import {
     reverseByteString,
     toByteString,
     Utils,
-    UTXO,
 } from 'scrypt-ts'
 import { myPrivateKey, myPublicKey } from './utils/privateKey'
 import { BSV20Auction } from '../src/contracts/bsv20Auction'

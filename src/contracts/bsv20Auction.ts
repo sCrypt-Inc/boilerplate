@@ -8,18 +8,15 @@ import {
     prop,
     PubKey,
     Sig,
-    SmartContract,
     Utils,
     bsv,
     slice,
     StatefulNext,
     pubKey2Addr,
-    toByteString,
 } from 'scrypt-ts'
-import { BSV20V2, BSV20V2P2PKH } from 'scrypt-ord'
+import { BSV20V2 } from 'scrypt-ord'
 
 import Transaction = bsv.Transaction
-import Address = bsv.Address
 import Script = bsv.Script
 
 export class BSV20Auction extends BSV20V2 {
