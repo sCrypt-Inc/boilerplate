@@ -4,12 +4,14 @@ import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-async function main() {
+describe('Test SmartContract `FixedPoint`', () => {
+ before(async () => {
     await FPTest.compile()
 
     const instance = new FPTest()
 
     await instance.connect(getDefaultSigner())
+})
 
     it('should unlock correctly ', async () => {
         await instance.deploy(1)
@@ -19,7 +21,5 @@ async function main() {
             return expect(callContract()).not.be.rejected
         }
     })
-}
-describe('Test SmartContract `FixedPoint`', async () => {
-    await main()
+
 })
