@@ -1,5 +1,5 @@
 import { FPTest } from '../src/contracts/demo'
-import { getDefaultSigner } from './utils/txHelper'
+import { getDefaultSigner } from './utils/helper'
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
