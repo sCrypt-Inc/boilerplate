@@ -5,8 +5,9 @@ import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
 describe('Test SmartContract `FixedPoint`', () => {
+ let instance : FPTest
  before(async () => {
-    await FPTest.compile()
+    await FPTest.loadArtifact()
 
     const instance = new FPTest()
 
