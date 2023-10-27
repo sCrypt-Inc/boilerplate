@@ -6,11 +6,11 @@ import { expect } from 'chai'
 
 describe('Test SmartContract `NumberGuess`', () => {
     let numbergs : NumberGuess
+     const [privateKeyalice, publicKeyalice] = randomPrivateKey()
+    const [privateKeybob, publicKeybob] = randomPrivateKey()
+    
     before(async () => {
     NumberGuess.loadArtifact()
-
-    const [privateKeyalice, publicKeyalice] = randomPrivateKey()
-    const [privateKeybob, publicKeybob] = randomPrivateKey()
 
      numbergs = new NumberGuess(
         PubKey(publicKeyalice.toByteString()),
