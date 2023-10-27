@@ -50,10 +50,10 @@ describe('Heavy: Test SmartContract `ElGamalHE`', () => {
         const Q = SECP256K1.pubKey2Point(PubKey(pub.toByteString()))
 
         // Encrypt initial value of 0.
-        const [salarySum] = encryptNumber(0n, Q)
+        const [expenseSum] = encryptNumber(0n, Q)
 
         // Instantiate and deploy contract.
-        const instance = new ElGamalHE(salarySum)
+        const instance = new ElGamalHE(expenseSum)
         await instance.connect(getDefaultSigner())
 
         await instance.deploy(1)
@@ -66,8 +66,8 @@ describe('Heavy: Test SmartContract `ElGamalHE`', () => {
 
             // Add encrypted amount (100) to the total sum of the contract.
             const [toAdd] = encryptNumber(100n, Q)
-            nextInstance.salarySum = ElGamalHE.addCT(
-                currentInstance.salarySum,
+            nextInstance.expenseSum = ElGamalHE.addCT(
+                currentInstance.expenseSum,
                 toAdd
             )
 
@@ -85,7 +85,7 @@ describe('Heavy: Test SmartContract `ElGamalHE`', () => {
         }
 
         // Decrypt and check end result.
-        const mG = decrypt(currentInstance.salarySum, k)
+        const mG = decrypt(currentInstance.expenseSum, k)
         const _mG = SECP256K1.mulByScalar(SECP256K1.G, 500n)
         expect(mG.x === _mG.x && mG.y === _mG.y).to.be.true
 

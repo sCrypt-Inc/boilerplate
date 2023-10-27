@@ -8,17 +8,17 @@ export type CT = {
 
 export class ElGamalHE extends SmartContract {
     @prop(true)
-    salarySum: CT
+    expenseSum: CT
 
     constructor(salarySum: CT) {
         super(...arguments)
-        this.salarySum = salarySum
+        this.expenseSum = salarySum
     }
 
     @method()
     public add(toAdd: CT) {
         // Add encrypted value to the total sum.
-        this.salarySum = ElGamalHE.addCT(this.salarySum, toAdd)
+        this.expenseSum = ElGamalHE.addCT(this.expenseSum, toAdd)
 
         const outputs =
             this.buildStateOutput(this.ctx.utxo.value) +
@@ -26,6 +26,7 @@ export class ElGamalHE extends SmartContract {
         assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
     }
 
+    // Add homomorphicly.
     @method()
     static addCT(ct0: CT, ct1: CT): CT {
         const res: CT = {
