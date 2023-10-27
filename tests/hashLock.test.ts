@@ -7,7 +7,7 @@ const plainText = 'abc'
 const byteString = toByteString(plainText, true)
 const sha256Data = sha256(byteString)
 
-describe('Test SmartContract `HashPuzzle`', () => {
+describe('Test SmartContract `HashLock`', () => {
     before(() => {
         HashLock.loadArtifact()
     })
