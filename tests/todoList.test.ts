@@ -7,7 +7,7 @@ import { MethodCallOptions, toByteString } from 'scrypt-ts'
 
 use(chaiAsPromised)
 
-describe('Test SmartContract `Demo', () => {
+describe('Test SmartContract `TodoList`', () => {
     let instance: TodoList
     let taskIdx 
     const Todo: Task = {
