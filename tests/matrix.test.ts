@@ -3,15 +3,19 @@ import { getDefaultSigner } from './utils/helper'
 
 import { expect } from 'chai'
 
-async function main() {
+describe('Test SmartContract `Matrix`', () => {
+  let instance : Matrix
+    before(async () => {
     Matrix.loadArtifact()
 
     const instance = new Matrix()
 
     await instance.connect(getDefaultSigner())
-    const deployTx = await instance.deploy(1)
-    console.log(`Matrix contract deployed:  ${deployTx.id}`)
+    })
 
+    it(' should pass the public method successfully', async () => {
+    await instance.deploy(1)
+    
     const callContract = async () => {
         await instance.methods.main([
             [1n, 1n, 1n, 1n],
@@ -21,9 +25,5 @@ async function main() {
         ])
         expect(callContract()).not.Throw
     }
-}
-describe('Test SmartContract `Matrix`', () => {
-    it('should succeed', async () => {
-        await main()
     })
-})
+}) 
