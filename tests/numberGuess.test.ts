@@ -4,13 +4,15 @@ import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 
 import { expect } from 'chai'
 
-async function main() {
-    NumberGuess.loadArtifact()
-
-    const [privateKeyalice, publicKeyalice] = randomPrivateKey()
+describe('Test SmartContract `NumberGuess`', () => {
+    let numbergs : NumberGuess
+     const [privateKeyalice, publicKeyalice] = randomPrivateKey()
     const [privateKeybob, publicKeybob] = randomPrivateKey()
 
-    const numbergs = new NumberGuess(
+    before(async () => {
+    NumberGuess.loadArtifact()
+
+     numbergs = new NumberGuess(
         PubKey(publicKeyalice.toByteString()),
         PubKey(publicKeybob.toByteString()),
         3n,
@@ -18,9 +20,10 @@ async function main() {
     )
 
     await numbergs.connect(getDefaultSigner([privateKeyalice, privateKeybob]))
+    })
 
-    const deployTx = await numbergs.deploy(1)
-    console.log('NumberGuess contract deployed: ', deployTx.id)
+    it('should pass the public method successfully' , async () => {
+    await numbergs.deploy(1)
 
     const call = async () => {
         const { tx: callTx, atInputIndex } = await numbergs.methods.guess(
@@ -29,14 +32,8 @@ async function main() {
                 pubKeyOrAddrToSign: publicKeybob,
             } as MethodCallOptions<NumberGuess>
         )
-        console.log('NumberGuess contract called: ', callTx.id)
     }
 
     await expect(call()).to.be.not.rejected
-}
-
-describe('Test SmartContract `NumberGS` unit test', () => {
-    it('should succeed', async () => {
-        await main()
-    })
+})
 })
