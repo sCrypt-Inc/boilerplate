@@ -6,12 +6,8 @@ import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
 type Matrix = FixedArray<FixedArray<bigint, 4>, 4>
-async function main(){
-
-
-        await SVD.compile()
-
-        let svd: SVD;
+describe('Test SmartContract `SVD`', () => {
+   let svd: SVD;
         let U: Matrix, Sigma: Matrix, V: Matrix, k: bigint;
     
             // Initialize your matrices and k value here
@@ -19,9 +15,12 @@ async function main(){
             Sigma = [[1n,0n, 0n, 0n], [0n, 1n, 0n, 0n], [0n, 0n, 1n, 0n], [0n, 0n, 0n, 1n]];
             V = [[1n,0n, 0n, 0n], [0n, 1n, 0n, 0n], [0n, 0n, 1n, 0n], [0n, 0n, 0n, 1n]];
             k = 2n;
-            svd = new SVD(U);
         
-        await svd.connect(getDefaultSigner())
+        before(async () => {
+    await SVD.loadArtifact();
+    svd = new SVD(U);
+    await svd.connect(getDefaultSigner());
+  });
     
    
     it('should pass the main method successfully ', async () => {
@@ -47,10 +46,5 @@ async function main(){
 
     it('should validate Sigma', () => {
       return expect(SVD.validate(Sigma, k)).to.be.true
-    });
-  
-}
-describe('Test SmartContract `SVD`', async () => {
-        await main()
-    
+    });    
 })
