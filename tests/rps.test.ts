@@ -6,14 +6,16 @@ import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-async function main() {
+describe('Test SmartContract `Rock-Paper-Scissors`', () => {
+    let instance: RockPaperScissors
+
     const [privateKey, publickey] = randomPrivateKey()
 
-    await RockPaperScissors.compile()
-
-    const instance = new RockPaperScissors()
-
-    await instance.connect(getDefaultSigner(privateKey))
+    before(async () => {
+        await RockPaperScissors.loadArtifact()
+        instance = new RockPaperScissors()
+        await instance.connect(getDefaultSigner(privateKey))
+    })
 
     it('should pass the follow method successfully ', async () => {
         await instance.deploy(10)
@@ -67,7 +69,4 @@ async function main() {
             )
         }
     })
-}
-describe('Test SmartContract `RockPaperScirssors`', async () => {
-    await main()
 })

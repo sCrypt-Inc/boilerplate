@@ -1,29 +1,27 @@
 import { Matrix } from '../src/contracts/matrix'
 import { getDefaultSigner } from './utils/helper'
-
 import { expect } from 'chai'
 
-async function main() {
-    Matrix.loadArtifact()
+describe('Test SmartContract `Matrix`', () => {
+  let instance: Matrix;
 
-    const instance = new Matrix()
+  before(async () => {
+    await Matrix.loadArtifact();
+    instance = new Matrix();
+    await instance.connect(getDefaultSigner());
+  });
 
-    await instance.connect(getDefaultSigner())
-    const deployTx = await instance.deploy(1)
-    console.log(`Matrix contract deployed:  ${deployTx.id}`)
+  it('should pass the public method successfully', async () => {
+    await instance.deploy(1);
 
     const callContract = async () => {
-        await instance.methods.main([
-            [1n, 1n, 1n, 1n],
-            [2n, 2n, 2n, 2n],
-            [3n, 3n, 3n, 3n],
-            [4n, 4n, 4n, 4n],
-        ])
-        expect(callContract()).not.Throw
+      await instance.methods.main([
+        [1n, 1n, 1n, 1n],
+        [2n, 2n, 2n, 2n],
+        [3n, 3n, 3n, 3n],
+        [4n, 4n, 4n, 4n],
+      ]);
+      expect(callContract).to.not.throw();
     }
-}
-describe('Test SmartContract `Matrix`', () => {
-    it('should succeed', async () => {
-        await main()
-    })
-})
+  });
+});
