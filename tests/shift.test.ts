@@ -5,15 +5,13 @@ import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-async function main(){
-
-
-        await ShiftTest.compile()
-
-        let instance = new ShiftTest()
-
-        
-        await instance.connect(getDefaultSigner())
+describe('Test SmartContract `ShiftTest`', () => {
+  let instance: ShiftTest;
+ before(async () => {
+    await ShiftTest.loadArtifact();
+    instance = new ShiftTest();
+    await instance.connect(getDefaultSigner());
+  });
     
    
     it('pow2 should return 2^n', async () => {
@@ -82,9 +80,5 @@ async function main(){
     }
 
     })
-  
-}
-describe('Test SmartContract `Shift`', async () => {
-        await main()
     
 })
