@@ -7,15 +7,15 @@ import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
 describe('Test SmartContract `Rock-Paper-Scissors`', () => {
-  let instance: RockPaperScissors ;
+    let instance: RockPaperScissors
 
     const [privateKey, publickey] = randomPrivateKey()
 
-     before(async () => {
-    await RockPaperScissors.loadArtifact();
-    instance = new RockPaperScissors();
-    await instance.connect(getDefaultSigner(privateKey));
-  });
+    before(async () => {
+        await RockPaperScissors.loadArtifact()
+        instance = new RockPaperScissors()
+        await instance.connect(getDefaultSigner(privateKey))
+    })
 
     it('should pass the follow method successfully ', async () => {
         await instance.deploy(10)
