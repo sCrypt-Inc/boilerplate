@@ -2,8 +2,6 @@ import { OrdinalNFT } from 'scrypt-ord'
 import {
     PubKey,
     Sig,
-    SmartContract,
-    Utils,
     assert,
     hash256,
     int2ByteString,

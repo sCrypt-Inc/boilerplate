@@ -88,7 +88,11 @@ export class Pyramid extends SmartContract {
                     satoshis: Number(Pyramid.DUST),
                 })
             )
-            .change(options.changeAddress)
+
+        if (options.changeAddress) {
+            // build change output
+            unsignedTx.change(options.changeAddress)
+        }
 
         return Promise.resolve({
             tx: unsignedTx,

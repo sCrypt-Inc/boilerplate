@@ -40,9 +40,9 @@ export class Reader extends SmartContractLib {
     @method()
     readBytes(): ByteString {
         let len: bigint = 0n
-        let b: ByteString = this.buf
+        const b: ByteString = this.buf
         let ret = toByteString('')
-        let header: bigint = byteString2Int(slice(b, this.pos, this.pos + 1n))
+        const header: bigint = byteString2Int(slice(b, this.pos, this.pos + 1n))
         this.pos++
 
         if (header < 0x4c) {
@@ -71,7 +71,7 @@ export class Reader extends SmartContractLib {
 
     @method()
     readBool(): boolean {
-        let b: ByteString = slice(this.buf, this.pos, this.pos + 1n)
+        const b: ByteString = slice(this.buf, this.pos, this.pos + 1n)
         this.pos++
         return toByteString('00') != b
     }
@@ -84,10 +84,13 @@ export class Reader extends SmartContractLib {
     @method()
     static getStateStart(scriptCode: ByteString): bigint {
         // locking script: code + opreturn + data(state + state_len)
-        let scriptLen: bigint = len(scriptCode)
+        const scriptLen: bigint = len(scriptCode)
         // read state length: +1 to skip varint prefix
-        let lb: ByteString = slice(scriptCode, scriptLen - Reader.StateLen + 1n)
-        let stateLen: bigint = byteString2Int(lb)
+        const lb: ByteString = slice(
+            scriptCode,
+            scriptLen - Reader.StateLen + 1n
+        )
+        const stateLen: bigint = byteString2Int(lb)
         return scriptLen - stateLen - Reader.StateLen
     }
 }
@@ -97,7 +100,7 @@ export class Writer extends SmartContractLib {
 
     @method()
     static writeBytes(b: ByteString): ByteString {
-        let n: bigint = len(b)
+        const n: bigint = len(b)
 
         let header: ByteString = toByteString('')
 
@@ -134,7 +137,7 @@ export class Writer extends SmartContractLib {
     @method()
     static serializeState(stateBuf: ByteString): ByteString {
         // serialize state size
-        let lenBuf: ByteString = Writer.writeBytes(
+        const lenBuf: ByteString = Writer.writeBytes(
             int2ByteString(
                 len(stateBuf),
                 Reader.StateLen - 1n /* varint prefix byte */
@@ -148,30 +151,30 @@ export class Writer extends SmartContractLib {
 export class STest extends SmartContract {
     @method()
     public testBool(f: boolean) {
-        let buf: ByteString = Writer.writeBool(f)
+        const buf: ByteString = Writer.writeBool(f)
 
-        let r: Reader = new Reader(buf)
-        let f_: boolean = r.readBool()
+        const r: Reader = new Reader(buf)
+        const f_: boolean = r.readBool()
         assert(f_ == f)
         assert(r.eof())
     }
 
     @method()
     public testBytes(b: ByteString) {
-        let buf: ByteString = Writer.writeBytes(b)
+        const buf: ByteString = Writer.writeBytes(b)
 
-        let r: Reader = new Reader(buf)
-        let b_: ByteString = r.readBytes()
+        const r: Reader = new Reader(buf)
+        const b_: ByteString = r.readBytes()
         assert(b_ == b)
         assert(r.eof())
     }
 
     @method()
     public testInt(i: bigint) {
-        let buf: ByteString = Writer.writeInt(i)
+        const buf: ByteString = Writer.writeInt(i)
 
-        let r: Reader = new Reader(buf)
-        let i_: bigint = r.readInt()
+        const r: Reader = new Reader(buf)
+        const i_: bigint = r.readInt()
         assert(i_ == i)
         assert(r.eof())
     }
@@ -179,31 +182,31 @@ export class STest extends SmartContract {
     @method()
     public main(f: boolean, b: ByteString, i: bigint) {
         {
-            let buf: ByteString = Writer.writeBool(f)
+            const buf: ByteString = Writer.writeBool(f)
 
-            let r: Reader = new Reader(buf)
-            let f_: boolean = r.readBool()
+            const r: Reader = new Reader(buf)
+            const f_: boolean = r.readBool()
             assert(f_ == f)
             assert(r.eof())
         }
         {
-            let buf: ByteString = Writer.writeBytes(b)
+            const buf: ByteString = Writer.writeBytes(b)
 
-            let r: Reader = new Reader(buf)
-            let b_: ByteString = r.readBytes()
+            const r: Reader = new Reader(buf)
+            const b_: ByteString = r.readBytes()
             assert(b_ == b)
             assert(r.eof())
         }
         {
-            let buf: ByteString = Writer.writeInt(i)
+            const buf: ByteString = Writer.writeInt(i)
 
-            let r: Reader = new Reader(buf)
-            let i_: bigint = r.readInt()
+            const r: Reader = new Reader(buf)
+            const i_: bigint = r.readInt()
             assert(i_ == i)
             assert(r.eof())
         }
 
-        let buf: ByteString =
+        const buf: ByteString =
             Writer.writeInt(i) +
             Writer.writeBytes(b) +
             Writer.writeBytes(b) +
@@ -211,7 +214,7 @@ export class STest extends SmartContract {
             Writer.writeInt(i) +
             Writer.writeBytes(b)
 
-        let r: Reader = new Reader(buf)
+        const r: Reader = new Reader(buf)
 
         let i_: bigint = r.readInt()
         assert(i_ == i)
@@ -220,7 +223,7 @@ export class STest extends SmartContract {
         assert(b_ == b)
         b_ = r.readBytes()
         assert(b_ == b)
-        let f_: boolean = r.readBool()
+        const f_: boolean = r.readBool()
         assert(f_ == f)
         i_ = r.readInt()
         assert(i_ == i)

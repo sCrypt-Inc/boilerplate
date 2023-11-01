@@ -11,9 +11,8 @@ import {
     sha256,
     PubKey,
     method,
-    xor,
     byteString2Int,
-    int2ByteString
+    int2ByteString,
 } from 'scrypt-ts'
 
 export class xorPuzzle extends SmartContract {
@@ -27,7 +26,8 @@ export class xorPuzzle extends SmartContract {
 
     @method()
     public unlock(sig: Sig, pubKey: PubKey, data: ByteString) {
-        let xorResult = (byteString2Int(data) * byteString2Int(sha256(pubKey + data)))
+        const xorResult =
+            byteString2Int(data) * byteString2Int(sha256(pubKey + data))
         assert(int2ByteString(xorResult) == this.dataXORPubKey)
         assert(this.checkSig(sig, pubKey))
     }

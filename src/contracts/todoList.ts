@@ -41,7 +41,6 @@ export class TodoList extends SmartContract {
 
     @method()
     public taskCompleted(taskIdx: bigint) {
-        const task = this.tasks[Number(taskIdx)]
         this.tasks[Number(taskIdx)].isCompleted = true
 
         const output =

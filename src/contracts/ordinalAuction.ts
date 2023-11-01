@@ -149,8 +149,11 @@ export class OrdinalAuction extends SmartContract {
                     satoshis: current.balance,
                 })
             )
+
+        if (options.changeAddress) {
             // build change output
-            .change(options.changeAddress)
+            unsignedTx.change(options.changeAddress)
+        }
 
         return Promise.resolve({
             tx: unsignedTx,
