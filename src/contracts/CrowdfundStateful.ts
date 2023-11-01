@@ -13,7 +13,6 @@ import {
     bsv,
     MethodCallOptions,
     ContractTransaction,
-    StatefulNext,
 } from 'scrypt-ts'
 
 /*

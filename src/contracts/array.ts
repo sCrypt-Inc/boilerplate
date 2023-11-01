@@ -76,7 +76,6 @@ export class Arrays extends SmartContractLib {
     @method()
     at(index: bigint): bigint {
         let result: bigint = Arrays.INVALID
-        const done: boolean = false
         const length: bigint = this.length()
         if (index >= 0n && index < length) {
             const valueRaw: ByteString = slice(

@@ -17,9 +17,6 @@ export class BSV20Mint extends BSV20V2 {
     maxMintAmount: bigint
 
     @prop(true)
-    isFirstMint: boolean
-
-    @prop(true)
     lastUpdate: bigint
 
     @prop()

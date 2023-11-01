@@ -106,7 +106,7 @@ export class Auction extends SmartContract {
 
         if (changeAddress) {
             deployTx.change(changeAddress)
-            if (this._provider) {
+            if (this.provider) {
                 deployTx.feePerKb(await this.provider.getFeePerKb())
             }
         }
@@ -145,8 +145,11 @@ export class Auction extends SmartContract {
                     satoshis: current.balance,
                 })
             )
+
+        if (options.changeAddress) {
             // build change output
-            .change(options.changeAddress)
+            unsignedTx.change(options.changeAddress)
+        }
 
         return Promise.resolve({
             tx: unsignedTx,

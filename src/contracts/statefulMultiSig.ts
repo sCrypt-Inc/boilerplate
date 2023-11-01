@@ -121,8 +121,11 @@ export class StatefulMultiSig extends SmartContract {
                     satoshis: current.balance,
                 })
             )
-            // add change output
-            .change(options.changeAddress)
+
+        if (options.changeAddress) {
+            // build change output
+            tx.change(options.changeAddress)
+        }
 
         const result = {
             tx: tx,

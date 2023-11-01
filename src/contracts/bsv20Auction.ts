@@ -1,6 +1,5 @@
 import {
     assert,
-    MethodCallOptions,
     ContractTransaction,
     ByteString,
     hash256,
@@ -14,7 +13,7 @@ import {
     StatefulNext,
     pubKey2Addr,
 } from 'scrypt-ts'
-import { BSV20V2 } from 'scrypt-ord'
+import { BSV20V2, OrdiMethodCallOptions } from 'scrypt-ord'
 
 import Transaction = bsv.Transaction
 import Script = bsv.Script
@@ -132,7 +131,7 @@ export class BSV20Auction extends BSV20V2 {
     // User defined transaction builder for calling function `bid`
     static buildTxForBid(
         current: BSV20Auction,
-        options: MethodCallOptions<BSV20Auction>,
+        options: OrdiMethodCallOptions<BSV20Auction>,
         bidder: PubKey,
         bid: bigint
     ): Promise<ContractTransaction> {
@@ -159,8 +158,11 @@ export class BSV20Auction extends BSV20V2 {
                     satoshis: current.balance,
                 })
             )
+
+        if (options.changeAddress) {
             // build change output
-            .change(options.changeAddress)
+            unsignedTx.change(options.changeAddress)
+        }
 
         return Promise.resolve({
             tx: unsignedTx,
