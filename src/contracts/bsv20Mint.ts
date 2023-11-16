@@ -24,6 +24,7 @@ export class BSV20Mint extends BSV20V2 {
 
     constructor(
         id: ByteString,
+        sym: ByteString,
         max: bigint,
         dec: bigint,
         supply: bigint,
@@ -31,7 +32,7 @@ export class BSV20Mint extends BSV20V2 {
         lastUpdate: bigint,
         timeDelta: bigint
     ) {
-        super(id, max, dec)
+        super(id, sym, max, dec)
         this.init(...arguments)
 
         this.supply = supply

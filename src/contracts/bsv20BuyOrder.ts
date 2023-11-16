@@ -31,13 +31,14 @@ export class BSV20BuyOrder extends BSV20V2 {
 
     constructor(
         id: ByteString,
+        sym: ByteString,
         max: bigint,
         dec: bigint,
         tokenAmt: bigint,
         oraclePubKey: RabinPubKey,
         buyer: PubKey
     ) {
-        super(id, max, dec)
+        super(id, sym, max, dec)
         this.init(...arguments)
 
         this.tokenAmt = tokenAmt
@@ -76,7 +77,7 @@ export class BSV20BuyOrder extends BSV20V2 {
             'unexpected inscription from oracle'
         )
 
-        // Ensure the tokens ared being payed out to the buyer.
+        // Ensure the tokens are being payed out to the buyer.
         let outputs = BSV20V2.buildTransferOutput(
             pubKey2Addr(this.buyer),
             this.id,
