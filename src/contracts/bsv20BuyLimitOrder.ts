@@ -37,6 +37,10 @@ export class BSV20BuyLimitOrder extends BSV20V2 {
     @prop()
     buyer: PubKey
 
+    // Offered price per BSV-20 token unit.
+    @prop()
+    pricePerUnit: bigint
+
     constructor(
         id: ByteString,
         sym: ByteString,
@@ -44,7 +48,8 @@ export class BSV20BuyLimitOrder extends BSV20V2 {
         dec: bigint,
         tokenAmt: bigint,
         oraclePubKey: RabinPubKey,
-        buyer: PubKey
+        buyer: PubKey,
+        pricePerUnit: bigint
     ) {
         super(id, sym, max, dec)
         this.init(...arguments)
@@ -53,6 +58,7 @@ export class BSV20BuyLimitOrder extends BSV20V2 {
         this.tokenAmtCleared = 0n
         this.oraclePubKey = oraclePubKey
         this.buyer = buyer
+        this.pricePerUnit = pricePerUnit
     }
 
     @method()
@@ -103,15 +109,15 @@ export class BSV20BuyLimitOrder extends BSV20V2 {
             this.tokenAmt
         )
 
-        // Ensure the second output is paying the offer to the seller.
-        outputs += Utils.buildPublicKeyHashOutput(
-            sellerAddr,
-            this.ctx.utxo.value
-        )
+        // Ensure the second output is paying the to the seller.
+        const satsForSeller = this.pricePerUnit * utxoTokenAmt
+        outputs += Utils.buildPublicKeyHashOutput(sellerAddr, satsForSeller)
 
         // If there's tokens left to be cleared, then propagate contract.
         if (this.tokenAmtCleared == this.tokenAmt) {
-            outputs += this.buildStateOutput(this.ctx.utxo.value)
+            outputs += this.buildStateOutput(
+                this.ctx.utxo.value - satsForSeller
+            )
         }
 
         // Add change output.
