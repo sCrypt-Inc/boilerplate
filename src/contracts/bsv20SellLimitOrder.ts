@@ -56,12 +56,6 @@ export class BSV20SellLimitOrder extends BSV20V2 {
 
     @method()
     public buy(amount: bigint, buyerAddr: Addr) {
-        // Ensure the contract is being called via the first input of the call tx.
-        const outpoint: ByteString =
-            this.ctx.utxo.outpoint.txid +
-            int2ByteString(this.ctx.utxo.outpoint.outputIndex, 4n)
-        assert(outpoint == slice(this.prevouts, 0n, 36n))
-
         // Check token amount doesn't exceed total.
         assert(
             this.tokenAmtSold + amount < this.tokenAmt,
