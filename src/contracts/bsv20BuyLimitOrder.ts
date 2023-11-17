@@ -102,14 +102,14 @@ export class BSV20BuyLimitOrder extends BSV20V2 {
             'unexpected inscription from oracle'
         )
 
-        // Ensure the tokens ared being payed out to the buyer.
+        // Ensure the tokens are being payed out to the buyer.
         let outputs = BSV20V2.buildTransferOutput(
             pubKey2Addr(this.buyer),
             this.id,
             this.tokenAmt
         )
 
-        // Ensure the second output is paying the to the seller.
+        // Ensure the second output is paying the Bitcoin to the seller.
         const satsForSeller = this.pricePerUnit * utxoTokenAmt
         outputs += Utils.buildPublicKeyHashOutput(sellerAddr, satsForSeller)
 
