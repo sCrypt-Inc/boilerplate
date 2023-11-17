@@ -8,14 +8,11 @@ import {
     hash256,
     method,
     prop,
-    slice,
     pubKey2Addr,
     assert,
     len,
-    byteString2Int,
     toByteString,
 } from 'scrypt-ts'
-import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 
 /**
  * Sell order for BSV-20 tokens. Can be partially sold.
