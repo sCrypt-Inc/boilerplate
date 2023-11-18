@@ -14,6 +14,7 @@ import {
     toByteString,
     slice,
     int2ByteString,
+    hash160,
 } from 'scrypt-ts'
 
 /**
@@ -56,12 +57,6 @@ export class BSV20SellLimitOrder extends BSV20V2 {
 
     @method()
     public buy(amount: bigint, buyerAddr: Addr) {
-        // Ensure the contract is being called via the first input of the call tx.
-        const outpoint: ByteString =
-            this.ctx.utxo.outpoint.txid +
-            int2ByteString(this.ctx.utxo.outpoint.outputIndex, 4n)
-        assert(outpoint == slice(this.prevouts, 0n, 36n))
-
         // Check token amount doesn't exceed total.
         assert(
             this.tokenAmtSold + amount < this.tokenAmt,
@@ -93,9 +88,12 @@ export class BSV20SellLimitOrder extends BSV20V2 {
             amount
         )
 
-        // Ensure the next output is paying the to the Bitcoin to the buyer.
-        const satsForBuyer = this.pricePerUnit * amount
-        outputs += Utils.buildPublicKeyHashOutput(buyerAddr, satsForBuyer)
+        // Ensure the next output is paying the to the Bitcoin to the seller.
+        const satsForSeller = this.pricePerUnit * amount
+        outputs += Utils.buildPublicKeyHashOutput(
+            hash160(this.seller),
+            satsForSeller
+        )
 
         // Add change output.
         outputs += this.buildChangeOutput()
