@@ -69,6 +69,12 @@ export class BSV20BuyLimitOrder extends BSV20V2 {
             'oracle sig verify failed'
         )
 
+        // Check that we're unlocking the UTXO specified in the oracles message.
+        assert(
+            slice(this.prevouts, 0n, 36n) == slice(oracleMsg, 0n, 36n),
+            'first input is not spending specified ordinal UTXO'
+        )
+
         // Get token amount held by the UTXO from oracle message.
         const utxoTokenAmt = byteString2Int(slice(oracleMsg, 36n, 44n))
 
