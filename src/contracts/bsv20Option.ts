@@ -27,6 +27,12 @@ export class Bsv20Option extends BSV20V2 {
     @prop()
     expirationTime: bigint
 
+    @prop(true)
+    forSale: boolean
+
+    @prop(true)
+    premium: bigint
+
     constructor(
         id: ByteString,
         sym: ByteString,
@@ -36,7 +42,9 @@ export class Bsv20Option extends BSV20V2 {
         grantee: PubKey,
         tokenAmt: bigint,
         strikePrice: bigint,
-        expirationTime: bigint
+        expirationTime: bigint,
+        forSale: boolean,
+        premium: bigint
     ) {
         super(id, sym, max, dec)
         this.init(...arguments)
@@ -46,6 +54,8 @@ export class Bsv20Option extends BSV20V2 {
         this.tokenAmt = tokenAmt
         this.strikePrice = strikePrice
         this.expirationTime = expirationTime
+        this.forSale = forSale
+        this.premium = premium
     }
 
     @method()
@@ -71,12 +81,40 @@ export class Bsv20Option extends BSV20V2 {
     }
 
     @method()
-    public transfer(sigGrantee: Sig, newGrantee: PubKey) {
+    public buy(newGrantee: PubKey) {
+        // Check if option is up for sale.
+        assert(this.forSale, 'option is not up for sale')
+
+        // Set new grantee.
+        const prevGrantee = this.grantee
+        this.grantee = newGrantee
+
+        // Toggle for sale flag.
+        this.forSale = false
+
+        // Propagate contract.
+        let outputs = this.buildStateOutputFT(this.tokenAmt)
+
+        // Make sure premium is payed to previous grantee / holder.
+        outputs += Utils.buildAddressOutput(
+            pubKey2Addr(prevGrantee),
+            this.premium
+        )
+
+        outputs += this.buildChangeOutput()
+        assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
+    }
+
+    @method()
+    public listForSale(sigGrantee: Sig, premium: bigint) {
         // Check grantee sig.
         assert(this.checkSig(sigGrantee, this.grantee), 'invalid sig grantee')
 
-        // Set new grantee.
-        this.grantee = newGrantee
+        // Store premium value in property.
+        this.premium = premium
+
+        // Toggle for sale flag.
+        this.forSale = true
 
         // Propagate contract.
         let outputs = this.buildStateOutputFT(this.tokenAmt)
