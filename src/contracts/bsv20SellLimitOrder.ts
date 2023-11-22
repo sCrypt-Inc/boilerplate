@@ -56,7 +56,7 @@ export class BSV20SellLimitOrder extends BSV20V2 {
     }
 
     @method()
-    public buy(amount: bigint, buyerAddr: Addr) {
+    public buy(amount: bigint) {
         // Check token amount doesn't exceed total.
         assert(
             this.tokenAmtSold + amount < this.tokenAmt,
