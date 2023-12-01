@@ -143,6 +143,9 @@ export class Bsv20ZeroCouponBond extends BSV20V2 {
         // Check issuer sig.
         assert(this.checkSig(issuerSig, this.issuer), 'invalid sig issuer')
 
+        // Check mature time.
+        assert(this.timeLock(this.matureTime), 'not matured yet')
+
         // Check oracle signature.
         assert(
             RabinVerifier.verifySig(oracleMsg, oracleSig, this.oraclePubKey),
