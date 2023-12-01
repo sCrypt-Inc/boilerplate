@@ -132,7 +132,7 @@ export class Bsv20ZeroCouponBond extends BSV20V2 {
         outputs += BSV20V2.buildTransferOutput(
             pubKey2Addr(this.issuer),
             this.id,
-            this.purchasePrice * utxoTokenAmt
+            this.purchasePrice
         )
         outputs += this.buildChangeOutput()
         assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
