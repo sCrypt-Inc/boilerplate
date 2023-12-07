@@ -12,7 +12,7 @@ import {
     Utils,
 } from 'scrypt-ts'
 
-export class Lrc20V2 extends BSV20V2 {
+export class BSV20LockToMint extends BSV20V2 {
     @prop(true)
     supply: bigint
 
