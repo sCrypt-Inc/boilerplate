@@ -15,11 +15,17 @@ export class Demo extends SmartContract {
         this.diff = diff
     }
 
-    //  Public method which can be unlocked by providing the solution `x` and `y`
-    //  for the two equations `x + y = summ` and `x - y = diff`.
+    // Public method which can be unlocked by providing the solution `x` and `y`
+    // for the two equations `x + y = summ` and `x - y = diff`.
     @method()
     public unlock(x: bigint, y: bigint) {
-        assert(x + y == this.sum, 'incorrect sum')
+        assert(this.add(x, y) == this.sum, 'incorrect sum')
         assert(x - y == this.diff, 'incorrect diff')
+    }
+
+    // Non-public methods cannot be directly called and are intended for internal use within the contract.
+    @method()
+    add(x: bigint, y: bigint): bigint {
+        return x + y
     }
 }

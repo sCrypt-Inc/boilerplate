@@ -41,6 +41,7 @@ export class BSV20Auction extends BSV20V2 {
 
     constructor(
         id: ByteString,
+        sym: ByteString,
         max: bigint,
         dec: bigint,
         tokenAmt: bigint,
@@ -48,7 +49,7 @@ export class BSV20Auction extends BSV20V2 {
         auctioneer: PubKey,
         auctionDeadline: bigint
     ) {
-        super(id, max, dec)
+        super(id, sym, max, dec)
         this.init(...arguments)
 
         this.tokenAmt = tokenAmt

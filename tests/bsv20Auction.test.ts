@@ -40,9 +40,11 @@ async function main() {
     // Mint some tokens.
     const max = 10000n // Whole token amount.
     const dec = 0n // Decimal precision.
+    const sym = toByteString('TEST', true)
 
     const bsv20p2pkh = new BSV20V2P2PKH(
         toByteString(''),
+        sym,
         max,
         dec,
         Addr(publicKeyAuctioneer.toAddress().toByteString())
@@ -62,6 +64,7 @@ async function main() {
 
     const auction = new BSV20Auction(
         toByteString(tokenId, true),
+        sym,
         max,
         dec,
         10000n,

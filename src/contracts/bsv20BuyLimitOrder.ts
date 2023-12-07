@@ -12,13 +12,21 @@ import {
     pubKey2Addr,
     assert,
     len,
+    byteString2Int,
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 
-export class BSV20BuyOrder extends BSV20V2 {
-    // Amount of tokens we're buying.
+/**
+ * Similar to regular BSV-20 buy order but here we can buy partial amounts.
+ */
+export class BSV20BuyLimitOrder extends BSV20V2 {
+    // Total amount of tokens we're buying.
     @prop()
     readonly tokenAmt: bigint
+
+    // Amount of tokens already cleared.
+    @prop(true)
+    tokenAmtCleared: bigint
 
     // Public key of the oracle, that is used to verify the transfers
     // genesis.
@@ -29,6 +37,10 @@ export class BSV20BuyOrder extends BSV20V2 {
     @prop()
     buyer: PubKey
 
+    // Offered price per BSV-20 token unit.
+    @prop()
+    pricePerUnit: bigint
+
     constructor(
         id: ByteString,
         sym: ByteString,
@@ -36,22 +48,21 @@ export class BSV20BuyOrder extends BSV20V2 {
         dec: bigint,
         tokenAmt: bigint,
         oraclePubKey: RabinPubKey,
-        buyer: PubKey
+        buyer: PubKey,
+        pricePerUnit: bigint
     ) {
         super(id, sym, max, dec)
         this.init(...arguments)
 
         this.tokenAmt = tokenAmt
+        this.tokenAmtCleared = 0n
         this.oraclePubKey = oraclePubKey
         this.buyer = buyer
+        this.pricePerUnit = pricePerUnit
     }
 
     @method()
-    public unlock(
-        oracleMsg: ByteString,
-        oracleSig: RabinSig,
-        sellerAddr: Addr
-    ) {
+    public sell(oracleMsg: ByteString, oracleSig: RabinSig, sellerAddr: Addr) {
         // Check oracle signature.
         assert(
             RabinVerifier.verifySig(oracleMsg, oracleSig, this.oraclePubKey),
@@ -64,16 +75,30 @@ export class BSV20BuyOrder extends BSV20V2 {
             'first input is not spending specified ordinal UTXO'
         )
 
+        // Get token amount held by the UTXO from oracle message.
+        const utxoTokenAmt = byteString2Int(slice(oracleMsg, 36n, 44n))
+
+        // Check token amount doesn't exceed total.
+        const remainingToClear = this.tokenAmt - this.tokenAmtCleared
+        assert(
+            utxoTokenAmt <= remainingToClear,
+            'UTXO token amount exceeds total'
+        )
+
+        // Update cleared amount.
+        this.tokenAmtCleared += utxoTokenAmt
+
         // Build transfer inscription.
         const transferInscription = BSV20V2.createTransferInsciption(
             this.id,
-            this.tokenAmt
+            utxoTokenAmt
         )
         const transferInscriptionLen = len(transferInscription)
 
         // Check that the ordinal UTXO contains the right inscription.
         assert(
-            slice(oracleMsg, transferInscriptionLen) == transferInscription,
+            slice(oracleMsg, 44n, 44n + transferInscriptionLen) ==
+                transferInscription,
             'unexpected inscription from oracle'
         )
 
@@ -84,11 +109,16 @@ export class BSV20BuyOrder extends BSV20V2 {
             this.tokenAmt
         )
 
-        // Ensure the second output is paying the offer to the seller.
-        outputs += Utils.buildPublicKeyHashOutput(
-            sellerAddr,
-            this.ctx.utxo.value
-        )
+        // Ensure the second output is paying the Bitcoin to the seller.
+        const satsForSeller = this.pricePerUnit * utxoTokenAmt
+        outputs += Utils.buildPublicKeyHashOutput(sellerAddr, satsForSeller)
+
+        // If there's tokens left to be cleared, then propagate contract.
+        if (this.tokenAmtCleared == this.tokenAmt) {
+            outputs += this.buildStateOutput(
+                this.ctx.utxo.value - satsForSeller
+            )
+        }
 
         // Add change output.
         outputs += this.buildChangeOutput()
