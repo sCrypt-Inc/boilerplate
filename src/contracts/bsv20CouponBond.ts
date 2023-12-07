@@ -17,7 +17,7 @@ import {
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 
-export type Investor = {
+export type BondInvestor = {
     emptySlot: boolean
     pubKey: PubKey
     forSale: boolean
@@ -31,7 +31,7 @@ export class Bsv20CouponBond extends BSV20V2 {
     issuer: PubKey
 
     @prop(true)
-    investors: FixedArray<Investor, typeof Bsv20CouponBond.N_INVESTORS>
+    investors: FixedArray<BondInvestor, typeof Bsv20CouponBond.N_INVESTORS>
 
     @prop()
     faceValue: bigint
@@ -70,7 +70,7 @@ export class Bsv20CouponBond extends BSV20V2 {
                 ),
                 forSale: false,
                 price: 0n,
-            } as Investor,
+            } as BondInvestor,
             10
         )
         this.faceValue = faceValue
