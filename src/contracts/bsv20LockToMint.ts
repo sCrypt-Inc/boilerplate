@@ -53,7 +53,7 @@ export class BSV20LockToMint extends BSV20V2 {
         let outputs = toByteString('')
         let transferAmt = amount
 
-        if (this.supply > 0n) {
+        if (this.supply - transferAmt > 0n) {
             // If there are still tokens left, then update supply and
             // build state output inscribed with leftover tokens.
             this.supply -= transferAmt
@@ -63,7 +63,7 @@ export class BSV20LockToMint extends BSV20V2 {
             transferAmt = this.supply
         }
 
-        // Build FT P2PKH output to dest paying specified amount of tokens.
+        // Build FT P2PKH output paying specified amount of tokens.
         outputs += BSV20V2.buildTransferOutput(
             ordinalAddress,
             this.id,
