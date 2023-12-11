@@ -53,7 +53,7 @@ export class BSV20LockToMint extends BSV20V2 {
         let outputs = toByteString('')
         let transferAmt = amount
 
-        if (this.supply - transferAmt > 0n) {
+        if (this.supply > transferAmt) {
             // If there are still tokens left, then update supply and
             // build state output inscribed with leftover tokens.
             this.supply -= transferAmt

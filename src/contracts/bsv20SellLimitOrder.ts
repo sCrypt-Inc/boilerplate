@@ -66,13 +66,6 @@ export class BSV20SellLimitOrder extends BSV20V2 {
         // Update cleared amount.
         this.tokenAmtSold += amount
 
-        // Build transfer inscription.
-        const transferInscription = BSV20V2.createTransferInsciption(
-            this.id,
-            amount
-        )
-        const transferInscriptionLen = len(transferInscription)
-
         // Fist output is the contract itself, holding the remaining tokens.
         // If no tokens are remaining, then terminate the contract
         const tokensRemaining = this.tokenAmt - this.tokenAmtSold

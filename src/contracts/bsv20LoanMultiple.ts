@@ -101,7 +101,7 @@ export class Bsv20LoanMultiple extends BSV20V2 {
     ) {
         // Check slot index is empty.
         const borrower = this.borrowers[Number(slotIdx)]
-        assert(borrower.emptySlot == true, 'slot is not empty')
+        assert(borrower.emptySlot, 'slot is not empty')
 
         // Check borrower sig.
         assert(
@@ -130,8 +130,8 @@ export class Bsv20LoanMultiple extends BSV20V2 {
     public cancelRequest(slotIdx: bigint, borrowerSig: Sig) {
         // Check slot index is not empty and not yet approved.
         const borrower = this.borrowers[Number(slotIdx)]
-        assert(borrower.emptySlot == false, 'slot is empty')
-        assert(borrower.approved == false, 'request was already approved')
+        assert(!borrower.emptySlot, 'slot is empty')
+        assert(!borrower.approved, 'request was already approved')
 
         // Check borrower sig.
         assert(
@@ -169,8 +169,8 @@ export class Bsv20LoanMultiple extends BSV20V2 {
     ) {
         // Check slot index is not empty and not yet approved.
         const borrower = this.borrowers[Number(slotIdx)]
-        assert(borrower.emptySlot == false, 'slot is empty')
-        assert(borrower.approved == false, 'request was already approved')
+        assert(!borrower.emptySlot, 'slot is empty')
+        assert(!borrower.approved, 'request was already approved')
 
         // Check lender sig.
         assert(this.checkSig(lenderSig, this.lender), 'invalid sig lender')
@@ -204,8 +204,8 @@ export class Bsv20LoanMultiple extends BSV20V2 {
 
         // Check that we're unlocking the UTXO specified in the oracles message.
         assert(
-            slice(this.prevouts, 0n, 36n) == slice(oracleMsg, 0n, 36n),
-            'first input is not spending specified ordinal UTXO'
+            slice(this.prevouts, 36n, 72n) == slice(oracleMsg, 0n, 36n),
+            'second input is not spending specified ordinal UTXO'
         )
 
         // Get token amount held by the UTXO from oracle message.
@@ -239,7 +239,7 @@ export class Bsv20LoanMultiple extends BSV20V2 {
     ) {
         // Check slot index is not empty and approved.
         const borrower = this.borrowers[Number(slotIdx)]
-        assert(borrower.emptySlot == false, 'slot is empty')
+        assert(!borrower.emptySlot, 'slot is empty')
         assert(borrower.approved, 'borrow request not approved')
 
         // Check borrower sig.
@@ -256,8 +256,8 @@ export class Bsv20LoanMultiple extends BSV20V2 {
 
         // Check that we're unlocking the UTXO specified in the oracles message.
         assert(
-            slice(this.prevouts, 0n, 36n) == slice(oracleMsg, 0n, 36n),
-            'first input is not spending specified ordinal UTXO'
+            slice(this.prevouts, 36n, 72n) == slice(oracleMsg, 0n, 36n),
+            'second input is not spending specified ordinal UTXO'
         )
 
         // Get token amount held by the UTXO from oracle message.
@@ -294,7 +294,7 @@ export class Bsv20LoanMultiple extends BSV20V2 {
     public foreclose(slotIdx: bigint, lenderSig: Sig) {
         // Check slot index is not empty and approved.
         const borrower = this.borrowers[Number(slotIdx)]
-        assert(borrower.emptySlot == false, 'slot is empty')
+        assert(!borrower.emptySlot, 'slot is empty')
         assert(borrower.approved, 'borrow request not approved')
 
         // Check lender sig.

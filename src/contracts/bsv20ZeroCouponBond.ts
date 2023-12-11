@@ -101,8 +101,8 @@ export class Bsv20ZeroCouponBond extends BSV20V2 {
 
         // Check that we're unlocking the UTXO specified in the oracles message.
         assert(
-            slice(this.prevouts, 0n, 36n) == slice(oracleMsg, 0n, 36n),
-            'first input is not spending specified ordinal UTXO'
+            slice(this.prevouts, 36n, 72n) == slice(oracleMsg, 0n, 36n),
+            'second input is not spending specified ordinal UTXO'
         )
 
         // Get token amount held by the UTXO from oracle message.
@@ -116,7 +116,7 @@ export class Bsv20ZeroCouponBond extends BSV20V2 {
 
         // Check slot index is empty.
         const investor = this.investors[Number(slotIdx)]
-        assert(investor.emptySlot == true, 'slot is not empty')
+        assert(investor.emptySlot, 'slot is not empty')
 
         // Add to investors array.
         this.investors[Number(slotIdx)] = {
@@ -154,8 +154,8 @@ export class Bsv20ZeroCouponBond extends BSV20V2 {
 
         // Check that we're unlocking the UTXO specified in the oracles message.
         assert(
-            slice(this.prevouts, 0n, 36n) == slice(oracleMsg, 0n, 36n),
-            'first input is not spending specified ordinal UTXO'
+            slice(this.prevouts, 36n, 72n) == slice(oracleMsg, 0n, 36n),
+            'second input is not spending specified ordinal UTXO'
         )
 
         // For each investor add an output that pays them the face value token amount.
@@ -193,6 +193,9 @@ export class Bsv20ZeroCouponBond extends BSV20V2 {
             this.checkSig(investorSig, investor.pubKey),
             'invalid sig investor'
         )
+
+        // Check price value.
+        assert(price > 0n, 'price invalid value')
 
         // Toggle forSale flag and set price.
         this.investors[Number(slotIdx)].forSale = true
