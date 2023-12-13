@@ -1,4 +1,3 @@
-import { Hash } from 'crypto'
 import { BSV20V2 } from 'scrypt-ord'
 import {
     Addr,
@@ -11,6 +10,7 @@ import {
     int2ByteString,
     method,
     prop,
+    PubKey,
     slice,
     toByteString,
     Utils,
@@ -39,13 +39,10 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
     hodlDeadline: bigint
 
     @prop()
-    btcHtlcScriptSuffix: ByteString
-
-    @prop()
     targetDifficulty: bigint
 
     @prop(true)
-    usedAddresses: HashedSet<Addr>
+    usedLockPubKeys: HashedSet<PubKey>
 
     constructor(
         id: ByteString,
@@ -55,9 +52,8 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
         supply: bigint,
         hodlRate: bigint,
         hodlDeadline: bigint,
-        btcHtlcScriptSuffix: ByteString,
         targetDifficulty: bigint,
-        usedAddresses: HashedSet<Addr>
+        usedLockPubKeys: HashedSet<PubKey>
     ) {
         super(id, sym, max, dec)
         this.init(...arguments)
@@ -65,27 +61,26 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
         this.supply = supply
         this.hodlRate = hodlRate
         this.hodlDeadline = hodlDeadline
-        this.btcHtlcScriptSuffix = btcHtlcScriptSuffix
         this.targetDifficulty = targetDifficulty
-        this.usedAddresses = usedAddresses
+        this.usedLockPubKeys = usedLockPubKeys
     }
 
     @method()
     public mint(
         ordinalAddress: Addr,
-        lockAddress: Addr,
+        lockPubKey: PubKey,
         amount: bigint,
         btcTx: ByteString,
         merkleProof: MerkleProof,
         headers: FixedArray<BlockHeader, typeof Bsv20LockBtcToMint.MIN_CONF>
     ) {
-        // Check lock address was not yet used. This is to avoid replay
+        // Check lock public key was not yet used. This is to avoid replay
         // attacks where the same BTC tx would be used to mint multiple times.
         assert(
-            !this.usedAddresses.has(lockAddress),
-            'lock address already used'
+            !this.usedLockPubKeys.has(lockPubKey),
+            'lock pub key already used'
         )
-        this.usedAddresses.add(lockAddress)
+        this.usedLockPubKeys.add(lockPubKey)
 
         let outputs = toByteString('')
         let transferAmt = amount
@@ -101,7 +96,7 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
         }
 
         // Check btc tx.
-        this.checkBtcTx(btcTx, lockAddress, transferAmt * this.hodlRate)
+        this.checkBtcTx(btcTx, lockPubKey, transferAmt * this.hodlRate)
 
         // Calc merkle root.
         const txID = hash256(btcTx)
@@ -153,9 +148,9 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
     }
 
     @method()
-    checkBtcTx(btcTx: ByteString, lockAddress: Addr, amount: bigint): void {
+    checkBtcTx(btcTx: ByteString, lockPubKey: PubKey, amount: bigint): void {
         // Most things should be the same as in BSV except the witness data and flag.
-        // - Check (first) output is a P2SH to a HTLC script with the specified lock address.
+        // - Check (first) output is a P2WSH to a time-lock script with the specified lock address.
         // - Check (first) output amount is correct.
 
         let idx = 4n
@@ -189,7 +184,7 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
         }
 
         //// FIRST OUTPUT:
-        // Check first outputs amount is correct and that it's a P2SH to the correct HTLC script.
+        // Check first outputs amount is correct and that it's a P2WSH to the correct time-lock script.
         const outLen = Bsv20LockBtcToMint.parseVarInt(btcTx, idx)
         idx = outLen.newIdx
         const outAmt = Utils.fromLEUnsigned(slice(btcTx, idx, idx + 8n))
@@ -199,15 +194,16 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
         idx = scriptLen.newIdx
         const script = slice(btcTx, idx, idx + scriptLen.val)
 
-        const btcHtlcScriptFinal =
-            lockAddress +
+        // <nBlocksLocked> OP_CHECKSEQUENCEVERIFY OP_DROP <lockPubKey> OP_CHECKSIG
+        const witnessScript =
+            toByteString('04') +
             int2ByteString(this.hodlDeadline, 4n) +
-            this.btcHtlcScriptSuffix
-        const expectedScript =
-            toByteString('a9') +
-            hash160(btcHtlcScriptFinal) +
-            toByteString('87')
-        assert(script == expectedScript, 'locking script invalid')
+            toByteString('b275') +
+            lockPubKey +
+            toByteString('ac')
+        const expectedP2WSHScript =
+            toByteString('a9') + hash160(witnessScript) + toByteString('87')
+        assert(script == expectedP2WSHScript, 'P2WSH script invalid')
 
         // Data past this point is not relevant in our use-case.
     }
