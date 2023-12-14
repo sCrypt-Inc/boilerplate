@@ -1,16 +1,19 @@
-import { BSV20V2 } from 'scrypt-ord'
+import { BSV20V2, Ordinal } from 'scrypt-ord'
 import {
     Addr,
     assert,
+    bsv,
     ByteString,
+    ContractTransaction,
     FixedArray,
-    hash160,
     hash256,
     HashedSet,
     int2ByteString,
     method,
+    MethodCallOptions,
     prop,
     PubKey,
+    sha256,
     slice,
     toByteString,
     Utils,
@@ -33,8 +36,7 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
     @prop()
     hodlRate: bigint
 
-    // Minimum deadline until you have to lock to mint new
-    // tokens.
+    // Time until which the BTC needs to be locked in order to mint.
     @prop()
     hodlDeadline: bigint
 
@@ -194,15 +196,14 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
         idx = scriptLen.newIdx
         const script = slice(btcTx, idx, idx + scriptLen.val)
 
-        // <nBlocksLocked> OP_CHECKSEQUENCEVERIFY OP_DROP <lockPubKey> OP_CHECKSIG
+        // <nLocktime> OP_CLTV OP_DROP <lockPubKey> OP_CHECKSIG
         const witnessScript =
             toByteString('04') +
             int2ByteString(this.hodlDeadline, 4n) +
-            toByteString('b275') +
+            toByteString('b17521') +
             lockPubKey +
             toByteString('ac')
-        const expectedP2WSHScript =
-            toByteString('a9') + hash160(witnessScript) + toByteString('87')
+        const expectedP2WSHScript = toByteString('0020') + sha256(witnessScript)
         assert(script == expectedP2WSHScript, 'P2WSH script invalid')
 
         // Data past this point is not relevant in our use-case.
@@ -240,5 +241,63 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
             }
         }
         return res
+    }
+
+    static async mintTxBuilder(
+        current: Bsv20LockBtcToMint,
+        options: MethodCallOptions<Bsv20LockBtcToMint>,
+        ordinalAddress: Addr,
+        lockPubKey: PubKey,
+        amount: bigint,
+        btcTx: ByteString,
+        merkleProof: MerkleProof,
+        headers: FixedArray<BlockHeader, typeof Bsv20LockBtcToMint.MIN_CONF>
+    ): Promise<ContractTransaction> {
+        const defaultAddress = await current.signer.getDefaultAddress()
+
+        const next = current.next()
+        next.usedLockPubKeys.add(lockPubKey)
+        next.supply = current.supply - amount
+
+        if (current.isGenesis()) {
+            next.id =
+                Ordinal.txId2str(
+                    Buffer.from(current.utxo.txId, 'hex')
+                        .reverse()
+                        .toString('hex')
+                ) +
+                toByteString('_', true) +
+                Ordinal.int2Str(BigInt(current.utxo.outputIndex))
+        }
+
+        const tx = new bsv.Transaction().addInput(current.buildContractInput())
+
+        if (next.supply > 0n) {
+            const stateScript =
+                BSV20V2.createTransferInsciption(next.id, next.supply) +
+                Ordinal.removeInsciption(next.getStateScript())
+
+            const stateOutput = Utils.buildOutput(stateScript, 1n)
+            tx.addOutput(
+                bsv.Transaction.Output.fromBufferReader(
+                    new bsv.encoding.BufferReader(
+                        Buffer.from(stateOutput, 'hex')
+                    )
+                )
+            )
+        }
+        const rewardOutput = Bsv20LockBtcToMint.buildTransferOutput(
+            ordinalAddress,
+            next.id,
+            amount
+        )
+        tx.addOutput(
+            bsv.Transaction.Output.fromBufferReader(
+                new bsv.encoding.BufferReader(Buffer.from(rewardOutput, 'hex'))
+            )
+        )
+
+        tx.change(options.changeAddress || defaultAddress)
+        return { tx, atInputIndex: 0, nexts: [] }
     }
 }
