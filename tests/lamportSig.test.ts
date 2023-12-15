@@ -9,6 +9,7 @@ import {
     hash256,
     lshift,
     sha256,
+    slice,
     toByteString,
 } from 'scrypt-ts'
 import {
@@ -19,9 +20,10 @@ import {
 import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 import { and, getPreimage } from 'scryptlib'
+import { off } from 'process'
 use(chaiAsPromised)
 
-type LamportSecretKey = FixedArray<ByteString, 512>
+type LamportSecretKey = ByteString
 
 describe('Heavy: Test SmartContract `LamportSig`', () => {
     let sk: LamportSecretKey
@@ -32,10 +34,12 @@ describe('Heavy: Test SmartContract `LamportSig`', () => {
     before(async () => {
         await LamportP2PK.loadArtifact()
 
-        sk = fill(bsv.PrivateKey.fromRandom().toByteString(), 512)
-        pk = fill(toByteString(''), 512)
+        sk = toByteString('')
+        pk = toByteString('')
         for (let i = 0; i < 512; i++) {
-            pk[i] = hash256(sk[i])
+            const skChunk = bsv.PrivateKey.fromRandom().toByteString()
+            sk += skChunk
+            pk += hash256(skChunk)
         }
 
         instance = new LamportP2PK(pk)
@@ -49,7 +53,7 @@ describe('Heavy: Test SmartContract `LamportSig`', () => {
         console.log(`Deployed contract "LamportSig": ${deployTx.id}`)
 
         // Create unsigned TX to get sighHash preimage.
-        const dummySig: LamportSig = fill(toByteString(''), 256)
+        const dummySig: LamportSig = toByteString('')
         const dummyCallRes = await instance.methods.unlock(dummySig, {
             partiallySigned: true,
             exec: false,
@@ -57,7 +61,7 @@ describe('Heavy: Test SmartContract `LamportSig`', () => {
         } as MethodCallOptions<LamportP2PK>)
 
         // Sign tx.
-        const sig: LamportSig = fill(toByteString(''), 256)
+        let sig: LamportSig = toByteString('')
         const txSigHashPreimage = getPreimage(
             dummyCallRes.tx,
             instance.lockingScript,
@@ -68,9 +72,12 @@ describe('Heavy: Test SmartContract `LamportSig`', () => {
         for (let i = 0; i < 256; i++) {
             let offset = 0n
             if (and(lshift(m, BigInt(i)), 1n) == 0n) {
-                offset = 256n
+                offset = 256n * 32n
             }
-            sig[i] = sk[Number(offset) + i]
+
+            const start = BigInt(i) * 32n
+            const skChunkStart = start + offset
+            sig += slice(sk, skChunkStart, skChunkStart + 32n)
         }
 
         // Execute actual contract call.
@@ -92,7 +99,7 @@ describe('Heavy: Test SmartContract `LamportSig`', () => {
         console.log(`Deployed contract "LamportSig": ${deployTx.id}`)
 
         // Create unsigned TX to get sighHash preimage.
-        const dummySig: LamportSig = fill(toByteString(''), 256)
+        const dummySig: LamportSig = toByteString('')
         const dummyCallRes = await instance.methods.unlock(dummySig, {
             partiallySigned: true,
             exec: false,
@@ -100,7 +107,7 @@ describe('Heavy: Test SmartContract `LamportSig`', () => {
         } as MethodCallOptions<LamportP2PK>)
 
         // Sign tx.
-        const sig: LamportSig = fill(toByteString(''), 256)
+        let sig: LamportSig = toByteString('')
         const txSigHashPreimage = getPreimage(
             dummyCallRes.tx,
             instance.lockingScript,
@@ -111,12 +118,18 @@ describe('Heavy: Test SmartContract `LamportSig`', () => {
         for (let i = 0; i < 256; i++) {
             let offset = 0n
             if (and(lshift(m, BigInt(i)), 1n) == 0n) {
-                offset = 256n
+                offset = 256n * 32n
             }
-            sig[i] = sk[Number(offset) + i]
+
+            const start = BigInt(i) * 32n
+            const skChunkStart = start + offset
+            sig += slice(sk, skChunkStart, skChunkStart + 32n)
         }
 
-        sig[3] = toByteString(hash256(toByteString('wrong data')))
+        sig =
+            slice(sig, 0n, 32n) +
+            toByteString('00').repeat(32) +
+            slice(sig, 64n)
 
         // Execute actual contract call.
         const call = async () => {
@@ -127,6 +140,6 @@ describe('Heavy: Test SmartContract `LamportSig`', () => {
 
             console.log(`Called "unlock" method: ${callRes.tx.id}`)
         }
-        await expect(call()).to.be.rejectedWith(/sig chunk 3 hash mismatch/)
+        await expect(call()).to.be.rejectedWith(/sig chunk 1 hash mismatch/)
     })
 })
