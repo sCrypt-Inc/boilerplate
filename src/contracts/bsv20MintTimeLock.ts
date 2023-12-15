@@ -9,7 +9,7 @@ import {
     assert,
 } from 'scrypt-ts'
 
-export class BSV20Mint extends BSV20V2 {
+export class BSV20MintTimeLock extends BSV20V2 {
     @prop(true)
     supply: bigint
 
