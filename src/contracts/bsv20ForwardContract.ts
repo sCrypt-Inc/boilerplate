@@ -10,19 +10,17 @@ import {
     pubKey2Addr,
     Sig,
     slice,
-    SmartContract,
-    toByteString,
     Utils,
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 
 /**
- * This is a simplistic implementation of a futures contract where two parties agree
+ * This is a simplistic implementation of a forward contract where two parties agree
  * to trade a predetermined quantity of an asset (BSV-20 tokens) at a specified price at a future date.
  * The contract requires the full amount to be exchanged. To mitigate risk, both parties are required
  * to deposit collateral upon the contract's deployment.
  */
-export class Bsv20FuturesContractSimple extends BSV20V2 {
+export class Bsv20ForwardContract extends BSV20V2 {
     @prop()
     buyer: PubKey
 
