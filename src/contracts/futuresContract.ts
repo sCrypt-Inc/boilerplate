@@ -62,10 +62,6 @@ export class FuturesContract extends SmartContract {
     @prop(true)
     settlementInitiated: boolean
 
-    // Oracle used to verify tokens origin.
-    @prop()
-    ordOraclePubKey: RabinPubKey
-
     // Oracle used to get current token price.
     @prop()
     priceOraclePubKey: RabinPubKey
@@ -78,7 +74,6 @@ export class FuturesContract extends SmartContract {
         initialMargin: bigint,
         maintenanceMargin: bigint,
         settlementDate: bigint,
-        ordOraclePubKey: RabinPubKey,
         priceOraclePubKey: RabinPubKey
     ) {
         super(...arguments)
@@ -97,7 +92,6 @@ export class FuturesContract extends SmartContract {
         this.marginCallDeadlineSeller = 0n
         this.settlementDate = settlementDate
         this.settlementInitiated = false
-        this.ordOraclePubKey = ordOraclePubKey
         this.priceOraclePubKey = priceOraclePubKey
     }
 
@@ -105,7 +99,11 @@ export class FuturesContract extends SmartContract {
     public adjust(oracleMsg: ByteString, oracleSig: RabinSig) {
         // Check oracle signature.
         assert(
-            RabinVerifier.verifySig(oracleMsg, oracleSig, this.ordOraclePubKey),
+            RabinVerifier.verifySig(
+                oracleMsg,
+                oracleSig,
+                this.priceOraclePubKey
+            ),
             'oracle sig verify failed'
         )
 
