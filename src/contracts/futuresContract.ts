@@ -8,6 +8,7 @@ import {
     pubKey2Addr,
     slice,
     SmartContract,
+    toByteString,
     Utils,
     assert,
 } from 'scrypt-ts'
@@ -44,16 +45,10 @@ export class FuturesContract extends SmartContract {
     marginAccountSeller: bigint
 
     @prop(true)
-    hasMarginCallSeller: boolean
+    marginCallParty: ByteString
 
     @prop(true)
-    hasMarginCallBuyer: boolean
-
-    @prop(true)
-    marginCallDeadlineBuyer: bigint
-
-    @prop(true)
-    marginCallDeadlineSeller: bigint
+    marginCallDeadline: bigint
 
     // Date at which the settlement can be carried out.
     @prop()
@@ -86,10 +81,8 @@ export class FuturesContract extends SmartContract {
         this.maintenanceMargin = maintenanceMargin
         this.marginAccountBuyer = initialMargin
         this.marginAccountSeller = initialMargin
-        this.hasMarginCallBuyer = false
-        this.hasMarginCallSeller = false
-        this.marginCallDeadlineBuyer = 0n
-        this.marginCallDeadlineSeller = 0n
+        this.marginCallParty = toByteString('00')
+        this.marginCallDeadline = 0n
         this.settlementDate = settlementDate
         this.settlementInitiated = false
         this.priceOraclePubKey = priceOraclePubKey
@@ -124,24 +117,17 @@ export class FuturesContract extends SmartContract {
         const totalValueNew = newPrice * this.amt
         const diff = totalValueNew - totalValueOld
 
-        if (diff > 0n) {
-            this.marginAccountSeller -= diff
-            this.marginAccountBuyer += diff
+        this.marginAccountSeller -= diff
+        this.marginAccountBuyer += diff
 
-            // Check if seller has margin call.
-            if (this.marginAccountSeller < this.maintenanceMargin) {
-                this.hasMarginCallSeller = true
-                this.marginCallDeadlineSeller = timestamp + 86400n // + 24 hrs
-            }
-        } else {
-            this.marginAccountSeller += diff
-            this.marginAccountBuyer -= diff
-
-            // Check if buyer has margin call.
-            if (this.marginAccountBuyer < this.maintenanceMargin) {
-                this.hasMarginCallBuyer = true
-                this.marginCallDeadlineBuyer = timestamp + 86400n // + 24 hrs
-            }
+        // Check if a margin call mussed be issued for the loosing party.
+        const priceIncrease = diff > 0n
+        const marginAccount = priceIncrease
+            ? this.marginAccountSeller
+            : this.marginAccountBuyer
+        if (marginAccount < this.maintenanceMargin) {
+            this.marginCallParty = priceIncrease ? this.seller : this.buyer
+            this.marginCallDeadline = timestamp + 86400n // + 24 hrs
         }
 
         // Propagate contract
@@ -151,12 +137,14 @@ export class FuturesContract extends SmartContract {
     }
 
     @method()
-    public marginCall(buyer: boolean) {
-        // Check if party has pending margin call.
+    public marginCall() {
         assert(
-            buyer ? this.hasMarginCallBuyer : this.hasMarginCallSeller,
-            'party does not have pending maring call'
+            this.marginCallParty != toByteString('00'),
+            'no party has margin call'
         )
+
+        // Check which party has pending margin call.
+        const buyer = this.marginCallParty == this.buyer
 
         // Get needed deposit amount.
         const margin = buyer
@@ -164,14 +152,13 @@ export class FuturesContract extends SmartContract {
             : this.marginAccountSeller
         const neededDeposit = this.initialMargin - margin
 
-        // Update margin account and reset margin call flag.
+        // Update margin account and reset margin call props.
         if (buyer) {
             this.marginAccountBuyer = this.initialMargin
-            this.hasMarginCallBuyer = false
         } else {
             this.marginAccountSeller = this.initialMargin
-            this.hasMarginCallSeller = false
         }
+        this.marginCallParty = toByteString('00')
 
         // Make sure difference was actually deposited and propagate contract.
         let outputs = this.buildStateOutput(this.ctx.utxo.value + neededDeposit)
@@ -181,10 +168,10 @@ export class FuturesContract extends SmartContract {
 
     @method()
     public close() {
-        if (this.hasMarginCallBuyer || this.hasMarginCallSeller) {
+        if (this.marginCallParty != toByteString('00')) {
             // Check deadline passed.
             assert(
-                this.timeLock(this.marginCallDeadlineBuyer),
+                this.timeLock(this.marginCallDeadline),
                 'margin call deadline not passed'
             )
         } else {
