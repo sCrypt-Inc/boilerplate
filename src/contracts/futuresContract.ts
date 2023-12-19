@@ -1,4 +1,3 @@
-import { assert } from 'console'
 import {
     ByteString,
     byteString2Int,
@@ -10,6 +9,7 @@ import {
     slice,
     SmartContract,
     Utils,
+    assert,
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 
