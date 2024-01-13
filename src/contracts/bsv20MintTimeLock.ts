@@ -14,7 +14,7 @@ export class BSV20MintTimeLock extends BSV20V2 {
     supply: bigint
 
     @prop()
-    maxMintAmount: bigint
+    limit: bigint
 
     @prop(true)
     lastUpdate: bigint
@@ -28,7 +28,7 @@ export class BSV20MintTimeLock extends BSV20V2 {
         max: bigint,
         dec: bigint,
         supply: bigint,
-        maxMintAmount: bigint,
+        limit: bigint,
         lastUpdate: bigint,
         timeDelta: bigint
     ) {
@@ -36,7 +36,7 @@ export class BSV20MintTimeLock extends BSV20V2 {
         this.init(...arguments)
 
         this.supply = supply
-        this.maxMintAmount = maxMintAmount
+        this.limit = limit
         this.lastUpdate = lastUpdate
         this.timeDelta = timeDelta
     }
@@ -52,8 +52,8 @@ export class BSV20MintTimeLock extends BSV20V2 {
         // Update last mint timestamp.
         this.lastUpdate = this.ctx.locktime
 
-        // Check mint amount doesn't exceed maximum.
-        assert(amount <= this.maxMintAmount, 'mint amount exceeds maximum')
+        // Check mint amount doesn't exceed limit.
+        assert(amount <= this.limit, 'mint amount exceeds limit')
 
         let outputs = toByteString('')
         let transferAmt = amount

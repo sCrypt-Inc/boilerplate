@@ -14,7 +14,7 @@ export class BSV20Mint extends BSV20V2 {
     supply: bigint
 
     @prop()
-    maxMintAmount: bigint
+    limit: bigint
 
     constructor(
         id: ByteString,
@@ -22,19 +22,19 @@ export class BSV20Mint extends BSV20V2 {
         max: bigint,
         dec: bigint,
         supply: bigint,
-        maxMintAmount: bigint
+        limit: bigint
     ) {
         super(id, sym, max, dec)
         this.init(...arguments)
 
         this.supply = supply
-        this.maxMintAmount = maxMintAmount
+        this.limit = limit
     }
 
     @method()
     public mint(dest: Addr, amount: bigint) {
         // Check mint amount doesn't exceed maximum.
-        assert(amount <= this.maxMintAmount, 'mint amount exceeds maximum')
+        assert(amount <= this.limit, 'mint amount exceeds limit')
 
         let outputs = toByteString('')
         let transferAmt = amount
