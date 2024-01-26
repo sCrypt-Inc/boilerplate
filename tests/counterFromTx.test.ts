@@ -1,41 +1,47 @@
-import {
-    DefaultProvider,
-    TestWallet,
-    MethodCallOptions,
-    bsv,
-} from 'scrypt-ts'
+import { expect, use } from 'chai'
 import { Counter } from '../src/contracts/counter'
-import { myPrivateKey } from './utils/privateKey'
+import { getDefaultSigner } from './utils/helper'
+import { MethodCallOptions} from 'scrypt-ts'
+import chaiAsPromised from 'chai-as-promised'
 
-async function main() {
-    const contract_id = {
-        txId: '50a0736bfb78d6695d93a9af7e24a4c3a18884ac99d653131af075f59ed5a628',
-        OutputIndex: 0,
-    }
+use(chaiAsPromised)
+describe('Test SmartContract `Counter`', () => {
+    before(() => {
+        Counter.loadArtifact()
+    })
 
-    await Counter.loadArtifact()
-    const provider = new DefaultProvider({ network: bsv.Networks.testnet })
-    const signer = new TestWallet(myPrivateKey, provider)
-    try {
-        let tx = new bsv.Transaction()
-        tx = await provider.getTransaction(contract_id.txId)
-        let instance = new Counter(100n)
-        await instance.connect(signer)
-      
-        const nextInstance = instance.next()
-        nextInstance.increment()
+    it('should pass the public method unit test successfully.', async () => {
+        const balance = 1
 
-        const { tx: callTx } = await instance.methods.incrementOnChain({
-            next: {
-                instance: nextInstance,
-                balance: instance.balance,
-            },
-        } as MethodCallOptions<Counter>)
-        console.log(
-            `Counter incrementOnChain called: ${callTx.id}, the count now is: ${nextInstance.count}`
-        )
-    } catch (e) {
-        console.error('Error interacting with the contract => ', e)
-    }
-}
-main()
+        const atOutputIndex = 0
+        const signer =  getDefaultSigner()
+        const counter = new Counter(0n)
+        await counter.connect(signer)
+
+        const deploytx = await counter.deploy(1)
+        const tx = await signer.connectedProvider.getTransaction(deploytx.id)
+        let instance = Counter.fromTx(tx, atOutputIndex)
+
+        // call the method of current instance to apply the updates on chain
+        for (let i = 0; i < 5; ++i) {
+            // create the next instance from the current
+            const nextInstance = instance.next()
+
+            // apply updates on the next instance off chain
+            nextInstance.increment()
+
+            // call the method of current instance to apply the updates on chain
+            const { tx: callTx } = await instance.methods.incrementOnChain({
+                next: {
+                    instance: nextInstance,
+                    balance: instance.balance,
+                },
+            } as MethodCallOptions<Counter>)
+            console.log(`Counter incrementOnChain called: ${callTx.id}, the count now is: ${nextInstance.count}`)
+          
+            // update the current instance reference
+            instance = nextInstance
+        }
+        
+    })
+})
