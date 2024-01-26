@@ -1,8 +1,7 @@
-import { BSV20V2 } from 'scrypt-ord'
+import { BSV20V2, Ordinal } from 'scrypt-ord'
 import {
     ByteString,
     PubKey,
-    Addr,
     Sig,
     Utils,
     hash256,
@@ -10,11 +9,13 @@ import {
     prop,
     pubKey2Addr,
     assert,
-    len,
     toByteString,
-    slice,
-    int2ByteString,
     hash160,
+    MethodCallOptions,
+    ContractTransaction,
+    bsv,
+    Addr,
+    StatefulNext,
 } from 'scrypt-ts'
 
 /**
@@ -56,7 +57,7 @@ export class BSV20SellLimitOrder extends BSV20V2 {
     }
 
     @method()
-    public buy(amount: bigint) {
+    public buy(amount: bigint, buyer: Addr) {
         // Check token amount doesn't exceed total.
         assert(
             this.tokenAmtSold + amount < this.tokenAmt,
@@ -66,32 +67,21 @@ export class BSV20SellLimitOrder extends BSV20V2 {
         // Update cleared amount.
         this.tokenAmtSold += amount
 
-        // Build transfer inscription.
-        const transferInscription = BSV20V2.createTransferInsciption(
-            this.id,
-            amount
-        )
-        const transferInscriptionLen = len(transferInscription)
-
         // Fist output is the contract itself, holding the remaining tokens.
         // If no tokens are remaining, then terminate the contract
         const tokensRemaining = this.tokenAmt - this.tokenAmtSold
         let outputs = toByteString('')
         if (tokensRemaining > 0n) {
-            outputs = this.buildStateOutput(1n)
+            outputs = this.buildStateOutputFT(tokensRemaining)
         }
 
         // Ensure the sold tokens are being payed out to the buyer.
-        outputs += BSV20V2.buildTransferOutput(
-            pubKey2Addr(this.seller),
-            this.id,
-            amount
-        )
+        outputs += BSV20V2.buildTransferOutput(buyer, this.id, amount)
 
-        // Ensure the next output is paying the to the Bitcoin to the seller.
+        // Ensure the next output is paying the Bitcoin to the seller.
         const satsForSeller = this.pricePerUnit * amount
         outputs += Utils.buildPublicKeyHashOutput(
-            hash160(this.seller),
+            pubKey2Addr(this.seller),
             satsForSeller
         )
 
@@ -105,5 +95,63 @@ export class BSV20SellLimitOrder extends BSV20V2 {
     @method()
     public cancel(buyerSig: Sig) {
         assert(this.checkSig(buyerSig, this.seller))
+    }
+
+    static async buyTxBuilder(
+        current: BSV20SellLimitOrder,
+        options: MethodCallOptions<BSV20SellLimitOrder>,
+        amount: bigint,
+        buyer: Addr
+    ): Promise<ContractTransaction> {
+        const defaultAddress = await current.signer.getDefaultAddress()
+
+        const next = current.next()
+        next.tokenAmtSold += amount
+        const tokensRemaining = next.tokenAmt - next.tokenAmtSold
+
+        next.setAmt(tokensRemaining)
+
+        const tx = new bsv.Transaction().addInput(current.buildContractInput())
+
+        if (tokensRemaining > 0n) {
+            const stateOut = new bsv.Transaction.Output({
+                script: next.lockingScript,
+                satoshis: 1,
+            })
+            tx.addOutput(stateOut)
+        }
+        const buyerOut = BSV20SellLimitOrder.buildTransferOutput(
+            buyer,
+            next.id,
+            amount
+        )
+        tx.addOutput(
+            bsv.Transaction.Output.fromBufferReader(
+                new bsv.encoding.BufferReader(Buffer.from(buyerOut, 'hex'))
+            )
+        )
+
+        const satsForSeller = next.pricePerUnit * amount
+        const paymentOut = new bsv.Transaction.Output({
+            script: bsv.Script.fromHex(
+                Utils.buildPublicKeyHashScript(pubKey2Addr(next.seller))
+            ),
+            satoshis: Number(satsForSeller),
+        })
+        tx.addOutput(paymentOut)
+
+        tx.change(options.changeAddress || defaultAddress)
+
+        return {
+            tx,
+            atInputIndex: 0,
+            nexts: [
+                {
+                    instance: next,
+                    balance: 1,
+                    atOutputIndex: 0,
+                } as StatefulNext<BSV20SellLimitOrder>,
+            ],
+        }
     }
 }

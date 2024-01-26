@@ -110,6 +110,9 @@ export class Bsv20CallOption extends BSV20V2 {
         // Check grantee sig.
         assert(this.checkSig(sigGrantee, this.grantee), 'invalid sig grantee')
 
+        // Check premium is a positive integer.
+        assert(premium > 0n, 'invalid premium value')
+
         // Store premium value in property.
         this.premium = premium
 

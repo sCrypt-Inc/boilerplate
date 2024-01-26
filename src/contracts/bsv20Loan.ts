@@ -75,7 +75,7 @@ export class Bsv20Loan extends BSV20V2 {
     @method()
     public borrow() {
         // Check loan isn't taken yet.
-        assert(this.taken == false, 'loan already taken')
+        assert(!this.taken, 'loan already taken')
         this.taken = true
 
         // Pay borrower the principal, i.e. token amount locked in the contract.
@@ -94,7 +94,7 @@ export class Bsv20Loan extends BSV20V2 {
     @method()
     public repay(oracleMsg: ByteString, oracleSig: RabinSig) {
         // Check loan is already taken.
-        assert(this.taken == true, 'loan not taken yet')
+        assert(this.taken, 'loan not taken yet')
 
         // Check oracle signature.
         assert(
@@ -104,8 +104,8 @@ export class Bsv20Loan extends BSV20V2 {
 
         // Check that we're unlocking the UTXO specified in the oracles message.
         assert(
-            slice(this.prevouts, 0n, 36n) == slice(oracleMsg, 0n, 36n),
-            'first input is not spending specified ordinal UTXO'
+            slice(this.prevouts, 36n, 72n) == slice(oracleMsg, 0n, 36n),
+            'second input is not spending specified ordinal UTXO'
         )
 
         // Get token amount held by the UTXO from oracle message.

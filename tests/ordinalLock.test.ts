@@ -1,6 +1,7 @@
 import { expect, use } from 'chai'
 import { MethodCallOptions, bsv, findSig, PubKey, Addr } from 'scrypt-ts'
 import { OrdinalLock, purchaseTxBuilder } from '../src/contracts/ordinalLock'
+import { OrdiMethodCallOptions, OrdiNFTP2PKH } from 'scrypt-ord'
 import chaiAsPromised from 'chai-as-promised'
 import { getDefaultSigner } from './utils/helper'
 use(chaiAsPromised)
@@ -47,9 +48,12 @@ describe('Test SmartContract `OrdinalLock`', () => {
                 (sigResp) => findSig(sigResp, seller.publicKey),
                 PubKey(seller.publicKey.toByteString()),
                 {
+                    transfer: new OrdiNFTP2PKH(
+                        Addr(seller.toAddress().toByteString())
+                    ),
                     pubKeyOrAddrToSign: seller.publicKey,
                     changeAddress: seller.toAddress(),
-                } as MethodCallOptions<OrdinalLock>
+                } as OrdiMethodCallOptions<OrdinalLock>
             )
         return expect(callContract()).not.rejected
     })

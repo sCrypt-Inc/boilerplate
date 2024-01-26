@@ -25,14 +25,14 @@ import {
     RabinVerifier,
 } from 'scrypt-ts-lib'
 
-export type Lender = {
+export type PoolLender = {
     emptySlot: boolean
     pubKey: PubKey
     amt: bigint
     deadline: bigint
 }
 
-export type Borrower = {
+export type PoolBorrower = {
     emptySlot: boolean
     pubKey: PubKey
     amt: bigint
@@ -44,10 +44,10 @@ export class Bsv20LendingPool extends BSV20V2 {
     static readonly N_BORROWERS = 10
 
     @prop(true)
-    lenders: FixedArray<Lender, typeof Bsv20LendingPool.N_BORROWERS>
+    lenders: FixedArray<PoolLender, typeof Bsv20LendingPool.N_BORROWERS>
 
     @prop(true)
-    borrowers: FixedArray<Borrower, typeof Bsv20LendingPool.N_BORROWERS>
+    borrowers: FixedArray<PoolBorrower, typeof Bsv20LendingPool.N_BORROWERS>
 
     // Fixed interest rate of the loan.
     // 1 = 1%

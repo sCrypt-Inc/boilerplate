@@ -80,8 +80,8 @@ export class Bsv20PutOption extends BSV20V2 {
 
         // Check that we're unlocking the UTXO specified in the oracles message.
         assert(
-            slice(this.prevouts, 0n, 36n) == slice(oracleMsg, 0n, 36n),
-            'first input is not spending specified ordinal UTXO'
+            slice(this.prevouts, 36n, 72n) == slice(oracleMsg, 0n, 36n),
+            'second input is not spending specified ordinal UTXO'
         )
 
         // Get token amount held by the UTXO from oracle message.
@@ -139,6 +139,9 @@ export class Bsv20PutOption extends BSV20V2 {
     public listForSale(sigGrantee: Sig, premium: bigint) {
         // Check grantee sig.
         assert(this.checkSig(sigGrantee, this.grantee), 'invalid sig grantee')
+
+        // Check premium value.
+        assert(premium > 0n, 'invalid premium value')
 
         // Store premium value in property.
         this.premium = premium
