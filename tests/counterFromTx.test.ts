@@ -1,8 +1,8 @@
 import { expect, use } from 'chai'
 import { Counter } from '../src/contracts/counter'
-import { getDefaultSigner } from './utils/helper'
-import { MethodCallOptions} from 'scrypt-ts'
+import { DefaultProvider, MethodCallOptions, TestWallet, bsv} from 'scrypt-ts'
 import chaiAsPromised from 'chai-as-promised'
+import { myPrivateKey } from './utils/privateKey'
 
 use(chaiAsPromised)
 describe('Test SmartContract `Counter`', () => {
@@ -14,7 +14,8 @@ describe('Test SmartContract `Counter`', () => {
         const balance = 1
 
         const atOutputIndex = 0
-        const signer =  getDefaultSigner()
+        const provider = new DefaultProvider({network : bsv.Networks.testnet})
+        const signer =  new TestWallet(myPrivateKey, provider)
         const counter = new Counter(0n)
         await counter.connect(signer)
 
@@ -46,4 +47,3 @@ describe('Test SmartContract `Counter`', () => {
         
     })
 })
-
