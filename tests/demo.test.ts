@@ -25,7 +25,7 @@ describe('Test SmartContract `Demo`', () => {
 
     it('should pass non-public method `add`', async () => {
         await demo.deploy(1)
-        const res = demo.add(50n, -20n)
+        const res = Demo.add(50n, -20n)
         return expect(res).to.equal(30n)
     })
 
@@ -35,3 +35,4 @@ describe('Test SmartContract `Demo`', () => {
         return expect(callContract()).to.be.rejectedWith(/incorrect diff/)
     })
 })
+
