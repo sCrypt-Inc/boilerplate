@@ -54,7 +54,7 @@ async function main() {
 
     const ordinalUTXO = bsv20p2pkh.utxo
 
-    console.log('Mock BSV-20 ordinal deployed:', ordinalUTXO.txId)
+    console.log('Mock BSV-20 tokens deployed:', ordinalUTXO.txId)
 
     await sleep(3)
 
@@ -91,7 +91,7 @@ async function main() {
         const nextInstance = currentInstance.next()
         nextInstance.bidder = newHighestBidder
 
-        const contractTx = await currentInstance.methods.bid(
+        const callRes = await currentInstance.methods.bid(
             newHighestBidder,
             bid,
             {
@@ -103,7 +103,7 @@ async function main() {
             } as MethodCallOptions<BSV20Auction>
         )
 
-        console.log('Bid Tx:', contractTx.tx.id)
+        console.log('Bid Tx:', callRes.tx.id)
 
         balance += Number(bid)
         currentInstance = nextInstance
@@ -182,7 +182,7 @@ async function main() {
         }
     )
 
-    let contractTx = await currentInstance.methods.close(
+    let callRes = await currentInstance.methods.close(
         (sigResps) => findSig(sigResps, publicKeyAuctioneer),
         {
             pubKeyOrAddrToSign: publicKeyAuctioneer,
@@ -196,7 +196,7 @@ async function main() {
 
     // If we would like to broadcast, here we need to sign ordinal UTXO input.
     const ordinalSig = signTx(
-        contractTx.tx,
+        callRes.tx,
         privateKeyAuctioneer,
         bsv.Script.fromHex(ordinalUTXO.script),
         ordinalUTXO.satoshis,
@@ -204,7 +204,7 @@ async function main() {
         bsv.crypto.Signature.ANYONECANPAY_SINGLE
     )
 
-    contractTx.tx.inputs[0].setScript(
+    callRes.tx.inputs[0].setScript(
         bsv.Script.fromASM(
             `${ordinalSig} ${publicKeyAuctioneer.toByteString()}`
         )
@@ -218,14 +218,14 @@ async function main() {
             options: MethodCallOptions<BSV20Auction>
         ) => {
             return Promise.resolve({
-                tx: contractTx.tx,
+                tx: callRes.tx,
                 atInputIndex: 1,
                 nexts: [],
             })
         }
     )
 
-    contractTx = await currentInstance.methods.close(
+    callRes = await currentInstance.methods.close(
         (sigResps) => findSig(sigResps, publicKeyAuctioneer),
         {
             pubKeyOrAddrToSign: publicKeyAuctioneer,
@@ -235,7 +235,7 @@ async function main() {
         } as MethodCallOptions<BSV20Auction>
     )
 
-    console.log('Close Tx: ', contractTx.tx.id)
+    console.log('Close Tx: ', callRes.tx.id)
 }
 
 describe('Test SmartContract `BSV20Auction`', () => {

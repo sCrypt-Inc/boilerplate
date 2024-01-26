@@ -12,7 +12,7 @@ import {
     bsv,
 } from 'scrypt-ts'
 
-export class BSV20Mint extends BSV20V2 {
+export class Anyonecanmint extends BSV20V2 {
     @prop(true)
     supply: bigint
 
@@ -28,6 +28,7 @@ export class BSV20Mint extends BSV20V2 {
     ) {
         super(id, sym, max, dec)
         this.init(...arguments)
+
         this.supply = max
         this.lim = lim
     }
@@ -52,12 +53,17 @@ export class BSV20Mint extends BSV20V2 {
         // Build change output.
         outputs += this.buildChangeOutput()
 
-        assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
+        // this.debug.diffOutputs(outputs)
+
+        assert(
+            hash256(outputs) === this.ctx.hashOutputs,
+            'hashOutputs mismatch'
+        )
     }
 
     static async mintTxBuilder(
-        current: BSV20Mint,
-        options: MethodCallOptions<BSV20Mint>,
+        current: Anyonecanmint,
+        options: MethodCallOptions<Anyonecanmint>,
         dest: Addr,
         amount: bigint
     ): Promise<ContractTransaction> {
