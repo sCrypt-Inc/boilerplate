@@ -18,8 +18,8 @@ describe('Test SmartContract `Counter`', () => {
         const counter = new Counter(0n)
         await counter.connect(signer)
 
-        const deploytx = await counter.deploy(1)
-        const tx = await signer.connectedProvider.getTransaction(deploytx.id)
+        const deplotx = await counter.deploy(1)
+        const tx = await signer.connectedProvider.getTransaction(deplotx.id)
         let instance = Counter.fromTx(tx, atOutputIndex)
 
         // call the method of current instance to apply the updates on chain
@@ -37,6 +37,7 @@ describe('Test SmartContract `Counter`', () => {
                     balance: instance.balance,
                 },
             } as MethodCallOptions<Counter>)
+            return expect(callTx).not.rejected;
             console.log(`Counter incrementOnChain called: ${callTx.id}, the count now is: ${nextInstance.count}`)
           
             // update the current instance reference
@@ -45,3 +46,4 @@ describe('Test SmartContract `Counter`', () => {
         
     })
 })
+
