@@ -7,6 +7,9 @@ import {
     prop,
     toByteString,
     assert,
+    MethodCallOptions,
+    ContractTransaction,
+    bsv,
 } from 'scrypt-ts'
 
 export class BSV20Mint extends BSV20V2 {
@@ -14,47 +17,98 @@ export class BSV20Mint extends BSV20V2 {
     supply: bigint
 
     @prop()
-    limit: bigint
+    lim: bigint
 
     constructor(
         id: ByteString,
         sym: ByteString,
         max: bigint,
         dec: bigint,
-        supply: bigint,
-        limit: bigint
+        lim: bigint
     ) {
         super(id, sym, max, dec)
         this.init(...arguments)
-
-        this.supply = supply
-        this.limit = limit
+        this.supply = max
+        this.lim = lim
     }
 
     @method()
     public mint(dest: Addr, amount: bigint) {
         // Check mint amount doesn't exceed maximum.
-        assert(amount <= this.limit, 'mint amount exceeds limit')
+        assert(amount <= this.lim, 'mint amount exceeds maximum')
+        assert(amount > 0n, 'mint amount should > 0')
 
+        this.supply -= amount
+        assert(this.supply >= 0n, 'all supply mint out')
         let outputs = toByteString('')
-        let transferAmt = amount
 
-        if (this.supply > transferAmt) {
-            // If there are still tokens left, then update supply and
-            // build state output inscribed with leftover tokens.
-            this.supply -= transferAmt
+        if (this.supply > 0n) {
             outputs += this.buildStateOutputFT(this.supply)
-        } else {
-            // If not, then transfer all the remaining supply.
-            transferAmt = this.supply
         }
 
         // Build FT P2PKH output to dest paying specified amount of tokens.
-        outputs += BSV20V2.buildTransferOutput(dest, this.id, transferAmt)
+        outputs += BSV20V2.buildTransferOutput(dest, this.id, amount)
 
         // Build change output.
         outputs += this.buildChangeOutput()
 
         assert(hash256(outputs) == this.ctx.hashOutputs, 'hashOutputs mismatch')
+    }
+
+    static async mintTxBuilder(
+        current: BSV20Mint,
+        options: MethodCallOptions<BSV20Mint>,
+        dest: Addr,
+        amount: bigint
+    ): Promise<ContractTransaction> {
+        const defaultAddress = await current.signer.getDefaultAddress()
+
+        const remaining = current.supply - amount
+
+        const tx = new bsv.Transaction().addInput(current.buildContractInput())
+
+        const nexts: any[] = []
+        const tokenId = current.getTokenId()
+        if (remaining > 0n) {
+            const next = current.next()
+
+            if (!next.id) {
+                next.id = toByteString(tokenId, true)
+            }
+
+            next.supply = remaining
+            next.setAmt(remaining)
+
+            tx.addOutput(
+                new bsv.Transaction.Output({
+                    satoshis: 1,
+                    script: next.lockingScript,
+                })
+            )
+
+            nexts.push({
+                instance: next,
+                balance: 1,
+                atOutputIndex: 0,
+            })
+        }
+
+        tx.addOutput(
+            bsv.Transaction.Output.fromBufferReader(
+                new bsv.encoding.BufferReader(
+                    Buffer.from(
+                        BSV20V2.buildTransferOutput(
+                            dest,
+                            toByteString(tokenId, true),
+                            amount
+                        ),
+                        'hex'
+                    )
+                )
+            )
+        )
+
+        tx.change(options.changeAddress || defaultAddress)
+        return { tx, atInputIndex: 0, nexts }
     }
 }
