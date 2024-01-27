@@ -19,13 +19,13 @@ export class Demo extends SmartContract {
     // for the two equations `x + y = summ` and `x - y = diff`.
     @method()
     public unlock(x: bigint, y: bigint) {
-        assert(this.add(x, y) == this.sum, 'incorrect sum')
+        assert(Demo.add(x, y) == this.sum, 'incorrect sum')
         assert(x - y == this.diff, 'incorrect diff')
     }
 
     // Non-public methods cannot be directly called and are intended for internal use within the contract.
     @method()
-    add(x: bigint, y: bigint): bigint {
+    static add(x: bigint, y: bigint): bigint {
         return x + y
     }
 }
