@@ -1,6 +1,13 @@
 // You can read about this contract at :
 // https://en.wikipedia.org/wiki/Rabin_signature_algorithm
-import { ByteString, SmartContractLib, Utils, method, sha256 } from 'scrypt-ts'
+import {
+    ByteString,
+    SmartContractLib,
+    Utils,
+    method,
+    sha256,
+    slice,
+} from 'scrypt-ts'
 
 import { RabinSig, RabinPubKey } from 'scrypt-ts-lib'
 
@@ -22,6 +29,6 @@ export class RabinSignature extends SmartContractLib {
         // expand in to 512 bit hash
 
         const hx = sha256(x)
-        return sha256(hx.slice(0, 32)) + sha256(hx.slice(32, 64))
+        return sha256(slice(hx, 0n, 16n)) + sha256(slice(hx, 16n, 32n))
     }
 }

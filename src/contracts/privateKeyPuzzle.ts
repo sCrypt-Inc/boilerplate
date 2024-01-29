@@ -10,6 +10,7 @@ import {
     len,
     method,
     prop,
+    slice,
 } from 'scrypt-ts'
 
 /*
@@ -30,15 +31,14 @@ export class PrivateKeyPuzzle extends SmartContract {
     @method()
     static extractRFromSig(sig: Sig): ByteString {
         // Extract `r` from DER-encoded signature.
-        const rlen = byteString2Int(sig.slice(6, 8))
-        return sig.slice(8, Number(8n + rlen))
+        const rlen = byteString2Int(slice(sig, 3n, 4n))
+        return slice(sig, 4n, 4n + rlen / 2n)
     }
 
     @method()
     static extractSigHashFlagFromSig(sig: Sig): ByteString {
         // Extract SIGHASH flag from DER-encoded signature.
-        const l = len(sig) * 2n
-        return sig.slice(Number(l - 2n))
+        return slice(sig, len(sig) - 1n)
     }
 
     @method()
