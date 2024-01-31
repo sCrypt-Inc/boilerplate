@@ -17,7 +17,7 @@ In order to run smart contract tests locally, just simply run:
 npm t
 ```
 
-This will run every test defined under `tests/local/`.
+This will run every test defined under `tests/`.
 
 To run tests only for a specific smart contract, i.e. the `Counter` smart contract, you can run the following:
 
