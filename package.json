@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "precompile": "rimraf scrypt.index.json && rimraf artifacts",
-    "compile": "npx scrypt-cli compile",
+    "compile": "npx scrypt-cli compile --asm",
     "pretest": "npm run compile",
     "test": "npm run test:mocha",
     "test:mocha": "cross-env NETWORK=local mocha -i -f 'Heavy'",
