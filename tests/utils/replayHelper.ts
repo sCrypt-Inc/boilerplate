@@ -43,14 +43,28 @@ export async function getCodeHash(outpoint: Outpoint): Promise<string> {
 export async function getSpentIn(
     outpoint: Outpoint
 ): Promise<SpentIn | undefined> {
-    const url = `https://test-api.bitails.io/tx/${outpoint.txId}/output/${outpoint.outputIndex}`
-    const data = await axios.get(url).then((r) => r.data)
-    return data.spent
-        ? {
-              tx: await getTransaction(data.spentIn.txid),
-              atInputIndex: data.spentIn.inputIndex,
-          }
-        : undefined
+    const url = `https://api.whatsonchain.com/v1/bsv/test/tx/${outpoint.txId}/${outpoint.outputIndex}/spent`
+    try {
+        const response = await axios.get(url)
+        const data = response.data
+
+        if (data.txid) {
+            const tx = await getTransaction(data.txid) // Assuming getTransaction is another async function you've defined
+            return {
+                tx: tx,
+                atInputIndex: data.vin,
+            }
+        } else {
+            return undefined
+        }
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+            // 404 returned if not spent...
+            return undefined
+        } else {
+            throw error
+        }
+    }
 }
 
 export async function getSpentChainItem(

@@ -7,11 +7,13 @@ import {
     findSig,
     bsv,
     ContractId,
+    DefaultProvider,
+    TestWallet,
 } from 'scrypt-ts'
 import { CrowdfundReplay } from '../src/contracts/crowdfundReplay'
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
-import { myPublicKey } from './utils/privateKey'
+import { myAddress, myPrivateKey, myPublicKey } from './utils/privateKey'
 import { getTransaction, replayToLatest } from './utils/replayHelper'
 use(chaiAsPromised)
 
@@ -24,7 +26,7 @@ if (process.env.NETWORK === 'testnet') {
         let contractId: ContractId
 
         before(async () => {
-            await CrowdfundReplay.compile()
+            await CrowdfundReplay.loadArtifact()
 
             const [privateKey1, publicKey1, ,] = randomPrivateKey()
             const [privateKey2, publicKey2, ,] = randomPrivateKey()
@@ -36,11 +38,14 @@ if (process.env.NETWORK === 'testnet') {
                 BigInt(deadline),
                 10n
             )
+
             await instance.connect(
                 getDefaultSigner([privateKey1, privateKey2, privateKey3])
             )
 
             const deployTx = await instance.deploy()
+            console.log('Deployment:', deployTx.id)
+
             contractId = {
                 txId: deployTx.id,
                 outputIndex: 0,
@@ -64,12 +69,13 @@ if (process.env.NETWORK === 'testnet') {
             const pubKey = PubKey(toHex(donator))
             const nextInstance = instance.next()
             nextInstance.applyOffchainUpdatesForDonate(pubKey, amount)
-            await instance.methods.donate(pubKey, amount, {
+            const callRes = await instance.methods.donate(pubKey, amount, {
                 next: {
                     instance: nextInstance,
                     balance: instance.balance + Number(amount),
                 },
             } as MethodCallOptions<CrowdfundReplay>)
+            console.log('Donate:', callRes.tx.id)
             return nextInstance
         }
 
@@ -79,7 +85,7 @@ if (process.env.NETWORK === 'testnet') {
             amount: bigint
         ) {
             const pubKey = PubKey(toHex(donator))
-            const { next } = await instance.methods.refund(
+            const callRes = await instance.methods.refund(
                 pubKey,
                 amount,
                 (sigResps) => findSig(sigResps, donator),
@@ -87,17 +93,19 @@ if (process.env.NETWORK === 'testnet') {
                     pubKeyOrAddrToSign: donator,
                 } as MethodCallOptions<CrowdfundReplay>
             )
-            return next!.instance
+            console.log('Refund:', callRes.tx.id)
+            return callRes.next!.instance
         }
 
         async function collect(instance: CrowdfundReplay) {
-            await instance.methods.collect(
+            const callRes = await instance.methods.collect(
                 (sigResps) => findSig(sigResps, myPublicKey),
                 {
                     lockTime: deadline,
                     pubKeyOrAddrToSign: myPublicKey,
                 } as MethodCallOptions<CrowdfundReplay>
             )
+            console.log('Collect:', callRes.tx.id)
         }
 
         it('should pass', async () => {
