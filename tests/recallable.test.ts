@@ -132,6 +132,9 @@ describe('Test SmartContract `Recallable`', () => {
 
     it('should pass 10000/0', async () => {
         // alice transfers 10000 to bob, keeps nothing left
+        recallable = new Recallable(PubKey(alicePublicKey.toByteString()))
+        await recallable.connect(getDefaultSigner(alicePrivateKey))
+        await recallable.deploy(100)
 
         const bobNextInstance = recallable.next()
         bobNextInstance.userPubKey = PubKey(bobPublicKey.toByteString())
