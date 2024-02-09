@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-day_mod=$(expr $(date +%d) % 9)
+day_mod=$(expr $(date +%d) % 9) || day_mod=0
 
 echo "day_mod: $day_mod"
 
