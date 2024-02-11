@@ -1,8 +1,8 @@
-import { expect, use } from 'chai'
+import { use } from 'chai'
 import { Counter } from '../src/contracts/counter'
-import { DefaultProvider, MethodCallOptions, TestWallet, bsv } from 'scrypt-ts'
+import { getDefaultSigner } from './utils/helper'
+import { MethodCallOptions,} from 'scrypt-ts'
 import chaiAsPromised from 'chai-as-promised'
-import { myPrivateKey } from './utils/privateKey'
 use(chaiAsPromised)
 describe('Test SmartContract `Counter`', () => {
     before(() => {
@@ -15,10 +15,7 @@ describe('Test SmartContract `Counter`', () => {
         const initialCount: bigint = 100n
         const atOutputIndex = 0
         const counter = new Counter(initialCount)
-        const signer = new TestWallet(
-            myPrivateKey,
-            new DefaultProvider({ network: bsv.Networks.testnet })
-        )
+        const signer = getDefaultSigner()
         await counter.connect(signer)
         const deployTx = await counter.deploy(1)
 
@@ -27,10 +24,8 @@ describe('Test SmartContract `Counter`', () => {
 
         // call the method of current instance to apply the updates on chain
         for (let i = 0; i < 5; ++i) {
-            const tx = await signer.connectedProvider.getTransaction(
-                deployTx.id
-            )
-            instance = Counter.fromTx(tx, atOutputIndex)
+           
+            instance = Counter.fromTx(deployTx, atOutputIndex)
 
             await instance.connect(signer)
 
