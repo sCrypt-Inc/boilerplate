@@ -3,7 +3,7 @@ import { Counter2 } from '../src/contracts/counter2'
 import { getDefaultSigner } from './utils/helper'
 import { MethodCallOptions } from 'scrypt-ts'
 
-describe('Test SmartContract `Counter 2`', () => {
+describe('Test SmartContract `Counter2`', () => {
     before(() => {
         Counter2.loadArtifact()
     })
