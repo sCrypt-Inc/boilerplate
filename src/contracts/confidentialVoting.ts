@@ -2,16 +2,15 @@ import {
     ByteString,
     FixedArray,
     HashedMap,
+    HashedSet,
     PubKey,
     Sha256,
     Sig,
     SmartContract,
     assert,
-    fill,
     hash256,
     method,
     prop,
-    toByteString,
 } from 'scrypt-ts'
 
 export type Candidate = {
@@ -21,7 +20,7 @@ export type Candidate = {
 
 export class ConfidentialVoting extends SmartContract {
     @prop()
-    voters: FixedArray<PubKey, 3>
+    voters: HashedSet<PubKey>
 
     @prop(true)
     voteCommits: HashedMap<PubKey, Sha256>
@@ -42,7 +41,7 @@ export class ConfidentialVoting extends SmartContract {
     voteFinished: boolean
 
     constructor(
-        voters: FixedArray<PubKey, 3>,
+        voters: HashedSet<PubKey>,
         candidates: FixedArray<Candidate, 2>,
         voteCommits: HashedMap<PubKey, Sha256>,
         voteDeadline: bigint,
@@ -55,13 +54,7 @@ export class ConfidentialVoting extends SmartContract {
         this.VoteDeadline = voteDeadline
         this.revealDeadline = revealDeadline
         this.voteFinished = false
-        this.candidates = fill(
-            {
-                name: toByteString(''),
-                votesReceived: 0n,
-            },
-            2
-        )
+        this.candidates = candidates
     }
 
     @method()
@@ -69,11 +62,17 @@ export class ConfidentialVoting extends SmartContract {
         // Check if voting is still allowed
         assert(!this.voteRevealed, 'Voting is already closed')
 
+        // check if the passed public key is in the set of chosen voters
+        assert(this.voters.has(voter), 'pubkey not in the set of chosen voters')
+
         // Verify if the voter is elliglble
         assert(!this.voteCommits.has(voter))
 
         // Store the commit associated with the voter
         this.voteCommits.set(voter, voteCommitment)
+
+        // Check voter signature
+        assert(this.checkSig(sig, voter))
 
         //propagate the state
         let output =
@@ -81,36 +80,32 @@ export class ConfidentialVoting extends SmartContract {
             this.buildChangeOutput()
 
         assert(hash256(output) == this.ctx.hashOutputs, 'hashOutputs mismatch')
-
-        // Check voter signature
-        assert(this.checkSig(sig, voter))
     }
 
     @method()
     public reveal(
         voter: PubKey,
-        voteCommitment: Sha256,
+        vote: Sha256,
         salt: ByteString,
         candidateIdx: bigint
     ) {
-        assert(!this.voteRevealed, 'Voting has already been revealed')
+        const voteCommitment = hash256(vote + salt)
 
-        // Marked voting as revealed
-        this.voteRevealed = true
-        //check if the pubkey contained the passed commitment
-        assert(this.voteCommits.canGet(voter, voteCommitment))
-        // Verify the commitment and update vote count
-        const commit = hash256(voteCommitment + salt)
+        if (this.voteCommits.size === this.voters.size) {
+            // Marked voting as revealed
+            this.voteRevealed = true
+            //check if the pubkey contained the passed commitment
+            assert(this.voteCommits.canGet(voter, voteCommitment))
 
-        assert(voteCommitment === commit, 'Invalid commit')
-
-        // Update vote count
-        const candidateIndex = this.candidates[Number(candidateIdx)] // Assuming candidates are numbered starting from 1
-        assert(
-            candidateIdx >= 0 && candidateIdx < this.candidates.length,
-            'Invalid candidate index'
-        )
-        this.candidates[Number(candidateIdx)].votesReceived++
+            // Update vote count
+            assert(
+                candidateIdx >= 0 && candidateIdx < this.candidates.length,
+                'Invalid candidate index'
+            )
+            this.candidates[Number(candidateIdx)].votesReceived++
+        } else {
+            this.voteRevealed = false
+        }
 
         // Check if voting deadline has passed
         assert(
@@ -120,18 +115,18 @@ export class ConfidentialVoting extends SmartContract {
     }
 
     @method()
-    public finish(candidateIdx : bigint) {
+    public finish(candidateIdx: bigint) {
         // candidate with the most votes wins
-       
-            if (
-                Number(this.candidates[Number(0)].votesReceived) >
-                Number(this.candidates[Number(candidateIdx)].votesReceived)
-            ) 
-              
-        // log the winner
-        console.log('Winner:', this.candidates[Number(0)].name)
 
-         // Ensure voting has been revealed
-         assert(this.voteRevealed, 'Voting has not been revealed yet')
+        if (
+            Number(this.candidates[Number(0)].votesReceived) >
+            Number(this.candidates[Number(candidateIdx)].votesReceived)
+        )
+            // log the winner
+            console.log('Winner:', this.candidates[Number(0)].name)
+
+        this.voteFinished = true
+        // Ensure voting has been revealed
+        assert(this.voteRevealed, 'Voting has not been revealed yet')
     }
 }
