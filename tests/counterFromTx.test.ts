@@ -1,10 +1,10 @@
 import { use } from 'chai'
 import { Counter } from '../src/contracts/counter'
 import { getDefaultSigner } from './utils/helper'
-import { MethodCallOptions,} from 'scrypt-ts'
+import { MethodCallOptions } from 'scrypt-ts'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
-describe('Test SmartContract `Counter`', () => {
+describe('Test SmartContract `Counter` from tx', () => {
     before(() => {
         Counter.loadArtifact()
     })
@@ -19,13 +19,11 @@ describe('Test SmartContract `Counter`', () => {
         await counter.connect(signer)
         const deployTx = await counter.deploy(1)
 
-        // set current instance to be the deployed one
-        let instance = counter
+        let callTx = deployTx
 
         // call the method of current instance to apply the updates on chain
         for (let i = 0; i < 5; ++i) {
-           
-            instance = Counter.fromTx(deployTx, atOutputIndex)
+            const instance = Counter.fromTx(callTx, atOutputIndex)
 
             await instance.connect(signer)
 
@@ -35,7 +33,7 @@ describe('Test SmartContract `Counter`', () => {
             // apply updates on the next instance off chain
             nextInstance.increment()
 
-            const { tx: callTx } = await instance.methods.incrementOnChain({
+            const callRes = await instance.methods.incrementOnChain({
                 next: {
                     instance: nextInstance,
                     balance: instance.balance,
@@ -45,8 +43,7 @@ describe('Test SmartContract `Counter`', () => {
                 `Counter incrementOnChain called: ${callTx.id}, the count now is: ${nextInstance.count}`
             )
 
-            // update the current instance reference
-            instance = nextInstance
+            callTx = callRes.tx
         }
     })
 })
