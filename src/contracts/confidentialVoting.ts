@@ -1,4 +1,5 @@
 import {
+    Addr,
     ByteString,
     FixedArray,
     HashedMap,
@@ -7,14 +8,17 @@ import {
     Sha256,
     Sig,
     SmartContract,
+    Utils,
     assert,
     hash256,
+    int2ByteString,
     method,
     prop,
 } from 'scrypt-ts'
 
-export type Candidate = {
+export type ConfVotingCandidate = {
     name: ByteString
+    address: Addr
     votesReceived: bigint
 }
 
@@ -29,7 +33,7 @@ export class ConfidentialVoting extends SmartContract {
     voteRevealed: boolean
 
     @prop(true)
-    candidates: FixedArray<Candidate, 2>
+    candidates: FixedArray<ConfVotingCandidate, 2>
 
     @prop()
     VoteDeadline: bigint
@@ -42,7 +46,7 @@ export class ConfidentialVoting extends SmartContract {
 
     constructor(
         voters: HashedSet<PubKey>,
-        candidates: FixedArray<Candidate, 2>,
+        candidates: FixedArray<ConfVotingCandidate, 2>,
         voteCommits: HashedMap<PubKey, Sha256>,
         voteDeadline: bigint,
         revealDeadline: bigint
@@ -58,10 +62,16 @@ export class ConfidentialVoting extends SmartContract {
     }
 
     @method()
-    public vote(voter: PubKey, voteCommitment: Sha256, sig: Sig) {
+    public vote(
+        voter: PubKey,
+        salt :ByteString,
+        candidateIdx: bigint,
+        sig: Sig
+    ) {
         // Check if voting is still allowed
         assert(!this.voteRevealed, 'Voting is already closed')
 
+        const voteCommitment = Sha256(int2ByteString(candidateIdx) + salt)
         // check if the passed public key is in the set of chosen voters
         assert(this.voters.has(voter), 'pubkey not in the set of chosen voters')
 
@@ -99,7 +109,7 @@ export class ConfidentialVoting extends SmartContract {
 
             // Update vote count
             assert(
-                candidateIdx >= 0 && candidateIdx < this.candidates.length,
+                candidateIdx >= 0 && candidateIdx < 2,
                 'Invalid candidate index'
             )
             this.candidates[Number(candidateIdx)].votesReceived++
@@ -121,10 +131,23 @@ export class ConfidentialVoting extends SmartContract {
         if (
             Number(this.candidates[Number(0)].votesReceived) >
             Number(this.candidates[Number(candidateIdx)].votesReceived)
-        )
+        ) {
+            // pay out winning candidate
+            Utils.buildPublicKeyHashOutput(
+                this.candidates[Number(0)].address,
+                10n
+            )
             // log the winner
             console.log('Winner:', this.candidates[Number(0)].name)
-
+        } else {
+            // pay out winning candidate
+            Utils.buildPublicKeyHashOutput(
+                this.candidates[Number(candidateIdx)].address,
+                10n
+            )
+            // log the winner
+            console.log('Winner:', this.candidates[Number(candidateIdx)].name)
+        }
         this.voteFinished = true
         // Ensure voting has been revealed
         assert(this.voteRevealed, 'Voting has not been revealed yet')
