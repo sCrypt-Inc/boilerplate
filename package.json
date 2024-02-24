@@ -30,7 +30,7 @@
     "paillier-bigint": "^3.4.3",
     "scrypt-ord": "^1.0.16",
     "scrypt-ts": "^1.3.25",
-    "scrypt-ts-lib": "^0.1.24"
+    "scrypt-ts-lib": "^0.1.27"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",

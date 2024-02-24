@@ -33,7 +33,7 @@ export class MAST extends SmartContract {
     public main(branchScript: ByteString, merklePath: MerkleProof) {
         // validate branchScript is from the merkle tree
         assert(
-            MerklePath.calcMerkleRoot(sha256(branchScript), merklePath) ==
+            MerklePath.calcMerkleRoot(sha256(branchScript), merklePath, 32) ==
                 this.merkleRoot
         )
 

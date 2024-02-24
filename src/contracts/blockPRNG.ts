@@ -42,7 +42,7 @@ export class BlockchainPRNG extends SmartContract {
         assert(Blockchain.isValidBlockHeader(bh, this.blockchainTarget))
 
         // verify previous transaction in the block
-        assert(Blockchain.txInBlock(prevTxid, bh, merkleproof))
+        assert(Blockchain.txInBlock(prevTxid, bh, merkleproof, 32))
 
         // use block header's nonce last bit as apseudo-random number
         const winner: PubKey = bh.nonce % 2n ? this.alice : this.bob

@@ -102,7 +102,7 @@ export class Bsv20LockBtcToMint extends BSV20V2 {
 
         // Calc merkle root.
         const txID = hash256(btcTx)
-        const merkleRoot = MerklePath.calcMerkleRoot(txID, merkleProof)
+        const merkleRoot = MerklePath.calcMerkleRoot(txID, merkleProof, 32)
 
         // Check if merkle root is included in the first BH.
         assert(

@@ -9,7 +9,7 @@ import {
     PubKey,
     slice,
 } from 'scrypt-ts'
-import { RabinSig, RabinPubKey, RabinVerifierWOC } from 'scrypt-ts-lib'
+import { RabinSig, RabinPubKey, WitnessOnChainVerifier } from 'scrypt-ts-lib'
 
 export type ExchangeRate = {
     timestamp: bigint
@@ -82,7 +82,7 @@ export class PriceBet extends SmartContract {
     public unlock(msg: ByteString, sig: RabinSig, winnerSig: Sig) {
         // Verify oracle signature.
         assert(
-            RabinVerifierWOC.verifySig(msg, sig, this.oraclePubKey),
+            WitnessOnChainVerifier.verifySig(msg, sig, this.oraclePubKey),
             'Oracle sig verify failed.'
         )
 

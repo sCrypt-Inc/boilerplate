@@ -149,7 +149,7 @@ export class Bsv20LendingPool extends BSV20V2 {
             'BH does not meet min target'
         )
         assert(
-            Blockchain.txInBlock(prevTxid, blockHeader, merkleProof),
+            Blockchain.txInBlock(prevTxid, blockHeader, merkleProof, 32),
             'invalid Merkle proof'
         )
 
@@ -259,7 +259,7 @@ export class Bsv20LendingPool extends BSV20V2 {
             'BH does not meet min target'
         )
         assert(
-            Blockchain.txInBlock(prevTxid, blockHeader, merkleProof),
+            Blockchain.txInBlock(prevTxid, blockHeader, merkleProof, 32),
             'invalid Merkle proof'
         )
 
