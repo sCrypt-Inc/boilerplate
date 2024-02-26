@@ -1,67 +1,68 @@
 import { PriceBet } from '../src/contracts/priceBet'
 import {
-    ByteString,
     bsv,
     PubKey,
-    byteString2Int,
     toByteString,
     MethodCallOptions,
     findSig,
+    ByteString,
 } from 'scrypt-ts'
-import { RabinPubKey, RabinSig } from 'scrypt-ts-lib'
+import { RabinPubKey, RabinSig, WitnessOnChainVerifier } from 'scrypt-ts-lib'
 import { expect, use } from 'chai'
 import { getDefaultSigner } from './utils/helper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-// All data was pre-fetched from the WitnessOnChain oracle service.
-// See https://witnessonchain.com/
+// All data was pre-fetched from https://api.witnessonchain.com/
 
-const RESP_0 = {
-    digest: 'fa922e641c9d050000000000044253565f555344430000000000000000',
-    rate: 36.79,
-    signatures: {
-        rabin: {
-            padding: '',
-            public_key:
-                'ad7e1e8d6d2960129c9fe6b636ef4041037f599c807ecd5adf491ce45835344b18fd4e7c92fd63bb822b221344fe21c0522ab81e9f8e848206875370cae4d908ac2656192ad6910ebb685036573b442ec1cff490c1638b7f5a181ae6d6bc9a04a305720559c893611f836321c2beb69dbf3694b9305a988c77e0a451c38674e84ce95a912833d2cf4ca9d48cc76d8250d0130740145ca19e20b1513bb93ca7665c1f110493d1b5aa344702109df5feca790f988eaa02f92e019721ae0e8bfaa9fdcd3401ffb4433fbe6e575ed9f704a6dc60872f0d23b2f43bfe5e64ce0fbc71283e6dedee79e20ad878917fa4a8257f879527c58f89a8670be591fc2815f7e7a8d74a9830788404f66170058dd7a08f47c4954324088dbed2f330015ccc36d29efd392a3cd5bf9835871f6b4b203c228af16f5b461676ce8e51003afd3137978117cf41147f2bb615a7c338bebdca5f81a43fe9b51480ae52ce04cf2f2b1714599fe09ae8401e0e155b4caa89fb37b00c604517fc36961f84901a73a343bb40',
-            signature:
-                '3d90715373a2564bc76ecfd8d4bf1a15411713f39b2f21fa301de763974d0844f64b6724eceb6d2622058e8d730690a4bdaca3f5823c1586eea1c533a6edbbf97d04fd03cb3cbfccc7698deaa8a20c33e5e6f22081c50046cb18abb0c3418b6c228fdaa68e96ddffc9594642274378119d60713e80ae65340c4e8374c45dc3ac821ef5241b3f28668ba6907471ef7f1433c5dfe7d0e48a2fbc64dee09a80492126847e80fe90b0efaa8adf90a2960d475c53c3781897f0328ca4237b317e4c25f055ef5d7a2f68388341f88222e100621184e3b6a06c6801582c8d20a2b4e29546409a6b8b059c5d523f4c993219dfb45fca3ad640fb88ba569ce487f428727c53f34d7a5c5b51dbda97933db53f5ca01a76a1f749ce869ff48da17bb1afaa03775879b956b5b1bc3e6a0b47ef75ab1ec9398df0e21d6946b01fa97c708ea724437a7dde06bbe87137c068e77bfb1e91bb332161e525b2079bc64853685f5cb5a5449aa51d84fcae1722c49f3222ddaca2441c4b21c1d72bf7ad81ca4df71f3e',
-        },
+// https://api.witnessonchain.com/#/info/AppController_getInfo
+const PUBKEY = {
+    publicKey:
+        'ad7e1e8d6d2960129c9fe6b636ef4041037f599c807ecd5adf491ce45835344b18fd4e7c92fd63bb822b221344fe21c0522ab81e9f8e848206875370cae4d908ac2656192ad6910ebb685036573b442ec1cff490c1638b7f5a181ae6d6bc9a04a305720559c893611f836321c2beb69dbf3694b9305a988c77e0a451c38674e84ce95a912833d2cf4ca9d48cc76d8250d0130740145ca19e20b1513bb93ca7665c1f110493d1b5aa344702109df5feca790f988eaa02f92e019721ae0e8bfaa9fdcd3401ffb4433fbe6e575ed9f704a6dc60872f0d23b2f43bfe5e64ce0fbc71283e6dedee79e20ad878917fa4a8257f879527c58f89a8670be591fc2815f7e7a8d74a9830788404f66170058dd7a08f47c4954324088dbed2f330015ccc36d29efd392a3cd5bf9835871f6b4b203c228af16f5b461676ce8e51003afd3137978117cf41147f2bb615a7c338bebdca5f81a43fe9b51480ae52ce04cf2f2b1714599fe09ae8401e0e155b4caa89fb37b00c604517fc36961f84901a73a343bb40',
+}
+// https://api.witnessonchain.com/#/v1/V1Controller_getPrice
+const RESP = {
+    timestamp: 1708923144,
+    tradingPair: 'BSV-USDC',
+    price: 748600,
+    decimal: 4,
+    data: '020819dc65386c0b0000000000044253562d55534443',
+    signature: {
+        s: 'e66925a8225eeba1c44cc670dc01bbcaeeb51d09f3945c8d15fcabde01856824db813b862a67c9dc00242bddfe2fcb402ccdfa97ebaeac45ca279932f143b3ae4c00d49aea6aff5f737cfb642662055ddffaf9f8f399d160516fb8e735039baa6f38b0de5acc88d01706bd4135bea8da2bb61257bfb71a0d551622d38693b9126837d28d7c36dd26e358ac24a7feb7edfc965ef9a761a96e801128f34e07a5a00aa2a5dc2905ed0067330ba41c7708d19e1892ff6d66fad004037b327206f152427b50137d03b4436fcfe51cf75fd216c2ed3831f315bc3b71874a0330d5aa9719a7dca4c6028fa3a26826a25c71951c6ed4d9c27cd4e59f88f4c609e4dc9cdce793b72a92f6a0673dd533856db80091ca68889f0ead8c4916c9b1d672fdeb3f724b98c9d00fda13d6b36d4d6ae7968efd4b74ea6e9eae16b1827d93fc674c4928363cf628f2d30640e979d81a17718281b8c8174d353bd72001f96e13342a5c1c1c03063e1836d8389c2da2c63eb59a71dd8a324730ddb0d6ee99eb20bc2b10',
+        padding: '0000',
     },
-    symbol: 'BSV_USDC',
-    timestamp: 1680773882,
 }
 
 describe('Test SmartContract `PriceBet`', () => {
-    const rabinPubKey: bigint = byteString2Int(
-        RESP_0.signatures.rabin.public_key + '00'
-    )
-
     let alicePrivKey: bsv.PrivateKey
     let bobPrivKey: bsv.PrivateKey
 
     let priceBet: PriceBet
 
+    const decimal = 4
+    const currentPrice = Math.round(RESP.price * 10 ** decimal)
+
     before(() => {
         // Prepare inital data.
         alicePrivKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
         bobPrivKey = bsv.PrivateKey.fromRandom(bsv.Networks.testnet)
+        const rabinPubKey: RabinPubKey =
+            WitnessOnChainVerifier.parsePubKey(PUBKEY)
 
-        const decimal = 4
-        const targetPriceFloat = 36.3 // USDT
+        const targetPriceFloat = 36.3 // USDC
         const targetPrice = Math.round(targetPriceFloat * 10 ** decimal)
-        const timestampFrom = 1680652800n // Thu, 05 Apr 2023 00:00:00 GMT
-        const timestampTo = 1680998400n // Thu, 09 Apr 2023 00:00:00 GMT 🥚
-        const symbol = toByteString(RESP_0.symbol, true) + '0000000000000000'
+        const timestampFrom = 1708905600n // Mon Feb 26 2024 00:00:00 GMT
+        const timestampTo = 1708992000n // Tue Feb 27 2024 00:00:00 GMT
+        const tradingPair = toByteString('BSV-USDC', true)
 
         PriceBet.loadArtifact()
         priceBet = new PriceBet(
             BigInt(targetPrice),
-            symbol,
+            BigInt(decimal),
+            tradingPair,
             timestampFrom,
             timestampTo,
-            rabinPubKey as RabinPubKey,
+            rabinPubKey,
             PubKey(alicePrivKey.publicKey.toByteString()),
             PubKey(bobPrivKey.publicKey.toByteString())
         )
@@ -69,30 +70,20 @@ describe('Test SmartContract `PriceBet`', () => {
 
     it('should pass w correct sig and data.', async () => {
         // Pick winner.
-        const decimal = 4
-        const currentPrice = Math.round(RESP_0.rate * 10 ** decimal)
-        let winner = alicePrivKey
-        if (currentPrice < priceBet.targetPrice) {
-            winner = bobPrivKey
-        }
+        const winner =
+            currentPrice >= priceBet.targetPrice ? alicePrivKey : bobPrivKey
         const winnerPubKey = winner.publicKey
 
         // Connect signer.
         await priceBet.connect(getDefaultSigner(winner))
         await priceBet.deploy(1)
 
-        const oracleSigS = byteString2Int(
-            RESP_0.signatures.rabin.signature + '00'
-        )
-        const oracleSigPadding: ByteString = RESP_0.signatures.rabin.padding
-        const oracleSig: RabinSig = {
-            s: oracleSigS,
-            padding: oracleSigPadding,
-        }
+        const oracleMsg: ByteString = WitnessOnChainVerifier.parseMsg(RESP)
+        const oracleSig: RabinSig = WitnessOnChainVerifier.parseSig(RESP)
 
         const callContract = async () =>
             priceBet.methods.unlock(
-                RESP_0.digest as ByteString,
+                oracleMsg,
                 oracleSig,
                 (sigResps) => findSig(sigResps, winnerPubKey),
                 // Method call options:
@@ -104,36 +95,26 @@ describe('Test SmartContract `PriceBet`', () => {
     })
 
     it('should fail paying wrong player.', async () => {
-        // Pick winner.
-        const decimal = 4
-        const currentPrice = Math.round(RESP_0.rate * 10 ** decimal)
-        let looser = alicePrivKey
-        if (currentPrice >= priceBet.targetPrice) {
-            looser = bobPrivKey
-        }
-        const looserPubKey = looser.publicKey
+        // Pick loser.
+        const loser =
+            currentPrice >= priceBet.targetPrice ? bobPrivKey : alicePrivKey
+        const loserPubKey = loser.publicKey
 
         // Connect signer.
-        await priceBet.connect(getDefaultSigner(looser))
+        await priceBet.connect(getDefaultSigner(loser))
         await priceBet.deploy(1)
 
-        const oracleSigS = byteString2Int(
-            RESP_0.signatures.rabin.signature + '00'
-        )
-        const oracleSigPadding: ByteString = RESP_0.signatures.rabin.padding
-        const oracleSig: RabinSig = {
-            s: oracleSigS,
-            padding: oracleSigPadding,
-        }
+        const oracleMsg: ByteString = WitnessOnChainVerifier.parseMsg(RESP)
+        const oracleSig: RabinSig = WitnessOnChainVerifier.parseSig(RESP)
 
         const callContract = async () =>
             priceBet.methods.unlock(
-                RESP_0.digest as ByteString,
+                oracleMsg,
                 oracleSig,
-                (sigResps) => findSig(sigResps, looserPubKey),
+                (sigResps) => findSig(sigResps, loserPubKey),
                 // Method call options:
                 {
-                    pubKeyOrAddrToSign: looserPubKey,
+                    pubKeyOrAddrToSign: loserPubKey,
                 } as MethodCallOptions<PriceBet>
             )
 

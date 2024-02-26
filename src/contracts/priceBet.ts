@@ -11,26 +11,29 @@ import {
 } from 'scrypt-ts'
 import { RabinSig, RabinPubKey, WitnessOnChainVerifier } from 'scrypt-ts-lib'
 
-export type ExchangeRate = {
-    timestamp: bigint
-    price: bigint
-    symbol: ByteString
+export type Message = {
+    marker: bigint // 1 byte
+    timestamp: bigint // 4 bytes LE
+    price: bigint // 8 bytes LE
+    decimal: bigint // 1 byte
+    tradingPair: ByteString
 }
 
 /*
  * A betting contract that lets Alice and Bob bet on the price of the BSV-USDC pair
  * in the future. The price is obtained from a trusted oracle.
- * Read our Medium article for more information about using oracles in Bitcoin:
- * https://medium.com/coinmonks/access-external-data-from-bitcoin-smart-contracts-2ecdc7448c43
+ * https://api.witnessonchain.com/#/v1/V1Controller_getPrice
  */
 export class PriceBet extends SmartContract {
     // Price target that needs to be reached.
     @prop()
     targetPrice: bigint
-
-    // Symbol of the pair, e.g. "BSV_USDC"
     @prop()
-    symbol: ByteString
+    decimal: bigint
+
+    // Trading pair, e.g. "BSV-USDC"
+    @prop()
+    tradingPair: ByteString
 
     // Timestamp window in which the price target needs to be reached.
     @prop()
@@ -50,7 +53,8 @@ export class PriceBet extends SmartContract {
 
     constructor(
         targetPrice: bigint,
-        symbol: ByteString,
+        decimal: bigint,
+        tradingPair: ByteString,
         timestampFrom: bigint,
         timestampTo: bigint,
         oraclePubKey: RabinPubKey,
@@ -59,7 +63,8 @@ export class PriceBet extends SmartContract {
     ) {
         super(...arguments)
         this.targetPrice = targetPrice
-        this.symbol = symbol
+        this.decimal = decimal
+        this.tradingPair = tradingPair
         this.timestampFrom = timestampFrom
         this.timestampTo = timestampTo
         this.oraclePubKey = oraclePubKey
@@ -69,12 +74,13 @@ export class PriceBet extends SmartContract {
 
     // Parses signed message from the oracle.
     @method()
-    static parseExchangeRate(msg: ByteString): ExchangeRate {
-        // 4 bytes timestamp (LE) + 8 bytes rate (LE) + 1 byte decimal + 16 bytes symbol
+    static parseMessage(msg: ByteString): Message {
         return {
-            timestamp: Utils.fromLEUnsigned(slice(msg, 0n, 4n)),
-            price: Utils.fromLEUnsigned(slice(msg, 4n, 12n)),
-            symbol: slice(msg, 13n, 29n),
+            marker: Utils.fromLEUnsigned(slice(msg, 0n, 1n)),
+            timestamp: Utils.fromLEUnsigned(slice(msg, 1n, 5n)),
+            price: Utils.fromLEUnsigned(slice(msg, 5n, 13n)),
+            decimal: Utils.fromLEUnsigned(slice(msg, 13n, 14n)),
+            tradingPair: slice(msg, 14n),
         }
     }
 
@@ -87,22 +93,21 @@ export class PriceBet extends SmartContract {
         )
 
         // Decode data.
-        const exchangeRate = PriceBet.parseExchangeRate(msg)
+        const message = PriceBet.parseMessage(msg)
 
         // Validate data.
+        assert(message.marker == 2n, 'incorrect oracle message type.')
+        assert(message.decimal == this.decimal, 'incorrect decimal.')
+        assert(message.timestamp >= this.timestampFrom, 'Timestamp too early.')
+        assert(message.timestamp <= this.timestampTo, 'Timestamp too late.')
         assert(
-            exchangeRate.timestamp >= this.timestampFrom,
-            'Timestamp too early.'
+            message.tradingPair == this.tradingPair,
+            'incorrect trading pair.'
         )
-        assert(
-            exchangeRate.timestamp <= this.timestampTo,
-            'Timestamp too late.'
-        )
-        assert(exchangeRate.symbol == this.symbol, 'Wrong symbol.')
 
         // Decide winner and check their signature.
         const winner =
-            exchangeRate.price >= this.targetPrice
+            message.price >= this.targetPrice
                 ? this.alicePubKey
                 : this.bobPubKey
         assert(this.checkSig(winnerSig, winner), 'Winner checkSig failed.')
