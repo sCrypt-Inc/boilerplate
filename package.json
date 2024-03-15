@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "watch": "npx scrypt-cli compile --watch",
     "precompile": "rimraf scrypt.index.json && rimraf artifacts",
     "compile": "npx scrypt-cli compile --asm",
     "pretest": "npm run compile",
