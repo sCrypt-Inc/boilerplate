@@ -57,7 +57,6 @@ export class OracleDemoBsv20 extends SmartContract {
 
     @method()
     public unlock(msg: ByteString, sig: RabinSig, tokenInputIndex: bigint) {
-        this.ctx
         // retrieve token outpoint from prevouts
         const txid = reverseByteString(
             slice(
