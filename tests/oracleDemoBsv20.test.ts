@@ -1,13 +1,22 @@
 import { expect, use } from 'chai'
-import { ByteString, MethodCallOptions, bsv, toByteString } from 'scrypt-ts'
+import {
+    Addr,
+    ByteString,
+    MethodCallOptions,
+    PubKey,
+    SmartContract,
+    bsv,
+    findSig,
+    toByteString,
+} from 'scrypt-ts'
 import { OracleDemoBsv20 } from '../src/contracts/oracleDemoBsv20'
 import { getDefaultSigner } from './utils/helper'
 import { RabinPubKey, RabinSig, WitnessOnChainVerifier } from 'scrypt-ts-lib'
 import chaiAsPromised from 'chai-as-promised'
+import { BSV20V2P2PKH } from 'scrypt-ord'
 use(chaiAsPromised)
 
 // All data was pre-fetched from https://api.witnessonchain.com/
-
 // https://api.witnessonchain.com/#/info/AppController_getInfo
 const PUBKEY = {
     publicKey:
@@ -33,53 +42,108 @@ describe('Test SmartContract `OracleDemoBsv20`', () => {
     const txid =
         '7972d872ae5cbd4fe1dd5912a7cef79745950bce38ba6f1df912ee1fe5952557'
     const vout = 0
+    const script =
+        '0063036f726451126170706c69636174696f6e2f6273762d3230004c747b2270223a226273762d3230222c226f70223a227472616e73666572222c226964223a22643563663365373239653766363866313630646261643763623363656330303831323765353438343438346436386261326463656264336262663966613737365f30222c22616d74223a22313030227d6876a914700cc86d386b5c4707c06c96985f57ca875266e988ac'
+    // keys to unlock token utxo
+    const tokenPrivKey = bsv.PrivateKey.fromWIF(
+        'cRmsBM2joHToN2fEWWh5eXuSGCinmyG7rSv1d9ZECKcngBXJnWQw'
+    )
+    const tokenPubKey = tokenPrivKey.publicKey
 
-    let instance: OracleDemoBsv20
+    let demoInstance: OracleDemoBsv20
+    let tokenInstance: BSV20V2P2PKH
+    const signer = getDefaultSigner(tokenPrivKey)
 
     before(async () => {
+        // setup demo instance
         OracleDemoBsv20.loadArtifact()
         const rabinPubKey: RabinPubKey =
             WitnessOnChainVerifier.parsePubKey(PUBKEY)
         const inscriptionId = toByteString(`${txid}_${vout}`, true)
         const amt = 10n
-        instance = new OracleDemoBsv20(rabinPubKey, inscriptionId, amt)
-        await instance.connect(getDefaultSigner())
-        await instance.deploy()
+        demoInstance = new OracleDemoBsv20(rabinPubKey, inscriptionId, amt)
+        await demoInstance.connect(signer)
+        await demoInstance.deploy()
+        // setup token instance
+        tokenInstance = BSV20V2P2PKH.fromUTXO({
+            txId: txid,
+            outputIndex: vout,
+            script,
+            satoshis: 1,
+        })
+        await tokenInstance.connect(signer)
     })
 
     it('should pass the public method unit test successfully.', async () => {
-        // cutomize the tx builder for public method "unlock"
-        instance.bindTxBuilder(
+        // customise call tx for demoInstance
+        demoInstance.bindTxBuilder('unlock', (current: OracleDemoBsv20) => {
+            const unsignedTx = new bsv.Transaction().addInput(
+                current.buildContractInput()
+            )
+            return Promise.resolve({
+                tx: unsignedTx,
+                atInputIndex: 0,
+                nexts: [],
+            })
+        })
+        // parse the response from the oracle
+        const oracleMsg: ByteString = WitnessOnChainVerifier.parseMsg(RESP)
+        const oracleSig: RabinSig = WitnessOnChainVerifier.parseSig(RESP)
+        // call demoInstance.unlock to get a partial tx
+        const partialTx = await demoInstance.methods.unlock(
+            oracleMsg,
+            oracleSig,
+            1n,
+            {
+                multiContractCall: true,
+            } as MethodCallOptions<OracleDemoBsv20>
+        )
+        // customise call tx for tokenInstance
+        tokenInstance.bindTxBuilder(
             'unlock',
             async (
-                current: OracleDemoBsv20,
-                options: MethodCallOptions<OracleDemoBsv20>
+                current: BSV20V2P2PKH,
+                options: MethodCallOptions<BSV20V2P2PKH>
             ) => {
-                const defaultAddress = await current.signer.getDefaultAddress()
-                const unsignedTx: bsv.Transaction = new bsv.Transaction()
-                    // add contract input
-                    .addInput(current.buildContractInput())
-                    // add token input
-                    .from({
-                        txId: txid,
-                        outputIndex: vout,
-                        script: bsv.Script.fromASM('OP_TRUE').toString(), // fake script just for demo
-                        satoshis: 1,
-                    })
-                    .change(options.changeAddress || defaultAddress)
+                const tokenChange = new BSV20V2P2PKH(
+                    toByteString(current.id, true),
+                    current.sym,
+                    current.max,
+                    current.dec,
+                    Addr(options.changeAddress!.toByteString())
+                ).setAmt(current.getAmt())
+                const unsignedTx = options
+                    .partialContractTx!.tx.addInput(
+                        current.buildContractInput()
+                    )
+                    .addOutput(
+                        new bsv.Transaction.Output({
+                            script: tokenChange.lockingScript,
+                            satoshis: 1,
+                        })
+                    )
+                    .change(await current.signer.getDefaultAddress())
                 return Promise.resolve({
                     tx: unsignedTx,
-                    atInputIndex: 0,
+                    atInputIndex: 1,
                     nexts: [],
                 })
             }
         )
-        // parse the response from the oracle
-        const oracleMsg: ByteString = WitnessOnChainVerifier.parseMsg(RESP)
-        const oracleSig: RabinSig = WitnessOnChainVerifier.parseSig(RESP)
-        // call the public method "unlock"
+        // call tokenInstance.unlock to get the final tx
+        const finalTx = await tokenInstance.methods.unlock(
+            (sigResps) => findSig(sigResps, tokenPubKey),
+            PubKey(tokenPubKey.toHex()),
+            {
+                multiContractCall: true,
+                partialContractTx: partialTx,
+                pubKeyOrAddrToSign: tokenPubKey,
+                changeAddress: tokenPubKey.toAddress(),
+            } as MethodCallOptions<BSV20V2P2PKH>
+        )
+        // final call
         const callContract = async () =>
-            instance.methods.unlock(oracleMsg, oracleSig, 1n)
+            SmartContract.multiContractCall(finalTx, signer)
         return expect(callContract()).not.rejected
     })
 })

@@ -18,7 +18,7 @@ type Msg = {
     vout: bigint // 4 bytes LE, output index
     bsv20: bigint // 1 byte, token type, 0 for NFT, 1 for BSV20
     amt: bigint // 8 bytes LE
-    id: ByteString // 66 bytes
+    id: ByteString
 }
 
 export class OracleDemoBsv20 extends SmartContract {
@@ -51,7 +51,7 @@ export class OracleDemoBsv20 extends SmartContract {
             vout: Utils.fromLEUnsigned(slice(msg, 38n, 42n)),
             bsv20: Utils.fromLEUnsigned(slice(msg, 42n, 43n)),
             amt: Utils.fromLEUnsigned(slice(msg, 43n, 51n)),
-            id: slice(msg, 51n, 117n),
+            id: slice(msg, 51n),
         }
     }
 
