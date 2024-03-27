@@ -5,7 +5,7 @@
       "label": "Build",
       "detail": "Build the project which includes `scrypt-ts` smart contracts.",
       "type": "shell",
-      "command": "npx scrypt-cli@latest compile --watch",
+      "command": "npx scrypt-cli compile --watch",
       "isBackground": true,
       "problemMatcher": [
         "$tsc",
