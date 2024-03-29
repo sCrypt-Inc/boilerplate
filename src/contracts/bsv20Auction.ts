@@ -12,6 +12,7 @@ import {
     slice,
     StatefulNext,
     pubKey2Addr,
+    Constants,
 } from 'scrypt-ts'
 import { BSV20V2, OrdiMethodCallOptions } from 'scrypt-ord'
 
@@ -105,7 +106,8 @@ export class BSV20Auction extends BSV20V2 {
 
         // Ensure the first input is spending the auctioned ordinal UTXO.
         assert(
-            slice(this.prevouts, 0n, 36n) == this.ordinalPrevout,
+            slice(this.prevouts, 0n, Constants.OutpointLen) ==
+                this.ordinalPrevout,
             'first input is not spending specified ordinal UTXO'
         )
 
