@@ -1,6 +1,7 @@
 import {
     assert,
     byteString2Int,
+    Constants,
     hash256,
     method,
     prop,
@@ -25,9 +26,13 @@ export class Bsv20LendingPoolCollateral extends SmartContract {
 
         // Make sure first input spends main contract.
         const prevTxId = this.ctx.utxo.outpoint.txid
-        const prevoutContract = slice(this.prevouts, 0n, 36n)
-        assert(slice(prevoutContract, 0n, 32n) == prevTxId)
-        assert(byteString2Int(slice(prevoutContract, 32n, 36n)) == 0n)
+        const prevoutContract = slice(this.prevouts, 0n, Constants.OutpointLen)
+        assert(slice(prevoutContract, 0n, Constants.TxIdLen) == prevTxId)
+        assert(
+            byteString2Int(
+                slice(prevoutContract, Constants.TxIdLen, Constants.OutpointLen)
+            ) == 0n
+        )
 
         // Propagate contract.
         const output = this.buildStateOutput(this.amt)
