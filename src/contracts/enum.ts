@@ -7,7 +7,7 @@ import {
     SigHash,
 } from 'scrypt-ts'
 
-// Enum representing shipping status
+// Enum representing status
 // Pending  - 0
 // Shipped  - 1
 // Accepted - 2
@@ -35,7 +35,7 @@ export class Enum extends SmartContract {
         return this.status
     }
 
-    // Update status by passing uint into input
+    // Update status by passing Int into input
     @method()
     set(status: Status): void {
         this.status = status
