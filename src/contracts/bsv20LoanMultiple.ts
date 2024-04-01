@@ -3,6 +3,7 @@ import {
     assert,
     ByteString,
     byteString2Int,
+    Constants,
     fill,
     FixedArray,
     hash256,
@@ -204,12 +205,18 @@ export class Bsv20LoanMultiple extends BSV20V2 {
 
         // Check that we're unlocking the UTXO specified in the oracles message.
         assert(
-            slice(this.prevouts, 36n, 72n) == slice(oracleMsg, 0n, 36n),
+            slice(
+                this.prevouts,
+                Constants.OutpointLen,
+                Constants.OutpointLen * 2n
+            ) == slice(oracleMsg, 0n, Constants.OutpointLen),
             'second input is not spending specified ordinal UTXO'
         )
 
         // Get token amount held by the UTXO from oracle message.
-        const utxoTokenAmt = byteString2Int(slice(oracleMsg, 36n, 44n))
+        const utxoTokenAmt = byteString2Int(
+            slice(oracleMsg, Constants.OutpointLen, 44n)
+        )
 
         // Check token amount is correct.
         assert(utxoTokenAmt == borrower.amt, 'invalid token amount')
@@ -256,12 +263,18 @@ export class Bsv20LoanMultiple extends BSV20V2 {
 
         // Check that we're unlocking the UTXO specified in the oracles message.
         assert(
-            slice(this.prevouts, 36n, 72n) == slice(oracleMsg, 0n, 36n),
+            slice(
+                this.prevouts,
+                Constants.OutpointLen,
+                Constants.OutpointLen * 2n
+            ) == slice(oracleMsg, 0n, Constants.OutpointLen),
             'second input is not spending specified ordinal UTXO'
         )
 
         // Get token amount held by the UTXO from oracle message.
-        const utxoTokenAmt = byteString2Int(slice(oracleMsg, 36n, 44n))
+        const utxoTokenAmt = byteString2Int(
+            slice(oracleMsg, Constants.OutpointLen, 44n)
+        )
 
         // Check token amount is correct.
         assert(utxoTokenAmt == borrower.amt, 'invalid token amount')

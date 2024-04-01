@@ -12,6 +12,7 @@ import {
     pubKey2Addr,
     assert,
     len,
+    Constants,
 } from 'scrypt-ts'
 import { RabinPubKey, RabinSig, RabinVerifier } from 'scrypt-ts-lib'
 
@@ -60,7 +61,11 @@ export class BSV20BuyOrder extends BSV20V2 {
 
         // Check that we're unlocking the UTXO specified in the oracles message.
         assert(
-            slice(this.prevouts, 36n, 72n) == slice(oracleMsg, 0n, 36n),
+            slice(
+                this.prevouts,
+                Constants.OutpointLen,
+                Constants.OutpointLen * 2n
+            ) == slice(oracleMsg, 0n, Constants.OutpointLen),
             'second input is not spending specified ordinal UTXO'
         )
 
