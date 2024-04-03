@@ -12,16 +12,17 @@ import {
     byteString2Int,
 } from 'scrypt-ts'
 
+export enum ArrayConstants {
+    DATALEN = 1,
+    MAX_SIZE = 9,
+    INVALID = -9999999999,
+}
+
 export class Arrays extends SmartContractLib {
     @prop()
     data: ByteString
-
-    static readonly DATALEN: bigint = 1n
     @prop()
     static readonly EMPTY: ByteString = toByteString('')
-    static readonly MAX_SIZE = 9
-    static readonly INVALID: bigint = -9999999999n
-
     constructor(data: ByteString) {
         super(...arguments)
         this.data = Arrays.EMPTY
@@ -29,19 +30,19 @@ export class Arrays extends SmartContractLib {
 
     @method()
     push(x: bigint): boolean {
-        this.data += int2ByteString(x, Arrays.DATALEN)
+        this.data += int2ByteString(x, BigInt(ArrayConstants.DATALEN))
         return true
     }
 
     @method()
     pop(): bigint {
-        let result: bigint = Arrays.INVALID
+        let result: bigint = BigInt(ArrayConstants.INVALID)
         const maxIndex = this.length() - 1n
         if (maxIndex > -1) {
             const valueRaw: ByteString = slice(
                 this.data,
-                maxIndex * Arrays.DATALEN,
-                (maxIndex + 1n) * Arrays.DATALEN
+                maxIndex * BigInt(ArrayConstants.DATALEN),
+                (maxIndex + 1n) * BigInt(ArrayConstants.DATALEN)
             )
             result = byteString2Int(valueRaw)
             this.data = slice(this.data, 0n, maxIndex)
@@ -54,13 +55,13 @@ export class Arrays extends SmartContractLib {
         let result: bigint = -1n
         let done: boolean = false
         const length = this.length()
-        for (let i = 0n; i < Arrays.MAX_SIZE; i++) {
+        for (let i = 0n; i < 9n; i++) {
             if (i < length) {
                 if (!done) {
                     const valueRaw: ByteString = slice(
                         this.data,
-                        i * Arrays.DATALEN,
-                        (i + 1n) * Arrays.DATALEN
+                        i * BigInt(ArrayConstants.DATALEN),
+                        (i + 1n) * BigInt(ArrayConstants.DATALEN)
                     )
                     const value: bigint = byteString2Int(valueRaw)
                     if (value == x) {
@@ -75,13 +76,13 @@ export class Arrays extends SmartContractLib {
 
     @method()
     at(index: bigint): bigint {
-        let result: bigint = Arrays.INVALID
+        let result: bigint = BigInt(ArrayConstants.INVALID)
         const length: bigint = this.length()
         if (index >= 0n && index < length) {
             const valueRaw: ByteString = slice(
                 this.data,
-                index * Arrays.DATALEN,
-                (index + 1n) * Arrays.DATALEN
+                index * BigInt(ArrayConstants.DATALEN),
+                (index + 1n) * BigInt(ArrayConstants.DATALEN)
             )
             result = byteString2Int(valueRaw)
         }
@@ -90,7 +91,7 @@ export class Arrays extends SmartContractLib {
 
     @method()
     length(): bigint {
-        return BigInt(len(this.data)) / Arrays.DATALEN
+        return BigInt(len(this.data)) / BigInt(ArrayConstants.DATALEN)
     }
 
     @method()
@@ -98,7 +99,7 @@ export class Arrays extends SmartContractLib {
         let done: boolean = false
         const length: bigint = this.length()
         if (length > 0n) {
-            this.data = toByteString('')
+            this.data = Arrays.EMPTY
             done = true
         }
         return done
@@ -135,7 +136,7 @@ export class ArraysTest extends SmartContract {
         value = a.at(4n)
         assert(value == -9n)
         value = a.at(5n)
-        assert(value == Arrays.INVALID)
+        assert(value == BigInt(ArrayConstants.INVALID))
 
         let top: bigint = a.pop()
         assert(top == -9n)
@@ -148,7 +149,7 @@ export class ArraysTest extends SmartContract {
         top = a.pop()
         assert(top == 33n)
         top = a.pop()
-        assert(top == Arrays.INVALID)
+        assert(top == BigInt(ArrayConstants.INVALID))
         a.push(-9n)
         a.clear()
         assert(a.length() == 0n)
