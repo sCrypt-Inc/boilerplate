@@ -8,7 +8,7 @@ import {
     toByteString,
     toHex,
 } from 'scrypt-ts'
-import { RockPaperScissors2 } from '../src/contracts/rockPaperScissors'
+import { RockPaperScissors2, Choice } from '../src/contracts/rockPaperScissors'
 import { getDefaultSigner, randomPrivateKey } from './utils/helper'
 import { expect, use } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
@@ -29,8 +29,8 @@ describe('Test SmartContract `RockPaperScirssors`', async () => {
         instance = new RockPaperScissors2(
             PubKey(toHex(playerApublickey)),
             PubKey(toHex(playerBpublickey)),
-            Sha256(int2ByteString(RockPaperScissors2.ROCK, 1n) + playerASalt),
-            Sha256(int2ByteString(RockPaperScissors2.PAPER, 1n) + playerBSalt)
+            Sha256(int2ByteString(BigInt(Choice.ROCK), 1n) + playerASalt),
+            Sha256(int2ByteString(BigInt(Choice.PAPER), 1n) + playerBSalt)
         )
 
         await instance.connect(
@@ -45,8 +45,8 @@ describe('Test SmartContract `RockPaperScirssors`', async () => {
 
         const callContract = async () => {
             await instance.methods.play(
-                RockPaperScissors2.ROCK,
-                RockPaperScissors2.PAPER,
+                BigInt(Choice.ROCK),
+                BigInt(Choice.PAPER),
                 playerASalt,
                 playerBSalt,
                 {
@@ -63,8 +63,8 @@ describe('Test SmartContract `RockPaperScirssors`', async () => {
 
         const callContract = async () => {
             await instance.methods.play(
-                RockPaperScissors2.ROCK,
-                RockPaperScissors2.PAPER,
+                BigInt(Choice.ROCK),
+                BigInt(Choice.PAPER),
                 playerASalt + toByteString('00'),
                 playerBSalt,
                 {
