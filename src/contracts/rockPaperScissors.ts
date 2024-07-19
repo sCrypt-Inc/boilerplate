@@ -16,6 +16,12 @@ import {
     bsv,
 } from 'scrypt-ts'
 
+export enum Choice {
+    ROCK,
+    PAPER,
+    SCISSORS
+}
+
 export class RockPaperScissors2 extends SmartContract {
     @prop()
     playerA: PubKey
@@ -25,13 +31,6 @@ export class RockPaperScissors2 extends SmartContract {
     playerAHash: Sha256
     @prop()
     playerBHash: Sha256
-
-    @prop()
-    static readonly ROCK: bigint = 0n
-    @prop()
-    static readonly PAPER: bigint = 1n
-    @prop()
-    static readonly SCISSORS: bigint = 2n
 
     constructor(
         playerA: PubKey,
@@ -86,12 +85,12 @@ export class RockPaperScissors2 extends SmartContract {
             // Winner takes all.
             let winner = this.playerB
             if (
-                (playerAMove == RockPaperScissors2.ROCK &&
-                    playerBMove == RockPaperScissors2.SCISSORS) ||
-                (playerAMove == RockPaperScissors2.SCISSORS &&
-                    playerBMove == RockPaperScissors2.PAPER) ||
-                (playerAMove == RockPaperScissors2.PAPER &&
-                    playerBMove == RockPaperScissors2.ROCK)
+                (playerAMove == BigInt(Choice.ROCK) &&
+                    playerBMove == BigInt(Choice.SCISSORS)) ||
+                (playerAMove == BigInt(Choice.SCISSORS) &&
+                    playerBMove == BigInt(Choice.PAPER)) ||
+                (playerAMove == BigInt(Choice.PAPER) &&
+                    playerBMove == BigInt(Choice.ROCK))
             ) {
                 winner = this.playerA
             }
