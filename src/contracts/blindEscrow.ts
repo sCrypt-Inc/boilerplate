@@ -21,17 +21,19 @@ import { SECP256K1, Signature } from 'scrypt-ts-lib'
 // All public keys must be in uncompressed form. This also affects
 // the values of the pub key hashes i.e. addresses.
 
-export class BlindEscrow extends SmartContract {
-    // 4 possible actions:
+ // 4 possible actions:
     // - buyer signs and uses sellers stamp (releaseBySeller)
     // - buyer signs and uses arbiters stamp (releaseByArbiter)
     // - seller signs and uses buyers stamp (returnByBuyer)
     // - seller signs and uses arbiters stamp (returnByArbiter)
-    static readonly RELEASE_BY_SELLER = 0n
-    static readonly RELEASE_BY_ARBITER = 1n
-    static readonly RETURN_BY_BUYER = 2n
-    static readonly RETURN_BY_ARBITER = 3n
-
+    export enum Actions{
+     RELEASE_BY_SELLER,
+    RELEASE_BY_ARBITER,
+    RETURN_BY_BUYER,
+    RETURN_BY_ARBITER
+    }
+export class BlindEscrow extends SmartContract {
+   
     @prop()
     seller: Addr
 
@@ -73,16 +75,16 @@ export class BlindEscrow extends SmartContract {
         )
 
         // Load correct addresses.
-        if (action == BlindEscrow.RELEASE_BY_SELLER) {
+        if (action == BigInt(Actions.RELEASE_BY_SELLER)) {
             spender = this.buyer
             oracle = this.seller
-        } else if (action == BlindEscrow.RELEASE_BY_ARBITER) {
+        } else if (action == BigInt(Actions.RELEASE_BY_ARBITER)) {
             spender = this.buyer
             oracle = this.arbiter
-        } else if (action == BlindEscrow.RETURN_BY_BUYER) {
+        } else if (action == BigInt(Actions.RETURN_BY_BUYER)) {
             spender = this.seller
             oracle = this.buyer
-        } else if (action == BlindEscrow.RETURN_BY_ARBITER) {
+        } else if (action == BigInt(Actions.RETURN_BY_ARBITER)) {
             spender = this.seller
             oracle = this.arbiter
         } else {
