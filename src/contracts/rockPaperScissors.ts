@@ -17,9 +17,9 @@ import {
 } from 'scrypt-ts'
 
 export enum Choice {
-    ROCK = 0,
-    PAPER = 1,
-    SCISSORS = 2
+    ROCK,
+    PAPER,
+    SCISSORS
 }
 
 export class RockPaperScissors2 extends SmartContract {
