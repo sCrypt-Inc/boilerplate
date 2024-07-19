@@ -45,7 +45,7 @@ describe('Test SmartContract `OrdinalAuction`', () => {
         }
 
         const ordinal = new OrdiNFTP2PKH(Addr(addressAuctioneer.toByteString()))
-        ordinal.connect(getDefaultSigner())
+        await ordinal.connect(getDefaultSigner())
         const ordinalTx = await ordinal.inscribeText('Hello, sCrypt!')
 
         ordinalUTXO = {
